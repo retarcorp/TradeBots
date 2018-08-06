@@ -1,0 +1,63 @@
+.page__main{
+    display: flex;
+}
+.registration,
+.authorization{
+    margin: auto;
+    width: 363px;
+    /* height: 425px; */
+    border: 1px solid #EFEFEF;
+    padding: 21px 19px;
+}
+
+.registration__header,
+.authorization__header{
+    font-size: 24px;
+    text-align: center;
+    margin-bottom: 33px;
+}
+
+.registration__input,
+.captcha__input{
+    width: 325px;
+    height: 45px;
+    margin-bottom: 19px;
+}
+
+.registration__captcha{
+    width: 325px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.captcha__input{
+    width: 200px;
+}
+
+.captcha__img{
+    width: 106px;
+    height: 45px;
+}
+
+.button__registration,
+.button__authorization{
+    color: #fff;
+    background-color: #72C770;
+    width: 164px;
+}
+
+.have-account,
+.not-have-account{
+    margin-top: 10px;
+    font-size: 14px;
+}
+
+.not-have-account a{
+    text-decoration: none;
+}
+
+.forgot-password{
+    font-size: 14px;
+    margin-left: 18px;
+    cursor: pointer;
+}

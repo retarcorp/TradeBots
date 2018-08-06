@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Bots</title>
+    <link href="https://fonts.googleapis.com/css?family=Roboto:400,500" rel="stylesheet">
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/bots.css">
+    <link rel="stylesheet" href="css/frontend.css">
+</head>
+<body>
+        <div id="wrapper">
+
+            <header class="page__header">
+                <div class="page__header-content">
+                    <nav class="page__navigation">
+                        <ul class="main-navigation__list">
+                            <li class="main-navigation__item active">Боты</li>
+                            <li class="main-navigation__item">Статистика</li>
+                            <li class="main-navigation__item">Доходы</li>
+                            <li class="main-navigation__item">Аккаунт</li>
+                        </ul>
+                    </nav>
+                </div>
+            </header>
+
+            <div class="page__main">
+
+                <section class="bots__left-menu">
+
+                    <div class="bots__search">
+                        <input id="search" type="email" class="page__input search__input">
+                        <button class="page__button search__button-search"></button>
+                    </div>
+
+                    <ul class="bots__list">
+                        <li class="bots__item in__work">Название бота 3</li>
+                        <li class="bots__item in__work selected">BTC</li>
+                        <li class="bots__item">Название бота 2</li>
+                        <li class="bots__item">Название бота 1</li>
+                    </ul>
+
+                    <button class="page__button bots__button-add">Добавить бота +</button>
+                </section>
+
+
+                <section class="bots__right-settings bot__manual">
+
+                    <div class="settings__header">
+                        <h1 class="bots__name">BTC</h1>
+                        <span class="settings__type">(Ручной)</span>
+                        <div class="bots__buttons-status">
+                            <button class="page__button button__freeze">Заморозить</button>
+                            <label class="checkbox">
+                                <input type="checkbox" class="button__status">
+                                <div class="checkbox__text"></div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="settings__content">
+
+                        <!-- <div class="page__field">
+                            <label class="page__label" for="counter_bots">Количесво торгующих ботов:</label>
+                            <input id="counter_bots" type="text" class="page__input settings__input">
+                        </div> -->
+                        <div class="settings__description">
+                            <p class="settings__item">Количество тогруемых ботов: <span>7</span></p>
+                            <p class="settings__item">Дневной объем (BTC): <span>123</span></p>
+                            <p class="settings__item">Основная пара: <span>ВТС</span></p>
+                            <p class="settings__item">Котируемая пара: <span>ETH</span></p>
+                            <p class="settings__item">Начальные ордер: <span>7</span></p>
+                            <p class="settings__item">Страховочный ордер: <span>123</span></p>
+                            <p class="settings__item">Отклонение от начального ордера: <span>10%</span></p>
+                            <p class="settings__item">Кол-во страховочных ордеров: <span>32</span></p>
+                            <p class="settings__item">Тейк профит: <span>25%</span></p>
+                            <p class="settings__item">Мартингейл: <span>Вкл</span></p>
+                            <p class="settings__item">Увеличение страховочного ордера: <span>1.75</span></p>
+                        </div>
+                        <button class="page__button button__change-settings">Изменить настройки</button>
+                    </div>
+
+                    <div class="bots__order">
+                        <ul class="tabs__bar">
+                            <li class="tabs__item active">Выставленные ордера</li>
+                            <li class="tabs__item">Выполненные</li>
+                        </ul>
+                        <div class="tabs__content">
+                            <table class="page__table">
+                                <tr class="table__tr">
+                                    <th class="table__th pair-head">Пара</th>
+                                    <th class="table__th price-head">Цена</th>
+                                    <th class="table__th quantity-head">Количество</th>
+                                    <th class="table__th total-head">Всего</th>
+                                </tr>
+                                <tr class="table__tr">
+                                    <td class="table__td pair">BTC/ETH</td>
+                                    <td class="table__td price">0.00065906 (ETH)</td>
+                                    <td class="table__td quantity">34 (BTC)</td>
+                                    <td class="table__td total">0.02240804 (BTC)</td>
+                                </tr>
+                                <tr class="table__tr">
+                                    <td class="table__td pair">BTC/ETH</td>
+                                    <td class="table__td price">0.00065906 (ETH)</td>
+                                    <td class="table__td quantity">34 (BTC)</td>
+                                    <td class="table__td total">0.02240804 (BTC)</td>
+                                </tr>
+                                <tr class="table__tr">
+                                    <td class="table__td pair">BTC/ETH</td>
+                                    <td class="table__td price">0.00065906 (ETH)</td>
+                                    <td class="table__td quantity">34 (BTC)</td>
+                                    <td class="table__td total">0.02240804 (BTC)</td>
+                                </tr>
+                                <tr class="table__tr">
+                                    <td class="table__td pair">BTC/ETH</td>
+                                    <td class="table__td price">0.00065906 (ETH)</td>
+                                    <td class="table__td quantity">34 (BTC)</td>
+                                    <td class="table__td total">0.02240804 (BTC)</td>
+                                </tr>
+                                <tr class="table__tr">
+                                    <td class="table__td pair">BTC/ETH</td>
+                                    <td class="table__td price">0.00065906 (ETH)</td>
+                                    <td class="table__td quantity">34 (BTC)</td>
+                                    <td class="table__td total">0.02240804 (BTC)</td>
+                                </tr>
+                            </table>
+                            <div class="order__buttons">
+                                <button class="page__button button__cancel-sell">Отменить и продать</button>
+                                <button class="page__button button__cancel">Отменить</button>
+                            </div>
+                        </div>
+                    </div>
+
+                </section>
+
+
+
+
+                <section class="bots__right-settings bot__automatic">
+
+                    <header class="settings__header">
+                        <h1 class="bots__name">BTC</h1>
+                        <span class="settings__type">(Автоматический)</span>
+                        <div class="bots__buttons-status">
+                            <button class="page__button button__freeze">Заморозить</button>
+                            <label class="checkbox">
+                                <input type="checkbox" class="button__status">
+                                <div class="checkbox__text"></div>
+                            </label>
+                        </div>
+                    </header>
+
+                    <div class="settings__content">
+
+                        <!-- <div class="page__field">
+                            <label class="page__label" for="counter_bots">Количесво торгующих ботов:</label>
+                            <input id="counter_bots" type="text" class="page__input settings__input">
+                        </div> -->
+                        <div class="settings__description">
+                            <p class="settings__item">Количество тогруемых ботов: <span>7</span></p>
+                            <p class="settings__item">Дневной объем (BTC): <span>123</span></p>
+                            <p class="settings__item">Базовая пара: <span>ВТС</span></p>
+                        </div>
+
+                        <div class="transactions__terms">
+                            <div class="page__field">
+                                <label class="page__label" for="">Условия для начала сделки:</label>
+                                <!-- <input id="terms__signal" type="text" class="page__input settings__input" placeholder="Сигнал">
+                                <input id="terms__timeframe" type="text" class="page__input settings__input" placeholder="Таймфрейм">
+                                <input id="terms__recommendation" type="text" class="page__input settings__input" placeholder="Рекомендация"> -->
+                            </div>
+                            <table class="page__table">
+                                <tr class="table__tr">
+                                    <td class="table__td terms__signal">1.Tradingview</td>
+                                    <td class="table__td terms__timeframe">15 минут</td>
+                                    <td class="table__td terms__recommendation">Strong Buy</td>
+                                </tr>
+                                <tr class="table__tr">
+                                    <td class="table__td terms__signal">2.Tradingview</td>
+                                    <td class="table__td terms__timeframe">30 минут</td>
+                                    <td class="table__td terms__recommendation">Buy</td>
+                                </tr>
+                                <tr class="table__tr">
+                                    <td class="table__td terms__signal">3.Tradingview</td>
+                                    <td class="table__td terms__timeframe">15 минут</td>
+                                    <td class="table__td terms__recommendation">Strong Sell</td>
+                                </tr>
+                                <tr class="table__tr">
+                                    <td class="table__td terms__signal">4.Tradingview</td>
+                                    <td class="table__td terms__timeframe">45 минут</td>
+                                    <td class="table__td terms__recommendation">Buy</td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <button class="page__button button__change-settings">Изменить настройки</button>
+
+                    </div>
+
+                    <div class="bots__order">
+                        <ul class="tabs__bar">
+                            <li class="tabs__item active">Выставленные ордера</li>
+                            <li class="tabs__item">Выполненные</li>
+                        </ul>
+                        <div class="tabs__content">
+                            <table class="page__table">
+                                <tr class="table__tr">
+                                    <th class="table__th pair-head">Пара</th>
+                                    <th class="table__th price-head">Цена</th>
+                                    <th class="table__th quantity-head">Количество</th>
+                                    <th class="table__th total-head">Всего</th>
+                                </tr>
+                                <tr class="table__tr">
+                                    <td class="table__td pair">BTC/ETH</td>
+                                    <td class="table__td price">0.00065906 (ETH)</td>
+                                    <td class="table__td quantity">34 (BTC)</td>
+                                    <td class="table__td total">0.02240804 (BTC)</td>
+                                </tr>
+                                <tr class="table__tr">
+                                    <td class="table__td pair">BTC/ETH</td>
+                                    <td class="table__td price">0.00065906 (ETH)</td>
+                                    <td class="table__td quantity">34 (BTC)</td>
+                                    <td class="table__td total">0.02240804 (BTC)</td>
+                                </tr>
+                                <tr class="table__tr">
+                                    <td class="table__td pair">BTC/ETH</td>
+                                    <td class="table__td price">0.00065906 (ETH)</td>
+                                    <td class="table__td quantity">34 (BTC)</td>
+                                    <td class="table__td total">0.02240804 (BTC)</td>
+                                </tr>
+                                <tr class="table__tr">
+                                    <td class="table__td pair">BTC/ETH</td>
+                                    <td class="table__td price">0.00065906 (ETH)</td>
+                                    <td class="table__td quantity">34 (BTC)</td>
+                                    <td class="table__td total">0.02240804 (BTC)</td>
+                                </tr>
+                                <tr class="table__tr">
+                                    <td class="table__td pair">BTC/ETH</td>
+                                    <td class="table__td price">0.00065906 (ETH)</td>
+                                    <td class="table__td quantity">34 (BTC)</td>
+                                    <td class="table__td total">0.02240804 (BTC)</td>
+                                </tr>
+                            </table>
+                            <div class="order__buttons">
+                                <button class="page__button button__cancel-sell">Отменить и продать</button>
+                                <button class="page__button button__cancel">Отменить</button>
+                            </div>
+                        </div>
+                    </div>
+
+                </section>
+
+                <section class="bots__right-settings add__manual-bots">
+                    <header class="add__header">
+                        <h1 class="header__title">Добавить бота</h1>
+                        <div class="checkbox__container">
+                            <label class="bots__type-work">
+                                <input class="radio__point" type="radio" name="bot__type" checked>
+                                Автоматический режим
+                            </label>
+                            <label class="bots__type-work">
+                                <input class="radio__point" type="radio" name="bot__type">
+                                Ручной
+                            </label>
+                        </div>
+                    </header>
+                </section>
+            </div>
+        </div>
+</body>
+</html>

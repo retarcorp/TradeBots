@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Registration</title>
+    <link href="https://fonts.googleapis.com/css?family=Roboto:400,500" rel="stylesheet">
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/auth-registr.css">
+</head>
+<body>
+    <div id="wrapper">
+
+        <header class="page__header"></header>
+
+        <main class="page__main">
+            <section class="registration">
+                <h1 class="registration__header">Регистрация</h1>
+                <input id="email" type="email" class="page__input registration__input" placeholder="Email">
+                <input id="password" type="password" class="page__input registration__input" placeholder="Пароль">
+                <input id="password2" type="password" class="page__input registration__input" placeholder="Подтверждение пароля">
+                <div class="registration__captcha">
+                    <input id="captcha" type="text" class="page__input captcha__input" placeholder="Код с картинки">
+                    <img src="img/captcha.png" alt="captcha" class="captcha__img">
+                </div>
+                <button class="page__button button__registration">Регистрация</button>
+                <p class="have-account">Уже есть аккаунт? <a href="#">Войти</a></p>
+            </section>
+        </main>
+    </div>
+</body>
+</html>
