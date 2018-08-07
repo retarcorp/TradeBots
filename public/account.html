@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Bots</title>
+    <link href="https://fonts.googleapis.com/css?family=Roboto:400,500" rel="stylesheet">
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/account.css">
+    <link rel="stylesheet" href="css/frontend.css">
+</head>
+<body>
+        <div id="wrapper">
+
+            <header class="page__header">
+                <div class="page__header-content">
+                    <nav class="page__navigation">
+                        <ul class="main-navigation__list">
+                            <li class="main-navigation__item active">Боты</li>
+                            <li class="main-navigation__item">Статистика</li>
+                            <li class="main-navigation__item">Доходы</li>
+                            <li class="main-navigation__item">Аккаунт</li>
+                        </ul>
+                    </nav>
+                </div>
+            </header>
+
+            <div class="page__main">
+
+                <section class="account__left-panel">
+                    <div class="account__field-info balance">
+                        <p class="field-info__text">Баланс: </p>
+                        <p class="field-info__value">0.124 <span>BTC</span></p>
+                        <a href="#" class="field-info__link">Пополнить</a>
+                    </div>
+                    <div class="account__field-info tariff">
+                        <p class="field-info__text">Тариф: </p>
+                        <p class="field-info__value">Оптимум</p>
+                        <a href="#" class="field-info__link">Изменить</a>
+                    </div>
+                    <div class="account__field-info binance">
+                        <p class="field-info__text">Аккаунт Binance: </p>
+                        <p class="field-info__value">не заданно</p>
+                        <a href="#" class="field-info__link">Задать</a>
+                    </div>
+
+
+                    <button class="page__button account__change-password">Изменить пароль</button>
+                </section>
+
+
+                <section class="account__right-panel">
+                    <section class="binance">
+                        <header class="panel__header">
+                            <h1>Настройка доступа для Binance</h1>
+                            <p class="panel__header-help">Для начала работы привяжите ваш аккаунт Binance</p>
+                        </header>
+                        <form class="form__binance">
+                            <div class="page__field">
+                                <label class="page__label" for="name">Названиe</label>
+                                <input id="name" type="text" class="page__input account__input">
+                            </div>
+                            <div class="page__field">
+                                <label class="page__label" for="apiKey">Api Key</label>
+                                <input id="apiKey" type="text" class="page__input account__input">
+                            </div>
+                            <div class="page__field">
+                                <label class="page__label" for="apiSecret">Api Secret</label>
+                                <input id="apiSecret" type="text" class="page__input account__input">
+                            </div>
+                            <div class="binance__form-button">
+                                    <button class="page__button button__save-binance">Сохранить</button>
+                                    <button class="page__button button__cancel-binance">Удалить</button>
+
+                            </div>
+                        </form>
+                    </section>
+                    <section class="balance">
+                        <header class="panel__header">
+                            <h1>Пополнение баланса</h1>
+                            <p class="panel__header-help">
+                                    Для пополнения баланса, перечислите нужную суму на кошелек:
+                                    <span class="code-purse">8AwyYdyrG8yesfNjFKEQETaNu9nPWtwsj</span>
+                            </p>
+                        </header>
+                        <div class="balance__history">
+                            <h1>История</h1>
+                            <table class="page__table">
+                                <tr class="table__tr">
+                                    <td class="table__td date">22.03.2018 12.35</td>
+                                    <td class="table__td operation">Пополнение баланса</td>
+                                    <td class="table__td score refill">+0.00065906 (<span>BTC</span>)</td>
+                                </tr>
+                                <tr class="table__tr">
+                                    <td class="table__td date">22.03.2018 12.35</td>
+                                    <td class="table__td operation">Списание за тариф "Оптимум"</td>
+                                    <td class="table__td score debit">-0.00065906 (<span>BTC</span>)</td>
+                                </tr>
+                                <tr class="table__tr">
+                                    <td class="table__td date">22.03.2018 12.35</td>
+                                    <td class="table__td operation">Пополнение баланса</td>
+                                    <td class="table__td score refill">+0.00065906 (<span>BTC</span>)</td>
+                                </tr>
+                                <tr class="table__tr">
+                                    <td class="table__td date">22.03.2018 12.35</td>
+                                    <td class="table__td operation">Списание за тариф "Оптимум"</td>
+                                    <td class="table__td score debit">-0.00065906 (<span>BTC</span>)</td>
+                                </tr>
+                                <tr class="table__tr">
+                                    <td class="table__td date">22.03.2018 12.35</td>
+                                    <td class="table__td operation">Пополнение баланса</td>
+                                    <td class="table__td score refill">+0.00065906 (<span>BTC</span>)</td>
+                                </tr>
+                                <tr class="table__tr">
+                                    <td class="table__td date">22.03.2018 12.35</td>
+                                    <td class="table__td operation">Списание за тариф "Оптимум"</td>
+                                    <td class="table__td score debit">-0.00065906 (<span>BTC</span>)</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </section>
+                    <section class="tariff">
+                        <header class="panel__header">
+                            <h1>Изменение тарифа</h1>
+                        </header>
+                        <div class="tariff__container">
+                            <div class="tariff__item">
+                                <h1 class="tariff__name">Тариф 1</h1>
+                                <ul class="tariff__list-capabilities">
+                                    <li class="list-capabilities__item">Возможность</li>
+                                    <li class="list-capabilities__item">Возможность</li>
+                                    <li class="list-capabilities__item">Возможность</li>
+                                    <li class="list-capabilities__item">Возможность</li>
+                                </ul>
+                                <button class="page__button button__select-tariff">Выбрать</button>
+                            </div>
+                            <div class="tariff__item">
+                                <h1 class="tariff__name">Тариф 2</h1>
+                                <ul class="tariff__list-capabilities">
+                                    <li class="list-capabilities__item">Возможность</li>
+                                    <li class="list-capabilities__item">Возможность</li>
+                                    <li class="list-capabilities__item">Возможность</li>
+                                    <li class="list-capabilities__item">Возможность</li>
+                                </ul>
+                                <button class="page__button button__select-tariff">Выбрать</button>
+                            </div>
+                            <div class="tariff__item">
+                                <h1 class="tariff__name">Тариф 3</h1>
+                                <ul class="tariff__list-capabilities">
+                                    <li class="list-capabilities__item">Возможность</li>
+                                    <li class="list-capabilities__item">Возможность</li>
+                                    <li class="list-capabilities__item">Возможность</li>
+                                    <li class="list-capabilities__item">Возможность</li>
+                                </ul>
+                                <button class="page__button button__select-tariff">Выбрать</button>
+                            </div>
+                            <div class="tariff__item">
+                                <h1 class="tariff__name">Тариф 4</h1>
+                                <ul class="tariff__list-capabilities">
+                                    <li class="list-capabilities__item">Возможность</li>
+                                    <li class="list-capabilities__item">Возможность</li>
+                                    <li class="list-capabilities__item">Возможность</li>
+                                    <li class="list-capabilities__item">Возможность</li>
+                                </ul>
+                                <button class="page__button button__select-tariff">Выбрать</button>
+                            </div>
+                        </div>
+                    </section>
+                    <section class="change-password">
+                        <header class="panel__header">
+                            <h1>Изменение пароля</h1>
+                        </header>
+                        <form class="form__change-password">
+                            <div class="page__field">
+                                <label class="page__label" for="currentPassword">Текущий пароль</label>
+                                <input id="currentPassword" type="password" class="page__input account__input">
+                            </div>
+                            <div class="page__field">
+                                <label class="page__label" for="newPassword">Новый пароль</label>
+                                <input id="newPassword" type="password" class="page__input account__input">
+                            </div>
+                            <div class="page__field">
+                                <label class="page__label" for="confirmNewPassword">Подтверждение нового паролья</label>
+                                <input id="confirmNewPassword" type="password" class="page__input account__input">
+                            </div>
+                            <div class="binance__form-button">
+                                    <button class="page__button button__save-password">Сохранить</button>
+                                    <button class="page__button button__cancel-password">Удалить</button>
+                            </div>
+                        </form>
+                    </section>
+                </section>
+            </div>
+        </div>
+</body>
+</html>

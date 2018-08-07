@@ -1,0 +1,201 @@
+/* LEFT SIDE */
+.account__left-panel{
+    position: fixed;
+    left: 113px;
+    max-width: 412px;
+    width: 100%;
+    margin-top: 20px;
+    height: calc(100vh - 70px);
+    border-right: 1px solid #3D3D3D;
+}
+
+.account__field-info{
+    display: flex;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    margin-bottom: 17px;
+}
+
+.field-info__text{
+    font-size: 20px;
+    font-weight: 500;
+    margin-right: 7px;
+}
+.field-info__value,
+.field-info__value span{
+    font-size: 20px;
+    font-weight: 500;
+}
+.field-info__link{
+    font-size: 14px;
+    font-weight: 500;
+    margin-left: 7px;
+}
+
+.binance .field-info__link{
+    font-size: 20px;
+}
+
+.account__change-password{
+    width: 253px;
+    height: 63px;
+    background-color: #C4C4C4;
+    font-size: 18px;
+    font-weight: 500;
+    color: #000;
+    margin-top: 60px;
+}
+
+
+
+
+/* RIGHT SIDE */
+
+.account__right-panel{
+    max-width: 728px;
+    width: 100%;
+    margin-top: 20px;
+    margin-left: 412px;
+    padding: 0 37px;
+}
+
+.panel__header h1{
+    font-size: 20px;
+    font-weight: 500;
+}
+
+.panel__header-help{
+    font-size: 18px;
+    margin-top: 13px;
+}
+
+.code-purse{
+    display: block;
+    margin-top: 15px;
+    font-size: inherit;
+}
+
+.form__binance,
+.form__change-password{
+    display: flex;
+    flex-direction: column;
+    margin-top: 10px;
+}
+
+.form__binance .page__field,
+.form__change-password .page__field{
+    margin: 0;
+    margin-top: 20px;
+}
+
+.account__input{
+    height: 38px;
+    width: 317px;
+}
+
+.binance__form-button{
+    width: 317px;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    margin-top: 20px;
+}
+
+.button__save-binance,
+.button__save-password,
+.button__cancel-password,
+.button__cancel-binance{
+    height: 38px;
+    color: #fff;
+    font-size: 14px;
+}
+
+.button__save-binance,
+.button__save-password{
+    width: 164px;
+    background-color: #72C770;
+}
+
+.button__cancel-binance,
+.button__cancel-password{
+    width: 132px;
+    background-color: #D74C4C;
+}
+
+.balance .panel__header-help{
+    font-size: 15px;
+    margin-top: 25px;
+}
+
+.balance__history{
+    margin-top: 30px;
+}
+
+.balance__history h1 {
+    font-size: 20px;
+    font-weight: 500;
+}
+
+.score{
+    text-align: center;
+}
+
+.score span{
+    color: inherit;
+}
+
+.tariff__container{
+    margin-top: 17px;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.tariff__item{
+    max-width: 244px;
+    width: 100%;
+    border: 1px solid #C4C4C4;
+    padding: 50px 18px 15px;
+    margin-top: 23px;
+    margin-right: 41px;
+}
+
+.tariff__name{
+    text-align: center;
+    font-size: 20px;
+    font-weight: 500;
+    margin-bottom: 30px;
+}
+
+.list-capabilities__item{
+    position: relative;
+    font-size: 20px;
+    font-weight: 500;
+    padding-left: 40px;
+}
+
+.list-capabilities__item:not(:last-child){
+    margin-bottom: 17px;
+}
+
+.list-capabilities__item::before{
+    content: ' ';
+    left: 0;
+    display: block;
+    position: absolute;
+    width: 21px;
+    height: 18px;
+    background-image: url(../img/icon/checkmark.png);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 100%;
+}
+
+.button__select-tariff{
+    width: 140px;
+    height: 45px;
+    display: block;
+    background-color: #C4C4C4;
+    font-size: 20px;
+    font-weight: 500;
+    margin: 33px auto 0;
+}
