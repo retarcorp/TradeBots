@@ -5,7 +5,7 @@ var Users = require('../modules/Users');
 
 router.get('/authorization', (req, res, next) => {
 	if(req.cookies.user || req.session.user){
-		res.redirect(303, '/');
+		return res.redirect(303, '/');
 	}
 	res.sendFile('authorization.html', { root: 'public/'});
 });

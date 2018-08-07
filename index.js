@@ -8,12 +8,11 @@ var Mongo = require('./modules/Mongo').init();
 var authorization = require('./routes/authorization');
 var registration = require('./routes/registration');
 var bots = require('./routes/bots');
+var account = require('./routes/account');
 var index = require('./routes/index');
 
 var app = express();
-var urlencodedParser = bodyParser.urlencoded({extended: false});
 
-// app.use(session({secret: 'keyboard cat', cookie: {}}));
 app.use(cookieParser());
 app.use(expressSession({secret: 'kitty secret'}));
 app.use(express.static(__dirname + '/public'));
@@ -25,13 +24,12 @@ app.set('port', process.env.PORT || 3000);
 
 app.get('/', index);
 app.get('/bots', bots);
+app.get('/account', account);
 app.get('/authorization', authorization);
 app.get('/authorization/logout', authorization);
 app.post('/authorization', authorization);
 app.get('/registration', registration);
 app.post('/registration', registration);
-
-
 
 
 
