@@ -44,3 +44,12 @@
     position: absolute;
     bottom: -1px;
 }
+
+
+.score.refill{
+    color: #72C770;
+}
+.score.debit{
+    color: #D74C4C;
+}
+
