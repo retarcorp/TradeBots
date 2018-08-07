@@ -26,6 +26,7 @@ app.set('port', process.env.PORT || 3000);
 app.get('/', index);
 app.get('/bots', bots);
 app.get('/authorization', authorization);
+app.get('/authorization/logout', authorization);
 app.post('/authorization', authorization);
 app.get('/registration', registration);
 app.post('/registration', registration);
