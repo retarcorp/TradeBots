@@ -39,7 +39,7 @@ app.get('/account', account);
 app.post('/account/api', account);
 app.delete('/account/api', account);
 app.get('/authorization', authorization);
-app.get('/authorization/logout', authorization);
+app.get('/logout', authorization);
 app.post('/authorization', authorization);
 app.get('/registration', registration);
 app.post('/registration', registration);

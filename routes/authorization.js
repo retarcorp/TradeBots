@@ -10,7 +10,7 @@ router.get('/authorization', (req, res, next) => {
 	res.sendFile('authorization.html', { root: 'public/'});
 });
 
-router.get('/authorization/logout', (req, res, next) => {
+router.get('/logout', (req, res, next) => {
 	Users.closeSession(req, res, (err) => {
         if (err) console.log(err);
 
