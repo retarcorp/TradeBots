@@ -3,14 +3,8 @@ var md5 = require('md5');
 
 var Mongo = require('./Mongo');
 
-var router = express.Router();
-
 let Users = {
-	init() {
-		console.log('Users initialized');
-	}
-
-	,adminLogin(admin, callback) {
+	adminLogin(admin, callback) {
 		this.find(admin, 'admin', callback);
 	}
 
@@ -29,6 +23,7 @@ let Users = {
 				,password: password
 				,salt: salt
 				,admin: admin
+				,keys: {}
 			}
 
 		this.find( { name: name }, collection, (data) => {

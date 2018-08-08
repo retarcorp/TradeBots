@@ -17,7 +17,7 @@ router.post('/registration', (req, res, next) => {
 	}
 
 	Users.create(user, 'users', (data) => {
-		res.send(JSON.stringify( data ));
+		res.redirect(303, '/authorization');
 	});
 });
 
