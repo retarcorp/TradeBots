@@ -20,7 +20,7 @@ router.post('/account/api', (req, res, next) => {
 			,secret: Crypto.cipher(req.body.secret, Crypto.getKey(data.regDate, data.name))
 		};
 		Mongo.update({name: data.name}, data, 'users', (data) => {
-			res.send(JSON.stringify( data ));
+		res.send(200/*JSON.stringify( data )*/);
 		});
 	})
 });
@@ -31,7 +31,7 @@ router.delete('/account/api', (req, res, next) => {
 		data = data[0];
 		data.binanseAPI = {};
 		Mongo.update({name: data.name}, data, 'users', (data) => {
-			res.send(JSON.stringify( data ));
+			res.send(200/*JSON.stringify( data )*/);
 		});
 	})
 });
