@@ -22,7 +22,7 @@ router.post('/bots-add', (req, res, nex) => {
 	let user = {name: req.cookies.user.name};
 	Mongo.select(user, 'users', (data) => {
 		data = data[0];
-		let bot = new Bot(req.body);
+		let bot = new Bot({});
 		data.bots.push(bot);
 		Mongo.update({name: data.name}, data, 'users', (data) => {
 			res.send(200/*JSON.stringify( data )*/);

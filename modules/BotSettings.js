@@ -1,39 +1,28 @@
-const VOLUME_LIMIT = {
-	BTC: 0.001,
-	ETH: 0.01,
-	BNB: 1,
-	USDT: 10
-};
+let Martingale = require('./Martingale');
+let SafeOrder = require('./SafeOrder');
+let TraidingSignals = require('./TraidingSignals');
+const VOLUME_LIMIT = require('../constants').VOLUME_LIMIT;
 
 module.exports = class BotSettings {
-	constructor() {
-		this.VOLUME_LIMIT = VOLUME_LIMIT,
-		this.s=0
-				
+	constructor({
+		volumeLimit = VOLUME_LIMIT.BTC,
+		traidingSignals = new TraidingSignals(),
+		initialOrder = volumeLimit.VALUE,
+		safeOrder = new SafeOrder(initialOrder, 1),
+		deviation = 0,
+		martingale = new Martingale(),
+		maxOpenSafetyOrders = 1,
+		takeProffit = 0.5,
+		stopLoss = 0.5
+	}) {
+		this.volumeLimit = volumeLimit;
+		this.traidingSignals = traidingSignals;
+		this.initialOrder = initialOrder;
+		this.safeOrder = safeOrder;
+		this.deviation = deviation;
+		this.martingale = martingale;
+		this.maxOpenSafetyOrders = maxOpenSafetyOrders;
+		this.takeProffit = takeProffit;
+		this.stopLoss = stopLoss;
 	}
 };
-/*
-var Martingale = {
-	Value: number,
-	Active: boolean
-}
-var SafeOrder = {
-	Size: number,
-	Amount: number
-}
-var TraidingSignals = {
-	TermsOfATransaction: number,
-	Timeframe: string
-}
-var BotSettings = {
-	VolumeLimitBTC: 0,
-	TraidingSignals: TraidingSignals,
-	InitialOrder: number,
-	SafeOrder: InitialOrder,
-	Deviation: number,
-	Martingale: Martingale,
-	MaxOpenSafetyOrders: number,
-	TakeProffit: number,
-	StopLoss: number
-}
-*/
