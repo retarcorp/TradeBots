@@ -175,7 +175,7 @@ ul {
 }
 .radio__point:checked:after{
     background-color: #2B68E0;
-    background-image: url(../img/admin-panel/checkmark.png);
+    background-image: url(../img/icon/checkmark.png);
     background-position: center;
     background-size: 60%;
     background-repeat: no-repeat;

@@ -31,6 +31,7 @@ app.get('/test', (req, res, next) => {
 
 app.get('/', index);
 app.get('/bots', bots);
+app.post('/bots-add', bots);
 app.get('/account', account);
 app.post('/account/api', account);
 app.delete('/account/api', account);
