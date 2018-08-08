@@ -16,14 +16,16 @@ let Users = {
 		let salt = md5(this.genSalt()),
 			name = user.name,
 			password = md5(salt + user.password + salt),
-			admin = (user.admin) ? true : false;
+			admin = (user.admin) ? true : false,
+			regDate = Date.now();
 
 			User = {
 				name: name
+				,regDate: regDate
 				,password: password
 				,salt: salt
 				,admin: admin
-				,keys: {}
+				,binanseAPI: {}
 			}
 
 		this.find( { name: name }, collection, (data) => {

@@ -25,18 +25,9 @@ app.disable('x-powered-by');
 
 app.set('port', process.env.PORT || 8072);
 
-app.get('/cr', (req, res, next) => {
-	let data = Crypto.cipher('QWE', 'key');
-	let dedata = Crypto.decipher(data, 'key');
-	console.log(data);
-	console.log(dedata);
-	res.send('lol');
+app.get('/test', (req, res, next) => {
+	res.send('test');
 });
-
-app.get('/*', (req, res, next) => {
-	console.log(req.url);
-	next();
-})
 
 app.get('/', index);
 app.get('/bots', bots);
