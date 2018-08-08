@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="css/reset.css">
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/bots.css">
+    <link rel="stylesheet" href="css/popup.css">
     <link rel="stylesheet" href="css/frontend.css">
 </head>
 <body>
@@ -18,13 +19,17 @@
                 <div class="page__header-content">
                     <nav class="page__navigation">
                         <ul class="main-navigation__list">
-                            <li class="main-navigation__item active">Боты</li>
-                            <li class="main-navigation__item">Статистика</li>
-                            <li class="main-navigation__item">Доходы</li>
-                            <li class="main-navigation__item">Аккаунт</li>
+                            <li class="main-navigation__item active"><a href="#">Боты</a></li>
+                            <li class="main-navigation__item"><a href="#">Статистика</a></li>
+                            <li class="main-navigation__item"><a href="#">Доходы</a></li>
+                            <li class="main-navigation__item"><a href="#">Аккаунт</a></li>
                         </ul>
                     </nav>
+<<<<<<< HEAD
                     <a href="/authorization/logout">Выход</a>
+=======
+                    <a href="/authorization/logout" class="logout">Выход</a>
+>>>>>>> CTB-22
                 </div>
             </header>
 
@@ -254,7 +259,7 @@
 
                 </section>
 
-                <section class="bots__right-settings add__manual-bots">
+                <section class="bots__right-settings">
                     <header class="add__header">
                         <h1 class="header__title">Добавить бота</h1>
                         <div class="checkbox__container">
@@ -268,9 +273,178 @@
                             </label>
                         </div>
                     </header>
+
+
+                    <!-- LAYOUT FOT MANUAL BOT SETTING -->
+                    <div class="bots__settings manual-settings">
+                        <div class="page__field">
+                            <label class="page__label" for="bot__name">Название бота:</label>
+                            <input id="bot__name" type="text" class="page__input settings__input">
+                        </div>
+                        <div class="page__field">
+                            <label class="page__label" for="day__amount">Дневной объем (BTC):</label>
+                            <input id="day__amount" type="text" class="page__input settings__input">
+                        </div>
+                        <div class="page__field">
+                            <label class="page__label" for="main__pair">Основная пара:</label>
+                            <select id="main__pair" type="text" class="page__select settings__input">
+                                <option value="1">BTC</option>
+                                <option value="2">BTC</option>
+                                <option value="3">BTC</option>
+                            </select>
+                        </div>
+                        <div class="page__field">
+                            <label class="page__label" for="quotable__pair">Котируемая пара:</label>
+                            <select id="quotable__pair" type="text" class="page__select settings__input">
+                                <option value="1">BTC</option>
+                                <option value="2">BTC</option>
+                                <option value="3">BTC</option>
+                            </select>
+                        </div>
+                        <div class="page__field">
+                            <label class="page__label" for="start__order">Начальный ордер:</label>
+                            <input id="start__order" type="text" class="page__input settings__input">
+                        </div>
+                        <div class="page__field">
+                            <label class="page__label" for="save__order">Страховочный ордер:</label>
+                            <input id="save__order" type="text" class="page__input settings__input">
+                        </div>
+                        <div class="page__field">
+                            <label class="page__label" for="count__bots">Количество торгуемых ботов:</label>
+                            <input id="count__bots" type="text" class="page__input settings__input">
+                        </div>
+                        <div class="page__field">
+                            <label class="page__label" for="stop__loss">Стоп лосс %</label>
+                            <input id="stop__loss" type="text" class="page__input settings__input">
+                        </div>
+                        <div class="page__field">
+                            <label class="page__label" for="count__save-order">Кол-во страховочных ордеров:</label>
+                            <input id="count__save-order" type="text" class="page__input settings__input">
+                        </div>
+                        <div class="page__field" style="margin-top: 9px;">
+                            <label class="page__label label__double-row" for="deviation">Отклонение от начального ордера %</label>
+                            <input id="deviation" type="text" class="page__input settings__input">
+                        </div>
+                        <div class="page__field">
+                            <label class="page__label" for="take__profit">Тейк профит %</label>
+                            <input id="take__profit" type="text" class="page__input settings__input">
+                        </div>
+                        <div class="bots__martingeil">
+                            <label class="page__label">Мартингейл</label>
+                            <div class="checkbox__container">
+                                <label class="martingeil__mode">
+                                    <input class="radio__point" type="radio" name="bot__mode" checked>
+                                    Вкл
+                                </label>
+                                <label class="martingeil__mode">
+                                    <input class="radio__point" type="radio" name="bot__mode">
+                                    Выкл
+                                </label>
+                            </div>
+                        </div>
+                        <div class="page__field">
+                            <label class="page__label label__double-row" for="save__order-up">Увеличение страховочного ордера: </label>
+                            <span class="range__value">1.75</span>
+                            <input id="save__order-up" type="range" min="1.01" max="2" value="1.5" step="0.01" class="page__input settings__input-range">
+                        </div>
+                    </div>
+
+
+                    <!-- LAYOUT FOT AUTOMATIC BOT SETTING -->
+                    <div class="bots__settings automatic-settings">
+                        <div class="page__field">
+                            <label class="page__label" for="bot__name-auto">Название бота:</label>
+                            <input id="bot__name-auto" type="text" class="page__input settings__input">
+                        </div>
+                        <div class="page__field">
+                            <label class="page__label" for="count__bots-auto">Количество торгуемых ботов:</label>
+                            <input id="count__bots-auto" type="text" class="page__input settings__input">
+                        </div>
+                        <div class="page__field">
+                            <label class="page__label" for="day__amount-auto">Дневной объем (BTC):</label>
+                            <input id="day__amount-auto" type="text" class="page__input settings__input">
+                        </div>
+                        <div class="page__field">
+                            <label class="page__label" for="base__pair-auto">Базовая пара:</label>
+                            <select id="base__pai-autor" type="text" class="page__select settings__input">
+                                <option value="1">BTH</option>
+                                <option value="2">BTC</option>
+                                <option value="3">BTC</option>
+                            </select>
+                        </div>
+                        <div class="transactions__terms">
+                            <div class="page__field">
+                                <label class="page__label" for="">Условия для начала сделки:</label>
+                                <div class="conditions__deal">
+                                    <select id="terms__signal" type="text" class="page__select settings__input">
+                                        <option value="1">Сигнал</option>
+                                        <option value="2">Сигнал</option>
+                                        <option value="3">Сигнал</option>
+                                    </select>
+                                    <select id="terms__timeframe" type="text" class="page__select settings__input">
+                                        <option value="1">Таймфрейм</option>
+                                        <option value="2">Таймфрейм</option>
+                                        <option value="3">Таймфрейм</option>
+                                    </select>
+                                    <select id="terms__recommendation" type="text" class="page__select settings__input">
+                                        <option value="1">Рекомендация</option>
+                                        <option value="2">Рекомендация</option>
+                                        <option value="3">Рекомендация</option>
+                                    </select>
+                                </div>
+                                <button class="page__button button__add-new-conditions">Добавить условие</button>
+                            </div>
+                            <table class="page__table">
+                                <tr class="table__tr">
+                                    <td class="table__td terms__signal">1.Tradingview</td>
+                                    <td class="table__td terms__timeframe">15 минут</td>
+                                    <td class="table__td terms__recommendation">Strong Buy</td>
+                                    <td class="table__td terms__delete">
+                                        <button class="page__button button__remove-conditions"></button>
+                                    </td>
+                                </tr>
+                                <tr class="table__tr">
+                                    <td class="table__td terms__signal">2.Tradingview</td>
+                                    <td class="table__td terms__timeframe">30 минут</td>
+                                    <td class="table__td terms__recommendation">Buy</td>
+                                    <td class="table__td terms__delete">
+                                        <button class="page__button button__remove-conditions"></button>
+                                    </td>
+                                </tr>
+                                <tr class="table__tr">
+                                    <td class="table__td terms__signal">3.Tradingview</td>
+                                    <td class="table__td terms__timeframe">15 минут</td>
+                                    <td class="table__td terms__recommendation">Strong Sell</td>
+                                    <td class="table__td terms__delete">
+                                        <button class="page__button button__remove-conditions"></button>
+                                    </td>
+                                </tr>
+                                <tr class="table__tr">
+                                    <td class="table__td terms__signal">4.Tradingview</td>
+                                    <td class="table__td terms__timeframe">45 минут</td>
+                                    <td class="table__td terms__recommendation">Buy</td>
+                                    <td class="table__td terms__delete">
+                                        <button class="page__button button__remove-conditions"></button>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <button class="page__button button__add-bot">Добавить</button>
                 </section>
             </div>
         </div>
+        <article class="popup__background popup__deal-cancel">
+            <div class="popup__form accept__cancel-argee">
+                <button class="page__button btn__close-popup"></button>
+                <p class="popup__ask">Отменить все сделки?</p>
+                <div class="popup__yn-btn">
+                    <button class="page__button popup_yes">Да</button>
+                    <button class="page__button popup_no">Отмена</button>
+                </div>
+            </div>
+        </article>
+
         <script src="./js/bots.js"></script>
 </body>
 </html>

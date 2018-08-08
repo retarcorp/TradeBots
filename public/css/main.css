@@ -34,6 +34,8 @@ ul {
     max-width: 1366px;
     width: 100%;
     margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
 }
 
 .main-navigation__list{
@@ -46,6 +48,18 @@ ul {
     font-size: 18px;
     font-weight: 500;
     cursor: pointer;
+}
+.main-navigation__item a {
+    text-decoration: none;
+    color: inherit;
+    font-weight: inherit;
+    font-size: inherit;
+}
+.logout{
+    font-size: 18px;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
 }
 
 .main-navigation__item:not(:last-child){
@@ -60,12 +74,32 @@ ul {
     min-height: calc(100vh - 70px);
 }
 
-.page__input{
+.page__input,
+.page__select{
     border: 1px solid #C4C4C4;
-    padding: 0 18px;
+    padding: 0 10px;
     font-size: 14px;
 }
 
+.page__select{
+    position: relative;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+
+.page__select{
+    /* content: ' ';
+    position: absolute;
+    display: block;
+    width: 16px;
+    height: 8px; */
+    background-image: url(../img/icon/select.png);
+    background-position: right 15px;
+    background-repeat: no-repeat;
+    background-origin: content-box;
+    background-size: 16px 8px;
+
+}
 .page__button{
     height: 38px;
     font-size: 14px;
@@ -248,3 +282,71 @@ ul {
 }
 
 /*  */
+
+
+
+/* INPUT RANGE */
+
+
+/* kit */
+
+input[type=range] {
+    -webkit-appearance: none;
+    width: 100%;
+    border-radius: 8px;
+    height: 1px;
+    background-color: #E9E9E9;
+    border: 1px solid #DCDCDC;
+}
+
+input[type='range']::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    background-color: #C4C4C4;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+/* Firefox */
+input[type=range]::-moz-range-track {
+    -webkit-appearance: none;
+    width: 100%;
+    border-radius: 8px;
+    height: 1px;
+    background-color: #E9E9E9;
+    border: 1px solid #DCDCDC;
+}
+
+input[type='range']::-moz-range-thumb {
+    -webkit-appearance: none;
+    background-color: #C4C4C4;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+/* IE */
+
+input[type="range"]::-ms-fill-lower,
+input[type="range"]::-ms-fill-upper {
+    background: transparent;
+}
+input[type=range]::-ms-track {
+    -webkit-appearance: none;
+    width: 100%;
+    border-radius: 8px;
+    height: 1px;
+    background-color: #E9E9E9;
+    border: 1px solid #DCDCDC;
+}
+
+input[type='range']::-ms-thumb {
+    -webkit-appearance: none;
+    background-color: #C4C4C4;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    cursor: pointer;
+}

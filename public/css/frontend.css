@@ -53,3 +53,7 @@
     color: #D74C4C;
 }
 
+.popup__deal-cancel{
+    display: none;
+}
+
