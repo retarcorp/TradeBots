@@ -1,20 +1,37 @@
 let BotSettings = require('./BotSettings');
-/*
-var Bot = {
-	Title: 'name',
-	State: 0,
-	Status: 0,
-	Pair: {},
-	Orders: [{},{},{}],
-	CurrentOrder: {},
-	Settings: {}
-}
-*/
+let Pair = require('./Pair');
+let Order = require('./Order');
+
+const CONSTANTS = require('../constants');
+
 module.exports = class Bot {
-	constructor({Title, Pair}){
-		this.Title = Title;
-		this.Pair = Pair;
-		this.BotSettings = new BotSettings();
+	constructor({
+		title = 'New Trade Bot',
+		state = CONSTANTS.BOT_STATE.HAND,
+		status = CONSTANTS.BOT_STATUS.INACTIVE,
+		pair = new Pair(),
+		currentOrder = new Order({}),
+		orders = [currentOrder],
+		botSettings = new BotSettings({})
+	}) {
+		this.title = title;
+		this.state = state;
+		this.status = status;
+		this.pair = pair;
+		this.orders = orders;
+		this.currentOrder = currentOrder;
+		this.botSettings = botSettings;
 		console.log(this);
 	}
 }
+/*
+{
+	title: string,
+	state: number[0,1],
+	status: number[0,1,2],
+	pair: Pair,
+	orders: [Order],
+	currentOrder: Order,
+	settings: BotSettings
+}
+*/

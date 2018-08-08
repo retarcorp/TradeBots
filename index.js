@@ -7,6 +7,7 @@ var cookieParser = require('cookie-parser');
 var Mongo = require('./modules/Mongo').init();
 var Users = require('./modules/Users');
 var Crypto = require('./modules/Crypto');
+var Bot = require('./modules/Bot');
 
 //Routers
 var authorization = require('./routes/authorization');
@@ -26,7 +27,9 @@ app.disable('x-powered-by');
 app.set('port', process.env.PORT || 8072);
 
 app.get('/test', (req, res, next) => {
-	res.send('test');
+	let bot = new Bot({});
+	res.json(bot)
+	// res.send('test');
 });
 
 app.get('/', index);
