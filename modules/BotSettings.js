@@ -5,7 +5,7 @@ const VOLUME_LIMIT = require('../constants').VOLUME_LIMIT;
 
 module.exports = class BotSettings {
 	constructor({
-		volumeLimit = VOLUME_LIMIT.BTC,
+		volumeLimit = [VOLUME_LIMIT.BTC, VOLUME_LIMIT.ETH],
 		traidingSignals = new TraidingSignals(),
 		initialOrder = volumeLimit.VALUE,
 		safeOrder = new SafeOrder(initialOrder, 1),
@@ -19,10 +19,10 @@ module.exports = class BotSettings {
 		this.traidingSignals = traidingSignals;
 		this.initialOrder = initialOrder;
 		this.safeOrder = safeOrder;
-		this.deviation = deviation;
+		this.deviation = deviation / 100;
 		this.martingale = martingale;
 		this.maxOpenSafetyOrders = maxOpenSafetyOrders;
-		this.takeProffit = takeProffit;
-		this.stopLoss = stopLoss;
+		this.takeProffit = takeProffit / 100;
+		this.stopLoss = stopLoss / 100;
 	}
 };

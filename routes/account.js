@@ -11,16 +11,10 @@ router.use('/*', (req, res, next) => {
 });
 
 router.get('/account', (req, res, next) => {
-	// if(!(req.cookies.user || req.session.user)){
-	// 	return res.redirect(303, '/registration')
-	// }
 	res.sendFile('account.html', { root: 'public/' });
 });
 
 router.post('/account/api', (req, res, next) => {
-	// if(!(req.cookies.user || req.session.user)){
-	// 	return res.redirect(303, '/');
-	// }
 	let user = {name: req.cookies.user.name};
 	Mongo.select(user, 'users', (data) => {
 		data = data[0];
@@ -36,9 +30,6 @@ router.post('/account/api', (req, res, next) => {
 });
 
 router.delete('/account/api', (req, res, next) => {
-	// if(!(req.cookies.user || req.session.user)){
-	// 	return res.redirect(303, '/');
-	// }
 	let user = {name: req.cookies.user.name};
 	Mongo.select(user, 'users', (data) => {
 		data = data[0];

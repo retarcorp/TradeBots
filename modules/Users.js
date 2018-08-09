@@ -57,12 +57,15 @@ let Users = {
 		//console.log(req.session)
 
 	    let session = req.session;
-
+		let user1 = {
+			name: user.name,
+			admin: user.admin
+		};
 		session.logged = true;
-		session.user = session.user || user;
+		session.user = session.user || user1;
 
 		if (!req.cookies.user)
-			res.cookie('user', user);
+			res.cookie('user', user1);
 
 		if (callback) callback();
 	}

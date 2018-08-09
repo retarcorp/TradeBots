@@ -10,8 +10,8 @@ module.exports = class Bot {
 		state = CONSTANTS.BOT_STATE.HAND,
 		status = CONSTANTS.BOT_STATUS.INACTIVE,
 		pair = new Pair(),
-		currentOrder = new Order({}),
-		orders = [currentOrder],
+		currentOrder = {},
+		orders = [],
 		botSettings = new BotSettings({})
 	}) {
 		this.title = title;
@@ -21,7 +21,7 @@ module.exports = class Bot {
 		this.orders = orders;
 		this.currentOrder = currentOrder;
 		this.botSettings = botSettings;
-		console.log(this);
+		this.botID = Date.now();
 	}
 }
 /*
