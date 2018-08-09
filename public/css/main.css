@@ -350,3 +350,27 @@ input[type='range']::-ms-thumb {
     border-radius: 50%;
     cursor: pointer;
 }
+
+
+
+/* page switcher */
+.page__page-switch{
+    margin: 20px 0;
+}
+
+.page__list{
+    list-style: none;
+    display: flex;
+    align-items: center;
+}
+
+.page__page-point{
+    cursor: pointer;
+    font-size: 14px;
+    padding: 5px 3px;
+    font-weight: 500;
+}
+
+.page__page-point.active{
+    color: #2B68E0;
+}

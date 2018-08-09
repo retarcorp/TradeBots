@@ -1,0 +1,27 @@
+.incomes__header {
+    font-size: 20px;
+    font-weight: 500;
+    margin-bottom: 7px;
+}
+
+.tabs__content{
+    padding: 0;
+}
+
+.profit{
+    color: #72C770;
+}
+
+.page__table{
+    max-width: 850px;
+    width: 100%;
+    margin: 0;
+}
+
+.table__tr:last-child{
+    border-bottom: 1px solid #E3E3E3;
+}
+
+.incomes__common{
+    margin-top: 63px;
+}
