@@ -282,8 +282,8 @@
                             <select id="main__pair" type="text" class="page__select settings__input">
                                 <option value="BTC">BTC</option>
                                 <option value="ETH">ETH</option>
-                                <option value="3">3</option>
-                                <option value="4">4</option>
+                                <option value="BNB">BNB</option>
+                                <option value="USDT">USDT</option>
                             </select>
                         </div>
                         <div class="page__field">
@@ -291,8 +291,8 @@
                             <select id="quotable__pair" type="text" class="page__select settings__input">
                                 <option value="BTC">BTC</option>
                                 <option value="ETH">ETH</option>
-                                <option value="3">3</option>
-                                <option value="4">4</option>
+                                <option value="BNB">BNB</option>
+                                <option value="USDT">USDT</option>
                             </select>
                         </div>
                         <div class="page__field">
@@ -347,17 +347,18 @@
                             <input id="save__order-up" type="range" min="1.01" max="2" value="1.5" step="0.01" class="page__input settings__input-range">
                         </div>
                     </div>
-
+                    <br><br><br><br><br><br><br><br><br><br>
                     <!-- LAYOUT FOT AUTOMATIC BOT SETTING -->
-                    <!-- <div class="bots__settings automatic-settings">
+                    <div class="bots__settings automatic-settings">
                         <div class="page__field">
                             <label class="page__label" for="bot__name-auto">Название бота:</label>
                             <input id="bot__name-auto" type="text" class="page__input settings__input">
                         </div>
-                        <div class="page__field">
+                        <!-- Вынести в другое место 
+                            <div class="page__field">
                             <label class="page__label" for="count__bots-auto">Количество торгуемых ботов:</label>
                             <input id="count__bots-auto" type="text" class="page__input settings__input">
-                        </div>
+                        </div> -->
                         <div class="page__field">
                             <label class="page__label" for="day__amount-auto">Дневной объем (BTC):</label>
                             <input id="day__amount-auto" type="text" class="page__input settings__input">
@@ -365,9 +366,9 @@
                         <div class="page__field">
                             <label class="page__label" for="base__pair-auto">Базовая пара:</label>
                             <select id="base__pai-autor" type="text" class="page__select settings__input">
-                                <option value="1">BTH</option>
-                                <option value="2">BTC</option>
-                                <option value="3">BTC</option>
+                                <option value="ETH">ETH</option>
+                                <option value="BNB">BNB</option>
+                                <option value="USDT">USDT</option>
                             </select>
                         </div>
                         <div class="transactions__terms">
@@ -375,19 +376,27 @@
                                 <label class="page__label" for="">Условия для начала сделки:</label>
                                 <div class="conditions__deal">
                                     <select id="terms__signal" type="text" class="page__select settings__input">
-                                        <option value="1">Сигнал</option>
-                                        <option value="2">Сигнал</option>
-                                        <option value="3">Сигнал</option>
+                                        <option value="Tradingview">Tradingview</option>
+                                        <!-- <option value="2">Сигнал</option>
+                                        <option value="3">Сигнал</option> -->
                                     </select>
                                     <select id="terms__timeframe" type="text" class="page__select settings__input">
-                                        <option value="1">Таймфрейм</option>
-                                        <option value="2">Таймфрейм</option>
-                                        <option value="3">Таймфрейм</option>
+                                        <option value="1M">1M</option>
+                                        <option value="3M">3M</option>
+                                        <option value="5M">5M</option>
+                                        <option value="15M">15M</option>
+                                        <option value="30M">30M</option>
+                                        <option value="1H">1H</option>
+                                        <option value="2H">2H</option>
+                                        <option value="4H">4H</option>
+                                        <option value="6H">6H</option>
+                                        <option value="12H">12H</option>
+                                        <option value="1D">1D</option>
+                                        <option value="1W">1W</option>
                                     </select>
                                     <select id="terms__recommendation" type="text" class="page__select settings__input">
-                                        <option value="1">Рекомендация</option>
-                                        <option value="2">Рекомендация</option>
-                                        <option value="3">Рекомендация</option>
+                                        <option value="BUY">Buy</option>
+                                        <option value="STRONG_BUY">Strong Buy</option>
                                     </select>
                                 </div>
                                 <button class="page__button button__add-new-conditions">Добавить условие</button>
@@ -427,7 +436,7 @@
                                 </tr>
                             </table>
                         </div>
-                    </div> -->
+                    </div>
                     <button class="page__button button__add-bot">Добавить</button>
                 </section>
             </div>

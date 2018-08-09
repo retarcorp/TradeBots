@@ -6,11 +6,11 @@ const CONSTANTS = require('../constants');
 
 module.exports = class Bot {
 	constructor({
-		title = 'New Trade Bot',
+		title = 'Untitled bot',
 		state = CONSTANTS.BOT_STATE.HAND,
 		status = CONSTANTS.BOT_STATUS.INACTIVE,
 		pair = new Pair(),
-		currentOrder = {},
+		currentOrder = null,
 		orders = [],
 		botSettings = new BotSettings({})
 	}) {

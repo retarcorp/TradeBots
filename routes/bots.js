@@ -6,6 +6,7 @@ var Pair = require('../modules/Pair');
 var SafeOrder = require('../modules/SafeOrder');
 var Martingale = require('../modules/Martingale');
 var BotSettings = require('../modules/BotSettings');
+var TraidingSignals = require('../modules/TraidingSignals');
 var CONSTANTS = require('../constants');
 
 var router = express.Router();
@@ -56,10 +57,8 @@ router.post('/bots-add', (req, res, next) => {
 			title: rb.title,
 			state: rb.state,
 			pair: pairP,
-			currentOrder: null,
 			botSettings: new BotSettings({
 				volumeLimit: [vlf, vls],
-				traidingSignals: null,
 				initialOrder: rb.initialOrder,
 				safeOrder: new SafeOrder(rb.safeOrder.size, rb.safeOrder.amount),
 				deviation: rb.deviation,
@@ -71,7 +70,19 @@ router.post('/bots-add', (req, res, next) => {
 		}
 	}
 	else {         // auto bot
-
+		traidingSignals = rb.traidingSignals.map(elem => {
+			return new TraidingSignals(elem.termsOfATransaction, elem.timeframe)
+		})
+		botParams = {
+			title: rb.title,
+			state: rb.state,
+			pair: pairP,
+			botSettings: new BotSettings({
+				volumeLimit: [vlf, vls],
+				traidingSignals: traidingSignals,
+				dailyVolumeBTC: rb.dailyVolumeBTC
+			})
+		}
 	}
 
 	Mongo.select(user, 'users', (data) => {
