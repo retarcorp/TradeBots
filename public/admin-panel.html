@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Admin panel</title>
+    <link href="https://fonts.googleapis.com/css?family=Roboto:400,500" rel="stylesheet">
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/admin-panel.css">
+    <link rel="stylesheet" href="css/popup.css">
+    <link rel="stylesheet" href="css/frontend.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <link href="css/datepicker.min.css" rel="stylesheet" type="text/css">
+    <script src="js/datepicker.min.js"></script>
+</head>
+<body>
+        <div id="wrapper">
+
+            <header class="page__header">
+                <div class="page__header-content">
+                    <h1 class="admin-panel__text-header">Панель Управления</h1>
+                    <nav class="page__navigation">
+                        <ul class="main-navigation__list">
+                            <li class="main-navigation__item active"><a href="#">Пользователи</a></li>
+                            <li class="main-navigation__item"><a href="#">Тарифы</a></li>
+                        </ul>
+                    </nav>
+                    <a href="/logout" class="logout">Выход</a>
+                </div>
+            </header>
+
+            <div class="page__main">
+                <div class-"panel__section tab__users">
+                    <table class="page__table">
+                        <tr class="table__tr">
+                            <th class="table__th user-registration">Дата регистрации</th>
+                            <th class="table__th user-email">Email</th>
+                            <th class="table__th user-tariff">Тариф</th>
+                            <th class="table__th user-balance">Баланс</th>
+                            <th class="table__th user-action">Действие</th>
+                        </tr>
+                        <tr class="table__tr">
+                            <td class="table__td registration">12.07.2018 23:40</td>
+                            <td class="table__td email">sample@mail.com</td>
+                            <td class="table__td tariff">Старт (до 22.01.2019)</td>
+                            <td class="table__td balance">0.02240804 (BTC)</td>
+                            <td class="table__td action">
+                                <button class="table__button button__user-edit">Редактировать</button>
+                                <button class="table__button button__user-remove">Удалить</button>
+                            </td>
+                        </tr>
+                        <tr class="table__tr">
+                            <td class="table__td registration">12.07.2018 23:40</td>
+                            <td class="table__td email">sample@mail.com</td>
+                            <td class="table__td tariff">Старт (до 22.01.2019)</td>
+                            <td class="table__td balance">0.02240804 (BTC)</td>
+                            <td class="table__td action">
+                                <button class="table__button button__user-edit">Редактировать</button>
+                                <button class="table__button button__user-remove">Удалить</button>
+                            </td>
+                        </tr>
+                        <tr class="table__tr">
+                            <td class="table__td registration">12.07.2018 23:40</td>
+                            <td class="table__td email">sample@mail.com</td>
+                            <td class="table__td tariff">Старт (до 22.01.2019)</td>
+                            <td class="table__td balance">0.02240804 (BTC)</td>
+                            <td class="table__td action">
+                                <button class="table__button button__user-edit">Редактировать</button>
+                                <button class="table__button button__user-remove">Удалить</button>
+                            </td>
+                        </tr>
+                        <tr class="table__tr">
+                            <td class="table__td registration">12.07.2018 23:40</td>
+                            <td class="table__td email">sample@mail.com</td>
+                            <td class="table__td tariff">Старт (до 22.01.2019)</td>
+                            <td class="table__td balance">0.02240804 (BTC)</td>
+                            <td class="table__td action">
+                                <button class="table__button button__user-edit">Редактировать</button>
+                                <button class="table__button button__user-remove">Удалить</button>
+                            </td>
+                        </tr>
+                        <tr class="table__tr">
+                            <td class="table__td registration">12.07.2018 23:40</td>
+                            <td class="table__td email">sample@mail.com</td>
+                            <td class="table__td tariff">Старт (до 22.01.2019)</td>
+                            <td class="table__td balance">0.02240804 (BTC)</td>
+                            <td class="table__td action">
+                                <button class="table__button button__user-edit">Редактировать</button>
+                                <button class="table__button button__user-remove">Удалить</button>
+                            </td>
+                        </tr>
+                        <tr class="table__tr">
+                            <td class="table__td registration">12.07.2018 23:40</td>
+                            <td class="table__td email">sample@mail.com</td>
+                            <td class="table__td tariff">Старт (до 22.01.2019)</td>
+                            <td class="table__td balance">0.02240804 (BTC)</td>
+                            <td class="table__td action">
+                                <button class="table__button button__user-edit">Редактировать</button>
+                                <button class="table__button button__user-remove">Удалить</button>
+                            </td>
+                        </tr>
+                        <tr class="table__tr">
+                            <td class="table__td registration">12.07.2018 23:40</td>
+                            <td class="table__td email">sample@mail.com</td>
+                            <td class="table__td tariff">Старт (до 22.01.2019)</td>
+                            <td class="table__td balance">0.02240804 (BTC)</td>
+                            <td class="table__td action">
+                                <button class="table__button button__user-edit">Редактировать</button>
+                                <button class="table__button button__user-remove">Удалить</button>
+                            </td>
+                        </tr>
+                        <tr class="table__tr">
+                            <td class="table__td registration">12.07.2018 23:40</td>
+                            <td class="table__td email">sample@mail.com</td>
+                            <td class="table__td tariff">Старт (до 22.01.2019)</td>
+                            <td class="table__td balance">0.02240804 (BTC)</td>
+                            <td class="table__td action">
+                                <button class="table__button button__user-edit">Редактировать</button>
+                                <button class="table__button button__user-remove">Удалить</button>
+                            </td>
+                        </tr>
+
+                    </table>
+                    <div class="page__page-switch">
+                        <ul class="page__list">
+                            <li class="page__page-point active">1</li>
+                            <li class="page__page-point">2</li>
+                            <li class="page__page-point">3</li>
+                            <li class="page__page-point">4</li>
+                            <li class="page__page-point">5</li>
+                            <li class="page__page-point">6</li>
+                        </ul>
+                    </div>
+                </div>
+
+
+
+
+                <div class-"panel__section tab__tariffs">
+                    <table class="page__table">
+                        <tr class="table__tr">
+                            <th class="table__th tariff-name">Название тарифа</th>
+                            <th class="table__th tariff-price">Цена</th>
+                            <th class="table__th tariff-description">Возможности(описание)</th>
+                            <th class="table__th tariff-max-count">Макс. кол-во ботов</th>
+                            <th class="table__th tariff-action">Действие</th>
+                        </tr>
+                        <tr class="table__tr">
+                            <td class="table__td t-name">Старт</td>
+                            <td class="table__td t-price">120 Р</td>
+                            <td class="table__td t-description"><span>20 ботов, 10 часов, 125% дохо...</span></td>
+                            <td class="table__td t-max-count">10</td>
+                            <td class="table__td t-action">
+                                <button class="table__button button__user-edit">Редактировать</button>
+                                <button class="table__button button__user-remove">Удалить</button>
+                            </td>
+                        </tr>
+                        <tr class="table__tr">
+                            <td class="table__td t-name">Оптимум</td>
+                            <td class="table__td t-price">120 Р</td>
+                            <td class="table__td t-description"><span>20 ботов, 10 часов, 125% дохо...</span></td>
+                            <td class="table__td t-max-count">15</td>
+                            <td class="table__td t-action">
+                                <button class="table__button button__user-edit">Редактировать</button>
+                                <button class="table__button button__user-remove">Удалить</button>
+                            </td>
+                        </tr>
+                        <tr class="table__tr">
+                            <td class="table__td t-name">VIP пользователь</td>
+                            <td class="table__td t-price">120 Р</td>
+                            <td class="table__td t-description"><span>20 ботов, 10 часов, 125% дохо...</span></td>
+                            <td class="table__td t-max-count">20</td>
+                            <td class="table__td t-action">
+                                <button class="table__button button__user-edit">Редактировать</button>
+                                <button class="table__button button__user-remove">Удалить</button>
+                            </td>
+                        </tr>
+                    </table>
+                    <button class="page__button button__add-tariff">Добавить тариф</button>
+                </div>
+            </div>
+        </div>
+
+        <article class="popup__background">
+            <div class="popup__form admin-panel__user-popup">
+                <button class="page__button btn__close-popup"></button>
+                <header class="popup__header">Редактирование <span>sample@mail.com</span></header>
+                <div class="user-popup__field">
+                    <div class="page__field field__unavailable">
+                        <label class="page__label" for="popup-email">Email</label>
+                        <input id="popup-email" type="text" class="page__input settings__input">
+                    </div>
+                    <div class="page__field field__unavailable">
+                        <label class="page__label" for="popup-registration">Дата регистрации</label>
+                        <input id="popup-registration" type="text" class="page__input settings__input">
+                    </div>
+                    <div class="page__field field__unavailable">
+                        <label class="page__label" for="popup-balance">Баланс</label>
+                        <input id="popup-balance" type="text" class="page__input settings__input">
+                    </div>
+                    <div class="page__field">
+                        <label class="page__label" for="popup__tariff">Тариф</label>
+                        <select id="popup__tariff" type="text" class="page__select settings__input">
+                            <option value="start">Старт</option>
+                            <option value="optimum">Оптимум</option>
+                            <option value="vip">VIP пользователь</option>
+                        </select>
+                    </div>
+                    <div class="page__field input__calendar">
+                        <label class="page__label" for="popup-balance">Действие тарифа до:</label>
+                        <input id="popup-balance" type="text" class="page__input settings__input datepicker-here"
+                        data-position='top left' data-timepicker="true">
+                    </div>
+                </div>
+                <button class="page__button button__save-popup-user">Сохранить</button>
+            </div>
+        </article>
+
+        <article class="popup__background">
+            <div class="popup__form admin-panel__tariff-popup">
+                <button class="page__button btn__close-popup"></button>
+                <header class="popup__header">Редактирование тарифа "<span>Оптимум</span>"</header>
+                <div class="user-popup__field">
+                    <div class="layout__help">
+                        <div class="page__field">
+                            <label class="page__label" for="popup-name">Название</label>
+                            <input id="popup-name" type="text" class="page__input settings__input">
+                        </div>
+                        <div class="page__field">
+                            <label class="page__label" for="popup-price">Цена</label>
+                            <input id="popup-price" type="text" class="page__input settings__input">
+                        </div>
+                    </div>
+                    <div class="page__field">
+                        <label class="page__label" for="popup-description">Возможности (описание)</label>
+                        <textarea id="popup-description" class="page__input settings__input"></textarea>
+                    </div>
+                    <div class="page__field">
+                        <label class="page__label" for="popup-max-count">Макс. кол-во ботов</label>
+                        <input id="popup-max-count" type="text" class="page__input settings__input">
+                    </div>
+                    <div class="page__field">
+                        <label class="page__label" for="popup-time-tariff">Срок действия тарифа (дней)</label>
+                        <input id="popup-time-tariff" type="text" class="page__input settings__input">
+                    </div>
+                </div>
+                <button class="page__button button__save-popup-user">Сохранить</button>
+            </div>
+        </article>
+        <script src="./js/account.js"></script>
+</body>
+</html>

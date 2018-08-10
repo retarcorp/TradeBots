@@ -140,12 +140,24 @@
     flex: 2;
 }
 
-.button__change-settings{
+.button__change-settings,
+.button__remove-bot{
     display: block;
     width: 195px;
     background-color: #72C770;
     color: #fff;
     margin: 0 0 0 auto;
+}
+
+.button__remove-bot{
+    background-color:#D74C4C;
+    margin-left: 20px;
+    width: 141px;
+}
+
+.bots__button{
+    display: flex;
+    justify-content: flex-end;
 }
 
 /* .pair,
@@ -257,7 +269,6 @@
 }
 .transactions__terms .terms__delete{
     padding: 0;
-    padding-top: 8px;
     flex: 0.6;
 }
 .button__remove-conditions{
