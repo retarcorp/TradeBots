@@ -25,10 +25,10 @@ const store = () =>
         state.botsList.push(payload);
       },
       addNewBot(state, payload) {
-        state.botsList.push(payload)
+        state.botsList.push(payload);
       },
       setBotsList(state, payload) {
-        state.botsList = payload
+        state.botsList = payload;
       }
     },
     actions: {
@@ -36,21 +36,31 @@ const store = () =>
         commit("setAuthorized", payload);
       },
       addBot({ commit }, payload) {
-        this.$axios.$post('/bots/add', payload)
+        this.$axios
+          .$post("/bots/add", payload)
           .then(res => {
-            if(res.status === 'ok') {
+            if (res.status === "ok") {
               commit("addBot", res.data);
             } else {
-              console.log(res.message)
+              console.log(res.message);
             }
           })
-          .catch(e => console.log(e))
+          .catch(e => console.log(e));
       },
-      addNewBot({commit}, payload) {
-        commit('addNewBot', payload)
+      addNewBot({ commit }, payload) {
+        commit("addNewBot", payload);
       },
-      setBotsList({commit}, payload) {
-        commit('setBotsList', payload)
+      setBotsList({ commit }) {
+        this.$axios
+          .$get("/bots/getBotsList")
+          .then(res => {
+            if (res.status === "ok") {
+              commit("setBotsList", res.data);
+            } else {
+              console.log(res.message);
+            }
+          })
+          .catch(e => console.log(e));
       }
     }
   });
