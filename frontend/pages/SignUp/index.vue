@@ -34,7 +34,10 @@
         methods: {
             onSignUp() {
                 if(this.isFormValid) {
-                    this.$axios.$get('/test')
+                    this.$axios.$post('/signup', {
+                        name: this.email,
+                        password: this.password
+                    })
                 }
             }
         }

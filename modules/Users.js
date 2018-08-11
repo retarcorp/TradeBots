@@ -54,7 +54,7 @@ let Users = {
 				// });
 
 			} else {
-				callback({ status: false, message: "User already exist!" });
+				callback({ status: 'error', message: "User already exist!" });
 			}
 		});
 	}

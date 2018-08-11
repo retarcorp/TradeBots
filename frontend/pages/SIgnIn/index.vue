@@ -21,7 +21,7 @@
         },
         methods: {
             onSignIn() {
-                this.$axios.$post('/', {
+                this.$axios.$post('/signin', {
                     email: this.email,
                     password: this.password
                 })

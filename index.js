@@ -2,6 +2,7 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var expressSession = require('express-session');
 var cookieParser = require('cookie-parser');
+var cors = require('cors');
 
 //Modules
 const Mongo = require('./modules/Mongo').init();
@@ -12,8 +13,8 @@ const Bot = require('./modules/Bot');
 const binanceAPI = require('node-binance-api');
 
 //Routers
-var authorization = require('./routes/authorization');
-var registration = require('./routes/registration');
+var signin = require('./routes/signin');
+var signup = require('./routes/signup');
 var bots = require('./routes/bots');
 var account = require('./routes/account');
 var index = require('./routes/index');
@@ -22,6 +23,7 @@ var statistics = require('./routes/statistics');
 
 var app = express();
 
+app.use(cors())
 app.use(cookieParser());
 app.use(expressSession({secret: 'kitty secret'}));
 app.use(express.static(__dirname + '/public'));
@@ -31,13 +33,29 @@ app.disable('x-powered-by');
 
 app.set('port', process.env.PORT || 8072);
 
-app.post('/test', (req, res, next) => {
-	// let bot = new Bot({});
-	console.log(req.body)
-	// res.send('test');
-});
+// app.use((req, res, next) => {
+// 	res.header("Access-Control-Allow-Origin", "http://localhost:8072/");
+// 	next();
+// });
+
+app.get('/', index);
+app.get('/bots', bots);
+app.post('/bots-add', bots);
+app.get('/account', account);
+app.post('/account/api', account);
+app.delete('/account/api', account);
+app.get('/signin', signin);
+app.post('/signin', signin);
+app.get('/signout', signin);
+app.post('/signup', signup);
+app.get('/incomes', incomes);
+app.get('/statistics', statistics);
+
+
+
 
 app.get('/test', (req, res, next) => {
+	res.send('test');
 	// let b = binanceAPI().options({
 	// 	APIKEY: 'asd',
 	// 	APISECRET: 'zc',
@@ -49,47 +67,33 @@ app.get('/test', (req, res, next) => {
 	// a.prices('BNBBTC', (error, ticker) => {
 	// 	console.log("Price of BNB: ", ticker.BNBBTC);
 	// });
-	let user = {name: req.cookies.user.name};
-	Mongo.select(user, 'users', data => {
-		data = data[0];
-		var a = Crypto.decipher(data.binanceAPI.key,  Crypto.getKey(data.regDate, data.name));
-		var b = Crypto.decipher(data.binanceAPI.secret,  Crypto.getKey(data.regDate, data.name));
-		let binance = binanceAPI().options({
-			APIKEY: a,
-			APISECRET: b,
-			useServerTime: true, 
- 			test: true
-		})
+	// let user = {name: req.cookies.user.name};
+	// Mongo.select(user, 'users', data => {
+	// 	data = data[0];
+	// 	var a = Crypto.decipher(data.binanceAPI.key,  Crypto.getKey(data.regDate, data.name));
+	// 	var b = Crypto.decipher(data.binanceAPI.secret,  Crypto.getKey(data.regDate, data.name));
+	// 	let binance = binanceAPI().options({
+	// 		APIKEY: a,
+	// 		APISECRET: b,
+	// 		useServerTime: true, 
+ 	// 		test: true
+	// 	})
 
-		// bin.prices('BNBBTC', (error, ticker) => {
-		// 	console.log("Price of BNB: ", ticker.BNBBTC);
-		// });
-		// binance.trades("SNMBTC", (error, trades, symbol) => {
-		// 	console.log(symbol+" trade history", trades);
-		// });
-		var quantity = 1;
-		binance.prices(function(error, ticker) {
-			console.log("prices()", ticker);
-			console.log("Price of BNB: ", ticker.BNBBTC);
-		});
+	// 	// bin.prices('BNBBTC', (error, ticker) => {
+	// 	// 	console.log("Price of BNB: ", ticker.BNBBTC);
+	// 	// });
+	// 	// binance.trades("SNMBTC", (error, trades, symbol) => {
+	// 	// 	console.log(symbol+" trade history", trades);
+	// 	// });
+	// 	var quantity = 1;
+	// 	binance.prices(function(error, ticker) {
+	// 		console.log("prices()", ticker);
+	// 		console.log("Price of BNB: ", ticker.BNBBTC);
+	// 	});
 
-		res.send(data);
-	})
+	// 	res.send(data);
+	// })
 });
-
-app.get('/', index);
-app.get('/bots', bots);
-app.post('/bots-add', bots);
-app.get('/account', account);
-app.post('/account/api', account);
-app.delete('/account/api', account);
-app.get('/authorization', authorization);
-app.get('/logout', authorization);
-app.post('/authorization', authorization);
-app.get('/registration', registration);
-app.get('/incomes', incomes);
-app.get('/statistics', statistics);
-
 
 
 // пользовательская страница 404 
