@@ -25,6 +25,15 @@
                     email: this.email,
                     password: this.password
                 })
+                .then(res => {
+                    if(res.status === 'ok') {
+                        this.$store.dispatch('setAuthorizedStatus', true)
+                        this.$router.push('/bots')
+                    } else {
+                        console.log(res.message)
+                    }
+                })
+                .catch(e => console.log(e))
             }
         }
     }
@@ -32,4 +41,10 @@
 
 <style>
 @import '~/assets/css/components/form.css';
+
+.form__input {
+    width: 100%;
+    max-width: 100%;
+    margin-bottom: 2rem
+}
 </style>

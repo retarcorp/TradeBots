@@ -5,19 +5,21 @@
                 <div class="newBot__title">Добавить бота</div>
                 <div class="newBot__mode">
                     <div class="newBot__mode-item">
-                        <input v-model="mode" name="mode" type="radio" id="auto" value="1">
+                        <input v-model="mode" name="mode" type="radio" id="auto" value="0">
                         <label class="newBot__mode-label" for="auto">Автоматический режим</label>
                     </div>
                     <div class="newBot__mode-item">
-                        <input v-model="mode" name="mode" type="radio" id="manual" value="2">
+                        <input v-model="mode" name="mode" type="radio" id="manual" value="1">
                         <label class="newBot__mode-label" for="manual">Ручной</label>
                     </div>
                 </div>
             </div>
             <div class="col-12">
-                <keep-alive>
-                    <component :mode="mode" :is="currentComponent"></component>
-                </keep-alive>
+                <transition name="page">
+                    <keep-alive>
+                        <component :mode="mode" :is="currentComponent"></component>
+                    </keep-alive>
+                </transition>
             </div>
         </div>
     </div>
