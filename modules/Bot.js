@@ -21,7 +21,7 @@ module.exports = class Bot {
 		this.orders = orders;
 		this.currentOrder = currentOrder;
 		this.botSettings = botSettings;
-		this.botID = Date.now();
+		this.botID = String(Date.now());
 	}
 }
 /*

@@ -1,7 +1,8 @@
-var express = require('express');
 var md5 = require('md5');
 
 var Mongo = require('./Mongo');
+var Crypto = require('./Crypto');
+var Binance = require('./Binance');
 
 let Users = {
 	adminLogin(admin, callback) {
@@ -26,7 +27,12 @@ let Users = {
 				,salt: salt
 				,admin: admin
 				,bots: []
-				,binanseAPI: {}
+				,binanceAPI: {
+					name: null,
+					key: null,
+					secret: null,
+					options: null
+				}
 			}
 
 		this.find( { name: name }, collection, (data) => {
@@ -50,6 +56,31 @@ let Users = {
 			} else {
 				callback({ status: false, message: "User already exist!" });
 			}
+		});
+	}
+
+	,setBinance(user, binanceData, callback) {
+		Mongo.select(user, 'users', (data) => {
+			data = data[0];
+			if(binanceData){
+				binanceData.data = data;
+				data.binanceAPI = new Binance(binanceData);
+			}
+			else data.binanceAPI = {};
+			Mongo.update({name: data.name}, data, 'users', (data) => {
+				callback(data);
+			});
+		});
+	}
+
+	,getBinance(user, callback) {
+		Mongo.select(user, 'users', (data) => {
+			data = data[0];
+			if(callback) callback({
+				api: data.binanceAPI,
+				name: data.name,
+				regDate: data.regDate
+			});
 		});
 	}
 
