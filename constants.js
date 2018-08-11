@@ -27,7 +27,7 @@ const CONSTANTS = {
 	},
 
 	BOT_STATE: {
-		HAND: 1,
+		MANUAL: 1,
 		AUTO: 0
 	},
 
