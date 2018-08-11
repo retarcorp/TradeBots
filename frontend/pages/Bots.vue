@@ -53,12 +53,12 @@ export default {
         }
     },
     created() {
-        this.$axios.$get('/bots/getBotsList')
-            .then(res => {
-                if(res.status === 'ok') {
-                    this.$store.dispatch('setBotsList', res.data)
-                }
-            })
+        // this.$axios.$get('/bots/getBotsList')
+        //     .then(res => {
+        //         if(res.status === 'ok') {
+        //             this.$store.dispatch('setBotsList', res.data)
+        //         }
+        //     })
     }
 }
 </script>
