@@ -20,7 +20,12 @@ module.exports = {
   /* 
   ** Global css files
   */
-  css: ["~/assets/css/grid.min.css", "~/assets/css/transitions/allpages.css"],
+  css: [
+    "~/assets/css/variables.css",
+    "~/assets/css/grid.min.css",
+    "~/assets/css/transitions/allpages.css",
+    "~/assets/css/utils.css"
+  ],
 
   /*
   ** Modules 
@@ -28,6 +33,7 @@ module.exports = {
 
   modules: ["@nuxtjs/axios"],
   axios: {
+    baseURL: 'http://40.115.34.172/'
   },
 
   /*
@@ -50,8 +56,8 @@ module.exports = {
   },
 
   transition: {
-    name: 'page',
-    mode: 'out-in'
+    name: "page",
+    mode: "out-in"
   }
 };
 

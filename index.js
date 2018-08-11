@@ -27,9 +27,15 @@ app.disable('x-powered-by');
 
 app.set('port', process.env.PORT || 8072);
 
+app.post('/test', (req, res, next) => {
+	// let bot = new Bot({});
+	console.log(req.body)
+	// res.send('test');
+});
+
 app.get('/test', (req, res, next) => {
-	let bot = new Bot({});
-	res.json(bot)
+	// let bot = new Bot({});
+	res.send('ItWOrked!')
 	// res.send('test');
 });
 
