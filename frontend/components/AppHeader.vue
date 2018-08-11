@@ -6,8 +6,8 @@
                     <nav class="nav">
                         <div class="nav__left">
                             <nuxt-link exact to="/bots" class="nav__link">Боты</nuxt-link>
-                            <nuxt-link exact to="/b" class="nav__link">Статистика</nuxt-link>
-                            <nuxt-link exact to="/b" class="nav__link">Доход</nuxt-link>
+                            <nuxt-link exact to="/statistics" class="nav__link">Статистика</nuxt-link>
+                            <nuxt-link exact to="/incomes" class="nav__link">Доход</nuxt-link>
                             <nuxt-link exact to="/account" class="nav__link">Аккаунт</nuxt-link>
                         </div>
                         <div class="nav__right">
@@ -39,17 +39,16 @@
                 this.$router.push('/signin')
             },
             onSignOut() {
-                this.$store.dispatch('setAuthorizedStatus', false)
-                this.$router.push('/signin')
-                // this.$axios.$get('/signout')
-                //     .then(res => {
-                //         if(res.status === 'ok') {
-                //             this.$router.push('/signin')
-                //         } else {
-                //             alert(res.message)
-                //         }
-                //     })
-                //     .catch(e => alert(e))
+                this.$axios.$get('/signout')
+                    .then(res => {
+                        if(res.status === 'ok') {
+                            this.$router.push('/signin')
+                            this.$store.dispatch('setAuthorizedStatus', false)
+                        } else {
+                            alert(res.message)
+                        }
+                    })
+                    .catch(e => alert(e))
             }
         }
     }

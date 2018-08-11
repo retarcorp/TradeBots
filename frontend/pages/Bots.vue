@@ -35,25 +35,30 @@ export default {
     components: {
         BotItem
     },
-    data() {
-        return {
-            botsList: [
-                { id: '1', name: 'Bot' }
-            ]
-        }
-    },
     computed: {
+        botsList() {
+            return this.$store.getters.getBotsList
+        },
         isSingleNewBot() {
             return this.botsList.find(bot => bot.id === undefined)
         }
     },
     methods: {
         onAddNewBot() {
-            this.botsList.push({
+            this.$router.push('/bots/add-new')
+            this.$store.dispatch('addBot', {
                 name: 'New Bot'
             })
-            this.$router.push('/bots/add-new')
+           
         }
+    },
+    created() {
+        this.$axios.$get('/bots/getBotsList')
+            .then(res => {
+                if(res.status === 'ok') {
+                    this.$store.dispatch('setBotsList', res.data)
+                }
+            })
     }
 }
 </script>
