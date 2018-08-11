@@ -11,11 +11,12 @@ var CONSTANTS = require('../constants');
 
 var router = express.Router();
 
-router.get('/bots/getBot', (req, res, next) => {
+router.get('/bots/getBotsList', (req, res, next) => {
+	res.send({status: 'ok'})
 	// res.sendFile('bots.html', { root: 'public/'});
 });
 
-router.post('/bots/addBot', (req, res, next) => {
+router.post('/bots/add', (req, res, next) => {
 	// console.log(req.body);
 	let user = {name: req.cookies.user.name};
 	let botParams = {};

@@ -128,15 +128,7 @@
         },
         methods: {
             onAddManualBot() {
-                this.$axios.$post('/bots-add', this.manualBot)
-                    .then(res => {
-                        if(res.status === 'ok') {
-                            this.$store.dispatch('addBot', res.data)
-                        } else {
-                            console.log(res.message)
-                        }
-                    })
-                    .catch(e => console.log(e))
+                this.$store.dispatch('addBot', this.manualBot)
             }
         }
     }
