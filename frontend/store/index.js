@@ -24,6 +24,9 @@ const store = () =>
       addBot(state, payload) {
         state.botsList.push(payload);
       },
+      addNewBot(state, payload) {
+        state.botsList.push(payload)
+      },
       setBotsList(state, payload) {
         state.botsList = payload
       }
@@ -42,6 +45,9 @@ const store = () =>
             }
           })
           .catch(e => console.log(e))
+      },
+      addNewBot({commit}, payload) {
+        commit('addNewBot', payload)
       },
       setBotsList({commit}, payload) {
         commit('setBotsList', payload)

@@ -46,7 +46,7 @@ export default {
     methods: {
         onAddNewBot() {
             this.$router.push('/bots/add-new')
-            this.$store.dispatch('addBot', {
+            this.$store.dispatch('addNewBot', {
                 name: 'New Bot'
             })
            
