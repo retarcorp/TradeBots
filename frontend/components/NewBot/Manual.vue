@@ -136,6 +136,7 @@
                             console.log(res.message)
                         }
                     })
+                    .catch(e => console.log(e))
             }
         }
     }

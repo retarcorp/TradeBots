@@ -9,13 +9,15 @@ router.get('/signout', (req, res, next) => {
         if (err) console.log(err);
 
         res.clearCookie("user");
-        res.redirect('/');
+        res.send({
+			status: 'ok'
+		});
     });
 });
 
 router.post('/signin', (req, res, next) => {
 	let user = {
-		password: req.body.pass
+		password: req.body.password
 		,name: req.body.email
 	}
 	Users.find(user, 'users', (data) => {

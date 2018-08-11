@@ -94,9 +94,10 @@ let Users = {
 		};
 		session.logged = true;
 		session.user = session.user || user1;
-
-		if (!req.cookies.user)
+		console.log(user1, session)
+		if (!req.cookies.user){
 			res.cookie('user', user1);
+		}
 
 		if (callback) callback();
 	}
