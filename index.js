@@ -23,7 +23,10 @@ var statistics = require('./routes/statistics');
 
 var app = express();
 
-app.use(cors())
+app.use(cors({
+	origin: 'http://localhost:3000',
+	credentials: true
+  }));
 app.use(cookieParser());
 app.use(expressSession({secret: 'kitty secret'}));
 app.use(express.static(__dirname + '/public'));
@@ -44,8 +47,8 @@ app.set('port', process.env.PORT || 8072);
 // });
 
 app.get('/', index);
-app.get('/bots', bots);
-app.post('/bots-add', bots);
+app.get('/bots/getBot', bots);
+app.post('/bots/addBot', bots);
 app.get('/account', account);
 app.post('/account/api', account);
 app.delete('/account/api', account);

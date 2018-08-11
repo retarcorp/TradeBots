@@ -124,7 +124,7 @@
         },
         methods: {
             onAddManualBot() {
-                this.$axios.$post('/bots-add', this.manualBot)
+                this.$axios.$post('/bots/addBot', this.manualBot)
             }
         }
     }
