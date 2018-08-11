@@ -41,10 +41,15 @@
 
 <style>
 @import '~/assets/css/components/form.css';
+@import '~/assets/css/variables.css';
 
 .form__input {
     width: 100%;
     max-width: 100%;
     margin-bottom: 2rem
+}
+
+.form__button {
+    background-color: var(--color-accent);
 }
 </style>
