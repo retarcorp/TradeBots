@@ -23,7 +23,10 @@ var statistics = require('./routes/statistics');
 
 var app = express();
 
-app.use(cors())
+app.use(cors({
+	origin: 'http://localhost:3000',
+	credentials: true
+  }))
 app.use(cookieParser());
 app.use(expressSession({secret: 'kitty secret'}));
 app.use(express.static(__dirname + '/public'));
