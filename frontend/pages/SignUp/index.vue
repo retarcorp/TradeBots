@@ -5,7 +5,11 @@
             <input v-model="email" type="email" class="form__input" placeholder="Email">
             <input v-model="password" type="password" class="form__input" placeholder="Пароль">
             <input v-model="confirmPassword" type="password" class="form__input" placeholder="Подтверждение пароля">
-            <button type="submit" class="form__button">Регистрация</button>
+            <button 
+                type="submit" 
+                class="form__button"
+                :class="{'form__button--disabled': !isFormValid}"
+                :disabled="!isFormValid">Регистрация</button>
             <p class="form__question">Уже есть аккаунт? <nuxt-link to="/signin">Войти</nuxt-link></p>
         </form>
     </div>

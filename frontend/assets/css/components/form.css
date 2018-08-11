@@ -46,6 +46,10 @@
     background-color: var(--color-danger);
 }
 
+.form__button--disabled {
+    opacity: .5
+}
+
 .form__question {
     margin-top: 1rem;
     font-size: 1.4rem;

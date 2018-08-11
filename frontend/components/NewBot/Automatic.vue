@@ -63,6 +63,9 @@
                 :item="item"
                 @item-deleted="onDeleteItem(i)">{{ i+1 }}</automatic-item>
         </div>
+        <div>
+            <button class="btn form__button">Добавить</button>
+        </div>
     </div>
 </template>
 
