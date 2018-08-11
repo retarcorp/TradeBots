@@ -19,9 +19,9 @@
                         <nuxt-link to="/account/binance" class="account__menu-link">Задать</nuxt-link>
                     </div>
                 </div>
-                <button class="account__button">Изменить пароль</button>
+                <nuxt-link to="/account/settings" tag="button" class="account__button">Изменить пароль</nuxt-link>
             </div>
-            <div class="col-12 col-md-6 col-lg-8 pl-3">
+            <div class="col-12 col-md-6 col-lg-8">
                 <nuxt-child />
             </div>
         </div>
@@ -60,6 +60,7 @@
     border: none;
     cursor: pointer;
     font-weight: 700;
+    margin-bottom: 4rem;
 }
 </style>
 

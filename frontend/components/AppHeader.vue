@@ -2,18 +2,58 @@
     <header class="header">
         <div class="container">
             <div class="row">
-                <div class="col-auto">
+                <div class="col-12">
                     <nav class="nav">
-                        <nuxt-link to="/bots" class="nav__link">Боты</nuxt-link>
-                        <nuxt-link to="/b" class="nav__link">Статистика</nuxt-link>
-                        <nuxt-link to="/b" class="nav__link">Доход</nuxt-link>
-                        <nuxt-link to="/account" class="nav__link">Аккаунт</nuxt-link>
+                        <div class="nav__left">
+                            <nuxt-link exact to="/bots" class="nav__link">Боты</nuxt-link>
+                            <nuxt-link exact to="/b" class="nav__link">Статистика</nuxt-link>
+                            <nuxt-link exact to="/b" class="nav__link">Доход</nuxt-link>
+                            <nuxt-link exact to="/account" class="nav__link">Аккаунт</nuxt-link>
+                        </div>
+                        <div class="nav__right">
+                            <button 
+                                v-if="isAuth" 
+                                @click.prevent="onSignOut" 
+                                class="nav__link btn__signout">Выйти</button>
+                            <button 
+                                v-else
+                                @click.prevent="onSignIn"
+                                class="nav__link btn__signout">Войти</button>
+                        </div>
                     </nav>
                 </div>
             </div>
         </div>
     </header>
 </template>
+
+<script>
+    export default {
+        computed: {
+            isAuth() {
+                return this.$store.getters.getAuthorizedStatus
+            }
+        },
+        methods: {
+            onSignIn() {
+                this.$router.push('/signin')
+            },
+            onSignOut() {
+                this.$store.dispatch('setAuthorizedStatus', false)
+                this.$router.push('/signin')
+                // this.$axios.$get('/signout')
+                //     .then(res => {
+                //         if(res.status === 'ok') {
+                //             this.$router.push('/signin')
+                //         } else {
+                //             alert(res.message)
+                //         }
+                //     })
+                //     .catch(e => alert(e))
+            }
+        }
+    }
+</script>
 
 <style>
 @import '~/assets/css/variables.css';
@@ -27,6 +67,13 @@
 
 .nav {
     display: flex;
+    width: 100%;
+    justify-content: space-between
+}
+
+.nav__left {
+    display: flex;
+    flex-wrap: wrap;
 }
 
 .nav__link {
@@ -44,5 +91,14 @@
 
 .nuxt-link-active {
     color: #2B68E0;
+}
+
+.btn__signout {
+    outline: none;
+    font-size: inherit;
+    display: block;
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
 }
 </style>

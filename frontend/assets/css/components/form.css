@@ -33,8 +33,10 @@
 }
 .form__button {
     color: #fff;
+    max-width: 18.1rem;
+    width: 100%;
     background-color: var(--color-accent);
-    padding: 1rem 4rem;
+    padding: 1rem 2.5rem;
     border: none;
     cursor: pointer
 }

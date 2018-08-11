@@ -16,7 +16,7 @@
             </div>
             <div class="col-12">
                 <keep-alive>
-                    <component :is="currentComponent"></component>
+                    <component :mode="mode" :is="currentComponent"></component>
                 </keep-alive>
             </div>
         </div>
@@ -33,12 +33,12 @@ export default {
     },
     data() {
         return {
-            mode: '1'
+            mode: '0'
         }
     },
     computed: {
         currentComponent() {
-            return this.mode === '1' ? BotAutomatic
+            return this.mode === '0' ? BotAutomatic
             : BotManual
         }
     }

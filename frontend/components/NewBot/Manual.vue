@@ -97,9 +97,11 @@
 <script>
     export default {
         name: 'bot-manual',
+        props: ['mode'],
         data() {
             return {
                 manualBot: {
+                    state: this.mode,
                     name: '',
                     pair: {
                         from: '',
