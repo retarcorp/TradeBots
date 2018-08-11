@@ -1,6 +1,7 @@
 var express = require('express');
-var Mongo = require('../modules/Mongo');
-var Crypto = require('../modules/Crypto');
+// var Mongo = require('../modules/Mongo');
+// var Crypto = require('../modules/Crypto');
+var Users = require('../modules/Users');
 var router = express.Router();
 
 router.use('/*', (req, res, next) => {
@@ -16,28 +17,17 @@ router.get('/account', (req, res, next) => {
 
 router.post('/account/api', (req, res, next) => {
 	let user = {name: req.cookies.user.name};
-	Mongo.select(user, 'users', (data) => {
-		data = data[0];
-		data.binanseAPI = {
-			name: req.body.name
-			,key: Crypto.cipher(req.body.key, Crypto.getKey(data.regDate, data.name))
-			,secret: Crypto.cipher(req.body.secret, Crypto.getKey(data.regDate, data.name))
-		};
-		Mongo.update({name: data.name}, data, 'users', (data) => {
-		res.send(200/*JSON.stringify( data )*/);
-		});
-	})
+	let binanceData = {
+		name: req.body.name,
+		key: req.body.key,
+		secret: req.body.secret
+	};
+	Users.setBinance(user, binanceData, data => res.send(data));
 });
 
 router.delete('/account/api', (req, res, next) => {
 	let user = {name: req.cookies.user.name};
-	Mongo.select(user, 'users', (data) => {
-		data = data[0];
-		data.binanseAPI = {};
-		Mongo.update({name: data.name}, data, 'users', (data) => {
-			res.send(200/*JSON.stringify( data )*/);
-		});
-	})
+	Users.setBinance(user, null, data => res.send(data));
 });
 
 module.exports = router;
