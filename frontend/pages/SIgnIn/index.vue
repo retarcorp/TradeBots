@@ -17,7 +17,6 @@
             return {
                 email: '',
                 password: '',
-                test: ''
             }
         },
         methods: {
