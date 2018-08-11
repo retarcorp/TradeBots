@@ -6,7 +6,7 @@ Vue.use(Vuex)
 const store = () =>
   new Vuex.Store({
     state: {
-      isAuthorized: true,
+      isAuthorized: false,
       botsList: []
     },
     getters: {
@@ -51,16 +51,16 @@ const store = () =>
         commit("addNewBot", payload);
       },
       setBotsList({ commit }) {
-        this.$axios
-          .$get("/bots/getBotsList")
-          .then(res => {
-            if (res.status === "ok") {
-              commit("setBotsList", res.data);
-            } else {
-              console.log(res.message);
-            }
-          })
-          .catch(e => console.log(e));
+        // this.$axios
+        //   .$get("/bots/getBotsList")
+        //   .then(res => {
+        //     if (res.status === "ok") {
+        //       commit("setBotsList", res.data);
+        //     } else {
+        //       console.log(res.message);
+        //     }
+        //   })
+        //   .catch(e => console.log(e));
       }
     }
   });

@@ -40,6 +40,11 @@
                         name: this.email,
                         password: this.password
                     })
+                    .then(res => {
+                        if(res.status === 'ok') {
+                            this.$router.push('/bots')
+                        }
+                    })
                 }
             }
         }
@@ -54,6 +59,12 @@
     font-size: 1.4rem;
     margin-left: 1.8rem;
     cursor: pointer;
+}
+
+.form__input {
+    max-width: 100%;
+    margin-bottom: 2rem;
+    border: 1px solid
 }
 </style>
 

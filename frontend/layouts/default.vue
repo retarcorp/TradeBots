@@ -1,6 +1,6 @@
 <template>
   <div>
-    <app-header></app-header>
+    <app-header v-if="isAuth"></app-header>
     <nuxt/>
   </div>
 </template>
@@ -10,6 +10,11 @@ import AppHeader from '~/components/AppHeader';
   export default {
     components: {
       AppHeader
+    },
+    computed: {
+      isAuth() {
+        return this.$store.getters.getAuthorizedStatus
+      }
     }
   }
 </script>
