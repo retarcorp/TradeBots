@@ -24,6 +24,9 @@ const store = () =>
       addBot(state, payload) {
         state.botsList.push(payload);
       },
+      addNewBot(state, payload) {
+        state.botsList.push(payload)
+      },
       setBotsList(state, payload) {
         state.botsList = payload
       }
@@ -35,7 +38,7 @@ const store = () =>
       addBot({ commit }, payload) {
         this.$axios.$post('/bots/add', payload)
           .then(res => {
-            if(res.status === 'ok') {
+            if (res.status === 'ok') {
               commit("addBot", res.data);
             } else {
               console.log(res.message)
@@ -43,7 +46,10 @@ const store = () =>
           })
           .catch(e => console.log(e))
       },
-      setBotsList({commit}, payload) {
+      addNewBot({ commit }, payload) {
+        commit('addNewBot', payload)
+      },
+      setBotsList({ commit }, payload) {
         commit('setBotsList', payload)
       }
     }
