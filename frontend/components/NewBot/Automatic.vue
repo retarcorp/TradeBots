@@ -3,17 +3,19 @@
         <div class="newBot__settings">
             <div class="form__control newBot__settings-control">
                 <label class="form__label">Название бота:</label>
-                <input type="text" class="form__input">
+                <input v-model="automaticItem.title" type="text" class="form__input">
             </div>
             <div class="form__control newBot__settings-control">
                 <label class="form__label">Базовая пара:</label>
-                <select type="text" class="form__input">
-                    <option>12</option>
+                <select v-model="automaticItem.pair" type="text" class="form__input">
+                    <option value="ETH">ETH</option>
+                    <option value="BNB">BNB</option>
+                    <option value="USDT">USDT</option>
                 </select>
             </div>
             <div class="form__control newBot__settings-control">
                 <label class="form__label">Дневной объём (BTC):</label>
-                <input type="text" class="form__input">
+                <input v-model="automaticItem.dailyVolumeBTC" type="text" class="form__input">
             </div>
         </div>
         <div class="newBot__conditions">
@@ -64,7 +66,12 @@
                 @item-deleted="onDeleteItem(i)">{{ i+1 }}</automatic-item>
         </div>
         <div class="text-right">
-            <button class="form__button">Добавить</button>
+            <button
+                @click.prevent="addManualBot"
+                :disabled="automaticItems.length === 0" 
+                class="form__button"
+                :class="{'form__button--disabled': automaticItems.length === 0}"
+                >Добавить</button>
         </div>
     </div>
 </template>
@@ -79,6 +86,9 @@ export default {
     data() {
         return {
             automaticItem: {
+                title: '',
+                pair: '',
+                dailyVolumeBTC: '',
                 signal: 'default',
                 timefreim: 'default',
                 recomendation: 'default'
@@ -124,6 +134,9 @@ export default {
         },
         onDeleteItem(i) {
             this.automaticItems.splice(i, 1)
+        },
+        addManualBot() {
+            this.$store.dispatch('addBot', this.automaticItem)
         }
     }
 }
