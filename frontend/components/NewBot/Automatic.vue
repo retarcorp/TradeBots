@@ -63,8 +63,8 @@
                 :item="item"
                 @item-deleted="onDeleteItem(i)">{{ i+1 }}</automatic-item>
         </div>
-        <div>
-            <button class="btn form__button">Добавить</button>
+        <div class="text-right">
+            <button class="form__button">Добавить</button>
         </div>
     </div>
 </template>
@@ -132,6 +132,7 @@ export default {
 <style scoped>
 @import '~/assets/css/components/form.css';
 @import '~/assets/css/variables.css';
+@import '~/assets/css/utils.css';
 .newBot__settings {
     display: flex;
     align-items: stretch;

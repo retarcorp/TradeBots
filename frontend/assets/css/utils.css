@@ -32,3 +32,7 @@
     padding: 2rem 4rem;
     color: inherit;
 }
+
+.text-right {
+    text-align: right
+}
