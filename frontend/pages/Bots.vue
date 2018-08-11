@@ -77,7 +77,8 @@ export default {
 }
 
 .bots__search {
-    border: 1px solid #DCDCDC
+    border: 1px solid #DCDCDC;
+    max-width: 100%;
 }
 
 .bots__search-icon {
@@ -88,12 +89,14 @@ export default {
 }
 
 .bots__add-button {
-    position: fixed;
+    /* position: fixed;
     bottom: 0;
-    left: 21.3rem;
+    left: 21.3rem; */
+    margin-top: 3rem;
+    width: 100%;
     font-size: 1.8rem;
     font-weight: 700;
-    width: 35rem;
+    /* width: 35rem; */
 }
 
 .disabled {

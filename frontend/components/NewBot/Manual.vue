@@ -3,7 +3,7 @@
         <div class="bots__settings manual-settings">
             <div class="form__control newBot__settings-control">
                 <label class="form__label" for="bot__name">Название бота:</label>
-                <input v-model="manualBot.name" id="bot__name" type="text" class="form__input settings__input">
+                <input v-model="manualBot.title" id="bot__name" type="text" class="form__input settings__input">
             </div>
             <div class="form__control newBot__settings-control">
                 <label class="form__label" for="main__pair">Основная пара:</label>
@@ -25,38 +25,38 @@
             </div>
             <div class="form__control newBot__settings-control">
                 <label class="form__label" for="start__order">Начальный ордер:</label>
-                <input v-model="manualBot.initialOrder" id="start__order" type="text" class="form__input settings__input">
+                <input v-model="manualBot.botSettings.initialOrder" id="start__order" type="text" class="form__input settings__input">
             </div>
             <div class="form__control newBot__settings-control">
                 <label class="form__label" for="save__order">Страховочный ордер:</label>
-                <input v-model="manualBot.safeOrder.size" id="save__order" type="text" class="form__input settings__input">
+                <input v-model="manualBot.botSettings.safeOrder.size" id="save__order" type="text" class="form__input settings__input">
             </div>
             <div class="form__control newBot__settings-control">
                 <label class="form__label" for="count__save-order">Кол-во страховочных ордеров:</label>
-                <input v-model="manualBot.safeOrder.amount" id="count__save-order" type="text" class="form__input settings__input">
+                <input v-model="manualBot.botSettings.safeOrder.amount" id="count__save-order" type="text" class="form__input settings__input">
             </div>
             <div class="form__control newBot__settings-control">
                 <label class="form__label" for="count__bots">Макс открытых СО:</label>
-                <input v-model="manualBot.maxOpenSafetyORders" id="count__max-save-order" type="text" class="form__input settings__input">
+                <input v-model="manualBot.botSettings.maxOpenSafetyORders" id="count__max-save-order" type="text" class="form__input settings__input">
             </div>
             <div class="form__control newBot__settings-control" style="margin-top: 9px;">
                 <label class="form__label label__double-row" for="deviation">Отклонение от начального ордера %</label>
-                <input v-model="manualBot.deviation" id="deviation" type="text" class="form__input settings__input">
+                <input v-model="manualBot.botSettings.deviation" id="deviation" type="text" class="form__input settings__input">
             </div>
             <div class="form__control newBot__settings-control">
                 <label class="form__label" for="stop__loss">Стоп лосс %</label>
-                <input v-model="manualBot.stopLoss" id="stop__loss" type="text" class="form__input settings__input">
+                <input v-model="manualBot.botSettings.stopLoss" id="stop__loss" type="text" class="form__input settings__input">
             </div>
             <div class="form__control newBot__settings-control">
                 <label class="form__label" for="take__profit">Тейк профит %</label>
-                <input v-model="manualBot.takeProffit" id="take__profit" type="text" class="form__input settings__input">
+                <input v-model="manualBot.botSettings.takeProffit" id="take__profit" type="text" class="form__input settings__input">
             </div>
             <div class="form__control newBot__settings-control">
                 <label class="form__label">Мартингейл</label>
                 <div class="checkbox__container">
                     <label class="martingeil__mode">
                         <input 
-                            v-model="manualBot.martingale.active" 
+                            v-model="manualBot.botSettings.martingale.active" 
                             id="martingale-on" 
                             class="radio__point" 
                             type="radio"
@@ -66,7 +66,7 @@
                     </label>
                     <label class="martingeil__mode">
                         <input 
-                            v-model="manualBot.martingale.active" 
+                            v-model="manualBot.botSettings.martingale.active" 
                             id="martingale-off" 
                             class="radio__point" 
                             type="radio"
@@ -77,9 +77,9 @@
             </div>
             <div class="form__control newBot__settings-control">
                 <label class="form__label label__double-row" for="save__order-up">Увеличение страховочного ордера: </label>
-                <span class="range__value">{{ manualBot.martingale.value }}</span>
+                <span class="range__value">{{ manualBot.botSettings.martingale.value }}</span>
                 <input 
-                    v-model="manualBot.martingale.value" 
+                    v-model="manualBot.botSettings.martingale.value" 
                     id="save__order-up"
                     type="range" 
                     min="1.01" 
