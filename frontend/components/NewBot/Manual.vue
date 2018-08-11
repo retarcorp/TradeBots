@@ -102,23 +102,25 @@
             return {
                 manualBot: {
                     state: this.mode,
-                    name: '',
                     pair: {
                         from: '',
                         to: ''
                     },
-                    initialOrder: '',
-                    safeOrder: {
-                        size: '',
-                        amount: 0
-                    },
-                    maxOpenSafetyORders: '',
-                    deviation: '',
-                    stopLoss: '',
-                    takeProffit: '',
-                    martingale: {
-                        value: 1.01,
-                        active: '0'
+                    title: '',
+                    botSettings: {
+                        initialOrder: '',
+                        safeOrder: {
+                            size: '',
+                            amount: 0
+                        },
+                        maxOpenSafetyORders: '',
+                        deviation: '',
+                        stopLoss: '',
+                        takeProffit: '',
+                        martingale: {
+                            value: 1.01,
+                            active: '0'
+                        }
                     }
 
                 }
@@ -127,6 +129,13 @@
         methods: {
             onAddManualBot() {
                 this.$axios.$post('/bots-add', this.manualBot)
+                    .then(res => {
+                        if(res.status === 'ok') {
+                            this.$store.dispatch('addBot', res.data)
+                        } else {
+                            console.log(res.message)
+                        }
+                    })
             }
         }
     }
