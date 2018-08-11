@@ -33,7 +33,15 @@ const store = () =>
         commit("setAuthorized", payload);
       },
       addBot({ commit }, payload) {
-        commit("addBot", payload);
+        this.$axios.$post('/bots/add', payload)
+          .then(res => {
+            if(res.status === 'ok') {
+              commit("addBot", res.data);
+            } else {
+              console.log(res.message)
+            }
+          })
+          .catch(e => console.log(e))
       },
       setBotsList({commit}, payload) {
         commit('setBotsList', payload)

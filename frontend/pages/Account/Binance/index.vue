@@ -37,7 +37,7 @@
 }
 
 .binance__form {
-    max-width: 38.3rem;
+    max-width: 31.3rem;
 }
 
 .form__input {
