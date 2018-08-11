@@ -33,11 +33,11 @@ app.use(express.static(__dirname + '/public'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.disable('x-powered-by');
-
 app.use((req, res, next) => {
-	res.header("Access-Control-Allow-Origin", "*");
+	res.header('Access-Control-Allow-Origin', 'http://localhost:3000');
+	res.header('Access-Control-Allow-Credentials', 'true')
 	next();
-});
+})
 
 app.set('port', process.env.PORT || 8072);
 

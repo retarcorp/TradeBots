@@ -39,17 +39,17 @@
                 this.$router.push('/signin')
             },
             onSignOut() {
-                this.$store.dispatch('setAuthorizedStatus', false)
-                this.$router.push('/signin')
-                // this.$axios.$get('/signout')
-                //     .then(res => {
-                //         if(res.status === 'ok') {
-                //             this.$router.push('/signin')
-                //         } else {
-                //             alert(res.message)
-                //         }
-                //     })
-                //     .catch(e => alert(e))
+                this.$axios.$get('/signout')
+                    .then(res => {
+                        console.log(res)
+                        if(res.status === 'ok') {
+                            this.$router.push('/signin')
+                            this.$store.dispatch('setAuthorizedStatus', false)
+                        } else {
+                            alert(res.message)
+                        }
+                    })
+                    .catch(e => console.log(e))
             }
         }
     }
