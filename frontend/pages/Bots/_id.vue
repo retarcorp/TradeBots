@@ -33,18 +33,18 @@
                     <p class="settings__item">Увеличение страховочного ордера: <span>1.75</span></p>
                 </div>
                 <div class="bots__button">
-                    <button class="page__button button__change-settings">Изменить настройки</button>
-                    <button class="page__button button__remove-bot">Удалить бота</button>
+                    <button class="form__button button__change-settings">Изменить настройки</button>
+                    <button class="form__button button__remove-bot">Удалить бота</button>
                 </div>
             </div>
 
             <div class="bots__order">
                 <ul class="tabs__bar">
-                    <li class="tabs__item active">Выставленные ордера</li>
-                    <li class="tabs__item">Выполненные</li>
+                    <li @click.prevent="isActive = true" class="tabs__item">Выставленные ордера</li>
+                    <li @click.prevent="isActive = false" class="tabs__item">Выполненные</li>
                 </ul>
                 <div class="tabs__content">
-                    <table class="page__table">
+                    <table v-show="isActive" class="page__table">
                         <tr class="table__tr">
                             <th class="table__th pair-head">Пара</th>
                             <th class="table__th price-head">Цена</th>
@@ -82,9 +82,47 @@
                             <td class="table__td total">0.02240804 (BTC)</td>
                         </tr>
                     </table>
+                    <table v-show="!isActive" class="page__table">
+                        <tr class="table__tr">
+                            <th class="table__th pair-head">Другая Пара</th>
+                            <th class="table__th price-head">Другая Цена</th>
+                            <th class="table__th quantity-head">Другое Количество</th>
+                            <th class="table__th total-head">Другое Всего</th>
+                        </tr>
+                        <tr class="table__tr">
+                            <td class="table__td pair">BTC/ETH</td>
+                            <td class="table__td price">0.00065906 (ETH)</td>
+                            <td class="table__td quantity">34 (BTC)</td>
+                            <td class="table__td total">0.02240804 (BTC)</td>
+                        </tr>
+                        <tr class="table__tr">
+                            <td class="table__td pair">BTC/ETH</td>
+                            <td class="table__td price">0.00065906 (ETH)</td>
+                            <td class="table__td quantity">34 (BTC)</td>
+                            <td class="table__td total">0.02240804 (BTC)</td>
+                        </tr>
+                        <tr class="table__tr">
+                            <td class="table__td pair">BTC/ETH</td>
+                            <td class="table__td price">0.00065906 (ETH)</td>
+                            <td class="table__td quantity">34 (BTC)</td>
+                            <td class="table__td total">0.02240804 (BTC)</td>
+                        </tr>
+                        <tr class="table__tr">
+                            <td class="table__td pair">BTC/ETH</td>
+                            <td class="table__td price">0.00065906 (ETH)</td>
+                            <td class="table__td quantity">34 (BTC)</td>
+                            <td class="table__td total">0.02240804 (BTC)</td>
+                        </tr>
+                        <tr class="table__tr">
+                            <td class="table__td pair">BTC/ETH</td>
+                            <td class="table__td price">0.00065906 (ETH)</td>
+                            <td class="table__td quantity">34 (BTC)</td>
+                            <td class="table__td total">0.02240804 (BTC)</td>
+                        </tr>
+                    </table>
                     <div class="order__buttons">
-                        <button class="page__button button__cancel-sell">Отменить и продать</button>
-                        <button class="page__button button__cancel">Отменить</button>
+                        <button class="form__button page__button button__cancel-sell">Отменить и продать</button>
+                        <button class="form__button page__button button__cancel">Отменить сделку</button>
                     </div>
                 </div>
             </div>
@@ -92,7 +130,64 @@
     </div>
 </template>
 
+<script>
+    export default {
+        data() {
+            return {
+                isActive: true
+            }
+        }
+    }
+</script>
+
 <style scoped>
+
+/* TABLE SETTING */
+
+.page__table{
+    width: 100%;
+    margin: 10px auto;
+    border-collapse: collapse;
+}
+.table__tr{
+    display: flex;
+    border-bottom: 1px solid #E3E3E3;
+}
+.table__tr:last-child{
+    border-bottom: none;
+}
+.table__td,
+.table__th{
+    flex: 1;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 20px 0;
+    text-align: start;
+    display: flex;
+    align-items: center;
+}
+
+/*    */
+
+
+/* TABS BAR */
+
+.tabs__bar{
+    border-bottom: 1px solid #CECECE;
+}
+
+.tabs__item{
+    display: inline-block;
+    padding: 13px 14px;
+    font-size: 14px;
+    position: relative;
+    cursor: pointer;
+}
+
+.tabs__content{
+    padding: 0 14px;
+}
+
 .bots__right-settings{
     width: 100%;
     border: 1px solid #EFEFEF;
@@ -169,17 +264,12 @@
 
 .button__change-settings,
 .button__remove-bot{
-    display: block;
-    width: 19.5rem;
     background-color: #72C770;
-    color: #fff;
-    margin: 0 0 0 auto;
 }
 
 .button__remove-bot{
     background-color:#D74C4C;
     margin-left: 2rem;
-    width: 14.1rem;
 }
 
 .bots__button{
@@ -198,8 +288,8 @@
 }
 .button__cancel-sell,
 .button__cancel{
-    width: 20rem;
     background-color: #DCDCDC;
+    color: #000
 
 }
 

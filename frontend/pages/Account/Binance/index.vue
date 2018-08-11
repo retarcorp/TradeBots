@@ -41,8 +41,17 @@
 }
 
 .form__input {
+    max-width: 31.8rem;
     padding: .9rem 1.8rem;
 }
+
+.form__actions {
+    display: flex
+}
+
+.form__button {
+    max-width: 16.4rem;
+} 
 
 .form__button--success {
     margin-right: 1.2rem

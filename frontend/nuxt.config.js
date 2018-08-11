@@ -33,7 +33,9 @@ module.exports = {
 
   modules: ["@nuxtjs/axios"],
   axios: {
-    baseURL: 'http://localhost:8072/'
+    baseURL: 'http://localhost:8072/',
+    credentials: true,
+    withCredentials: true
   },
 
   /*
