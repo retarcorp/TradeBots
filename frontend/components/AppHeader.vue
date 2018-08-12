@@ -42,7 +42,7 @@
                 this.$axios.$get('/signout')
                     .then(res => {
                         if(res.status === 'ok') {
-                            this.$router.push('/signin')
+                            this.$router.push('/signup')
                             this.$store.dispatch('setAuthorizedStatus', false)
                         } else {
                             alert(res.message)
