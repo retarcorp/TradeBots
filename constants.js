@@ -42,6 +42,18 @@ const CONSTANTS = {
 		PROCESSED: 1,
 		COMPLETED: 2,
 		FAILED: 3
+	},
+
+	getVolumeLimit: function(required) {
+		let volLim = this.VOLUME_LIMIT;
+		let ret = null;
+		Object.keys(volLim).find((currency) => {
+			if(volLim[currency].NAME === required) {
+				ret = volLim[currency];
+				return true;
+			}
+		});
+		return ret;
 	}
 };
 

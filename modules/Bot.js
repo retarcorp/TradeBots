@@ -7,21 +7,22 @@ const CONSTANTS = require('../constants');
 module.exports = class Bot {
 	constructor({
 		title = 'Untitled bot',
-		state = CONSTANTS.BOT_STATE.HAND,
+		state = CONSTANTS.BOT_STATE.MANUAL,
 		status = CONSTANTS.BOT_STATUS.INACTIVE,
-		pair = new Pair(),
-		currentOrder = null,
+		pair = {},
+		currentOrder = {},
 		orders = [],
-		botSettings = new BotSettings({})
+		botSettings = {}
 	}) {
 		this.title = title;
 		this.state = state;
 		this.status = status;
-		this.pair = pair;
+		this.pair = new Pair(pair.from, pair.to);
 		this.orders = orders;
 		this.currentOrder = currentOrder;
-		this.botSettings = botSettings;
+		this.botSettings = new BotSettings(botSettings);
 		this.botID = String(Date.now());
+		this.volumeLimit = [CONSTANTS.getVolumeLimit(this.pair.from), CONSTANTS.getVolumeLimit(this.pair.to)];
 	}
 }
 /*

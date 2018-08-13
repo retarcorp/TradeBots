@@ -48,7 +48,7 @@ app.set('port', process.env.PORT || 8072);
 
 app.get('/', index);
 app.get('/bots/getBot', bots);
-app.post('/bots/addBot', bots);
+app.post('/bots/add', bots);
 app.get('/account', account);
 app.post('/account/api', account);
 app.delete('/account/api', account);

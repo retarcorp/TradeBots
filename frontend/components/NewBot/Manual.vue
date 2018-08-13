@@ -113,7 +113,7 @@
                             size: '',
                             amount: 0
                         },
-                        maxOpenSafetyORders: '',
+                        maxOpenSafetyOrders: '',
                         deviation: '',
                         stopLoss: '',
                         takeProffit: '',
