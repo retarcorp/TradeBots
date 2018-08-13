@@ -15,10 +15,11 @@ router.get('/bots/getBotsList', (req, res, next) => {
 	//TODO: найти пользователя и вернуть массив всех его ботов
 	let user = {name: req.cookies.user.name};
 	Mongo.select(user, 'users', (data) => {
+		data = data[0];
 		console.log(data.bots)
 		res.json({
 			status: 'ok',
-			data: data.bots
+			data: data.bots || []
 		});
 
 	});
@@ -30,6 +31,7 @@ router.post('/bots/add', (req, res, next) => {
 		data = data[0];
 		let bot = new Bot(req.body);
 		data.bots.push(bot);
+		console.log(data.bots)
 		Mongo.update({name: data.name}, data, 'users', (data) => {
 			res.json({
 				status: 'ok',

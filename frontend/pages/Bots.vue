@@ -10,7 +10,7 @@
                 </div>
                 <div class="bots__list">
                     <div v-for="bot in botsList" :key="bot.id">
-                        <bot-item :id="bot.id">{{ bot.name }}</bot-item>
+                        <bot-item :id="bot.id">{{ bot.title }}</bot-item>
                     </div>
                 </div>
                 <div>

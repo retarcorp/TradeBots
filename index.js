@@ -47,7 +47,7 @@ app.set('port', process.env.PORT || 8072);
 // });
 
 app.get('/', index);
-app.get('/bots/getBot', bots);
+app.get('/bots/getBotsList', bots);
 app.post('/bots/add', bots);
 app.get('/account', account);
 app.post('/account/api', account);
