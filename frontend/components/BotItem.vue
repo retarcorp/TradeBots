@@ -20,7 +20,6 @@
 </script>
 
 <style scoped>
-@import '~/assets/css/variables.css';
 .bot {
     display: flex;
     justify-content: space-between;

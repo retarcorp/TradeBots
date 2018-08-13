@@ -1,0 +1,40 @@
+.input {
+    max-width: 100%;
+    width: 100%;
+    padding: 1.4rem 1.8rem;
+    border: 1px solid var(--border-color-primary);
+    color: inherit;
+    font-size: 1.4rem;
+    line-height: 1.6rem;
+}
+
+.form-control {
+    margin-bottom: 1rem;
+}
+
+.auth-form {
+    max-width: 36.3rem;
+    padding: 2rem;
+    border: 1px solid var(--border-color-light)
+}
+
+.auth-form__title {
+    margin-bottom: 3.3rem;
+}
+
+.auth-form__input {
+    margin-bottom: 1.9rem;
+}
+
+.auth-form__button {
+    width: 16.4rem;
+}
+
+.auth-form__forgot-password {
+    margin-left: 1.8rem;
+    color: inherit;
+}
+
+.auth-form__button {
+    margin-bottom: 1rem;
+}

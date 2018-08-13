@@ -25,8 +25,6 @@
 </template>
 
 <style scoped>
-@import '~/assets/css/variables.css';
-@import '~/assets/css/components/form.css';
 .settings__title {
     font-size: 2rem;
     font-weight: 700;

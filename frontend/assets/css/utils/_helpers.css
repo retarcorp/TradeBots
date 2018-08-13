@@ -6,11 +6,6 @@
     margin: 0 auto
 }
 
-.full-height {
-    min-height: 100vh;
-    height: 100vh;
-}
-
 .absolute-center {
     position: absolute;
     top: 50%;
@@ -26,13 +21,10 @@
     padding-left: 3rem
 }
 
-.btn {
-    border: none;
-    cursor: pointer;
-    padding: 2rem 4rem;
-    color: inherit;
-}
-
 .text-right {
     text-align: right
+}
+
+.text-center {
+    text-align: center;
 }

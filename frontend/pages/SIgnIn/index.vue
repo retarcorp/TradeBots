@@ -1,14 +1,12 @@
 <template>
-    <div class="full-height form-wrapper">
-        <form @submit.prevent="onSignIn" class="absolute-center form">
-            <h1 class="form__header">Вход</h1>
-            <input v-model="email" type="email" class="form__input" placeholder="Email">
-            <input v-model="password" type="password" class="form__input" placeholder="Пароль">
-            <button type="submit" class="form__button">Войти</button>
-            <!-- <span class="forgot-password">Забыли пароль?</span> -->
-            <!-- <p class="not-have-account"><nuxt-link to="/registration">Регистрация</nuxt-link></p> -->
-        </form>
-    </div>
+    <form @submit.prevent="onSignIn" class="absolute-center auth-form">
+        <h1 class="title title--big text-center auth-form__title">Вход</h1>
+        <input v-model="email" type="email" class="input auth-form__input" placeholder="Email">
+        <input v-model="password" type="password" class="input auth-form__input" placeholder="Пароль">
+        <button type="submit" class="button button--success auth-form__button">Войти</button>
+        <span class="auth-form__forgot-password">Забыли пароль?</span>
+        <p class="auth-form__not-have-account"><nuxt-link to="/signup" class="link">Регистрация</nuxt-link></p>
+    </form>
 </template>
 
 <script>
@@ -38,18 +36,3 @@
         }
     }
 </script>
-
-<style>
-@import '~/assets/css/components/form.css';
-@import '~/assets/css/variables.css';
-
-.form__input {
-    width: 100%;
-    max-width: 100%;
-    margin-bottom: 2rem
-}
-
-.form__button {
-    background-color: var(--color-accent);
-}
-</style>

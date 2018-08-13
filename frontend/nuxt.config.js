@@ -21,19 +21,18 @@ module.exports = {
   ** Global css files
   */
   css: [
-    "~/assets/css/variables.css",
-    "~/assets/css/grid.min.css",
-    "~/assets/css/transitions/allpages.css",
-    "~/assets/css/utils.css"
+    "~/assets/css/main.css"
   ],
 
   /*
   ** Modules 
   */
 
-  modules: ["@nuxtjs/axios"],
+  modules: [
+    ["@nuxtjs/axios"]
+  ],
   axios: {
-    baseURL: 'http://localhost:8072/',
+    baseURL: "http://localhost:8072/",
     credentials: true,
     withCredentials: true
   },

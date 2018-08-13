@@ -1,18 +1,16 @@
 <template>
-    <div class="full-height form-wrapper">
-        <form @submit.prevent="onSignUp" class="absolute-center form">
-            <h1 class="form__header">Регистрация</h1>
-            <input v-model="email" type="email" class="form__input" placeholder="Email">
-            <input v-model="password" type="password" class="form__input" placeholder="Пароль">
-            <input v-model="confirmPassword" type="password" class="form__input" placeholder="Подтверждение пароля">
-            <button 
-                type="submit" 
-                class="form__button"
-                :class="{'form__button--disabled': !isFormValid}"
-                :disabled="!isFormValid">Регистрация</button>
-            <p class="form__question">Уже есть аккаунт? <nuxt-link to="/signin">Войти</nuxt-link></p>
-        </form>
-    </div>
+    <form @submit.prevent="onSignUp" class="absolute-center auth-form">
+        <h1 class="title title--big text-center auth-form__title">Регистрация</h1>
+        <input v-model="email" type="email" class="input auth-form__input" placeholder="Email">
+        <input v-model="password" type="password" class="input auth-form__input" placeholder="Пароль">
+        <input v-model="confirmPassword" type="password" class="input auth-form__input" placeholder="Подтверждение пароля">
+        <button 
+            type="submit" 
+            class="button button--success auth-form__button"
+            :class="{'button--disabled': !isFormValid}"
+            :disabled="!isFormValid">Регистрация</button>
+        <p class="form__question">Уже есть аккаунт? <nuxt-link to="/signin" class="link">Войти</nuxt-link></p>
+    </form>
 </template>
 
 <script>
@@ -51,8 +49,6 @@
 </script>
 
 <style>
-@import '~/assets/css/components/form.css';
-@import '~/assets/css/variables.css';
 
 .forgot-password{
     font-size: 1.4rem;
