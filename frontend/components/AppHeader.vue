@@ -4,7 +4,7 @@
             <div class="row">
                 <div class="col-12">
                     <nav class="nav">
-                        <div class="nav__left">
+                        <div v-if="isAuth" class="nav__left">
                             <nuxt-link exact to="/bots" class="nav__link">Боты</nuxt-link>
                             <nuxt-link exact to="/statistics" class="nav__link">Статистика</nuxt-link>
                             <nuxt-link exact to="/incomes" class="nav__link">Доход</nuxt-link>
@@ -55,7 +55,6 @@
 </script>
 
 <style>
-@import '~/assets/css/variables.css';
 .header {
     max-height: 7rem;
     height: 100%;
@@ -99,5 +98,9 @@
     background-color: transparent;
     border: none;
     cursor: pointer;
+}
+
+.nav__right {
+    margin-left: auto
 }
 </style>

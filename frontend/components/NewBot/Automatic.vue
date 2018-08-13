@@ -143,9 +143,6 @@ export default {
 </script>
 
 <style scoped>
-@import '~/assets/css/components/form.css';
-@import '~/assets/css/variables.css';
-@import '~/assets/css/utils.css';
 .newBot__settings {
     display: flex;
     align-items: stretch;

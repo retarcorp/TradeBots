@@ -29,7 +29,6 @@
 </template>
 
 <style>
-@import '~/assets/css/variables.css';
 .account__menu-item {
     font-size: 2rem;
     line-height: 2.3rem;

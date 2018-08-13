@@ -6,7 +6,7 @@ Vue.use(Vuex)
 const store = () =>
   new Vuex.Store({
     state: {
-      isAuthorized: false,
+      isAuthorized: true,
       botsList: []
     },
     getters: {

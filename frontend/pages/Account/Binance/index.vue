@@ -26,8 +26,6 @@
 </template>
 
 <style scoped>
-@import '~/assets/css/components/form.css';
-@import '~/assets/css/variables.css';
 .binance__title {
     margin-bottom: 1.3rem;
 }

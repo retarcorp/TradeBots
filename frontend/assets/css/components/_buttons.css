@@ -1,0 +1,33 @@
+.button {
+    display: inline-block;
+    border: none;
+    cursor: pointer;
+    padding: 1rem 2rem;
+    color: #fff;
+    font-size: 1.4rem;
+    line-height: 1.6rem;
+}
+
+.button--big {
+    padding: 2rem 4rem;
+    font-size: 1.8rem;
+    line-height: 2.1rem;
+}
+
+.button--success {
+    background-color: var(--color-success);
+}
+
+.button--danger {
+    background-color: var(--color-danger);
+}
+
+.button--primary {
+    background-color: var(--bg-color-primary);
+    color: #000
+}
+
+.button--disabled {
+    opacity: .5;
+    pointer-events: none;
+}

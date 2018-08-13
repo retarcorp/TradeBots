@@ -1,0 +1,15 @@
+@import '@/assets/css/base/_reset.css';
+@import '@/assets/css/base/_typography.css';
+
+@import '@/assets/css/utils/_helpers.css';
+@import '@/assets/css/utils/_variables.css';
+
+@import '@/assets/css/components/_buttons.css';
+@import '@/assets/css/components/_forms.css';
+
+@import '@/assets/css/layout/_grid.css';
+
+@import '@/assets/css/pages/_signin.css';
+@import '@/assets/css/pages/_bots.css';
+
+@import '@/assets/css/transitions/allpages.css';
