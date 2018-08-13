@@ -2,12 +2,21 @@
     <div>
         <section class="bots__right-settings bot__manual">
             <div class="settings__header">
-                <h1 class="bots__name">BTC</h1>
-                <span class="settings__type">(Ручной)</span>
+                <h1 class="bots__name">{{ bot.title }}</h1>
+                <span v-if="bot.state === '0'" class="settings__type">(Автоматический)</span>
+                <span v-else class="settings__type">(Ручной)</span>
                 <div class="bots__buttons-status">
-                    <button class="page__button button__freeze">Заморозить</button>
+                    <!-- Send request to server -->
+                    <button @click.prevent="bot.status === '2'" 
+                        class="button button--primary button__freeze"
+                        >Заморозить</button>
                     <label class="checkbox">
-                        <input type="checkbox" class="button__status">
+                        <input 
+                            v-model="bot.status" 
+                            type="checkbox" 
+                            class="button__status"
+                            true-value="1"
+                            false-value="0">
                         <div class="checkbox__text"></div>
                     </label>
                 </div>
@@ -20,21 +29,22 @@
                     <input id="counter_bots" type="text" class="page__input settings__input">
                 </div> -->
                 <div class="settings__description">
-                    <p class="settings__item">Количество тогруемых ботов: <span>7</span></p>
-                    <p class="settings__item">Дневной объем (BTC): <span>123</span></p>
-                    <p class="settings__item">Основная пара: <span>ВТС</span></p>
-                    <p class="settings__item">Котируемая пара: <span>ETH</span></p>
-                    <p class="settings__item">Начальные ордер: <span>7</span></p>
-                    <p class="settings__item">Страховочный ордер: <span>123</span></p>
-                    <p class="settings__item">Отклонение от начального ордера: <span>10%</span></p>
-                    <p class="settings__item">Кол-во страховочных ордеров: <span>32</span></p>
-                    <p class="settings__item">Тейк профит: <span>25%</span></p>
-                    <p class="settings__item">Мартингейл: <span>Вкл</span></p>
-                    <p class="settings__item">Увеличение страховочного ордера: <span>1.75</span></p>
+                    <!-- <p class="settings__item">Дневной объем (BTC): <span>123</span></p> -->
+                    <p class="settings__item">Пара: <span>{{ bot.pair.from }} / {{ bot.pair.to }}</span></p>
+                    <p class="settings__item">Начальные ордер: <span>{{ bot.botSettings.initialOrder }}</span></p>
+                    <p class="settings__item">Страховочный ордер: <span>{{ bot.botSettings.safeOrder.size }}</span></p>
+                    <p class="settings__item">Кол-во страховочных ордеров: <span>{{ bot.botSettings.safeOrder.amount }}</span></p>
+                    <p class="settings__item">Отклонение от начального ордера: <span>{{ bot.botSettings.deviation * 100 }}%</span></p>
+                    <p class="settings__item">Стоп лосс: <span>{{ bot.botSettings.stopLoss * 100 }}%</span></p>
+                    <p class="settings__item">Тейк профит: <span>{{ bot.botSettings.takeProffit * 100 }}%</span></p>
+                    <p class="settings__item">Мартингейл: 
+                        <span>{{ bot.botSettings.martingale.active === '0' ? 'Выкл': 'Вкл' }}</span>
+                    </p>
+                    <p v-if="!(bot.botSettings.martingale.active)" class="settings__item">Увеличение страховочного ордера: <span>{{ bot.botSettings.martingale.value }}</span></p>
                 </div>
                 <div class="bots__button">
-                    <button class="form__button button__change-settings">Изменить настройки</button>
-                    <button class="form__button button__remove-bot">Удалить бота</button>
+                    <button class="button button--success button__change-settings">Изменить настройки</button>
+                    <button class="button button--danger button__remove-bot">Удалить бота</button>
                 </div>
             </div>
 
@@ -51,35 +61,14 @@
                             <th class="table__th quantity-head">Количество</th>
                             <th class="table__th total-head">Всего</th>
                         </tr>
-                        <tr class="table__tr">
-                            <td class="table__td pair">BTC/ETH</td>
-                            <td class="table__td price">0.00065906 (ETH)</td>
-                            <td class="table__td quantity">34 (BTC)</td>
-                            <td class="table__td total">0.02240804 (BTC)</td>
-                        </tr>
-                        <tr class="table__tr">
-                            <td class="table__td pair">BTC/ETH</td>
-                            <td class="table__td price">0.00065906 (ETH)</td>
-                            <td class="table__td quantity">34 (BTC)</td>
-                            <td class="table__td total">0.02240804 (BTC)</td>
-                        </tr>
-                        <tr class="table__tr">
-                            <td class="table__td pair">BTC/ETH</td>
-                            <td class="table__td price">0.00065906 (ETH)</td>
-                            <td class="table__td quantity">34 (BTC)</td>
-                            <td class="table__td total">0.02240804 (BTC)</td>
-                        </tr>
-                        <tr class="table__tr">
-                            <td class="table__td pair">BTC/ETH</td>
-                            <td class="table__td price">0.00065906 (ETH)</td>
-                            <td class="table__td quantity">34 (BTC)</td>
-                            <td class="table__td total">0.02240804 (BTC)</td>
-                        </tr>
-                        <tr class="table__tr">
-                            <td class="table__td pair">BTC/ETH</td>
-                            <td class="table__td price">0.00065906 (ETH)</td>
-                            <td class="table__td quantity">34 (BTC)</td>
-                            <td class="table__td total">0.02240804 (BTC)</td>
+                        <!-- TODO create component for 1 row -->
+                        <tr v-for="order in bot.orders"
+                            :key="order.id" 
+                            class="table__tr">
+                            <td class="table__td pair">{{ order.pair.from }} / {{ order.pair.to }}</td>
+                            <td class="table__td price">{{ order.price }} ({{ order.pair.from }})</td>
+                            <td class="table__td quantity">{{ order.amount }} ({{ order.pair.to }})</td>
+                            <td class="table__td total">{{ order.total }} ({{ order.pair.from }})</td>
                         </tr>
                     </table>
                     <table v-show="!isActive" class="page__table">
@@ -89,40 +78,11 @@
                             <th class="table__th quantity-head">Другое Количество</th>
                             <th class="table__th total-head">Другое Всего</th>
                         </tr>
-                        <tr class="table__tr">
-                            <td class="table__td pair">BTC/ETH</td>
-                            <td class="table__td price">0.00065906 (ETH)</td>
-                            <td class="table__td quantity">34 (BTC)</td>
-                            <td class="table__td total">0.02240804 (BTC)</td>
-                        </tr>
-                        <tr class="table__tr">
-                            <td class="table__td pair">BTC/ETH</td>
-                            <td class="table__td price">0.00065906 (ETH)</td>
-                            <td class="table__td quantity">34 (BTC)</td>
-                            <td class="table__td total">0.02240804 (BTC)</td>
-                        </tr>
-                        <tr class="table__tr">
-                            <td class="table__td pair">BTC/ETH</td>
-                            <td class="table__td price">0.00065906 (ETH)</td>
-                            <td class="table__td quantity">34 (BTC)</td>
-                            <td class="table__td total">0.02240804 (BTC)</td>
-                        </tr>
-                        <tr class="table__tr">
-                            <td class="table__td pair">BTC/ETH</td>
-                            <td class="table__td price">0.00065906 (ETH)</td>
-                            <td class="table__td quantity">34 (BTC)</td>
-                            <td class="table__td total">0.02240804 (BTC)</td>
-                        </tr>
-                        <tr class="table__tr">
-                            <td class="table__td pair">BTC/ETH</td>
-                            <td class="table__td price">0.00065906 (ETH)</td>
-                            <td class="table__td quantity">34 (BTC)</td>
-                            <td class="table__td total">0.02240804 (BTC)</td>
-                        </tr>
+                        <!-- status === 3 -->
                     </table>
                     <div class="order__buttons">
-                        <button class="form__button page__button button__cancel-sell">Отменить и продать</button>
-                        <button class="form__button page__button button__cancel">Отменить сделку</button>
+                        <button class="button button--primary page__button button__cancel-sell">Отменить и продать</button>
+                        <button class="button button--primary page__button button__cancel">Отменить сделку</button>
                     </div>
                 </div>
             </div>
@@ -135,6 +95,11 @@
         data() {
             return {
                 isActive: true
+            }
+        },
+        computed: {
+            bot() {
+                return this.$store.getters.getBot(this.$route.params.id)
             }
         }
     }
@@ -283,9 +248,9 @@
 .quantity{
     flex: 0.7;
 } */
-.order__buttons{
+/* .order__buttons{
 
-}
+} */
 .button__cancel-sell,
 .button__cancel{
     background-color: #DCDCDC;

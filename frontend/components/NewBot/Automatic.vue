@@ -2,20 +2,20 @@
     <div class="automatic">
         <div class="newBot__settings">
             <div class="form__control newBot__settings-control">
-                <label class="form__label">Название бота:</label>
-                <input v-model="automaticItem.title" type="text" class="form__input">
+                <label class="label">Название бота:</label>
+                <input v-model="automaticItem.title" type="text" class="input">
             </div>
             <div class="form__control newBot__settings-control">
-                <label class="form__label">Базовая пара:</label>
-                <select v-model="automaticItem.pair" type="text" class="form__input">
+                <label class="label">Базовая пара:</label>
+                <select v-model="automaticItem.pair" type="text" class="input">
                     <option value="ETH">ETH</option>
                     <option value="BNB">BNB</option>
                     <option value="USDT">USDT</option>
                 </select>
             </div>
             <div class="form__control newBot__settings-control">
-                <label class="form__label">Дневной объём (BTC):</label>
-                <input v-model="automaticItem.dailyVolumeBTC" type="text" class="form__input">
+                <label class="label">Дневной объём (BTC):</label>
+                <input v-model="automaticItem.dailyVolumeBTC" type="text" class="input">
             </div>
         </div>
         <div class="newBot__conditions">
@@ -53,8 +53,8 @@
                 </select>
                 <button
                     @click.prevent="addItem" 
-                    class="btn newBot__conditions-select form__button--success"
-                    :class="{'disabled' : isFormValid}"
+                    class="button button--success newBot__conditions-select"
+                    :class="{'button--disabled' : isFormValid}"
                     :disabled="isFormValid">Добавить условие</button>
             </div>
         </div>
@@ -69,8 +69,8 @@
             <button
                 @click.prevent="addManualBot"
                 :disabled="automaticItems.length === 0" 
-                class="form__button"
-                :class="{'form__button--disabled': automaticItems.length === 0}"
+                class="button button--success"
+                :class="{'button--disabled': automaticItems.length === 0}"
                 >Добавить</button>
         </div>
     </div>
@@ -187,6 +187,7 @@ export default {
     max-width: 16rem;
     width: 100%;
     padding: 1rem 2rem;
+    margin-bottom: .5rem;
 }
 
 .newBot__conditions-select:not(:last-child) {

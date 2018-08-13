@@ -5,10 +5,10 @@
                 <div class="col-12">
                     <nav class="nav">
                         <div v-if="isAuth" class="nav__left">
-                            <nuxt-link exact to="/bots" class="nav__link">Боты</nuxt-link>
-                            <nuxt-link exact to="/statistics" class="nav__link">Статистика</nuxt-link>
-                            <nuxt-link exact to="/incomes" class="nav__link">Доход</nuxt-link>
-                            <nuxt-link exact to="/account" class="nav__link">Аккаунт</nuxt-link>
+                            <nuxt-link to="/bots" class="nav__link">Боты</nuxt-link>
+                            <nuxt-link to="/statistics" class="nav__link">Статистика</nuxt-link>
+                            <nuxt-link to="/incomes" class="nav__link">Доход</nuxt-link>
+                            <nuxt-link to="/account" class="nav__link">Аккаунт</nuxt-link>
                         </div>
                         <div class="nav__right">
                             <button 
