@@ -36,6 +36,8 @@
 .tariff__container {
     display: flex;
     flex-wrap: wrap;
+    max-width: 57rem;
+    justify-content: space-around;
 }
 
 .tariff__item {
@@ -43,6 +45,7 @@
     width: 100%;
     padding: 1.3rem 1.8rem;
     border: 1px solid var(--border-color-primary);
+    margin-bottom: 2.3rem;
 }
 
 .tariff__item-title {
@@ -70,4 +73,22 @@
     text-align: center;
     font-weight: 500;
     margin: 3.3rem auto 0;
+}
+
+/* Balance */
+.balance__table {
+    margin: 1rem auto;
+}
+
+.balance__header {
+    margin-bottom: 2.2rem;
+}
+
+.balance__title {
+    margin-bottom: 2.5rem;
+}
+
+.code-purse {
+    display: block;
+    margin-top: 1.5rem;
 }
