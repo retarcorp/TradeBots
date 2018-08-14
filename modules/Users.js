@@ -1,6 +1,7 @@
 var md5 = require('md5');
 
 var Mongo = require('./Mongo');
+var Bot = require('../modules/Bot');
 var Crypto = require('./Crypto');
 var Binance = require('./Binance');
 
@@ -80,6 +81,25 @@ let Users = {
 				api: data.binanceAPI,
 				name: data.name,
 				regDate: data.regDate
+			});
+		});
+	}
+
+	,setBot(user, botData, callback) {
+		Mongo.select(user, 'users', (data) => {
+			data = data[0];
+			if(botData){
+				data.bots.push(new Bot(botData));
+			}
+			else {
+				let tempBots = [];
+				data.bots.forEach(bot => {
+					if(bot.botID !== botData.botID) tempBots.push(bot);
+				});
+				data.bots = tempBots;
+			}
+			Mongo.update({name: data.name}, data, 'users', (data) => {
+				callback(data);
 			});
 		});
 	}
