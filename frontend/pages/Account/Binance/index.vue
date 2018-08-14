@@ -38,7 +38,7 @@
                     key: '',
                     secret: ''
                 },
-                isSaved: false
+                isSaved: true
             }
         },
         methods: {
@@ -77,7 +77,7 @@
                 .$get('/account/api')
                 .then(res => {
                     if(res.status === 'ok') {
-                        this.binance = res.data
+                        this.binance = res.data;
                     } else {
                         console.log(e);
                     }

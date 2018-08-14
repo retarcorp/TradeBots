@@ -28,22 +28,36 @@
                     <label class="page__label" for="counter_bots">Количесво торгующих ботов:</label>
                     <input id="counter_bots" type="text" class="page__input settings__input">
                 </div> -->
-                <div class="settings__description">
+                <div v-show="!isChanging" class="settings__description">
                     <!-- <p class="settings__item">Дневной объем (BTC): <span>123</span></p> -->
-                    <p class="settings__item">Пара: <span>{{ bot.pair.from }} / {{ bot.pair.to }}</span></p>
-                    <p class="settings__item">Начальные ордер: <span>{{ bot.botSettings.initialOrder }}</span></p>
+                    <p class="settings__item">Пара: 
+                        <span>{{ bot.pair.from }} / {{ bot.pair.to }}</span>
+                    </p>
+                    <p class="settings__item">Начальные ордер: 
+                        <span>{{ bot.botSettings.initialOrder }}</span>
+                    </p>
                     <p class="settings__item">Страховочный ордер: <span>{{ bot.botSettings.safeOrder.size }}</span></p>
+                    
                     <p class="settings__item">Кол-во страховочных ордеров: <span>{{ bot.botSettings.safeOrder.amount }}</span></p>
+                    
                     <p class="settings__item">Отклонение от начального ордера: <span>{{ bot.botSettings.deviation * 100 }}%</span></p>
+                    
                     <p class="settings__item">Стоп лосс: <span>{{ bot.botSettings.stopLoss * 100 }}%</span></p>
+                    
                     <p class="settings__item">Тейк профит: <span>{{ bot.botSettings.takeProffit * 100 }}%</span></p>
+                    
                     <p class="settings__item">Мартингейл: 
                         <span>{{ bot.botSettings.martingale.active === '0' ? 'Выкл': 'Вкл' }}</span>
                     </p>
+                    
                     <p v-if="!(bot.botSettings.martingale.active)" class="settings__item">Увеличение страховочного ордера: <span>{{ bot.botSettings.martingale.value }}</span></p>
+                    
+                </div>
+                <div>
+                    <component @changed="isChanging = false" :bot="bot" :is="currentComponent"></component>
                 </div>
                 <div class="bots__button">
-                    <button class="button button--success button__change-settings">Изменить настройки</button>
+                    <button @click="onChangeSettings" class="button button--success button__change-settings">Изменить настройки</button>
                     <button @click="onDeleteBot" class="button button--danger button__remove-bot">Удалить бота</button>
                 </div>
             </div>
@@ -91,10 +105,18 @@
 </template>
 
 <script>
+import SettingsManual from '~/components/NewBot/Manual';
+import SettingsAutomatic from '~/components/NewBot/Automatic';
     export default {
+        components: {
+            SettingsManual,
+            SettingsAutomatic
+        },
         data() {
             return {
-                isActive: true
+                isActive: true,
+                currentComponent: null,
+                isChanging: false
             }
         },
         computed: {
@@ -119,6 +141,25 @@
         methods: {
             onDeleteBot() {
                 this.$store.dispatch('deleteBot', this.bot.botID)
+            },
+            onChangeSettings() {
+                this.isChanging = true;
+                this.bot.state === '1' 
+                ? this.currentComponent = "SettingsManual"
+                : this.currentComponent = "SettingsAutomatic"
+            },
+            onSaveSettings() {
+                this.isSaved = true
+                // this.$axios
+                //     .$post('/bots/update', this.bot)
+                //     .then(res => {
+                //         if(res.data.status === 'ok') {
+                //             this.isSaved = true;
+                //         } else {
+                //             console.log(res.message)
+                //         }
+                //     })
+                //     .catch(e => console.log(e))
             }
         }
     }
