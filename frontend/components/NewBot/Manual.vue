@@ -91,7 +91,7 @@
             </div>
         </div>
         <div class="text-right">
-            <button @click.prevent="onAddManualBot" class="button button--success">Добавить</button>
+            <button @click.prevent="onAddManualBot" class="button button--success">{{ bot.botID ? 'Сохранить' : 'Добавить' }}</button>
         </div>
     </div>
 </template>
