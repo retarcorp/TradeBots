@@ -102,7 +102,7 @@
         props: {
             mode: String,
             bot: {
-                required: true,
+                required: false,
                 default() {
                     return {
                         state: this.mode,
@@ -161,10 +161,15 @@
         },
         methods: {
             onAddManualBot() {
-                this.$store.dispatch('addBot', this.bot)
-                    .then(() => {
-                        this.$emit('changed')
-                    })
+                if(this.bot.botID) {
+                    this.$store.dispatch('updateBot', this.bot)
+                        .then(() => {
+                            this.$emit('changed')
+                        })
+                } else {
+                    this.$store.dispatch('addBot', this.bot)
+                }
+                
             }
         }
     }

@@ -47,6 +47,7 @@ app.get('/', index);
 app.get('/bots/getBotsList', bots);
 app.post('/bots/add', bots);
 app.post('/bots/delete', bots);
+app.post('/bots/update', bots);
 
 app.get('/account/api', account);
 app.post('/account/api', account);

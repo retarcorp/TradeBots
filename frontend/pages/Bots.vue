@@ -16,9 +16,7 @@
                 <div>
                     <button 
                         @click="onAddNewBot" 
-                        class="button button--big button--primary bots__add-button"
-                        :class="{'button--disabled' : isSingleNewBot}" 
-                        :disabled="isSingleNewBot"
+                        class="button button--big button--primary bots__add-button"              
                         >Добавить бота +</button>
                 </div>
             </div>
@@ -38,17 +36,11 @@ export default {
     computed: {
         botsList() {
             return this.$store.getters.getBotsList
-        },
-        isSingleNewBot() {
-            return this.botsList.find(bot => bot.botID === undefined)
         }
     },
     methods: {
         onAddNewBot() {
             this.$router.push('/bots/add-new')
-            this.$store.dispatch('addNewBot', {
-                title: 'New Bot'
-            })
            
         }
     },
