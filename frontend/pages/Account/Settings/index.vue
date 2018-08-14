@@ -1,23 +1,23 @@
 <template>
     <div class="settings">
-        <div class="settings__title">Изменение пароля</div>
-        <div class="form__wrapper">
+        <div class="settings__title title--medium">Изменение пароля</div>
+        <div class="settings__form">
             <form>
-                <div class="form__control">
-                    <div class="form__label">Текущий</div>
-                    <input class="form__input" type="password">
+                <div class="form-control">
+                    <div class="label">Текущий</div>
+                    <input class="input" type="password">
                 </div>
-                <div class="form__control">
-                    <div class="form__label">Новый пароль</div>
-                    <input class="form__input" type="password">
+                <div class="form-control">
+                    <div class="label">Новый пароль</div>
+                    <input class="input" type="password">
                 </div>
-                <div class="form__control">
-                    <div class="form__label">Подтверждение нового пароля</div>
-                    <input class="form__input" type="password">
+                <div class="form-control">
+                    <div class="label">Подтверждение нового пароля</div>
+                    <input class="input" type="password">
                 </div>
                 <div class="form__actions">
-                    <button class=" form__button form__button--success">Сохранить</button>
-                    <button class=" form__button form__button--danger">Удалить</button>
+                    <button class=" button button--success">Сохранить</button>
+                    <button class=" button button--danger">Удалить</button>
                 </div>
             </form>
         </div>

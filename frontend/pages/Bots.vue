@@ -10,14 +10,14 @@
                 </div>
                 <div class="bots__list">
                     <div v-for="bot in botsList" :key="bot.id">
-                        <bot-item :id="bot.id">{{ bot.title }}</bot-item>
+                        <bot-item :id="bot.botID">{{ bot.title }}</bot-item>
                     </div>
                 </div>
                 <div>
                     <button 
                         @click="onAddNewBot" 
                         class="button button--big button--primary bots__add-button"
-                        :class="{disabled : isSingleNewBot}" 
+                        :class="{'button--disabled' : isSingleNewBot}" 
                         :disabled="isSingleNewBot"
                         >Добавить бота +</button>
                 </div>
@@ -40,14 +40,14 @@ export default {
             return this.$store.getters.getBotsList
         },
         isSingleNewBot() {
-            return this.botsList.find(bot => bot.id === undefined)
+            return this.botsList.find(bot => bot.botID === undefined)
         }
     },
     methods: {
         onAddNewBot() {
             this.$router.push('/bots/add-new')
             this.$store.dispatch('addNewBot', {
-                name: 'New Bot'
+                title: 'New Bot'
             })
            
         }

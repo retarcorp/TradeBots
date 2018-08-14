@@ -34,5 +34,11 @@
     width: 3.8rem;
     height: 3.8rem;
 }
+
+.automatic-item__delete-button {
+    background-color: red;
+    border: none;
+    color: #fff;
+}
 </style>
 
