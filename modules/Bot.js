@@ -21,6 +21,8 @@ module.exports = class Bot {
 		this.pair = new Pair(pair.from, pair.to);
 		this.orders = orders;
 		this.currentOrder = currentOrder;
+		console.log('____________________')
+		console.log(botSettings)
 		this.botSettings = new BotSettings(botSettings);
 		this.botID = botID;
 		this.volumeLimit = [CONSTANTS.getVolumeLimit(this.pair.from), CONSTANTS.getVolumeLimit(this.pair.to)];

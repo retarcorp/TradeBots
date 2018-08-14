@@ -10,6 +10,7 @@ router.get('/bots/getBotsList', (req, res, next) => {
 
 router.post('/bots/add', (req, res, next) => {
 	let user = {name: req.cookies.user.name};
+	console.log(req.body)
 	Users.setBot(user, req.body, data => res.json(data));
 });
 

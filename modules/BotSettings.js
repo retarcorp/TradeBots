@@ -14,11 +14,13 @@ module.exports = class BotSettings {
 		takeProffit = null,
 		stopLoss = null
 	}) {
-		this.tradngSignals = tradingSignals;
+		this.tradingSignals = tradingSignals;
 		this.initialOrder = initialOrder;
-		this.safeOrder = new SafeOrder(safeOrder.size, safeOrder.amount);
+		if(safeOrder) 
+			this.safeOrder = new SafeOrder(safeOrder.size, safeOrder.amount);
 		this.deviation = deviation / 100;
-		this.martingale = new Martingale(martingale.value, martingale.active);
+		if(martingale)
+			this.martingale = new Martingale(martingale.value, martingale.active);
 		this.maxOpenSafetyOrders = maxOpenSafetyOrders;
 		this.takeProffit = takeProffit / 100;
 		this.stopLoss = stopLoss / 100;

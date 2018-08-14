@@ -1,8 +1,8 @@
 <template>
     <div class="automatic-item">
         <div class="automatic-item__field signal"><slot></slot> {{ item.signal }}</div>
-        <div class="automatic-item__field timefreim">{{ item.timefreim }}</div>
-        <div class="automatic-item__field recomendation">{{ item.recomendation }}</div>
+        <div class="automatic-item__field timefreim">{{ item.timeframe }}</div>
+        <div class="automatic-item__field recomendation">{{ item.transactionTerm }}</div>
         <button 
             @click.prevent="onDeleteItem"
             class="automatic-item__delete-button">x</button>
