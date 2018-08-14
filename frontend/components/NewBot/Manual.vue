@@ -161,13 +161,16 @@
         },
         methods: {
             onAddManualBot() {
+                this.$store.commit('setSpiner', true)
                 if(this.bot.botID) {
                     this.$store.dispatch('updateBot', this.bot)
                         .then(() => {
                             this.$emit('changed')
+                            this.$store.commit('setSpiner', false)
                         })
                 } else {
                     this.$store.dispatch('addBot', this.bot)
+                    this.$store.commit('setSpiner', false)
                 }
                 
             }

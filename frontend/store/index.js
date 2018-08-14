@@ -6,10 +6,14 @@ Vue.use(Vuex)
 const store = () =>
   new Vuex.Store({
     state: {
-      isAuthorized: true,
-      botsList: []
+      isAuthorized: false,
+      botsList: [],
+      isActive: false
     },
     getters: {
+      getSpinerStatus(state) {
+        return state.isActive
+      },
       getAuthorizedStatus(state) {
         return state.isAuthorized;
       },
@@ -23,6 +27,9 @@ const store = () =>
       }
     },
     mutations: {
+      setSpiner(state, payload) {
+        state.isActive = payload
+      },
       setAuthorized(state, payload) {
         state.isAuthorized = payload;
       },
@@ -77,12 +84,13 @@ const store = () =>
       },
       deleteBot({ commit }, payload) {
         this.$axios
-          .$delete("/bots/delete", {
+          .$post("/bots/delete", {
             botID: payload
           })
           .then(res => {
             if (res.status === "ok") {
               commit("deleteBot", res.data.botID);
+              this.$router.push('/bots')
             } else {
               console.log(res.message);
             }

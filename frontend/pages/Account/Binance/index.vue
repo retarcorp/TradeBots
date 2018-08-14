@@ -20,9 +20,12 @@
                     <div v-else>{{ binance.secret ? '***' : '' }}</div>
                 </div>
                 <div class="form__actions">
-                    <button v-if="!isSaved" @click.prevent="onSettingsSave" class="button button--success">Сохранить</button>
-                    <button v-else @click.prevent="isSaved = false" class="button button--success">Изменить</button>
-                    <button @click.prevent="onSettingsDelete" class="button button--danger">Удалить</button>
+                    <div class="d-flex">
+                        <button v-if="!isSaved" @click.prevent="onSettingsSave" class="button button--success">Сохранить</button>
+                        <button v-else @click.prevent="isSaved = false" class="button button--success">Изменить</button>
+                        <button @click.prevent="onSettingsDelete" class="button button--danger">Удалить</button>
+
+                    </div>
                 </div>
             </form>
         </div>
@@ -43,18 +46,24 @@
         },
         methods: {
             onSettingsSave() {
+                this.$store.commit('setSpiner', true)
                 this.$axios
                     .$post('/account/api', this.binance)
                     .then(res => {
                         if(res.status === 'ok') {
                             this.isSaved = true;
+                            this.$store.commit('setSpiner', false)
                         } else {
-                            this.isSaved = false
+                            this.isSaved = false;
+                            this.$store.commit('setSpiner', false)
                         }
                     })
-                    .catch(e => console.log(e))
+                    .catch(e => {
+                        this.$store.commit('setSpiner', false)
+                    })
             },
             onSettingsDelete() {
+                this.isActive = true;
                 this.$axios
                     .$delete('/account/api')
                     .then(res => {
@@ -64,7 +73,8 @@
                                 key: '',
                                 secret: ''
                             }
-                            this.isSaved = false;
+                            this.isSaved = true;
+                            this.isActive = false;
                         } else {
                             console.log(e)
                         }

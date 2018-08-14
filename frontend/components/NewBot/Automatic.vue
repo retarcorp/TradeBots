@@ -22,7 +22,7 @@
             <div class="newBot__conditions-title">Условия для начала сделки:</div>
             <div class="newBot__conditions-wrapper">
                 <select
-                    v-model="automaticItem.signal"
+                    v-model="bot.signal"
                     class="newBot__conditions-select">
                     <option value="default" disabled selected>Стратегия</option>
                     <option 
@@ -32,7 +32,7 @@
                         >{{ signal.name }}</option>
                 </select>
                 <select
-                    v-model="automaticItem.timeframe"
+                    v-model="bot.timeframe"
                     class="newBot__conditions-select">
                     <option value="default" disabled selected>Таймфрейм</option>
                     <option 
@@ -42,7 +42,7 @@
                         >{{ tr.name }}</option>
                 </select>
                 <select
-                    v-model="automaticItem.transactionTerm"
+                    v-model="bot.transactionTerm"
                     class="newBot__conditions-select">
                     <option value="default" disabled selected>Рекомендация</option>
                     <option
@@ -71,7 +71,7 @@
                 :disabled="automaticItems.length === 0" 
                 class="button button--success"
                 :class="{'button--disabled': automaticItems.length === 0}"
-                >{{ bot.botID ? 'Сохранить' : 'Добавить' }}</button>
+                >{{ (bot && bot.botID) ? 'Сохранить' : 'Добавить' }}</button>
         </div>
     </div>
 </template>
@@ -83,16 +83,43 @@ export default {
     components: {
         AutomaticItem
     },
+    props: {
+        bot: {
+            required: false,
+            default() {
+                return {
+                    state: this.mode,
+                    pair: {
+                        from: '',
+                        to: ''
+                    },
+                    title: '',
+                    botSettings: {
+                        initialOrder: '',
+                        safeOrder: {
+                            size: '',
+                            amount: 0
+                        },
+                        maxOpenSafetyORders: '',
+                        deviation: '',
+                        stopLoss: '',
+                        takeProffit: '',
+                        martingale: {
+                            value: 1.01,
+                            active: '0'
+                        }
+                    }
+
+                }
+            }
+        }
+    },
     data() {
         return {
             title: '',
             dailyVolumeBTC: '',
             pair: '',
-            automaticItem: {
-                signal: 'default',
-                timeframe: 'default',
-                transactionTerm: 'default'
-            },
+            
             automaticItems: [],
             signals: [
                 { id: 'Tradingview', name: 'Tradingview'}
@@ -119,15 +146,15 @@ export default {
     },
     computed: {
         isFormValid() {
-            return Object.keys(this.automaticItem)
-                .find(field => this.automaticItem[field] === 'default')         
+            return Object.keys(this.bot)
+                .find(field => this.bot[field] === 'default')         
             }
     },
     methods: {
 
         addItem() {
-            this.automaticItems.push(this.automaticItem)
-            this.automaticItem = {
+            this.automaticItems.push(this.bot)
+            this.bot = {
                 signal: 'default',
                 timeframe: 'default',
                 transactionTerm: 'default'
@@ -137,6 +164,7 @@ export default {
             this.automaticItems.splice(i, 1)
         },
         addAutomaticBot() {
+            this.$store.commit('setSpiner', true)
             const automaticBot = {
                 'title': this.title,
                 'pair': this.pair,
@@ -146,6 +174,9 @@ export default {
                 }
             }
             this.$store.dispatch('addBot', automaticBot)
+                .then(() => {
+                    this.$store.commit('setSpiner', false)
+                })
         }
     }
 }
