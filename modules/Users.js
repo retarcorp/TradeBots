@@ -140,6 +140,23 @@ let Users = {
 		});
 	}
 
+	,updateBot(user, botData, callback) {
+		Mongo.select(user, 'users', (data) => {
+			data = data[0];
+			let tempBot = new Bot(botData);
+			const index = data.bots.findIndex(bot => {
+				return bot.botID === tempBot.botID
+			});
+			data.bots[index] = tempBot;
+			Mongo.update({name: data.name}, data, 'users', (data) => {
+				callback({
+					status: 'ok',
+					data: tempBot
+				});
+			});
+		});
+	}
+
 	,createSession(req, res, next, user, callback) {
 		//console.log(req.session)
 

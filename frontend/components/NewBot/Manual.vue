@@ -102,32 +102,29 @@
         props: {
             mode: String,
             bot: {
-                required: true,
+                required: false,
                 default() {
                     return {
-                        bot: {
-                            state: this.mode,
-                            pair: {
-                                from: '',
-                                to: ''
+                        state: this.mode,
+                        pair: {
+                            from: '',
+                            to: ''
+                        },
+                        title: '',
+                        botSettings: {
+                            initialOrder: '',
+                            safeOrder: {
+                                size: '',
+                                amount: 0
                             },
-                            title: '',
-                            botSettings: {
-                                initialOrder: '',
-                                safeOrder: {
-                                    size: '',
-                                    amount: 0
-                                },
-                                maxOpenSafetyORders: '',
-                                deviation: '',
-                                stopLoss: '',
-                                takeProffit: '',
-                                martingale: {
-                                    value: 1.01,
-                                    active: '0'
-                                }
+                            maxOpenSafetyORders: '',
+                            deviation: '',
+                            stopLoss: '',
+                            takeProffit: '',
+                            martingale: {
+                                value: 1.01,
+                                active: '0'
                             }
-
                         }
                     }
                 }
@@ -163,10 +160,15 @@
         },
         methods: {
             onAddManualBot() {
-                this.$store.dispatch('addBot', this.manualBot)
-                    .then(() => {
-                        this.$emit('changed')
-                    })
+                if(this.bot.botID) {
+                    this.$store.dispatch('updateBot', this.bot)
+                        .then(() => {
+                            this.$emit('changed')
+                        })
+                } else {
+                    this.$store.dispatch('addBot', this.bot)
+                }
+                
             }
         }
     }

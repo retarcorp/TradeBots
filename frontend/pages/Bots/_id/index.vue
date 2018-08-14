@@ -54,7 +54,7 @@
                     
                 </div>
                 <div>
-                    <component @changed="isChanging = false" :bot="bot" :is="currentComponent"></component>
+                    <component @changed="onUpdated" :bot="bot" :is="currentComponent"></component>
                 </div>
                 <div class="bots__button">
                     <button @click="onChangeSettings" class="button button--success button__change-settings">Изменить настройки</button>
@@ -160,6 +160,10 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
                 //         }
                 //     })
                 //     .catch(e => console.log(e))
+            },
+            onUpdated() {
+                this.isChanging = false;
+                this.currentComponent = null;
             }
         }
     }

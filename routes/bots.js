@@ -18,4 +18,9 @@ router.post('/bots/delete', (req, res, next) => {
 	Users.setBot(user, req.body.botID, data => res.json(data));
 })
 
+router.post('/bots/update', (req, res, next) => {
+	let user = {name: req.cookies.user.name};
+	Users.updateBot(user, req.body, data => res.json(data));
+})
+
 module.exports = router;
