@@ -36,6 +36,7 @@ module.exports = class Bot {
 					pair: this.pair,
 					price: this.botSettings.initialOrder
 				});
+				this.orders.push
 			}
 		}
 		else if(this.status === CONSTANTS.BOT_STATUS.INACTIVE) {
