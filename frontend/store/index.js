@@ -37,6 +37,10 @@ const store = () =>
       },
       deleteBot(state, payload) {
         state.botsList = state.botsList.filter(bot => bot.botID !== payload);
+      },
+      updateBot(state, payload) {
+        const index = state.botsList.findIndex(bot => bot.botID === payload.botID);
+        state.botsList[index] = payload
       }
     },
     actions: {
@@ -49,6 +53,7 @@ const store = () =>
           .then(res => {
             if (res.status === "ok") {
               commit("addBot", res.data);
+              this.$router.push("/bots");
             } else {
               console.log(res.message);
             }
@@ -73,13 +78,25 @@ const store = () =>
       deleteBot({ commit }, payload) {
         this.$axios
           .$delete("/bots/delete", {
-            'botID': payload
+            botID: payload
           })
           .then(res => {
             if (res.status === "ok") {
               commit("deleteBot", res.data.botID);
             } else {
               console.log(res.message);
+            }
+          })
+          .catch(e => console.log(e));
+      },
+      updateBot({ commit }, payload) {
+        this.$axios
+          .$post("/bots/update", payload)
+          .then(res => {
+            if (res.status === "ok") {
+              commit("updateBot", res.data);
+            } else {
+              console.log(e);
             }
           })
           .catch(e => console.log(e));

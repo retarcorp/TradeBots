@@ -71,7 +71,7 @@
                 :disabled="automaticItems.length === 0" 
                 class="button button--success"
                 :class="{'button--disabled': automaticItems.length === 0}"
-                >Добавить</button>
+                >{{ bot.botID ? 'Сохранить' : 'Добавить' }}</button>
         </div>
     </div>
 </template>
@@ -142,7 +142,7 @@ export default {
                 'pair': this.pair,
                 'botSettings': {
                     'dailyVolumeBTC': this.dailyVolumeBTC,
-                    'tradingsSignals': this.automaticItems
+                    'tradingSignals': this.automaticItems
                 }
             }
             this.$store.dispatch('addBot', automaticBot)

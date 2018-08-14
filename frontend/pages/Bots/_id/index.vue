@@ -33,30 +33,47 @@
                     <p class="settings__item">Пара: 
                         <span>{{ bot.pair.from }} / {{ bot.pair.to }}</span>
                     </p>
-                    <p class="settings__item">Начальные ордер: 
-                        <span>{{ bot.botSettings.initialOrder }}</span>
-                    </p>
-                    <p class="settings__item">Страховочный ордер: <span>{{ bot.botSettings.safeOrder.size }}</span></p>
-                    
-                    <p class="settings__item">Кол-во страховочных ордеров: <span>{{ bot.botSettings.safeOrder.amount }}</span></p>
-                    
-                    <p class="settings__item">Отклонение от начального ордера: <span>{{ bot.botSettings.deviation * 100 }}%</span></p>
-                    
-                    <p class="settings__item">Стоп лосс: <span>{{ bot.botSettings.stopLoss * 100 }}%</span></p>
-                    
-                    <p class="settings__item">Тейк профит: <span>{{ bot.botSettings.takeProffit * 100 }}%</span></p>
-                    
-                    <p class="settings__item">Мартингейл: 
-                        <span>{{ bot.botSettings.martingale.active === '0' ? 'Выкл': 'Вкл' }}</span>
-                    </p>
-                    
-                    <p v-if="!(bot.botSettings.martingale.active)" class="settings__item">Увеличение страховочного ордера: <span>{{ bot.botSettings.martingale.value }}</span></p>
+                    <template v-if="bot.state === '1'">
+                        <p class="settings__item">Начальный ордер: 
+                            <span>{{ bot.botSettings.initialOrder }}</span>
+                        </p>
+                        <p class="settings__item">Страховочный ордер: <span>{{ bot.botSettings.safeOrder.size }}</span></p>
+                        
+                        <p class="settings__item">Кол-во страховочных ордеров: <span>{{ bot.botSettings.safeOrder.amount }}</span></p>
+                        
+                        <p class="settings__item">Отклонение от начального ордера: <span>{{ bot.botSettings.deviation }}%</span></p>
+                        
+                        <p class="settings__item">Стоп лосс: <span>{{ bot.botSettings.stopLoss }}%</span></p>
+                        
+                        <p class="settings__item">Тейк профит: <span>{{ bot.botSettings.takeProffit }}%</span></p>
+                        
+                        <p class="settings__item">Мартингейл: 
+                            <span>{{ bot.botSettings.martingale.active === '0' ? 'Выкл': 'Вкл' }}</span>
+                        </p>
+                        
+                        <p v-if="bot.botSettings.martingale.active !== '0'" class="settings__item">Увеличение страховочного ордера: <span>{{ bot.botSettings.martingale.value }}</span></p>
+                        
+                    </template>
+
+                    <template v-else>
+                        <p class="settings__item">Дневной объем(BTC): 
+                            <span>{{ bot.botSettings.dailyVolumeBTC }}</span>
+                        </p>
+                        <p>Условия для начала сделки</p>
+                        <table class="table">
+                            <tr class="table__tr" v-for="(signal,index) in bot.botSettings.tradingSignals" :key="signal.id">
+                                <td class="table__td">{{ index + 1 }}. {{ signal.signal }}</td>
+                                <td class="table__td">{{ signal.timeframe }}</td>
+                                <td class="table__td">{{ signal.transactionTerm }}</td>
+                            </tr>
+                        </table>
+                    </template>
                     
                 </div>
                 <div>
                     <component @changed="onUpdated" :bot="bot" :is="currentComponent"></component>
                 </div>
-                <div class="bots__button">
+                <div v-show="!isChanging" class="bots__button">
                     <button @click="onChangeSettings" class="button button--success button__change-settings">Изменить настройки</button>
                     <button @click="onDeleteBot" class="button button--danger button__remove-bot">Удалить бота</button>
                 </div>
