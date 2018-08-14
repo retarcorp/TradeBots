@@ -26,7 +26,7 @@ var app = express();
 app.use(cors({
 	origin: 'http://localhost:3000',
 	credentials: true
-  }))
+  }));
 app.use(cookieParser());
 app.use(expressSession({secret: 'kitty secret'}));
 app.use(express.static(__dirname + '/public'));
@@ -41,23 +41,31 @@ app.use((req, res, next) => {
 
 app.set('port', process.env.PORT || 8072);
 
-// app.use((req, res, next) => {
-// 	res.header("Access-Control-Allow-Origin", "http://localhost:8072/");
-// 	next();
-// });
 
 app.get('/', index);
+
 app.get('/bots/getBotsList', bots);
 app.post('/bots/add', bots);
-app.get('/account', account);
+app.post('/bots/delete', bots);
+app.post('/bots/update', bots);
+
+app.get('/account/api', account);
 app.post('/account/api', account);
 app.delete('/account/api', account);
+
 app.get('/signin', signin);
 app.post('/signin', signin);
 app.get('/signout', signin);
 app.post('/signup', signup);
+
+
 app.get('/incomes', incomes);
 app.get('/statistics', statistics);
+
+
+
+
+
 var int;
 
 var i = 0;

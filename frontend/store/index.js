@@ -7,10 +7,7 @@ const store = () =>
   new Vuex.Store({
     state: {
       isAuthorized: true,
-      botsList: [],
-      isLoading: true,
-      status: 'ne_ok',
-      message: ''
+      botsList: []
     },
     getters: {
       getAuthorizedStatus(state) {
@@ -23,15 +20,6 @@ const store = () =>
         return id => {
           return state.botsList.find(bot => bot.botID === id);
         };
-      },
-      getMessage(state) {
-        return state.message;
-      },
-      getValueOfLoading(state) {
-        return state.isLoading;
-      },
-      getStatus(state) {
-        return state.status;
       }
     },
     mutations: {
@@ -49,32 +37,9 @@ const store = () =>
       },
       deleteBot(state, payload) {
         state.botsList = state.botsList.filter(bot => bot.botID !== payload);
-      },
-      getMessage(state, payload) {
-        state.message = payload;
-      },
-      getValueOfLoading(state, payload) {               //for spinner
-        state.isLoading = payload;
-      },
-      setStatus(state, payload) {
-        state.status = payload;
-        if( payload === 'ok' || payload === 'info') {
-          setTimeout(function() { 
-            state.status = '';
-          }, 2000);
-        }
-      },
-      clearMessage(state) {
-        state.message = '';
-      },
-      clearStatus(state) {
-        state.status = '';
       }
     },
     actions: {
-      clearStatus({commit}) {
-        commit('clearStatus');
-      },
       setAuthorizedStatus({ commit }, payload) {
         commit("setAuthorized", payload);
       },

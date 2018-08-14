@@ -17,8 +17,8 @@ router.get('/signout', (req, res, next) => {
 
 router.post('/signin', (req, res, next) => {
 	let user = {
-		password: req.body.password
-		,name: req.body.email
+		password: req.body.password,
+		name: req.body.email
 	}
 	Users.find(user, 'users', (data) => {
 		if (data.length) {

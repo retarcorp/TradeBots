@@ -9,6 +9,7 @@ module.exports = class Bot {
 		title = 'Untitled bot',
 		state = CONSTANTS.BOT_STATE.MANUAL,
 		status = CONSTANTS.BOT_STATUS.INACTIVE,
+		botID = String(Date.now()),
 		pair = {},
 		currentOrder = null,
 		orders = [],
@@ -21,7 +22,7 @@ module.exports = class Bot {
 		this.orders = orders;
 		this.currentOrder = currentOrder;
 		this.botSettings = new BotSettings(botSettings);
-		this.botID = String(Date.now());
+		this.botID = botID;
 		this.volumeLimit = [CONSTANTS.getVolumeLimit(this.pair.from), CONSTANTS.getVolumeLimit(this.pair.to)];
 	}
 

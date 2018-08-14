@@ -79,7 +79,6 @@ module.exports = {
 
 			coll.updateMany(key, { $set: change }, { upsert: true }, (err, data) => {
 				this.Assert.equal(err, null);
-				
 				if (callback) callback(data);
 				console.log('Data updated');
 			});

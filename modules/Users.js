@@ -69,7 +69,10 @@ let Users = {
 			}
 			else data.binanceAPI = {};
 			Mongo.update({name: data.name}, data, 'users', (data) => {
-				callback(data);
+				callback({
+					status: 'ok',
+					data: data.binanceAPI
+				});
 			});
 		});
 	}
@@ -77,29 +80,79 @@ let Users = {
 	,getBinance(user, callback) {
 		Mongo.select(user, 'users', (data) => {
 			data = data[0];
+			let retData = {};
+			if(data.binanceAPI.key) {
+				retData = {
+					name: data.binanceAPI.name,
+					key: Crypto.decipher(data.binanceAPI.key, Crypto.getKey(data.regDate, data.name)),
+					secret: '***'
+				}
+			}
 			if(callback) callback({
-				api: data.binanceAPI,
-				name: data.name,
-				regDate: data.regDate
+				status: 'ok',
+				data: retData
 			});
+		});
+	}
+
+	,getBotList(user, callback) {
+		Mongo.select(user, 'users', (data) => {
+			data = data[0];
+			if(callback) 
+				callback({
+					status: 'ok',
+					data: data.bots || []
+				});
 		});
 	}
 
 	,setBot(user, botData, callback) {
 		Mongo.select(user, 'users', (data) => {
 			data = data[0];
-			if(botData){
-				data.bots.push(new Bot(botData));
+			let tempBot;
+			if(typeof botData === 'object'){
+				tempBot = new Bot(botData);
+				data.bots.push(tempBot);
 			}
 			else {
 				let tempBots = [];
 				data.bots.forEach(bot => {
-					if(bot.botID !== botData.botID) tempBots.push(bot);
+					if(bot.botID !== botData) tempBots.push(bot);
 				});
 				data.bots = tempBots;
 			}
 			Mongo.update({name: data.name}, data, 'users', (data) => {
-				callback(data);
+				if(typeof botData === 'object') {
+					callback({
+						status: 'ok',
+						data: tempBot
+					});
+				}
+				else {
+					callback({
+						status: 'ok',
+						data: {
+							botID: botData
+						}
+					});
+				}
+			});
+		});
+	}
+
+	,updateBot(user, botData, callback) {
+		Mongo.select(user, 'users', (data) => {
+			data = data[0];
+			let tempBot = new Bot(botData);
+			const index = data.bots.findIndex(bot => {
+				return bot.botID === tempBot.botID
+			});
+			data.bots[index] = tempBot;
+			Mongo.update({name: data.name}, data, 'users', (data) => {
+				callback({
+					status: 'ok',
+					data: tempBot
+				});
 			});
 		});
 	}

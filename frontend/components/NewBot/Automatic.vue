@@ -90,7 +90,7 @@ export default {
             pair: '',
             automaticItem: {
                 signal: 'default',
-                timefreim: 'default',
+                timeframe: 'default',
                 transactionTerm: 'default'
             },
             automaticItems: [],
@@ -120,16 +120,17 @@ export default {
     computed: {
         isFormValid() {
             return Object.keys(this.automaticItem)
-                .find(field => this.automaticItem[field] === 'default')
-        }
+                .find(field => this.automaticItem[field] === 'default')         
+            }
     },
     methods: {
+
         addItem() {
             this.automaticItems.push(this.automaticItem)
             this.automaticItem = {
                 signal: 'default',
                 timeframe: 'default',
-                transactionTerms: 'default'
+                transactionTerm: 'default'
             }
         },
         onDeleteItem(i) {
@@ -139,8 +140,10 @@ export default {
             const automaticBot = {
                 'title': this.title,
                 'pair': this.pair,
-                'dailyVolumeBTC': this.dailyVolumeBTC,
-                'tradingsSignals': this.automaticItems
+                'botSettings': {
+                    'dailyVolumeBTC': this.dailyVolumeBTC,
+                    'tradingsSignals': this.automaticItems
+                }
             }
             this.$store.dispatch('addBot', automaticBot)
         }
