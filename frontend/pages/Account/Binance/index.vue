@@ -17,7 +17,7 @@
                 <div class="form-control">
                     <label class="label">Api Secret</label>
                     <input v-if="!isSaved" v-model="binance.secret" type="text" class="input">
-                    <div v-else>{{ binance.secret ? '***' : ' ' }}</div>
+                    <div v-else>{{ binance.secret ? '***' : '' }}</div>
                 </div>
                 <div class="form__actions">
                     <button v-if="!isSaved" @click.prevent="onSettingsSave" class="button button--success">Сохранить</button>
@@ -77,7 +77,7 @@
                 .$get('/account/api')
                 .then(res => {
                     if(res.status === 'ok') {
-                        this.binance = res.data
+                        this.binance = res.data;
                     } else {
                         console.log(e);
                     }
