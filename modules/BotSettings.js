@@ -13,7 +13,7 @@ module.exports = class BotSettings {
 		maxOpenSafetyOrders = null,
 		takeProffit = null,
 		stopLoss = null
-	}, isObj) {
+	}) {
 		this.tradngSignals = tradingSignals;
 		this.initialOrder = initialOrder;
 		this.safeOrder = new SafeOrder(safeOrder.size, safeOrder.amount);

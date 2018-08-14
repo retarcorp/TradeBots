@@ -47,15 +47,21 @@ app.set('port', process.env.PORT || 8072);
 // });
 
 app.get('/', index);
+
 app.get('/bots/getBotsList', bots);
 app.post('/bots/add', bots);
-app.get('/account', account);
+app.post('/bots/delete', bots);
+
+app.get('/account/api', account);
 app.post('/account/api', account);
 app.delete('/account/api', account);
+
 app.get('/signin', signin);
 app.post('/signin', signin);
 app.get('/signout', signin);
 app.post('/signup', signup);
+
+
 app.get('/incomes', incomes);
 app.get('/statistics', statistics);
 var int;

@@ -72,12 +72,13 @@ const store = () =>
       },
       deleteBot({ commit }, payload) {
         this.$axios
-          .$delete("/bots/delete", {
+          .$post("/bots/delete", {
             'botID': payload
           })
           .then(res => {
             if (res.status === "ok") {
               commit("deleteBot", res.data.botID);
+              this.$router.push('/bots');
             } else {
               console.log(res.message);
             }

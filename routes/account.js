@@ -8,7 +8,13 @@ router.use('/*', (req, res, next) => {
 });
 
 //BinanceAPI page
+router.get('/account/api', (req, res, next) => {
+	let user = {name: req.cookies.user.name};
+	Users.getBinance(user, data => res.json(data));
+});
+
 router.post('/account/api', (req, res, next) => {
+	console.log(req.body)
 	let user = {name: req.cookies.user.name};
 	// let binanceData = {
 	// 	name: req.body.name,
@@ -20,7 +26,7 @@ router.post('/account/api', (req, res, next) => {
 
 router.delete('/account/api', (req, res, next) => {
 	let user = {name: req.cookies.user.name};
-	Users.setBinance(user, null, data => res.send(data));
+	Users.setBinance(user, null, data => res.send({status: 'ok'}));
 });
 //BinanceAPI end
 

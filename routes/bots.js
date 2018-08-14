@@ -17,7 +17,6 @@ router.get('/bots/getBotsList', (req, res, next) => {
 	let user = {name: req.cookies.user.name};
 	Mongo.select(user, 'users', (data) => {
 		data = data[0];
-		console.log(data.bots)
 		res.json({
 			status: 'ok',
 			data: data.bots || []
@@ -27,27 +26,15 @@ router.get('/bots/getBotsList', (req, res, next) => {
 
 router.post('/bots/add', (req, res, next) => {
 	let user = {name: req.cookies.user.name};
-
+	console.log(req.body)
 	Users.setBot(user, req.body, data => res.json(data));
-
-	// Mongo.select(user, 'users', (data) => {
-	// 	data = data[0];
-	// 	let bot = new Bot(req.body);
-	// 	data.bots.push(bot);
-	// 	console.log(data.bots)
-	// 	Mongo.update({name: data.name}, data, 'users', (data) => {
-	// 		res.json({
-	// 			status: 'ok',
-	// 			data: bot
-	// 		});
-	// 	});
-	// })
 });
 
-router.delete('/bots/delete', (req, res, next) => {
+router.post('/bots/delete', (req, res, next) => {
+	console.log(req.body)
 	let user = {name: req.cookies.user.name};
 
-	Users.setBot(user, req.body, data => res.json(data));
+	Users.setBot(user, req.body.botID, data => res.json(data));
 })
 
 module.exports = router;
