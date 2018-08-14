@@ -75,7 +75,7 @@
                     </label>
                 </div>
             </div>
-            <div class="form__control newBot__settings-control">
+            <div v-show="manualBot.botSettings.martingale.active === '1'" class="form__control newBot__settings-control">
                 <label class="label label__double-row" for="save__order-up">Увеличение страховочного ордера: </label>
                 <span class="range__value">{{ manualBot.botSettings.martingale.value }}</span>
                 <input 

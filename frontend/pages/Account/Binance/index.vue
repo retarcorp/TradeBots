@@ -17,7 +17,7 @@
                 <div class="form-control">
                     <label class="label">Api Secret</label>
                     <input v-if="!isSaved" v-model="binance.secret" type="text" class="input">
-                    <div v-else>{{ new Array(binance.secret.length).join('*') }}</div>
+                    <div v-else>{{ binance.secret ? '***' : ' ' }}</div>
                 </div>
                 <div class="form__actions">
                     <button v-if="!isSaved" @click.prevent="onSettingsSave" class="button button--success">Сохранить</button>
@@ -38,7 +38,7 @@
                     key: '',
                     secret: ''
                 },
-                isSaved: false
+                isSaved: true
             }
         },
         methods: {

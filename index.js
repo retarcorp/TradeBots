@@ -26,7 +26,7 @@ var app = express();
 app.use(cors({
 	origin: 'http://localhost:3000',
 	credentials: true
-  }))
+  }));
 app.use(cookieParser());
 app.use(expressSession({secret: 'kitty secret'}));
 app.use(express.static(__dirname + '/public'));
@@ -41,10 +41,6 @@ app.use((req, res, next) => {
 
 app.set('port', process.env.PORT || 8072);
 
-// app.use((req, res, next) => {
-// 	res.header("Access-Control-Allow-Origin", "http://localhost:8072/");
-// 	next();
-// });
 
 app.get('/', index);
 
@@ -64,6 +60,11 @@ app.post('/signup', signup);
 
 app.get('/incomes', incomes);
 app.get('/statistics', statistics);
+
+
+
+
+
 var int;
 
 var i = 0;

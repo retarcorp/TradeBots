@@ -38,8 +38,7 @@
                     })
                     .then(res => {
                         if(res.status === 'ok') {
-                            this.$store.dispatch('setAuthorizedStatus', true)
-                            this.$router.push('/bots')
+                            this.$router.push('/signin')
                         }
                     })
                 }

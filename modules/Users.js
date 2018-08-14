@@ -80,14 +80,29 @@ let Users = {
 	,getBinance(user, callback) {
 		Mongo.select(user, 'users', (data) => {
 			data = data[0];
-			if(callback) callback({
-				status: 'ok',
-				data: {
+			let retData = {};
+			if(data.binanceAPI.key) {
+				retData = {
 					name: data.binanceAPI.name,
 					key: Crypto.decipher(data.binanceAPI.key, Crypto.getKey(data.regDate, data.name)),
 					secret: '***'
 				}
+			}
+			if(callback) callback({
+				status: 'ok',
+				data: retData
 			});
+		});
+	}
+
+	,getBotList(user, callback) {
+		Mongo.select(user, 'users', (data) => {
+			data = data[0];
+			if(callback) 
+				callback({
+					status: 'ok',
+					data: data.bots || []
+				});
 		});
 	}
 
