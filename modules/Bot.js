@@ -10,7 +10,7 @@ module.exports = class Bot {
 		state = CONSTANTS.BOT_STATE.MANUAL,
 		status = CONSTANTS.BOT_STATUS.INACTIVE,
 		pair = {},
-		currentOrder = {},
+		currentOrder = null,
 		orders = [],
 		botSettings = {}
 	}) {
@@ -23,6 +23,27 @@ module.exports = class Bot {
 		this.botSettings = new BotSettings(botSettings);
 		this.botID = String(Date.now());
 		this.volumeLimit = [CONSTANTS.getVolumeLimit(this.pair.from), CONSTANTS.getVolumeLimit(this.pair.to)];
+	}
+
+	changeStatus() {
+		this.status = Number(this.status);
+		if(this.status === CONSTANTS.BOT_STATUS.ACTIVE) {
+			if(this.currentOrder) {
+
+			}
+			else {
+				this.currentOrder = new Order({
+					pair: this.pair,
+					price: this.botSettings.initialOrder
+				});
+			}
+		}
+		else if(this.status === CONSTANTS.BOT_STATUS.INACTIVE) {
+
+		}
+		else if(this.status === CONSTANTS.BOT_STATUS.FROZEN) {
+
+		}
 	}
 }
 /*

@@ -58,11 +58,17 @@ app.get('/signout', signin);
 app.post('/signup', signup);
 app.get('/incomes', incomes);
 app.get('/statistics', statistics);
+var int;
 
-
-
+var i = 0;
+app.get('/test1', (req, res, next) => {
+	clearInterval(int); 
+	res.send('test1 ' + i);
+});
 
 app.get('/test', (req, res, next) => {
+	int = setInterval(()=>console.log(i++), 1000);
+	int;
 	res.send('test');
 	// let b = binanceAPI().options({
 	// 	APIKEY: 'asd',
