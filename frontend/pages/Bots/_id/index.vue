@@ -44,7 +44,7 @@
                 </div>
                 <div class="bots__button">
                     <button class="button button--success button__change-settings">Изменить настройки</button>
-                    <button class="button button--danger button__remove-bot">Удалить бота</button>
+                    <button @click="onDeleteBot" class="button button--danger button__remove-bot">Удалить бота</button>
                 </div>
             </div>
 
@@ -100,6 +100,25 @@
         computed: {
             bot() {
                 return this.$store.getters.getBot(this.$route.params.id)
+            }
+        },
+        watch: {
+            'bot.status'(value) {
+                console.log(value)
+                this.$axios
+                    .$post('/bots/setStatus', {
+                        'botID': this.bot.botID,
+                        'status': value
+                    })
+                    .then(res => {
+                        this.bot.status = res.data.status
+                    })
+                    .catch(e => console.log(e))
+            }
+        },
+        methods: {
+            onDeleteBot() {
+                this.$store.dispatch('deleteBot', this.bot.botID)
             }
         }
     }
