@@ -18,12 +18,12 @@ module.exports = class BotSettings {
 		this.initialOrder = initialOrder;
 		if(safeOrder) 
 			this.safeOrder = new SafeOrder(safeOrder.size, safeOrder.amount);
-		this.deviation = deviation / 100;
+		this.deviation = deviation;
 		if(martingale)
 			this.martingale = new Martingale(martingale.value, martingale.active);
 		this.maxOpenSafetyOrders = maxOpenSafetyOrders;
-		this.takeProffit = takeProffit / 100;
-		this.stopLoss = stopLoss / 100;
+		this.takeProffit = takeProffit;
+		this.stopLoss = stopLoss;
 		this.dailyVolumeBTC = dailyVolumeBTC;
 	}
 };

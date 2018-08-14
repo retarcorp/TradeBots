@@ -111,8 +111,6 @@ let Users = {
 			data = data[0];
 			let tempBot;
 			if(typeof botData === 'object'){
-				console.log('_____');
-				console.log(botData);
 				tempBot = new Bot(botData);
 				data.bots.push(tempBot);
 			}

@@ -36,8 +36,8 @@ const CONSTANTS = {
 	},
 
 	BOT_STATE: {
-		MANUAL: 1,
-		AUTO: 0
+		AUTO: 0,
+		MANUAL: 1
 	},
 
 	BOT_STATUS: {
