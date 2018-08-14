@@ -7,7 +7,7 @@ module.exports = class Order {
 	constructor({
 		pair = new Pair(),
 		state = ORDER_STATE.OPENED,
-		amount = 0,
+		amount = 1,
 		price = 0,
 		total = amount * price,
 		dateInfo = new DateInfo(),
