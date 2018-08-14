@@ -27,7 +27,6 @@ const store = () =>
         state.isAuthorized = payload;
       },
       addBot(state, payload) {
-        state.botsList.pop();
         state.botsList.push(payload);
       },
       addNewBot(state, payload) {
@@ -38,10 +37,6 @@ const store = () =>
       },
       deleteBot(state, payload) {
         state.botsList = state.botsList.filter(bot => bot.botID !== payload);
-      },
-      updateBot(state, payload) {
-        const index = state.botsList.findIndex(bot => bot.botID === payload.botID);
-        state.botsList[index] = payload;
       }
     },
     actions: {
@@ -77,30 +72,17 @@ const store = () =>
       },
       deleteBot({ commit }, payload) {
         this.$axios
-          .$post("/bots/delete", {
+          .$delete("/bots/delete", {
             'botID': payload
           })
           .then(res => {
             if (res.status === "ok") {
               commit("deleteBot", res.data.botID);
-              this.$router.push('/bots');
             } else {
               console.log(res.message);
             }
           })
           .catch(e => console.log(e));
-      },
-      updateBot({commit}, payload) {
-        this.$axios
-          .$post('/bots/update', payload)
-          .then(res => {
-            if(res.status === 'ok') {
-              commit('updateBot', res.data)
-            } else {
-              console.log(res.message)
-            }
-          })
-          .catch(e => console.log(e))
       }
     }
   });
