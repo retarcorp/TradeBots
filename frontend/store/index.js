@@ -9,57 +9,57 @@ const store = () =>
       isAuthorized: true,
       botsList: [
         {
-          "title": "!@#",
-          "state": "1",
-          "status": 0,
-          "pair": {
-            "from": "ETH",
-            "to": "BNB"
+          title: "!@#",
+          state: "1",
+          status: 0,
+          pair: {
+            from: "ETH",
+            to: "BNB"
           },
-          "orders": [
-            { 
-              "pair": { 
-                "from": "BTC", 
-                "to": "ETH" 
-              }, 
-              "state": 0, 
-              "amount": 0, 
-              "price": 0, 
-              "total": 0, 
-              "dateInfo": { 
-                "created": 1534157336853, 
-                "closed": null 
-              }, 
-              "data": "new order is created" 
+          orders: [
+            {
+              pair: {
+                from: "BTC",
+                to: "ETH"
+              },
+              state: 0,
+              amount: 0,
+              price: 0,
+              total: 0,
+              dateInfo: {
+                created: 1534157336853,
+                closed: null
+              },
+              data: "new order is created"
             }
           ],
-          "currentOrder": {},
-          "botSettings": {
-            "traidingSignals": [],
-            "initialOrder": "123",
-            "safeOrder": {
-              "size": "123",
-              "amount": "123"
+          currentOrder: {},
+          botSettings: {
+            traidingSignals: [],
+            initialOrder: "123",
+            safeOrder: {
+              size: "123",
+              amount: "123"
             },
-            "deviation": 1.23,
-            "martingale": {
-              "value": 1.01,
-              "active": "0"
+            deviation: 1.23,
+            martingale: {
+              value: 1.01,
+              active: "0"
             },
-            "maxOpenSafetyOrders": "",
-            "takeProffit": 1.23,
-            "stopLoss": 1.23,
-            "dailyVolumeBTC": null
+            maxOpenSafetyOrders: "",
+            takeProffit: 1.23,
+            stopLoss: 1.23,
+            dailyVolumeBTC: null
           },
-          "botID": "1534154312886",
-          "volumeLimit": [
+          botID: "1534154312886",
+          volumeLimit: [
             {
-              "NAME": "ETH",
-              "VALUE": 0.01
+              NAME: "ETH",
+              VALUE: 0.01
             },
             {
-              "NAME": "BNB",
-              "VALUE": 1
+              NAME: "BNB",
+              VALUE: 1
             }
           ]
         }
@@ -74,8 +74,8 @@ const store = () =>
       },
       getBot(state) {
         return id => {
-          return state.botsList.find(bot => bot.botID === id)
-        }
+          return state.botsList.find(bot => bot.botID === id);
+        };
       }
     },
     mutations: {
@@ -90,6 +90,9 @@ const store = () =>
       },
       setBotsList(state, payload) {
         state.botsList = payload;
+      },
+      deleteBot(state, payload) {
+        state.botsList = state.botsList.filter(bot => bot.botID !== payload);
       }
     },
     actions: {
@@ -122,6 +125,20 @@ const store = () =>
         //     }
         //   })
         //   .catch(e => console.log(e));
+      },
+      deleteBot({ commit }, payload) {
+        this.$axios
+          .$delete("/bots/delete", {
+            'botID': payload
+          })
+          .then(res => {
+            if (res.status === "ok") {
+              commit("deleteBot", res.data.botID);
+            } else {
+              console.log(res.message);
+            }
+          })
+          .catch(e => console.log(e));
       }
     }
   });

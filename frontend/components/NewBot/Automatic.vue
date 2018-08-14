@@ -32,21 +32,21 @@
                         >{{ signal.name }}</option>
                 </select>
                 <select
-                    v-model="automaticItem.timefreim"
+                    v-model="automaticItem.timeframe"
                     class="newBot__conditions-select">
                     <option value="default" disabled selected>Таймфрейм</option>
                     <option 
-                        v-for="tr in timefreims" 
+                        v-for="tr in timefraims" 
                         :key="tr.id" 
                         :value="tr.id"
                         >{{ tr.name }}</option>
                 </select>
                 <select
-                    v-model="automaticItem.recomendation"
+                    v-model="automaticItem.transactionTerm"
                     class="newBot__conditions-select">
                     <option value="default" disabled selected>Рекомендация</option>
                     <option
-                        v-for="rec in recomendations"
+                        v-for="rec in transactionTerms"
                         :key="rec.id"
                         :value="rec.id"
                         >{{ rec.name }}</option>
@@ -91,13 +91,13 @@ export default {
             automaticItem: {
                 signal: 'default',
                 timefreim: 'default',
-                recomendation: 'default'
+                transactionTerm: 'default'
             },
             automaticItems: [],
             signals: [
                 { id: 'Tradingview', name: 'Tradingview'}
             ],
-            timefreims: [
+            timefraims: [
                 { id:"1M", name: '1M' },
                 { id:"3M", name: '3M' },
                 { id:"5M", name: '5M' },
@@ -111,7 +111,7 @@ export default {
                 { id:"1D", name: '1D' },
                 { id:"1W", name: '1W' }
             ],
-            recomendations: [
+            transactionTerms: [
                 { id: 'BUY', name: 'Buy'},
                 { id: 'STRONG_BUY', name: 'Strong Buy'}
             ]
@@ -128,8 +128,8 @@ export default {
             this.automaticItems.push(this.automaticItem)
             this.automaticItem = {
                 signal: 'default',
-                timefreim: 'default',
-                recomendation: 'default'
+                timeframe: 'default',
+                transactionTerms: 'default'
             }
         },
         onDeleteItem(i) {
