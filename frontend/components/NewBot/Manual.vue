@@ -105,30 +105,28 @@
                 required: true,
                 default() {
                     return {
-                        bot: {
-                            state: this.mode,
-                            pair: {
-                                from: '',
-                                to: ''
+                        state: this.mode,
+                        pair: {
+                            from: '',
+                            to: ''
+                        },
+                        title: '',
+                        botSettings: {
+                            initialOrder: '',
+                            safeOrder: {
+                                size: '',
+                                amount: 0
                             },
-                            title: '',
-                            botSettings: {
-                                initialOrder: '',
-                                safeOrder: {
-                                    size: '',
-                                    amount: 0
-                                },
-                                maxOpenSafetyORders: '',
-                                deviation: '',
-                                stopLoss: '',
-                                takeProffit: '',
-                                martingale: {
-                                    value: 1.01,
-                                    active: '0'
-                                }
+                            maxOpenSafetyORders: '',
+                            deviation: '',
+                            stopLoss: '',
+                            takeProffit: '',
+                            martingale: {
+                                value: 1.01,
+                                active: '0'
                             }
-
                         }
+
                     }
                 }
             }
@@ -163,7 +161,7 @@
         },
         methods: {
             onAddManualBot() {
-                this.$store.dispatch('addBot', this.manualBot)
+                this.$store.dispatch('addBot', this.bot)
                     .then(() => {
                         this.$emit('changed')
                     })
