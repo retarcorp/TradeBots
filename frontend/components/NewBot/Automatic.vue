@@ -129,7 +129,7 @@ export default {
             this.automaticItem = {
                 signal: 'default',
                 timeframe: 'default',
-                transactionTerms: 'default'
+                transactionTerm: 'default'
             }
         },
         onDeleteItem(i) {
@@ -139,8 +139,10 @@ export default {
             const automaticBot = {
                 'title': this.title,
                 'pair': this.pair,
-                'dailyVolumeBTC': this.dailyVolumeBTC,
-                'tradingsSignals': this.automaticItems
+                'botSettings': {
+                    'dailyVolumeBTC': this.dailyVolumeBTC,
+                    'tradingsSignals': this.automaticItems
+                }
             }
             this.$store.dispatch('addBot', automaticBot)
         }

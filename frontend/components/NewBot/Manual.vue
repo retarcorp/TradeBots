@@ -3,11 +3,11 @@
         <div class="bots__settings manual-settings">
             <div class="form__control newBot__settings-control">
                 <label class="label" for="label">Название бота:</label>
-                <input v-model="manualBot.title" id="bot__name" type="text" class="input settings__input">
+                <input v-model="bot.title" id="bot__name" type="text" class="input settings__input">
             </div>
             <div class="form__control newBot__settings-control">
                 <label class="label" for="main__pair">Основная пара:</label>
-                <select v-model="manualBot.pair.from" id="main__pair" type="text" class="input settings__input">
+                <select v-model="bot.pair.from" id="main__pair" type="text" class="input settings__input">
                     <option value="BTC">BTC</option>
                     <option value="ETH">ETH</option>
                     <option value="BNB">BNB</option>
@@ -16,7 +16,7 @@
             </div>
             <div class="form__control newBot__settings-control">
                 <label class="label" for="quotable__pair">Котируемая пара:</label>
-                <select v-model="manualBot.pair.to" id="quotable__pair" type="text" class="input settings__input">
+                <select v-model="bot.pair.to" id="quotable__pair" type="text" class="input settings__input">
                     <option value="BTC">BTC</option>
                     <option value="ETH">ETH</option>
                     <option value="BNB">BNB</option>
@@ -25,38 +25,38 @@
             </div>
             <div class="form__control newBot__settings-control">
                 <label class="label" for="start__order">Начальный ордер:</label>
-                <input v-model="manualBot.botSettings.initialOrder" id="start__order" type="text" class="input settings__input">
+                <input v-model="bot.botSettings.initialOrder" id="start__order" type="text" class="input settings__input">
             </div>
             <div class="form__control newBot__settings-control">
                 <label class="label" for="save__order">Страховочный ордер:</label>
-                <input v-model="manualBot.botSettings.safeOrder.size" id="save__order" type="text" class="input settings__input">
+                <input v-model="bot.botSettings.safeOrder.size" id="save__order" type="text" class="input settings__input">
             </div>
             <div class="form__control newBot__settings-control">
                 <label class="label" for="count__save-order">Кол-во страховочных ордеров:</label>
-                <input v-model="manualBot.botSettings.safeOrder.amount" id="count__save-order" type="text" class="input settings__input">
+                <input v-model="bot.botSettings.safeOrder.amount" id="count__save-order" type="text" class="input settings__input">
             </div>
             <div class="form__control newBot__settings-control">
                 <label class="label" for="count__bots">Макс открытых СО:</label>
-                <input v-model="manualBot.botSettings.maxOpenSafetyORders" id="count__max-save-order" type="text" class="input settings__input">
+                <input v-model="bot.botSettings.maxOpenSafetyORders" id="count__max-save-order" type="text" class="input settings__input">
             </div>
             <div class="form__control newBot__settings-control" style="margin-top: 9px;">
                 <label class="label label__double-row" for="deviation">Отклонение от начального ордера %</label>
-                <input v-model="manualBot.botSettings.deviation" id="deviation" type="text" class="input settings__input">
+                <input v-model="bot.botSettings.deviation" id="deviation" type="text" class="input settings__input">
             </div>
             <div class="form__control newBot__settings-control">
                 <label class="label" for="stop__loss">Стоп лосс %</label>
-                <input v-model="manualBot.botSettings.stopLoss" id="stop__loss" type="text" class="input settings__input">
+                <input v-model="bot.botSettings.stopLoss" id="stop__loss" type="text" class="input settings__input">
             </div>
             <div class="form__control newBot__settings-control">
                 <label class="label" for="take__profit">Тейк профит %</label>
-                <input v-model="manualBot.botSettings.takeProffit" id="take__profit" type="text" class="input settings__input">
+                <input v-model="bot.botSettings.takeProffit" id="take__profit" type="text" class="input settings__input">
             </div>
             <div class="form__control newBot__settings-control">
                 <label class="label">Мартингейл</label>
                 <div class="checkbox__container">
                     <label class="martingeil__mode">
                         <input 
-                            v-model="manualBot.botSettings.martingale.active" 
+                            v-model="bot.botSettings.martingale.active" 
                             id="martingale-on" 
                             class="radio__point" 
                             type="radio"
@@ -66,7 +66,7 @@
                     </label>
                     <label class="martingeil__mode">
                         <input 
-                            v-model="manualBot.botSettings.martingale.active" 
+                            v-model="bot.botSettings.martingale.active" 
                             id="martingale-off" 
                             class="radio__point" 
                             type="radio"
@@ -75,11 +75,13 @@
                     </label>
                 </div>
             </div>
-            <div class="form__control newBot__settings-control">
+            <div 
+                v-show="bot.botSettings.martingale.active === '1'" 
+                class="form__control newBot__settings-control">
                 <label class="label label__double-row" for="save__order-up">Увеличение страховочного ордера: </label>
-                <span class="range__value">{{ manualBot.botSettings.martingale.value }}</span>
+                <span class="range__value">{{ bot.botSettings.martingale.value }}</span>
                 <input 
-                    v-model="manualBot.botSettings.martingale.value" 
+                    v-model="bot.botSettings.martingale.value" 
                     id="save__order-up"
                     type="range" 
                     min="1.01" 
@@ -97,38 +99,74 @@
 <script>
     export default {
         name: 'bot-manual',
-        props: ['mode'],
-        data() {
-            return {
-                manualBot: {
-                    state: this.mode,
-                    pair: {
-                        from: '',
-                        to: ''
-                    },
-                    title: '',
-                    botSettings: {
-                        initialOrder: '',
-                        safeOrder: {
-                            size: '',
-                            amount: 0
-                        },
-                        maxOpenSafetyORders: '',
-                        deviation: '',
-                        stopLoss: '',
-                        takeProffit: '',
-                        martingale: {
-                            value: 1.01,
-                            active: '0'
+        props: {
+            mode: String,
+            bot: {
+                required: true,
+                default() {
+                    return {
+                        bot: {
+                            state: this.mode,
+                            pair: {
+                                from: '',
+                                to: ''
+                            },
+                            title: '',
+                            botSettings: {
+                                initialOrder: '',
+                                safeOrder: {
+                                    size: '',
+                                    amount: 0
+                                },
+                                maxOpenSafetyORders: '',
+                                deviation: '',
+                                stopLoss: '',
+                                takeProffit: '',
+                                martingale: {
+                                    value: 1.01,
+                                    active: '0'
+                                }
+                            }
+
                         }
                     }
-
                 }
+            }
+        },
+        data() {
+            return {
+                // manualBot: {
+                //     state: this.mode,
+                //     pair: {
+                //         from: '',
+                //         to: ''
+                //     },
+                //     title: '',
+                //     botSettings: {
+                //         initialOrder: '',
+                //         safeOrder: {
+                //             size: '',
+                //             amount: 0
+                //         },
+                //         maxOpenSafetyORders: '',
+                //         deviation: '',
+                //         stopLoss: '',
+                //         takeProffit: '',
+                //         martingale: {
+                //             value: 1.01,
+                //             active: '0'
+                //         }
+                //     }
+
+                // }
             }
         },
         methods: {
             onAddManualBot() {
                 this.$store.dispatch('addBot', this.manualBot)
+                    .then(() => {
+                        this.$emit('changed')
+                    })
             }
         }
     }
