@@ -3,11 +3,11 @@
         <div class="newBot__settings">
             <div class="form__control newBot__settings-control">
                 <label class="label">Название бота:</label>
-                <input v-model="automaticItem.title" type="text" class="input">
+                <input v-model="title" type="text" class="input">
             </div>
             <div class="form__control newBot__settings-control">
                 <label class="label">Базовая пара:</label>
-                <select v-model="automaticItem.pair" type="text" class="input">
+                <select v-model="pair" type="text" class="input">
                     <option value="ETH">ETH</option>
                     <option value="BNB">BNB</option>
                     <option value="USDT">USDT</option>
@@ -15,7 +15,7 @@
             </div>
             <div class="form__control newBot__settings-control">
                 <label class="label">Дневной объём (BTC):</label>
-                <input v-model="automaticItem.dailyVolumeBTC" type="text" class="input">
+                <input v-model="dailyVolumeBTC" type="text" class="input">
             </div>
         </div>
         <div class="newBot__conditions">
@@ -67,7 +67,7 @@
         </div>
         <div class="text-right">
             <button
-                @click.prevent="addManualBot"
+                @click.prevent="addAutomaticBot"
                 :disabled="automaticItems.length === 0" 
                 class="button button--success"
                 :class="{'button--disabled': automaticItems.length === 0}"
@@ -85,10 +85,10 @@ export default {
     },
     data() {
         return {
+            title: '',
+            dailyVolumeBTC: '',
+            pair: '',
             automaticItem: {
-                title: '',
-                pair: '',
-                dailyVolumeBTC: '',
                 signal: 'default',
                 timefreim: 'default',
                 recomendation: 'default'
@@ -135,8 +135,14 @@ export default {
         onDeleteItem(i) {
             this.automaticItems.splice(i, 1)
         },
-        addManualBot() {
-            this.$store.dispatch('addBot', this.automaticItem)
+        addAutomaticBot() {
+            const automaticBot = {
+                'title': this.title,
+                'pair': this.pair,
+                'dailyVolumeBTC': this.dailyVolumeBTC,
+                'tradingsSignals': this.automaticItems
+            }
+            this.$store.dispatch('addBot', automaticBot)
         }
     }
 }
