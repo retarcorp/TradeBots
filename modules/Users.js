@@ -160,18 +160,26 @@ let Users = {
 		}
 
 		,setStatus(user, botData, callback) {
-			Mongo.select(user, 'users', (data) => {
-				data = data[0]
-				const index = data.bots.findIndex(bot => bot.botID === botData.botID)
-				data.bots[index] = new Bot(data.bots[index]);
-				data.bots[index].changeStatus(botData.status)
-				Mongo.update({name: data.name}, data, 'users', (data) => {
-					callback({
-						status: 'ok',
-						data: { status: botData.status }
+			try {
+				Mongo.select(user, 'users', (data) => {
+					data = data[0]
+					const index = data.bots.findIndex(bot => bot.botID === botData.botID)
+					data.bots[index] = new Bot(data.bots[index]);
+					data.bots[index].changeStatus(botData.status, data)
+					Mongo.update({name: data.name}, data, 'users', (data) => {
+						callback({
+							status: 'ok',
+							data: { status: botData.status }
+						})
 					})
 				})
-			})
+			}
+			catch(error) {
+				res.json({
+					status: 'error',
+					message: error
+				})
+			}
 		}
 	}
 
