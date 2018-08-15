@@ -157,7 +157,7 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
         },
         methods: {
             onDeleteBot() {
-                this.$store.commit('setSpiner', true)
+                this.$store.commit('setSpiner', true);
                 this.$store.dispatch('deleteBot', this.bot.botID)
                     .then(() => {
                         this.$store.commit('setSpiner', false)
