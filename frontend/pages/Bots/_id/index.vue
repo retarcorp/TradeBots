@@ -31,7 +31,7 @@
                 <div v-show="!isChanging" class="settings__description">
                     <!-- <p class="settings__item">Дневной объем (BTC): <span>123</span></p> -->
                     <p class="settings__item">Пара: 
-                        <span>{{ bot.pair.from }} / {{ bot.pair.to }}</span>
+                        <span>{{ bot.pair }}</span>
                     </p>
                     <template v-if="bot.state === '1'">
                         <p class="settings__item">Начальный ордер: 
@@ -42,6 +42,8 @@
                         <p class="settings__item">Кол-во страховочных ордеров: <span>{{ bot.botSettings.safeOrder.amount }}</span></p>
                         
                         <p class="settings__item">Отклонение от начального ордера: <span>{{ bot.botSettings.deviation }}%</span></p>
+                        
+                        <p class="settings__item">Количество: <span>{{ bot.botSettings.amount }}%</span></p>
                         
                         <p class="settings__item">Стоп лосс: <span>{{ bot.botSettings.stopLoss }}%</span></p>
                         
@@ -59,6 +61,7 @@
                         <p class="settings__item">Дневной объем(BTC): 
                             <span>{{ bot.botSettings.dailyVolumeBTC }}</span>
                         </p>
+                        <p class="settings__item">Количество: <span>{{ bot.botSettings.amount }}%</span></p>
                         <p>Условия для начала сделки</p>
                         <table class="table">
                             <tr class="table__tr" v-for="(signal,index) in bot.botSettings.tradingSignals" :key="signal.id">
