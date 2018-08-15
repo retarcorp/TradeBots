@@ -77,9 +77,9 @@ app.get('/test1', (req, res, next) => {
 });
 
 app.get('/test', (req, res, next) => {
-	int = setInterval(()=>console.log(i++), 1000);
-	int;
-	res.send('test');
+	// int = setInterval(()=>console.log(i++), 1000);
+	// int;
+	res.send('lol');
 	// let b = binanceAPI().options({
 	// 	APIKEY: 'asd',
 	// 	APISECRET: 'zc',

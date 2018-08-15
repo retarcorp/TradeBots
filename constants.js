@@ -64,6 +64,5 @@ const CONSTANTS = {
 		});
 		return ret;
 	}
-};
-
-module.exports = CONSTANTS;
+}
+module.exports = CONSTANTS
