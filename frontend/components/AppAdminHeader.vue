@@ -6,8 +6,8 @@
                     <nav class="nav">
                         <div  class="nav__left">
                             <h1 class="title--big header-admin__title">Панель управления</h1>
-                            <nuxt-link to="/admin/" class="nav__link">Пользователи</nuxt-link>
-                            <nuxt-link to="/admin/rates" class="nav__link">Тарифы</nuxt-link>
+                            <nuxt-link exact to="/admin/" class="nav__link">Пользователи</nuxt-link>
+                            <nuxt-link exact to="/admin/rates" class="nav__link">Тарифы</nuxt-link>
                         </div>
                     </nav>
                 </div>

@@ -24,6 +24,11 @@ module.exports = {
     "~/assets/css/main.css"
   ],
 
+  /* Plugins */
+  plugins: [
+    { ssr: false, src: '~plugins/wsSetup' }
+  ],
+
   /*
   ** Modules 
   */
@@ -36,7 +41,9 @@ module.exports = {
     credentials: true,
     withCredentials: true
   },
-
+  router: {
+    middleware: 'checkWsStatus'
+  },
   /*
   ** Build configuration
   */

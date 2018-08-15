@@ -6,26 +6,20 @@
 
 <script>
 export default {
-  data() {
-    return {
-      ws: null
-    }
-  },
-  created() {
-    this.ws = new WebSocket('ws://localhost:8072/');
-    this.ws.onopen = () => {
-      console.log("WS подключено");
-    }
-    this.ws.onclose = (eventClose) => {
-      console.log("соеденение закрыто причина:"  + eventclose);
-    }
-    this.ws.onmessage = (msg) => {
-      console.log('Сообщение ' + msg.data)
+  computed: {
+    ws() {
+      return this.$store.getters.getWs
+    },
+    wsID() {
+      return this.$store.getters.getWsId
     }
   },
   methods: {
     onSendMessage() {
-      this.ws.send('тест сообщение');
+      this.ws.json({
+        id: this.wsID,
+        msg: 'hello'
+      });
     }
   }
 }
