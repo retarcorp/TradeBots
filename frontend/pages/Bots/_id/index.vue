@@ -149,7 +149,8 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
                 this.$axios
                     .$post('/bots/setStatus', {
                         'botID': this.bot.botID,
-                        'status': value
+                        'status': value,
+                        'userID': this.$store.getters.getWsId
                     })
                     .then(res => {
                         if(res.status === 'ok') {

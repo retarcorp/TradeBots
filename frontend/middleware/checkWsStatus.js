@@ -1,3 +1,3 @@
-export default function({ store }) {
-    console.log(store.state);
+export default function(ctx) {
+    console.log(ctx);
 }
