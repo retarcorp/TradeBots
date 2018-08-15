@@ -6,7 +6,7 @@ Vue.use(Vuex)
 const store = () =>
   new Vuex.Store({
     state: {
-      isAuthorized: false,
+      isAuthorized: true,
       botsList: [],
       isActive: false
     },
@@ -55,14 +55,18 @@ const store = () =>
         commit("setAuthorized", payload);
       },
       addBot({ commit }, payload) {
+        commit('setSpiner', true);
         this.$axios
           .$post("/bots/add", payload)
           .then(res => {
             if (res.status === "ok") {
               commit("addBot", res.data);
               this.$router.push("/bots");
+              commit('setSpiner', false);
+              
             } else {
               console.log(res.message);
+              commit('setSpiner', false);
             }
           })
           .catch(e => console.log(e));
@@ -71,18 +75,22 @@ const store = () =>
         commit("addNewBot", payload);
       },
       setBotsList({ commit }) {
+        commit('setSpiner', true);
         this.$axios
           .$get("/bots/getBotsList")
           .then(res => {
             if (res.status === "ok") {
               commit("setBotsList", res.data);
+              commit('setSpiner', false);
             } else {
               console.log(res.message);
+              commit('setSpiner', false);
             }
           })
           .catch(e => console.log(e));
       },
       deleteBot({ commit }, payload) {
+        commit('setSpiner', true);
         this.$axios
           .$post("/bots/delete", {
             botID: payload
@@ -91,20 +99,25 @@ const store = () =>
             if (res.status === "ok") {
               commit("deleteBot", res.data.botID);
               this.$router.push('/bots')
+              commit('setSpiner', false);
             } else {
               console.log(res.message);
+              commit('setSpiner', false);
             }
           })
           .catch(e => console.log(e));
       },
       updateBot({ commit }, payload) {
+        commit('setSpiner', true);
         this.$axios
           .$post("/bots/update", payload)
           .then(res => {
             if (res.status === "ok") {
               commit("updateBot", res.data);
+              commit('setSpiner', false);
             } else {
               console.log(e);
+              commit('setSpiner', false);
             }
           })
           .catch(e => console.log(e));
