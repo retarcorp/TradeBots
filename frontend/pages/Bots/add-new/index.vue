@@ -42,6 +42,9 @@ export default {
         currentComponent() {
             return this.mode === '0' ? BotAutomatic
             : BotManual
+        },
+        ws() {
+            return this.$store.getters.getWs
         }
     }
 }

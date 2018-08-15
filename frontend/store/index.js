@@ -35,19 +35,11 @@ const store = () =>
       }
     },
     mutations: {
-      wsInit(state) {
-        state.ws = new WebSocket("ws://localhost:8072/");
-        state.ws.onopen = () => {
-          console.log("WS подключено");
-        }
-        state.ws.onclose = eventclose => {
-          console.log("соеденение закрыто причина:" + eventclose);
-
-        };
-        state.ws.onmessage = (msg) => {
-          state.wsID = state.wsID === null ? msg.data.id : null;
-          console.log('Сообщение ' + msg.data)
-        }
+      setWsId(state, payload) {
+        state.wsID = payload
+      },
+      wsInit(state, payload) {
+        state.ws = payload.ws;
       },
       setSpiner(state, payload) {
         state.isActive = payload
@@ -73,6 +65,26 @@ const store = () =>
       }
     },
     actions: {
+      wsInit({commit}) {
+          let ws = new WebSocket("ws://localhost:8072/");
+          let id;
+          ws.onopen = () => {
+            console.log("WS подключено");
+            commit('wsInit', {
+              ws
+            })
+          }
+          ws.onclose = eventclose => {
+            console.log("соеденение закрыто причина:" + eventclose);
+          };
+          ws.onmessage = (msg) => {
+            console.log('msg   ' + msg.data);
+            id = id === undefined ? msg.data : undefined;
+            commit("setWsId", id);
+          }
+          
+        
+      },
       setAuthorizedStatus({ commit }, payload) {
         commit("setAuthorized", payload);
       },
@@ -138,7 +150,6 @@ const store = () =>
               commit("updateBot", res.data);
               commit('setSpiner', false);
             } else {
-              console.log(e);
               commit('setSpiner', false);
             }
           })

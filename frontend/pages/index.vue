@@ -16,7 +16,7 @@ export default {
   },
   methods: {
     onSendMessage() {
-      this.ws.json({
+      this.ws.send({
         id: this.wsID,
         msg: 'hello'
       });
