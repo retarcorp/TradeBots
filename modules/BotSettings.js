@@ -26,6 +26,6 @@ module.exports = class BotSettings {
 		this.takeProffit = takeProffit;
 		this.stopLoss = stopLoss;
 		this.dailyVolumeBTC = dailyVolumeBTC;
-		this.initialAmount = amount;
+		this.amount = amount;
 	}
 };

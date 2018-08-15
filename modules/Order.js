@@ -1,5 +1,6 @@
 let Pair = require('./Pair');
 let DateInfo = require('./DateInfo');
+let binanceAPI = require('binance-api-node');
 
 const ORDER_STATE = require('../constants').ORDER_STATE;
 
@@ -21,6 +22,10 @@ module.exports = class Order {
 		this.total = total;
 		this.dateInfo = dateInfo;
 		this.data = data;
+	}
+
+	openOrder() {	
+		
 	}
 }
 /*

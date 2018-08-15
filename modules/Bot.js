@@ -1,7 +1,7 @@
 let BotSettings = require('./BotSettings');
-let Pair = require('./Pair');
 let Order = require('./Order');
-let binanceAPI = require('binance-api-node');
+const Crypto = require('../modules/Crypto');
+let binanceAPI = require('binance-api-node').default;
 
 const CONSTANTS = require('../constants');
 
@@ -12,7 +12,7 @@ module.exports = class Bot {
 		status = CONSTANTS.BOT_STATUS.INACTIVE,
 		botFreeze = CONSTANTS.BOT_FREEZE_STATUS.INACTIVE,
 		botID = String(Date.now()),
-		pair = {},
+		pair = '',
 		currentOrder = null,
 		orders = [],
 		botSettings = {}
@@ -26,22 +26,32 @@ module.exports = class Bot {
 		this.currentOrder = currentOrder;
 		this.botSettings = new BotSettings(botSettings);
 		this.botID = botID;
-		this.volumeLimit = [CONSTANTS.getVolumeLimit(this.pair.from), CONSTANTS.getVolumeLimit(this.pair.to)];
 	}
 
-	changeStatus(nextStatus) {
+	changeStatus(nextStatus, user) {
 		this.status = nextStatus;
 		if(this.status === CONSTANTS.BOT_STATUS.ACTIVE) {
 			console.log('АКТИВ')
-			console.log(typeof CONSTANTS.BOT_STATE.MANUAL, typeof this.state, typeof CONSTANTS.BOT_STATE.MANUAL)
+			let key = Crypto.decipher(user.binanceAPI.key,  Crypto.getKey(user.regDate, user.name))
+			let secret = Crypto.decipher(user.binanceAPI.secret,  Crypto.getKey(user.regDate, user.name))
+			this.Client = binanceAPI({
+				apiKey: key,
+				apiSecret: secret
+			})
+			console.log(key)
 			if(this.state === CONSTANTS.BOT_STATE.MANUAL) {
-				console.log('initialamount = ',this.botSettings.initialAmount)
 				this.currentOrder = new Order({
 					pair: this.pair,
-					amount: this.botSettings.initialAmount,
+					amount: this.botSettings.amount,
 					price: Number(this.botSettings.initialOrder),
-					data: `new order: ${this.pair} - ${this.botSettings.initialOrder}, amount - ${this.botSettings.initialAmount}, from bot ${this.title}(${this.botID})`
+					data: `new order: ${this.pair} - ${this.botSettings.initialOrder}, amount - ${this.botSettings.amount}, from bot ${this.title}(${this.botID})`
 				})
+				this.Client.orderTest({
+					symbol: this.currentOrder.pair,
+					side: 'BUY',
+					quantity: Number(this.currentOrder.amount),
+					price: 0.0015664//Number(this.currentOrder.price)
+				}).then(data => console.log(data))
 				console.log(this.currentOrder)
 			}
 			else if(this.state === CONSTANTS.BOT_STATE.AUTO) {
