@@ -174,10 +174,11 @@ let Users = {
 							})
 						})
 					})
-					// .catch(error => res.json({
-					// 	status: 'error',
-					// 	message: error
-					// }))
+					.catch(error => callback({
+						status: 'error',
+						data: { status: '0' },
+						message: error
+					}))
 				})
 			}
 			catch(error) {

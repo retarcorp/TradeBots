@@ -7,17 +7,26 @@ const WebSocket = require('ws')
 module.exports = {
 	init(server) {
 		this.socket = new WebSocket.Server({server})
-
+		this.users = {}
+		this.userID = 0
 		this.setListneres()
 	}
 
 	,setListneres() {
 		this.socket.on('connection', (ws) => {
+			ws.userID = this.userID++
+			ws.send(ws.userID)
+			this.users[ws.userID] = ws
 
 			ws.on('message', (mess) => {
-				this.socket.clients.forEach(client => {
-					client.send(mess)
-				})
+				ws.send(mess)
+				// this.current = ws || {}
+				// this.current.send(mess)
+
+				// this.socket.clients.forEach(client => {
+				// 	console.log(client.ID)
+				// 	client.send(mess)
+				// })
 			})
 		
 		})

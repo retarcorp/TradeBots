@@ -41,10 +41,14 @@ module.exports = class Bot {
 			})
 			if(this.state === CONSTANTS.BOT_STATE.MANUAL) {
 				// console.log(wss)
-				// console.log(wss.clients)
-				WSS.socket.clients.forEach(client => {
-					client.send('соси')
-				})
+				// console.log(WSS.socket.clients)
+				// console.log('_____-')
+				WSS.users[id].send('хер')
+				// WSS.socket.send('lolkek' + user);
+				// WSS.socket.clients.forEach(client => {
+				// 	console.log(client)
+				// 	client.send('соси')
+				// })
 				// this.Client.orderTest({
 				// 	symbol: this.pair,
 				// 	side: 'BUY',
