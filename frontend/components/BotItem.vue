@@ -30,13 +30,18 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: #DCDCDC;
+    background-color: #F1F1F1;
     color: var(--color-primary);
     padding: 2rem 4rem;
     font-size: 1.8rem;
     line-height: 2.1rem;
     cursor: pointer;
     margin-bottom: .6rem;
+    transition: .3s all ease
+}
+
+.bot:hover {
+    background-color: #DCDCDC;
 }
 
 .bot__signal {

@@ -1,11 +1,11 @@
 <template>
     <div class="automatic">
         <div class="newBot__settings">
-            <div class="form__control newBot__settings-control">
+            <div class="form-control newBot__settings-control">
                 <label class="label">Название бота:</label>
                 <input v-model="bot.title" type="text" class="input">
             </div>
-            <div class="form__control newBot__settings-control">
+            <div class="form-control newBot__settings-control">
                 <label class="label">Базовая пара:</label>
                 <select v-model="bot.pair" type="text" class="input">
                     <option value="ETHBTC">ETH/BTC</option>
@@ -16,11 +16,11 @@
                     <option value="BNBUSDT">BNB/USDT</option>
                 </select>
             </div>
-            <div class="form__control newBot__settings-control">
+            <div class="form-control newBot__settings-control">
                 <label class="label">Дневной объём (BTC):</label>
                 <input v-model="bot.botSettings.dailyVolumeBTC" type="text" class="input">
             </div>
-            <div class="form__control newBot__settings-control">
+            <div class="form-control newBot__settings-control">
                 <label class="label">Количество:</label>
                 <input v-model="bot.botSettings.amount" type="text" class="input">
             </div>
