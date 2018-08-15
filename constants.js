@@ -42,8 +42,12 @@ const CONSTANTS = {
 
 	BOT_STATUS: {
 		INACTIVE: '0',
-		ACTIVE: '1',
-		FROZEN: '2'
+		ACTIVE: '1'
+	},
+
+	BOT_FREEZE_STATUS: {
+		INACTIVE: '0',
+		ACRTIVE: '1'
 	},
 
 	ORDER_STATE: {
