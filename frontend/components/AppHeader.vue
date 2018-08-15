@@ -39,13 +39,16 @@
                 this.$router.push('/signin')
             },
             onSignOut() {
+                this.$store.commit('setSpiner', true);
                 this.$axios.$get('/signout')
                     .then(res => {
                         if(res.status === 'ok') {
                             this.$router.push('/signup')
+                            this.$store.commit('setSpiner', false);
                             this.$store.dispatch('setAuthorizedStatus', false)
                         } else {
                             alert(res.message)
+                            this.$store.commit('setSpiner', false);
                         }
                     })
                     .catch(e => console.log(e))

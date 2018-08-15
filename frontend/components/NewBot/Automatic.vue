@@ -158,7 +158,6 @@ export default {
             this.bot.botSettings.tradingSignals.splice(i, 1)
         },
         addAutomaticBot() {
-            this.$store.commit('setSpiner', true)
             // const automaticBot = {
             //     'title': this.bot.title,
             //     'pair': this.bot.pair,
@@ -171,7 +170,6 @@ export default {
             (this.bot && this.bot.botID) ? (path = 'updateBot') : (path = 'addBot');
             this.$store.dispatch(path, this.bot)
                 .then(() => {
-                    this.$store.commit('setSpiner', false)
                     this.$emit('changed')
                 })
         }

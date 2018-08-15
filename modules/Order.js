@@ -12,8 +12,21 @@ module.exports = class Order {
 		price = 0,
 		total = amount * price,
 		dateInfo = new DateInfo(),
-		data = 'new order is created',
-		id = Math.ceil(Date.now() * price)
+		data = {
+			symbol,
+			orderId,
+			clientOrderId,
+			transactTime,
+			price,
+			origQty,
+			executedQty,
+			status,
+			timeInForce,
+			type,
+			side,
+			time	
+		},
+		orderId = 0
 	}) {
 		this.pair = pair;
 		this.state = state;
