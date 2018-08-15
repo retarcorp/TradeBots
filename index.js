@@ -11,7 +11,7 @@ const Mongo = require('./modules/Mongo').init();
 const Users = require('./modules/Users');
 const Crypto = require('./modules/Crypto');
 const Binance = require('./modules/Binance');
-const binanceAPI = require('node-binance-api');
+let binanceAPI = require('binance-api-node').default;
 
 //Routers
 var signin = require('./routes/signin');
@@ -66,8 +66,20 @@ app.get('/incomes', incomes);
 app.get('/statistics', statistics);
 
 app.get('/test', (req, res, next) => {
+	let c = binanceAPI({
+		apiKey: 'UmPrRZJ6MRIRAwKqChcSpC4dkm1MMlX19a2S9tfipEW2Efmos7jzCvxIDUgFUTyw',
+		apiSecret: 'EbbvZhDI8TuOs1nJqQzqtoSDSzCuCrPmeMfMlTtiZiQdxTYV0vtKgr9phylXdkH8 '
+	})
 	// int = setInterval(()=>console.log(i++), 1000);
 	// int;
+	c.orderTest({
+		symbol: 'BNBBTC',
+		side: 'BUY',
+		quantity: 100,//Number(this.botSettings.amount),
+		price: 0.0015520//Number(this.botSettings.initialOrder)
+	})
+	.then( data => console.log(data))
+	.catch( err => console.log(err))
 	res.send('lol');
 	// let b = binanceAPI().options({
 	// 	APIKEY: 'asd',

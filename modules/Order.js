@@ -12,20 +12,20 @@ module.exports = class Order {
 		price = 0,
 		total = amount * price,
 		dateInfo = new DateInfo(),
-		data = {
-			symbol,
-			orderId,
-			clientOrderId,
-			transactTime,
-			price,
-			origQty,
-			executedQty,
-			status,
-			timeInForce,
-			type,
-			side,
-			time	
-		},
+		// data = {
+		// 	symbol,
+		// 	orderId,
+		// 	clientOrderId,
+		// 	transactTime,
+		// 	price,
+		// 	origQty,
+		// 	executedQty,
+		// 	status,
+		// 	timeInForce,
+		// 	type,
+		// 	side,
+		// 	time	
+		// },
 		orderId = 0
 	}) {
 		this.pair = pair;
@@ -34,7 +34,7 @@ module.exports = class Order {
 		this.price = price;
 		this.total = total;
 		this.dateInfo = dateInfo;
-		this.data = data;
+		// this.data = data;
 	}
 
 	openOrder() {	

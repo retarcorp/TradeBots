@@ -8,7 +8,7 @@ module.exports = {
 	init(server) {
 		this.socket = new WebSocket.Server({server})
 		this.users = {}
-		this.userID = 0
+		this.userID = 1
 		this.setListneres()
 	}
 

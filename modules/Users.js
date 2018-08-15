@@ -164,21 +164,22 @@ let Users = {
 				Mongo.select(user, 'users', (data) => {
 					data = data[0]
 					const index = data.bots.findIndex(bot => bot.botID === botData.botID)
-					data.bots[index] = new Bot(data.bots[index])
-					data.bots[index].changeStatus(botData.status, data)
-					.then(() => {
+					let newBot = new Bot(data.bots[index])
+					data.bots[index] = newBot
+					data.bots[index].changeStatus(botData.status, botData.userID, data)
+					.then((d) => {
 						Mongo.update({name: data.name}, data, 'users', (data) => {
 							callback({
 								status: 'ok',
-								data: { status: botData.status }
+								data: { status: newBot.status }
 							})
 						})
 					})
-					.catch(error => callback({
-						status: 'error',
-						data: { status: '0' },
-						message: error
-					}))
+					// .catch(error => callback({
+					// 	status: 'error',
+					// 	data: { status: '0' },
+					// 	message: error
+					// }))
 				})
 			}
 			catch(error) {

@@ -29,12 +29,14 @@ module.exports = class Bot {
 		this.botID = botID;
 	}
 
-	async changeStatus(nextStatus, user) {
+	async changeStatus(nextStatus, userID, user) {
 		this.status = nextStatus;
 		if(this.status === CONSTANTS.BOT_STATUS.ACTIVE) {
 			console.log('АКТИВ')
 			let key = Crypto.decipher(user.binanceAPI.key,  Crypto.getKey(user.regDate, user.name))
 			let secret = Crypto.decipher(user.binanceAPI.secret,  Crypto.getKey(user.regDate, user.name))
+			console.log('|'+key+'|')
+			console.log('|'+secret+'|')
 			this.Client = binanceAPI({
 				apiKey: key,
 				apiSecret: secret
@@ -43,12 +45,33 @@ module.exports = class Bot {
 				// console.log(wss)
 				// console.log(WSS.socket.clients)
 				// console.log('_____-')
-				WSS.users[id].send('хер')
-				// WSS.socket.send('lolkek' + user);
-				// WSS.socket.clients.forEach(client => {
-				// 	console.log(client)
-				// 	client.send('соси')
+				WSS.users[userID].send('хер ' + userID)
+				this.currentOrder = {};
+				// await this.Client.orderTest({
+				// 	symbol: 'BNBBTC',
+				// 	side: 'BUY',
+				// 	quantity: 100,//Number(this.botSettings.amount),
+				// 	price: 0.0015520//Number(this.botSettings.initialOrder)
 				// })
+				this.Client.orderTest({
+					symbol: this.pair,
+					side: 'BUY',
+					quantity: Number(this.botSettings.amount),
+					price: Number(this.botSettings.initialOrder)
+				})
+				.then((data) => {
+					console.log('это then')
+					console.log(data)
+					this.currentOrder = new Order({
+						pair: this.pair,
+						amount: this.botSettings.amount,
+						price: this.botSettings.initialOrder	
+					})
+					this.orders.push(this.currentOrder)
+				})
+				.catch((err) => console.log(err))
+				// this.currentOrder = new Order({})
+
 				// this.Client.orderTest({
 				// 	symbol: this.pair,
 				// 	side: 'BUY',
