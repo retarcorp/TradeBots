@@ -17,7 +17,6 @@ module.exports = {
 			ws.userID = this.userID++
 			ws.send(ws.userID)
 			this.users[ws.userID] = ws
-
 			ws.on('message', (mess) => {
 				ws.send(mess)
 				// this.current = ws || {}
