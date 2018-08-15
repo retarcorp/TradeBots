@@ -10,7 +10,6 @@ router.get('/bots/getBotsList', (req, res, next) => {
 
 router.post('/bots/add', (req, res, next) => {
 	let user = {name: req.cookies.user.name}
-	console.log(req.body)
 	Users.Bots.setBot(user, req.body, data => res.json(data))
 });
 
@@ -26,10 +25,7 @@ router.post('/bots/update', (req, res, next) => {
 
 router.post('/bots/setStatus', (req, res, next) => {
 	let user = {name: req.cookies.user.name}
-	Users.Bots.setStatus(user , req.body, data => {
-		res.json(data)
-		
-	})
+	Users.Bots.setStatus(user , req.body, data => res.json(data))
 })
 
 module.exports = router;

@@ -1,6 +1,7 @@
 let BotSettings = require('./BotSettings');
 let Pair = require('./Pair');
 let Order = require('./Order');
+let binanceAPI = require('binance-api-node');
 
 const CONSTANTS = require('../constants');
 
@@ -27,15 +28,36 @@ module.exports = class Bot {
 	}
 
 	changeStatus(nextStatus) {
-		this.status = Number(nextStatus);
+		this.status = nextStatus;
 		if(this.status === CONSTANTS.BOT_STATUS.ACTIVE) {
 			console.log('АКТИВ')
+			console.log(typeof CONSTANTS.BOT_STATE.MANUAL, typeof this.state, typeof CONSTANTS.BOT_STATE.MANUAL,)
+			if(this.state === CONSTANTS.BOT_STATE.MANUAL) {
+				this.currentOrder = new Order({
+					pair: this.pair,
+					price: Number(this.botSettings.initialOrder),
+					data: `new order: ${this.pair.from}${this.pair.to} - ${this.botSettings.initialOrder}, from bot ${this.title}(${this.botID})`
+				})
+				console.log(this.currentOrder)
+			}
+			else if(this.state === CONSTANTS.BOT_STATE.AUTO) {
+
+			}
+			else {
+				console.log('ЧТО-ТО ПОШЛО НЕ ТАК, ВЫКЛ')
+				this.status = CONSTANTS.BOT_STATUS.INACTIVE
+			}
 		}
 		else if(this.status === CONSTANTS.BOT_STATUS.INACTIVE) {
 			console.log('ИНАКТИВ')
+			this.currentOrder = null;
 		}
 		else if(this.status === CONSTANTS.BOT_STATUS.FROZEN) {
 			console.log('ФРОЗЕН')
+		}
+		else {
+			console.log('ЧТО-ТО НЕ ТО, ВЫКЛЮЧЕНИЕ')
+			this.status = CONSTANTS.BOT_STATUS.INACTIVE;
 		}
 	}
 }
