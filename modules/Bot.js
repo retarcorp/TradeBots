@@ -2,6 +2,7 @@ let BotSettings = require('./BotSettings');
 let Order = require('./Order');
 const Crypto = require('../modules/Crypto');
 let binanceAPI = require('binance-api-node').default;
+const WSS = require('./WSS');
 
 const CONSTANTS = require('../constants');
 
@@ -39,6 +40,11 @@ module.exports = class Bot {
 				apiSecret: secret
 			})
 			if(this.state === CONSTANTS.BOT_STATE.MANUAL) {
+				// console.log(wss)
+				// console.log(wss.clients)
+				WSS.socket.clients.forEach(client => {
+					client.send('соси')
+				})
 				// this.Client.orderTest({
 				// 	symbol: this.pair,
 				// 	side: 'BUY',
@@ -55,7 +61,6 @@ module.exports = class Bot {
 				// 	this.orders.push(this.currentOrder)
 				// })
 				// .catch(error => console.log(error))
-				console.log(this.currentOrder)
 			}
 			else if(this.state === CONSTANTS.BOT_STATE.AUTO) {
 

@@ -16,7 +16,7 @@ export default {
     this.ws.onopen = () => {
       console.log("WS подключено");
     }
-    this.ws.onclose = (eventClose) => {
+    this.ws.onclose = (eventclose) => {
       console.log("соеденение закрыто причина:"  + eventclose);
     }
     this.ws.onmessage = (msg) => {

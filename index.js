@@ -6,11 +6,11 @@ const http = require('http');
 const cors = require('cors');
 
 //Modules
+
 const Mongo = require('./modules/Mongo').init();
 const Users = require('./modules/Users');
 const Crypto = require('./modules/Crypto');
 const Binance = require('./modules/Binance');
-const Bot = require('./modules/Bot');
 const binanceAPI = require('node-binance-api');
 
 //Routers
@@ -125,10 +125,32 @@ app.use(function(err, req, res, next){
 app.server = http.createServer(app);
 app.server.listen(app.get('port'));
 
-module.exports = app;
-const wss = require('./modules/WSS');
-console.log(wss)
-// wss.send('СОСИИ ААААХАХАХАХ')
+var WSS = require('./modules/WSS');
+WSS.init(app.server);
+
+
+// console.log(wss);
+
+// module.exports = app;
+// const WebSocket = require('ws');
+// // const app = require('../index');
+
+// const server = app.server;
+// // console.log(server)
+// const wss = new WebSocket.Server({server});
+// wss.on('connection', (ws) => {
+
+// 	ws.on('message', (mess) => {
+// 		wss.clients.forEach(client => {
+// 			client.send(mess);
+// 		});
+// 	});
+
+// 	// ws.on
+
+// })
+// wss.clients[0].send('asd');
+// module.exports = wss; 
 // app.listen(app.get('port'), () => {
 // 	console.log(`server start at port ::${app.get('port')}`);
 // });
