@@ -10,6 +10,7 @@ module.exports = class Bot {
 		title = 'Untitled bot',
 		state = CONSTANTS.BOT_STATE.MANUAL,
 		status = CONSTANTS.BOT_STATUS.INACTIVE,
+		botFreeze = CONSTANTS.BOT_FREEZE_STATUS.INACTIVE,
 		botID = String(Date.now()),
 		pair = {},
 		currentOrder = null,
@@ -19,7 +20,8 @@ module.exports = class Bot {
 		this.title = title;
 		this.state = state;
 		this.status = status;
-		this.pair = new Pair(pair.from, pair.to);
+		this.botFreeze = botFreeze;
+		this.pair = pair;//new Pair(pair.from, pair.to);
 		this.orders = orders;
 		this.currentOrder = currentOrder;
 		this.botSettings = new BotSettings(botSettings);
@@ -31,12 +33,14 @@ module.exports = class Bot {
 		this.status = nextStatus;
 		if(this.status === CONSTANTS.BOT_STATUS.ACTIVE) {
 			console.log('АКТИВ')
-			console.log(typeof CONSTANTS.BOT_STATE.MANUAL, typeof this.state, typeof CONSTANTS.BOT_STATE.MANUAL,)
+			console.log(typeof CONSTANTS.BOT_STATE.MANUAL, typeof this.state, typeof CONSTANTS.BOT_STATE.MANUAL)
 			if(this.state === CONSTANTS.BOT_STATE.MANUAL) {
+				console.log('initialamount = ',this.botSettings.initialAmount)
 				this.currentOrder = new Order({
 					pair: this.pair,
+					amount: this.botSettings.initialAmount,
 					price: Number(this.botSettings.initialOrder),
-					data: `new order: ${this.pair.from}${this.pair.to} - ${this.botSettings.initialOrder}, from bot ${this.title}(${this.botID})`
+					data: `new order: ${this.pair} - ${this.botSettings.initialOrder}, amount - ${this.botSettings.initialAmount}, from bot ${this.title}(${this.botID})`
 				})
 				console.log(this.currentOrder)
 			}
@@ -51,9 +55,6 @@ module.exports = class Bot {
 		else if(this.status === CONSTANTS.BOT_STATUS.INACTIVE) {
 			console.log('ИНАКТИВ')
 			this.currentOrder = null;
-		}
-		else if(this.status === CONSTANTS.BOT_STATUS.FROZEN) {
-			console.log('ФРОЗЕН')
 		}
 		else {
 			console.log('ЧТО-ТО НЕ ТО, ВЫКЛЮЧЕНИЕ')

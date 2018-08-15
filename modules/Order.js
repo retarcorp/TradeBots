@@ -5,7 +5,7 @@ const ORDER_STATE = require('../constants').ORDER_STATE;
 
 module.exports = class Order {
 	constructor({
-		pair = new Pair(),
+		pair = '',
 		state = ORDER_STATE.OPENED,
 		amount = 1,
 		price = 0,

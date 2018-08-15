@@ -6,6 +6,7 @@ module.exports = class BotSettings {
 	constructor({
 		tradingSignals = [],//new TraidingSignals(),
 		initialOrder = null, //volumeLimit.VALUE,
+		amount = '1',
 		dailyVolumeBTC = null,
 		safeOrder = null, //new SafeOrder(initialOrder, 1),
 		deviation = null,
@@ -25,5 +26,6 @@ module.exports = class BotSettings {
 		this.takeProffit = takeProffit;
 		this.stopLoss = stopLoss;
 		this.dailyVolumeBTC = dailyVolumeBTC;
+		this.initialAmount = amount;
 	}
 };

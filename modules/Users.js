@@ -111,6 +111,7 @@ let Users = {
 			Mongo.select(user, 'users', (data) => {
 				data = data[0];
 				let tempBot;
+				console.log(botData);
 				if(typeof botData === 'object'){
 					tempBot = new Bot(botData);
 					data.bots.push(tempBot);
