@@ -28,7 +28,7 @@ module.exports = class Bot {
 		this.botID = botID;
 	}
 
-	changeStatus(nextStatus, user) {
+	async changeStatus(nextStatus, user) {
 		this.status = nextStatus;
 		if(this.status === CONSTANTS.BOT_STATUS.ACTIVE) {
 			console.log('АКТИВ')
@@ -38,20 +38,23 @@ module.exports = class Bot {
 				apiKey: key,
 				apiSecret: secret
 			})
-			console.log(key)
 			if(this.state === CONSTANTS.BOT_STATE.MANUAL) {
-				this.currentOrder = new Order({
-					pair: this.pair,
-					amount: this.botSettings.amount,
-					price: Number(this.botSettings.initialOrder),
-					data: `new order: ${this.pair} - ${this.botSettings.initialOrder}, amount - ${this.botSettings.amount}, from bot ${this.title}(${this.botID})`
-				})
-				this.Client.orderTest({
-					symbol: this.currentOrder.pair,
-					side: 'BUY',
-					quantity: Number(this.currentOrder.amount),
-					price: 0.0015664//Number(this.currentOrder.price)
-				}).then(data => console.log(data))
+				// this.Client.orderTest({
+				// 	symbol: this.pair,
+				// 	side: 'BUY',
+				// 	quantity: Number(this.amount),
+				// 	price: Number(this.initialOrder)
+				// })
+				// .then(data => {
+				// 	this.currentOrder = new Order({
+				// 		pair: this.pair,
+				// 		amount: this.botSettings.amount,
+				// 		price: Number(this.botSettings.initialOrder),
+				// 		data: data//`new order: ${this.pair} - ${this.botSettings.initialOrder}, amount - ${this.botSettings.amount}, from bot ${this.title}(${this.botID})`
+				// 	})
+				// 	this.orders.push(this.currentOrder)
+				// })
+				// .catch(error => console.log(error))
 				console.log(this.currentOrder)
 			}
 			else if(this.state === CONSTANTS.BOT_STATE.AUTO) {
