@@ -4,14 +4,13 @@ const expressSession = require('express-session');
 const cookieParser = require('cookie-parser');
 const http = require('http');
 const cors = require('cors');
-const WebSocket = require('ws');
 
 //Modules
+
 const Mongo = require('./modules/Mongo').init();
 const Users = require('./modules/Users');
 const Crypto = require('./modules/Crypto');
 const Binance = require('./modules/Binance');
-const Bot = require('./modules/Bot');
 const binanceAPI = require('node-binance-api');
 
 //Routers
@@ -65,18 +64,6 @@ app.post('/signup', signup);
 
 app.get('/incomes', incomes);
 app.get('/statistics', statistics);
-
-
-
-
-
-var int;
-
-var i = 0;
-app.get('/test1', (req, res, next) => {
-	clearInterval(int); 
-	res.send('test1 ' + i);
-});
 
 app.get('/test', (req, res, next) => {
 	// int = setInterval(()=>console.log(i++), 1000);
@@ -137,24 +124,34 @@ app.use(function(err, req, res, next){
 
 app.server = http.createServer(app);
 app.server.listen(app.get('port'));
-const server = app.server;
 
-const wss = new WebSocket.Server({server});
+var WSS = require('./modules/WSS');
+WSS.init(app.server);
 
-wss.on('connection', (ws) => {
 
-	ws.on('message', (mess) => {
-		wss.clients.forEach(client => {
-			client.send(mess);
-		});
-	});
+// console.log(wss);
 
-	// ws.on
+// module.exports = app;
+// const WebSocket = require('ws');
+// // const app = require('../index');
 
-})
+// const server = app.server;
+// // console.log(server)
+// const wss = new WebSocket.Server({server});
+// wss.on('connection', (ws) => {
 
+// 	ws.on('message', (mess) => {
+// 		wss.clients.forEach(client => {
+// 			client.send(mess);
+// 		});
+// 	});
+
+// 	// ws.on
+
+// })
+// wss.clients[0].send('asd');
+// module.exports = wss; 
 // app.listen(app.get('port'), () => {
 // 	console.log(`server start at port ::${app.get('port')}`);
 // });
 
-module.exports = app;
