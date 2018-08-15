@@ -8,14 +8,21 @@
             <div class="form__control newBot__settings-control">
                 <label class="label">Базовая пара:</label>
                 <select v-model="bot.pair" type="text" class="input">
-                    <option value="ETH">ETH</option>
-                    <option value="BNB">BNB</option>
-                    <option value="USDT">USDT</option>
+                    <option value="ETHBTC">ETH/BTC</option>
+                    <option value="BNBBTC">BNB/BTC</option>
+                    <option value="BNBETH">BNB/ETH</option>
+                    <option value="BTCUSDT">BTC/USDT</option>
+                    <option value="ETHUSDT">ETH/USDT</option>
+                    <option value="BNBUSDT">BNB/USDT</option>
                 </select>
             </div>
             <div class="form__control newBot__settings-control">
                 <label class="label">Дневной объём (BTC):</label>
                 <input v-model="bot.botSettings.dailyVolumeBTC" type="text" class="input">
+            </div>
+            <div class="form__control newBot__settings-control">
+                <label class="label">Количество:</label>
+                <input v-model="bot.botSettings.amount" type="text" class="input">
             </div>
         </div>
         <div class="newBot__conditions">
@@ -92,6 +99,7 @@ export default {
                     pair: '',
                     title: '',
                     botSettings: {
+                        amount: '',
                         dailyVolumeBTC: '',
                         tradingSignals: []
                     }
@@ -151,19 +159,20 @@ export default {
         },
         addAutomaticBot() {
             this.$store.commit('setSpiner', true)
-            const automaticBot = {
-                'title': this.bot.title,
-                'pair': this.bot.pair,
-                'botSettings': {
-                    'dailyVolumeBTC': this.bot.botSettings.dailyVolumeBTC,
-                    'tradingSignals': this.bot.botSettings.tradingSignals
-                }
-            }
+            // const automaticBot = {
+            //     'title': this.bot.title,
+            //     'pair': this.bot.pair,
+            //     'botSettings': {
+            //         'dailyVolumeBTC': this.bot.botSettings.dailyVolumeBTC,
+            //         'tradingSignals': this.bot.botSettings.tradingSignals
+            //     }
+            // }
             let path = '';
             (this.bot && this.bot.botID) ? (path = 'updateBot') : (path = 'addBot');
-            this.$store.dispatch(path, automaticBot)
+            this.$store.dispatch(path, this.bot)
                 .then(() => {
                     this.$store.commit('setSpiner', false)
+                    this.$emit('changed')
                 })
         }
     }

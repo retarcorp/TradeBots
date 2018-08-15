@@ -14,7 +14,7 @@
                         <input 
                             v-model="bot.status" 
                             type="checkbox" 
-                            class="button__status"
+                            class="checkbox__input button__status"
                             true-value="1"
                             false-value="0">
                         <div class="checkbox__text"></div>
