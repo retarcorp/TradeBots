@@ -6,7 +6,7 @@ Vue.use(Vuex)
 const store = () =>
   new Vuex.Store({
     state: {
-      isAuthorized: true,
+      isAuthorized: false,
       botsList: [],
       isActive: false,
       ws: null,
@@ -75,7 +75,7 @@ const store = () =>
             })
           }
           ws.onclose = eventclose => {
-            console.log("соеденение закрыто причина:" + eventclose);
+            console.log("соеденение закрыто причина:" + eventclose.data);
           };
           ws.onmessage = (msg) => {
             console.log('msg   ' + msg.data);
