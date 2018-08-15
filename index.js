@@ -2,6 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const expressSession = require('express-session');
 const cookieParser = require('cookie-parser');
+const http = require('http');
 const cors = require('cors');
 const WebSocket = require('ws');
 
@@ -23,6 +24,7 @@ var incomes = require('./routes/incomes');
 var statistics = require('./routes/statistics');
 
 var app = express();
+
 
 app.use(cors({
 	origin: 'http://localhost:3000',
@@ -133,6 +135,26 @@ app.use(function(err, req, res, next){
 	res.sendFile('500.html', {root: 'public/'});  
 }); 
 
-app.listen(app.get('port'), () => {
-	console.log(`server start at port ::${app.get('port')}`);
-});
+app.server = http.createServer(app);
+app.server.listen(app.get('port'));
+const server = app.server;
+
+const wss = new WebSocket.Server({server});
+
+wss.on('connection', (ws) => {
+
+	ws.on('message', (mess) => {
+		wss.clients.forEach(client => {
+			client.send(mess);
+		});
+	});
+
+	// ws.on
+
+})
+
+// app.listen(app.get('port'), () => {
+// 	console.log(`server start at port ::${app.get('port')}`);
+// });
+
+module.exports = app;
