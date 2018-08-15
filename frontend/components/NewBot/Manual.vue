@@ -7,20 +7,13 @@
             </div>
             <div class="form__control newBot__settings-control">
                 <label class="label" for="main__pair">Основная пара:</label>
-                <select v-model="bot.pair.from" id="main__pair" type="text" class="input settings__input">
-                    <option value="BTC">BTC</option>
-                    <option value="ETH">ETH</option>
-                    <option value="BNB">BNB</option>
-                    <option value="USDT">USDT</option>
-                </select>
-            </div>
-            <div class="form__control newBot__settings-control">
-                <label class="label" for="quotable__pair">Котируемая пара:</label>
-                <select v-model="bot.pair.to" id="quotable__pair" type="text" class="input settings__input">
-                    <option value="BTC">BTC</option>
-                    <option value="ETH">ETH</option>
-                    <option value="BNB">BNB</option>
-                    <option value="USDT">USDT</option>
+                <select v-model="bot.pair" id="main__pair" type="text" class="input settings__input">
+                    <option value="ETHBTC">ETH/BTC</option>
+                    <option value="BNBBTC">BNB/BTC</option>
+                    <option value="BNBETH">BNB/ETH</option>
+                    <option value="BTCUSDT">BTC/USDT</option>
+                    <option value="ETHUSDT">ETH/USDT</option>
+                    <option value="BNBUSDT">BNB/USDT</option>
                 </select>
             </div>
             <div class="form__control newBot__settings-control">
@@ -38,6 +31,10 @@
             <div class="form__control newBot__settings-control">
                 <label class="label" for="count__bots">Макс открытых СО:</label>
                 <input v-model="bot.botSettings.maxOpenSafetyORders" id="count__max-save-order" type="text" class="input settings__input">
+            </div>
+            <div class="form__control newBot__settings-control">
+                <label class="label">Количество:</label>
+                <input v-model="bot.botSettings.amount" type="text" class="input">
             </div>
             <div class="form__control newBot__settings-control" style="margin-top: 9px;">
                 <label class="label label__double-row" for="deviation">Отклонение от начального ордера %</label>
@@ -106,12 +103,10 @@
                 default() {
                     return {
                         state: '1',
-                        pair: {
-                            from: '',
-                            to: ''
-                        },
+                        pair: '',
                         title: '',
                         botSettings: {
+                            amount: '',
                             initialOrder: '',
                             safeOrder: {
                                 size: '',
@@ -129,34 +124,6 @@
 
                     }
                 }
-            }
-        },
-        data() {
-            return {
-                // manualBot: {
-                //     state: this.mode,
-                //     pair: {
-                //         from: '',
-                //         to: ''
-                //     },
-                //     title: '',
-                //     botSettings: {
-                //         initialOrder: '',
-                //         safeOrder: {
-                //             size: '',
-                //             amount: 0
-                //         },
-                //         maxOpenSafetyORders: '',
-                //         deviation: '',
-                //         stopLoss: '',
-                //         takeProffit: '',
-                //         martingale: {
-                //             value: 1.01,
-                //             active: '0'
-                //         }
-                //     }
-
-                // }
             }
         },
         methods: {
