@@ -7,7 +7,7 @@
                 <span v-else class="settings__type">(Ручной)</span>
                 <div class="bots__buttons-status">
                     <!-- Send request to server -->
-                    <button @click.prevent="bot.status === '2'" 
+                    <button @click.prevent="setBotFreeze" 
                         class="button button--primary button__freeze"
                         >Заморозить</button>
                     <label class="checkbox">
@@ -156,6 +156,16 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
             }
         },
         methods: {
+            setBotFreeze() {
+                this.bot.freeze === '0' 
+                ? this.bot.freeze = '1'
+                : this.bot.freeze = '0'
+                this.$axios
+                    .$post('/bots/setFreeze', {
+                        botID: this.bot.botID,
+                        freeze: this.bot.freeze
+                    })
+            },
             onDeleteBot() {
                 this.$store.commit('setSpiner', true);
                 this.$store.dispatch('deleteBot', this.bot.botID)
