@@ -3,13 +3,13 @@
         <div class="row">
             <div class="col-12 col-md-6 col-lg-4">
                 <div class="bots__search-wrapper">
-                    <input type="text" class="input bots__search">
+                    <input v-model="search" type="text" class="input bots__search">
                     <span class="bots__search-icon">
                         <img src="../assets/svg/search.svg">
                     </span>
                 </div>
                 <div class="bots__list">
-                    <div v-for="bot in botsList" :key="bot.id">
+                    <div v-for="bot in filteredBotList" :key="bot.id">
                         <bot-item :id="bot.botID">{{ bot.title }}</bot-item>
                     </div>
                 </div>
@@ -34,8 +34,18 @@ export default {
         BotItem
     },
     computed: {
+        filteredBotList() {
+            return this.botsList.filter(bot => {
+                return (bot.title.toLowerCase()).startsWith(this.search.toLowerCase())
+            })
+        },
         botsList() {
             return this.$store.getters.getBotsList
+        }
+    },
+    data() {
+        return {
+            search: ''
         }
     },
     methods: {
