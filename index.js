@@ -4,7 +4,6 @@ const expressSession = require('express-session');
 const cookieParser = require('cookie-parser');
 const http = require('http');
 const cors = require('cors');
-const WebSocket = require('ws');
 
 //Modules
 const Mongo = require('./modules/Mongo').init();
@@ -66,18 +65,6 @@ app.post('/signup', signup);
 app.get('/incomes', incomes);
 app.get('/statistics', statistics);
 
-
-
-
-
-var int;
-
-var i = 0;
-app.get('/test1', (req, res, next) => {
-	clearInterval(int); 
-	res.send('test1 ' + i);
-});
-
 app.get('/test', (req, res, next) => {
 	// int = setInterval(()=>console.log(i++), 1000);
 	// int;
@@ -137,24 +124,12 @@ app.use(function(err, req, res, next){
 
 app.server = http.createServer(app);
 app.server.listen(app.get('port'));
-const server = app.server;
 
-const wss = new WebSocket.Server({server});
-
-wss.on('connection', (ws) => {
-
-	ws.on('message', (mess) => {
-		wss.clients.forEach(client => {
-			client.send(mess);
-		});
-	});
-
-	// ws.on
-
-})
-
+module.exports = app;
+const wss = require('./modules/WSS');
+console.log(wss)
+// wss.send('СОСИИ ААААХАХАХАХ')
 // app.listen(app.get('port'), () => {
 // 	console.log(`server start at port ::${app.get('port')}`);
 // });
 
-module.exports = app;
