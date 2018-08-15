@@ -105,7 +105,7 @@
                 required: false,
                 default() {
                     return {
-                        state: this.mode,
+                        state: '1',
                         pair: {
                             from: '',
                             to: ''

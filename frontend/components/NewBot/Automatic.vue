@@ -3,11 +3,11 @@
         <div class="newBot__settings">
             <div class="form__control newBot__settings-control">
                 <label class="label">Название бота:</label>
-                <input v-model="title" type="text" class="input">
+                <input v-model="bot.title" type="text" class="input">
             </div>
             <div class="form__control newBot__settings-control">
                 <label class="label">Базовая пара:</label>
-                <select v-model="pair" type="text" class="input">
+                <select v-model="bot.pair" type="text" class="input">
                     <option value="ETH">ETH</option>
                     <option value="BNB">BNB</option>
                     <option value="USDT">USDT</option>
@@ -15,14 +15,14 @@
             </div>
             <div class="form__control newBot__settings-control">
                 <label class="label">Дневной объём (BTC):</label>
-                <input v-model="dailyVolumeBTC" type="text" class="input">
+                <input v-model="bot.botSettings.dailyVolumeBTC" type="text" class="input">
             </div>
         </div>
         <div class="newBot__conditions">
             <div class="newBot__conditions-title">Условия для начала сделки:</div>
             <div class="newBot__conditions-wrapper">
                 <select
-                    v-model="bot.signal"
+                    v-model="autoItem.signal"
                     class="newBot__conditions-select">
                     <option value="default" disabled selected>Стратегия</option>
                     <option 
@@ -32,7 +32,7 @@
                         >{{ signal.name }}</option>
                 </select>
                 <select
-                    v-model="bot.timeframe"
+                    v-model="autoItem.timeframe"
                     class="newBot__conditions-select">
                     <option value="default" disabled selected>Таймфрейм</option>
                     <option 
@@ -42,7 +42,7 @@
                         >{{ tr.name }}</option>
                 </select>
                 <select
-                    v-model="bot.transactionTerm"
+                    v-model="autoItem.transactionTerm"
                     class="newBot__conditions-select">
                     <option value="default" disabled selected>Рекомендация</option>
                     <option
@@ -60,7 +60,7 @@
         </div>
         <div class="newBot__list">
             <automatic-item
-                v-for="(item,i) in automaticItems"
+                v-for="(item,i) in bot.botSettings.tradingSignals"
                 :key="item.id"
                 :item="item"
                 @item-deleted="onDeleteItem(i)">{{ i+1 }}</automatic-item>
@@ -68,9 +68,9 @@
         <div class="text-right">
             <button
                 @click.prevent="addAutomaticBot"
-                :disabled="automaticItems.length === 0" 
+                :disabled="bot.botSettings.tradingSignals.length === 0" 
                 class="button button--success"
-                :class="{'button--disabled': automaticItems.length === 0}"
+                :class="{'button--disabled': bot.botSettings.tradingSignals.length === 0}"
                 >{{ (bot && bot.botID) ? 'Сохранить' : 'Добавить' }}</button>
         </div>
     </div>
@@ -88,26 +88,12 @@ export default {
             required: false,
             default() {
                 return {
-                    state: this.mode,
-                    pair: {
-                        from: '',
-                        to: ''
-                    },
+                    state: '0',
+                    pair: '',
                     title: '',
                     botSettings: {
-                        initialOrder: '',
-                        safeOrder: {
-                            size: '',
-                            amount: 0
-                        },
-                        maxOpenSafetyORders: '',
-                        deviation: '',
-                        stopLoss: '',
-                        takeProffit: '',
-                        martingale: {
-                            value: 1.01,
-                            active: '0'
-                        }
+                        dailyVolumeBTC: '',
+                        tradingSignals: []
                     }
 
                 }
@@ -116,11 +102,11 @@ export default {
     },
     data() {
         return {
-            title: '',
-            dailyVolumeBTC: '',
-            pair: '',
-            
-            automaticItems: [],
+            autoItem: {
+                signal: 'default' ,
+                timeframe: 'default' ,
+                transactionTerm: 'default' 
+            },
             signals: [
                 { id: 'Tradingview', name: 'Tradingview'}
             ],
@@ -146,34 +132,36 @@ export default {
     },
     computed: {
         isFormValid() {
-            return Object.keys(this.bot)
-                .find(field => this.bot[field] === 'default')         
+            return Object.keys(this.autoItem)
+                .find(field => this.autoItem[field] === 'default')         
             }
     },
     methods: {
 
         addItem() {
-            this.automaticItems.push(this.bot)
-            this.bot = {
+            this.bot.botSettings.tradingSignals.push(this.autoItem)
+            this.autoItem = {
                 signal: 'default',
                 timeframe: 'default',
                 transactionTerm: 'default'
             }
         },
         onDeleteItem(i) {
-            this.automaticItems.splice(i, 1)
+            this.bot.botSettings.tradingSignals.splice(i, 1)
         },
         addAutomaticBot() {
             this.$store.commit('setSpiner', true)
             const automaticBot = {
-                'title': this.title,
-                'pair': this.pair,
+                'title': this.bot.title,
+                'pair': this.bot.pair,
                 'botSettings': {
-                    'dailyVolumeBTC': this.dailyVolumeBTC,
-                    'tradingSignals': this.automaticItems
+                    'dailyVolumeBTC': this.bot.botSettings.dailyVolumeBTC,
+                    'tradingSignals': this.bot.botSettings.tradingSignals
                 }
             }
-            this.$store.dispatch('addBot', automaticBot)
+            let path = '';
+            (this.bot && this.bot.botID) ? (path = 'updateBot') : (path = 'addBot');
+            this.$store.dispatch(path, automaticBot)
                 .then(() => {
                     this.$store.commit('setSpiner', false)
                 })
