@@ -1,14 +1,27 @@
 <template>
-    <form @submit.prevent="onSignIn" class="absolute-center auth-form">
-        <h1 class="title title--big text-center auth-form__title">Вход в админ панель</h1>
-        <input v-model="email" type="email" class="input auth-form__input" placeholder="Email">
-        <input v-model="password" type="password" class="input auth-form__input" placeholder="Пароль">
-        <div class="d-flex">
-            <button :class="{'button--disabled': !isFormValid}" :disabled="!isFormValid" type="submit" class="button button--success auth-form__button">Войти</button>
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <table class="table">
+                    <tr class="table__tr">
+                        <th class="table__th">Дата регистрации</th>
+                        <th class="table__th">Email</th>
+                        <th class="table__th">Тариф</th>
+                        <th class="table__th">Баланс</th>
+                        <th class="table__th">Действие</th>
+                        <th class="table__th"></th>
+                    </tr>
+                    <tr class="table__tr">
+                        
+                    </tr>
+                </table>
+            </div>
         </div>
-        <div class="d-flex">
-            <span class="auth-form__forgot-password">Забыли пароль?</span>
-            <p class="auth-form__not-have-account"><nuxt-link to="/signup" class="link">Регистрация</nuxt-link></p>
-        </div>
-    </form>
+    </div>
 </template>
+
+<script>
+    export default {
+        layout: 'admin'
+    }
+</script>

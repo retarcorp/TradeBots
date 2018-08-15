@@ -9,6 +9,7 @@
 @import '@/assets/css/components/_tables.css';
 @import '@/assets/css/components/_tabs.css';
 @import '@/assets/css/components/_checkbox.css';
+@import '@/assets/css/components/_header.css';
 
 @import '@/assets/css/layout/_grid.css';
 
@@ -16,5 +17,7 @@
 @import '@/assets/css/pages/_bots.css';
 @import '@/assets/css/pages/_account.css';
 @import '@/assets/css/pages/_incomes.css';
+
+@import '@/assets/css/pages/admin/_signin.css';
 
 @import '@/assets/css/transitions/allpages.css';
