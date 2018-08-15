@@ -149,9 +149,6 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
                         'botID': this.bot.botID,
                         'status': value
                     })
-                    .then(res => {
-                        this.bot.status = res.data.status
-                    })
                     .catch(e => console.log(e))
             }
         },
