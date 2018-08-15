@@ -256,6 +256,7 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
 
 .settings__header{
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
 }
 
@@ -281,7 +282,7 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
 .bots__buttons-status{
     display: flex;
     align-items: center;
-    margin: 0 0 0 auto;
+    margin: 0 auto;
 }
 
 .settings__description{
@@ -349,7 +350,8 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
 .button__cancel-sell,
 .button__cancel{
     background-color: #DCDCDC;
-    color: #000
+    color: #000;
+    margin-bottom: 1rem;
 
 }
 

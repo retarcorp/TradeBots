@@ -1,7 +1,7 @@
 <template>
     <div class="container bots">
         <div class="row">
-            <div class="col-12 col-md-6 col-lg-4">
+            <div class="col-12 col-md-4 col-lg-4">
                 <div class="bots__search-wrapper">
                     <input v-model="search" type="text" class="input bots__search">
                     <span class="bots__search-icon">
@@ -20,7 +20,7 @@
                         >Добавить бота +</button>
                 </div>
             </div>
-            <div class="col-12 col-md-6 col-lg-8">
+            <div class="col-12 col-md-8 col-lg-8">
                 <nuxt-child />
             </div>
         </div>
