@@ -99,10 +99,10 @@
                         <tr v-for="order in bot.orders"
                             :key="order.id" 
                             class="table__tr">
-                            <td class="table__td pair">{{ order.pair.from }} / {{ order.pair.to }}</td>
-                            <td class="table__td price">{{ order.price }} ({{ order.pair.from }})</td>
-                            <td class="table__td quantity">{{ order.amount }} ({{ order.pair.to }})</td>
-                            <td class="table__td total">{{ order.total }} ({{ order.pair.from }})</td>
+                            <td class="table__td pair">{{ order.pair }}</td>
+                            <td class="table__td price">{{ order.price }}</td>
+                            <td class="table__td quantity">{{ order.amount }}</td>
+                            <td class="table__td total">{{ order.total }}</td>
                         </tr>
                     </table>
                     <table v-show="!isActive" class="page__table">
