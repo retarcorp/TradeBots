@@ -17,8 +17,8 @@ module.exports = class Bot {
 		botSettings = {}
 	}) {
 		this.title = title;
-		this.state = Number(state);
-		this.status = Number(status);
+		this.state = state;
+		this.status = status;
 		this.pair = new Pair(pair.from, pair.to);
 		this.orders = orders;
 		this.currentOrder = currentOrder;
@@ -28,10 +28,10 @@ module.exports = class Bot {
 	}
 
 	changeStatus(nextStatus) {
-		this.status = Number(nextStatus);
-		this.state = Number(this.state);
+		this.status = nextStatus;
 		if(this.status === CONSTANTS.BOT_STATUS.ACTIVE) {
 			console.log('АКТИВ')
+			console.log(typeof CONSTANTS.BOT_STATE.MANUAL, typeof this.state, typeof CONSTANTS.BOT_STATE.MANUAL,)
 			if(this.state === CONSTANTS.BOT_STATE.MANUAL) {
 				this.currentOrder = new Order({
 					pair: this.pair,

@@ -36,14 +36,14 @@ const CONSTANTS = {
 	},
 
 	BOT_STATE: {
-		AUTO: 0,
-		MANUAL: 1
+		AUTO: '0',
+		MANUAL: '1'
 	},
 
 	BOT_STATUS: {
-		INACTIVE: 0,
-		ACTIVE: 1,
-		FROZEN: 2
+		INACTIVE: '0',
+		ACTIVE: '1',
+		FROZEN: '2'
 	},
 
 	ORDER_STATE: {
