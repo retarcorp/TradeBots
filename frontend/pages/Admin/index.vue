@@ -12,7 +12,12 @@
                         <th class="table__th"></th>
                     </tr>
                     <tr class="table__tr">
-                        
+                        <td class="table__th"></td>
+                        <td class="table__th"></td>
+                        <td class="table__th"></td>
+                        <td class="table__th"></td>
+                        <td class="table__th">Редактировать</td>
+                        <td class="table__th">Удалить</td>
                     </tr>
                 </table>
             </div>

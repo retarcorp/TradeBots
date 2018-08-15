@@ -146,11 +146,17 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
         },
         watch: {
             'bot.status'(value) {
-                console.log(value)
                 this.$axios
                     .$post('/bots/setStatus', {
                         'botID': this.bot.botID,
                         'status': value
+                    })
+                    .then(res => {
+                        if(res.status === 'ok') {
+                            this.bot.status = value;
+                        } else {
+                            this.bot.status = res.data.status;
+                        }
                     })
                     .catch(e => console.log(e))
             }

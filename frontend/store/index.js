@@ -8,9 +8,17 @@ const store = () =>
     state: {
       isAuthorized: true,
       botsList: [],
-      isActive: false
+      isActive: false,
+      ws: null,
+      wsID: null
     },
     getters: {
+      getWs(state) {
+        return state.ws
+      },
+      getWsId(state) {
+        return state.wsID
+      },
       getSpinerStatus(state) {
         return state.isActive
       },
@@ -27,6 +35,20 @@ const store = () =>
       }
     },
     mutations: {
+      wsInit(state) {
+        state.ws = new WebSocket("ws://localhost:8072/");
+        state.ws.onopen = () => {
+          console.log("WS подключено");
+        }
+        state.ws.onclose = eventclose => {
+          console.log("соеденение закрыто причина:" + eventclose);
+
+        };
+        state.ws.onmessage = (msg) => {
+          state.wsID = state.wsID === null ? msg.data.id : null;
+          console.log('Сообщение ' + msg.data)
+        }
+      },
       setSpiner(state, payload) {
         state.isActive = payload
       },
