@@ -21,32 +21,21 @@ module.exports = class Bot {
 		this.pair = new Pair(pair.from, pair.to);
 		this.orders = orders;
 		this.currentOrder = currentOrder;
-		console.log('____________________')
-		console.log(botSettings)
 		this.botSettings = new BotSettings(botSettings);
 		this.botID = botID;
 		this.volumeLimit = [CONSTANTS.getVolumeLimit(this.pair.from), CONSTANTS.getVolumeLimit(this.pair.to)];
 	}
 
-	changeStatus() {
-		this.status = Number(this.status);
+	changeStatus(nextStatus) {
+		this.status = Number(nextStatus);
 		if(this.status === CONSTANTS.BOT_STATUS.ACTIVE) {
-			if(this.currentOrder) {
-
-			}
-			else {
-				this.currentOrder = new Order({
-					pair: this.pair,
-					price: this.botSettings.initialOrder
-				});
-				this.orders.push
-			}
+			console.log('АКТИВ')
 		}
 		else if(this.status === CONSTANTS.BOT_STATUS.INACTIVE) {
-
+			console.log('ИНАКТИВ')
 		}
 		else if(this.status === CONSTANTS.BOT_STATUS.FROZEN) {
-
+			console.log('ФРОЗЕН')
 		}
 	}
 }

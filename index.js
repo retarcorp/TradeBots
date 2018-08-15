@@ -1,8 +1,9 @@
-var express = require('express');
-var bodyParser = require('body-parser');
-var expressSession = require('express-session');
-var cookieParser = require('cookie-parser');
-var cors = require('cors');
+const express = require('express');
+const bodyParser = require('body-parser');
+const expressSession = require('express-session');
+const cookieParser = require('cookie-parser');
+const cors = require('cors');
+const WebSocket = require('ws');
 
 //Modules
 const Mongo = require('./modules/Mongo').init();
@@ -48,6 +49,7 @@ app.get('/bots/getBotsList', bots);
 app.post('/bots/add', bots);
 app.post('/bots/delete', bots);
 app.post('/bots/update', bots);
+app.post('/bots/setStatus', bots);
 
 app.get('/account/api', account);
 app.post('/account/api', account);

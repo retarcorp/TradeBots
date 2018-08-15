@@ -4,24 +4,32 @@ let Users = require('../modules/Users');
 var router = express.Router();
 
 router.get('/bots/getBotsList', (req, res, next) => {
-	let user = {name: req.cookies.user.name};
-	Users.getBotList(user, data => res.json(data));
+	let user = {name: req.cookies.user.name}
+	Users.Bots.getBotList(user, data => res.json(data))
 });
 
 router.post('/bots/add', (req, res, next) => {
-	let user = {name: req.cookies.user.name};
+	let user = {name: req.cookies.user.name}
 	console.log(req.body)
-	Users.setBot(user, req.body, data => res.json(data));
+	Users.Bots.setBot(user, req.body, data => res.json(data))
 });
 
 router.post('/bots/delete', (req, res, next) => {
-	let user = {name: req.cookies.user.name};
-	Users.setBot(user, req.body.botID, data => res.json(data));
-})
+	let user = {name: req.cookies.user.name}
+	Users.Bots.setBot(user, req.body.botID, data => res.json(data))
+});
 
 router.post('/bots/update', (req, res, next) => {
-	let user = {name: req.cookies.user.name};
-	Users.updateBot(user, req.body, data => res.json(data));
+	let user = {name: req.cookies.user.name}
+	Users.Bots.updateBot(user, req.body, data => res.json(data))
+});
+
+router.post('/bots/setStatus', (req, res, next) => {
+	let user = {name: req.cookies.user.name}
+	Users.Bots.setStatus(user , req.body, data => {
+		res.json(data)
+		
+	})
 })
 
 module.exports = router;
