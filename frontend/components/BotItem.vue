@@ -1,9 +1,7 @@
 <template>
     <nuxt-link :to="'/bots/' + id" class="bot">
         <div class="bot__name"><slot></slot></div>
-        <div class="bot__signal">
-            <img src="../assets/svg/circle.svg" alt="">
-        </div>
+        <div class="bot__signal" :class="{'bot__signal--disabled' : !isBotActive}"></div>
     </nuxt-link>
 </template>
 
@@ -14,6 +12,14 @@
                 type: String,
                 required: true,
                 default: 'add-new'
+            }
+        },
+        computed: {
+            isBotActive() {
+                if(this.id) {
+                    let bot = this.$store.getters.getBot(this.id);
+                    return bot.status === '1'
+                }
             }
         }
     }
@@ -31,6 +37,17 @@
     line-height: 2.1rem;
     cursor: pointer;
     margin-bottom: .6rem;
+}
+
+.bot__signal {
+    width: 1.7rem;
+    height: 1.7rem;
+    background-color: #72C770;
+    border-radius: 100%
+}
+
+.bot__signal--disabled {
+    background-color: inherit;
 }
 </style>
 
