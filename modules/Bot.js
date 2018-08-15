@@ -17,8 +17,8 @@ module.exports = class Bot {
 		botSettings = {}
 	}) {
 		this.title = title;
-		this.state = state;
-		this.status = status;
+		this.state = Number(state);
+		this.status = Number(status);
 		this.pair = new Pair(pair.from, pair.to);
 		this.orders = orders;
 		this.currentOrder = currentOrder;
