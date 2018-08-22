@@ -18,11 +18,7 @@
             </div>
             <div class="form-control newBot__settings-control">
                 <label class="label">Дневной объём (BTC):</label>
-                <input v-model="bot.botSettings.dailyVolumeBTC" type="text" class="input">
-            </div>
-            <div class="form-control newBot__settings-control">
-                <label class="label">Количество:</label>
-                <input v-model="bot.botSettings.amount" type="text" class="input">
+                <input v-model="bot.botSettings.dailyVolumeBTC" type="number" class="input">
             </div>
         </div>
         <div class="newBot__conditions">
@@ -99,7 +95,6 @@ export default {
                     pair: '',
                     title: '',
                     botSettings: {
-                        amount: '',
                         dailyVolumeBTC: '',
                         tradingSignals: []
                     }
