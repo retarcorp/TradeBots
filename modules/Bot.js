@@ -104,19 +104,19 @@ module.exports = class Bot {
 			amout = Number(this.botSettings.safeOrder.amount),
 			currentPrice = price,
 			safeOrders = [],
-			decimal = Math.pow(10, (String(price).length - 2))
+			decimal = String(price).length - 2
 		for(let i = 0; i < amout; i++) {
-			currentPrice -= Math.round( currentPrice * deviation * decimal) / decimal
+			currentPrice -=  currentPrice * deviation
+			currentPrice = Number(currentPrice.toFixed(decimal))
 			let orderParams = {
 				symbol: this.pair,
 				quantity: quantity,
 				side: 'BUY',
 				price: currentPrice
 			}
-			
-			let newOrder = await this.Client.orderTest(orderParams)
 			console.log('---')
 			console.log(orderParams)
+			let newOrder = await this.Client.orderTest(orderParams)
 			console.log(newOrder)
 			safeOrders.push(orderParams)
 		}
