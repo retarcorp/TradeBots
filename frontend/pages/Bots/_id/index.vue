@@ -154,7 +154,7 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
                     })
                     .then(res => {
                         if(res.status === 'ok') {
-                            this.bot.status = value;
+                            // this.bot.status = value;
                         } else {
                             this.bot.status = res.data.status;
                         }
