@@ -6,14 +6,25 @@
                 <input v-model="bot.title" type="text" class="input">
             </div>
             <div class="form-control newBot__settings-control">
-                <label class="label">Базовая пара:</label>
-                <select v-model="bot.pair" type="text" class="input">
-                    <option value="ETHBTC">ETH/BTC</option>
-                    <option value="BNBBTC">BNB/BTC</option>
-                    <option value="BNBETH">BNB/ETH</option>
-                    <option value="BTCUSDT">BTC/USDT</option>
-                    <option value="ETHUSDT">ETH/USDT</option>
-                    <option value="BNBUSDT">BNB/USDT</option>
+                <label class="label" for="main__pair">Основная пара:</label>
+                <select 
+                    v-model="bot.pair.from" 
+                    id="main__pair" 
+                    type="text" 
+                    class="input settings__input">
+                    <option value="ETH">ETH</option>
+                    <option value="BNB">BNB</option>
+                    <option value="BTC">BTC</option>
+                </select>
+            </div>
+            <div class="form-control newBot__settings-control">
+                <label class="label" for="main__pair">Котируемая пара:</label>
+                <select v-model="bot.pair.to" id="main__pair" type="text" class="input settings__input">
+                    <option 
+                        v-for="pair in filteredPairs" 
+                        :key="pair.id" 
+                        :value="pair"
+                        >{{ pair }}</option>
                 </select>
             </div>
             <div class="form-control newBot__settings-control">
@@ -92,7 +103,10 @@ export default {
             default() {
                 return {
                     state: '0',
-                    pair: '',
+                    pair: {
+                        from: '',
+                        to: ''
+                    },
                     title: '',
                     botSettings: {
                         dailyVolumeBTC: '',
@@ -130,14 +144,27 @@ export default {
             transactionTerms: [
                 { id: 'BUY', name: 'Buy'},
                 { id: 'STRONG_BUY', name: 'Strong Buy'}
-            ]
+            ],
+            pairs: {
+                ETH: ['BTC', 'USDT'],
+                BNB: ['BTC', 'ETH', 'USDT'],
+                BTC: ['USDT']
+            }
         }
     },
     computed: {
         isFormValid() {
             return Object.keys(this.autoItem)
                 .find(field => this.autoItem[field] === 'default')         
-            }
+        },
+        filteredPairs() {
+                return this.pairs[this.bot.pair.from]
+        }
+    },
+    watch: {
+        'bot.pair.from'() {
+            this.bot.pair.to = ''
+        }
     },
     methods: {
 
