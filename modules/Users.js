@@ -97,6 +97,8 @@ let Users = {
 
 	,Bots: {
 		getBotList(user, callback) {
+
+			console.log(user);
 			Mongo.select(user, 'users', (data) => {
 				data = data[0];
 				if(callback) 
