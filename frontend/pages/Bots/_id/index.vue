@@ -47,7 +47,7 @@
                         
                         <p class="settings__item">Стоп лосс: <span>{{ bot.botSettings.stopLoss }}%</span></p>
                         
-                        <p class="settings__item">Тейк профит: <span>{{ bot.botSettings.takeProffit }}%</span></p>
+                        <p class="settings__item">Тейк профит: <span>{{ bot.botSettings.takeProfit }}%</span></p>
                         
                         <p class="settings__item">Мартингейл: 
                             <span>{{ bot.botSettings.martingale.active === '0' ? 'Выкл': 'Вкл' }}</span>

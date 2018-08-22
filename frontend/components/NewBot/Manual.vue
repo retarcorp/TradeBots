@@ -42,7 +42,7 @@
             </div>
             <div class="form-control newBot__settings-control">
                 <label class="label" for="take__profit">Тейк профит %</label>
-                <input v-model="bot.botSettings.takeProffit" id="take__profit" type="number" class="input settings__input">
+                <input v-model="bot.botSettings.takeProfit" id="take__profit" type="number" class="input settings__input">
             </div>
             <div class="form-control newBot__settings-control">
                 <label class="label">Мартингейл</label>
@@ -110,7 +110,7 @@
                             maxOpenSafetyORders: '',
                             deviation: '',
                             stopLoss: '',
-                            takeProffit: '',
+                            takeProfit: '',
                             martingale: {
                                 value: 1.01,
                                 active: '0'

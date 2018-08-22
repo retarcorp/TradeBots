@@ -11,7 +11,7 @@ module.exports = class BotSettings {
 		deviation = null,
 		martingale = null, //new Martingale(),
 		maxOpenSafetyOrders = null,
-		takeProffit = null,
+		takeProfit = null,
 		stopLoss = null
 	}) {
 		this.tradingSignals = tradingSignals;
@@ -22,7 +22,7 @@ module.exports = class BotSettings {
 		if(martingale)
 			this.martingale = new Martingale(martingale.value, martingale.active);
 		this.maxOpenSafetyOrders = maxOpenSafetyOrders;
-		this.takeProffit = takeProffit;
+		this.takeProfit = takeProfit;
 		this.stopLoss = stopLoss;
 		this.dailyVolumeBTC = dailyVolumeBTC;
 	}

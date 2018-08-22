@@ -66,7 +66,7 @@ if(addBotBtn)
 				},
 				maxOpenSafetyOrders: document.querySelector('[id="count__max-save-order"]').value,
 				stopLoss: document.querySelector('[id="stop__loss"]').value,
-				takeProffit: document.querySelector('[id="take__profit"]').value,
+				takeProfit: document.querySelector('[id="take__profit"]').value,
 				deviation: document.querySelector('[id="deviation"]').value,
 				martingale: {
 					value: document.querySelector('[id="save__order-up"]').value,
