@@ -32,7 +32,17 @@ module.exports = class Bot {
 	async changeStatus(nextStatus, userID, user) {
 		this.status = nextStatus;
 		if(this.status === CONSTANTS.BOT_STATUS.ACTIVE) {
-			this.startManual(userID, user)
+			console.log('АКТИВ')
+			if(this.state === CONSTANTS.BOT_STATE.MANUAL) {
+				this.startManual(userID, user)
+			}
+			else if(this.state === CONSTANTS.BOT_STATE.AUTO) {
+				this.startAuto(userID, user)
+			}
+			else {
+				console.log('ЧТО-ТО ПОШЛО НЕ ТАК, ВЫКЛ')
+				this.status = CONSTANTS.BOT_STATUS.INACTIVE
+			}
 		}
 		else if(this.status === CONSTANTS.BOT_STATUS.INACTIVE) {
 			console.log('ИНАКТИВ')
@@ -45,45 +55,26 @@ module.exports = class Bot {
 	}
 
 	startManual(userID, user) {
-		console.log('АКТИВ')
+		console.log('startManual')
 		let key = Crypto.decipher(user.binanceAPI.key,  Crypto.getKey(user.regDate, user.name))
 		let secret = Crypto.decipher(user.binanceAPI.secret,  Crypto.getKey(user.regDate, user.name))
 		this.Client = binanceAPI({
 			apiKey: key,
 			apiSecret: secret
 		})
-		if(this.state === CONSTANTS.BOT_STATE.MANUAL) {
-			WSS.users[userID].send('хер ' + userID)
-			this.currentOrder = {}
-			this.startTrade()
-			// this.Client.orderTest({
-			// 	symbol: this.pair,
-			// 	side: 'BUY',
-			// 	quantity: Number(this.botSettings.amount),
-			// 	price: Number(this.botSettings.initialOrder)
-			// })
-			// .then((data) => {
-			// 	console.log('это then')
-			// 	console.log(data)
-			// 	this.currentOrder = new Order({
-			// 		pair: this.pair,
-			// 		amount: this.botSettings.amount,
-			// 		price: this.botSettings.initialOrder	
-			// 	})
-			// 	this.orders.push(this.currentOrder)
-			// })
-			.catch((err) => console.log(err))
-		}
-		else if(this.state === CONSTANTS.BOT_STATE.AUTO) {
+		WSS.users[userID].send('хер ' + userID)
+		this.currentOrder = {}
+		this.startTrade()
+		.catch((err) => console.log(err))
+		
+	}
 
-		}
-		else {
-			console.log('ЧТО-ТО ПОШЛО НЕ ТАК, ВЫКЛ')
-			this.status = CONSTANTS.BOT_STATUS.INACTIVE
-		}
+	startAuto(userUD, user) {
+		console.log('startAuto')
 	}
 
 	async startTrade() {
+		console.log('startTrade')
 		//TODO 
 		//1. создание ордера по начальным параметрам
 		//2. создание страховочных ордеров
@@ -91,12 +82,13 @@ module.exports = class Bot {
 		//4. проверка и описание решений исходов
 		//end
 
-		//1
+		//1. создание ордера по начальным параметрам
 		let price = await this.Client.allBookTickers()
 		price = Number(price[this.pair].bidPrice)
+		let quantity = Math.ceil((Number(this.botSettings.initialOrder) / price)*100) /100
 		let newOrderParams = {
 			symbol: this.pair,
-			quantity: Math.ceil( ((Number(this.botSettings.initialOrder) / price)*100)/100 ), //Number(this.botSettings.amount),
+			quantity: quantity,
 			side: 'BUY',
 			price: price
 		}
@@ -106,6 +98,30 @@ module.exports = class Bot {
 		console.log('-----')
 		console.log(newOrder)
 		console.log('-----')
+
+		//2. создание страховочных ордеров
+		let deviation = Number(this.botSettings.deviation) / 100,
+			amout = Number(this.botSettings.safeOrder.amount),
+			currentPrice = price,
+			safeOrders = [],
+			decimal = Math.pow(10, (String(price).length - 2))
+		for(let i = 0; i < amout; i++) {
+			currentPrice -= Math.round( currentPrice * deviation * decimal) / decimal
+			let orderParams = {
+				symbol: this.pair,
+				quantity: quantity,
+				side: 'BUY',
+				price: currentPrice
+			}
+			
+			let newOrder = await this.Client.orderTest(orderParams)
+			console.log('---')
+			console.log(orderParams)
+			console.log(newOrder)
+			safeOrders.push(orderParams)
+		}
+
+		//3. запуск цикла проверки статуса цены валюты
 	}
 }
 /*
