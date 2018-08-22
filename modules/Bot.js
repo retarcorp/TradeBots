@@ -33,64 +33,11 @@ module.exports = class Bot {
 		this.status = nextStatus;
 		if(this.status === CONSTANTS.BOT_STATUS.ACTIVE) {
 			console.log('АКТИВ')
-			let key = Crypto.decipher(user.binanceAPI.key,  Crypto.getKey(user.regDate, user.name))
-			let secret = Crypto.decipher(user.binanceAPI.secret,  Crypto.getKey(user.regDate, user.name))
-			console.log('|'+key+'|')
-			console.log('|'+secret+'|')
-			this.Client = binanceAPI({
-				apiKey: key,
-				apiSecret: secret
-			})
 			if(this.state === CONSTANTS.BOT_STATE.MANUAL) {
-				// console.log(wss)
-				// console.log(WSS.socket.clients)
-				// console.log('_____-')
-				WSS.users[userID].send('хер ' + userID)
-				this.currentOrder = {};
-				// await this.Client.orderTest({
-				// 	symbol: 'BNBBTC',
-				// 	side: 'BUY',
-				// 	quantity: 100,//Number(this.botSettings.amount),
-				// 	price: 0.0015520//Number(this.botSettings.initialOrder)
-				// })
-				this.Client.orderTest({
-					symbol: this.pair,
-					side: 'BUY',
-					quantity: Number(this.botSettings.amount),
-					price: Number(this.botSettings.initialOrder)
-				})
-				.then((data) => {
-					console.log('это then')
-					console.log(data)
-					this.currentOrder = new Order({
-						pair: this.pair,
-						amount: this.botSettings.amount,
-						price: this.botSettings.initialOrder	
-					})
-					this.orders.push(this.currentOrder)
-				})
-				.catch((err) => console.log(err))
-				// this.currentOrder = new Order({})
-
-				// this.Client.orderTest({
-				// 	symbol: this.pair,
-				// 	side: 'BUY',
-				// 	quantity: Number(this.amount),
-				// 	price: Number(this.initialOrder)
-				// })
-				// .then(data => {
-				// 	this.currentOrder = new Order({
-				// 		pair: this.pair,
-				// 		amount: this.botSettings.amount,
-				// 		price: Number(this.botSettings.initialOrder),
-				// 		data: data//`new order: ${this.pair} - ${this.botSettings.initialOrder}, amount - ${this.botSettings.amount}, from bot ${this.title}(${this.botID})`
-				// 	})
-				// 	this.orders.push(this.currentOrder)
-				// })
-				// .catch(error => console.log(error))
+				this.startManual(userID, user)
 			}
 			else if(this.state === CONSTANTS.BOT_STATE.AUTO) {
-
+				this.startAuto(userID, user)
 			}
 			else {
 				console.log('ЧТО-ТО ПОШЛО НЕ ТАК, ВЫКЛ')
@@ -99,12 +46,82 @@ module.exports = class Bot {
 		}
 		else if(this.status === CONSTANTS.BOT_STATUS.INACTIVE) {
 			console.log('ИНАКТИВ')
-			this.currentOrder = null;
+			this.currentOrder = null
 		}
 		else {
 			console.log('ЧТО-ТО НЕ ТО, ВЫКЛЮЧЕНИЕ')
-			this.status = CONSTANTS.BOT_STATUS.INACTIVE;
+			this.status = CONSTANTS.BOT_STATUS.INACTIVE
 		}
+	}
+
+	startManual(userID, user) {
+		console.log('startManual')
+		let key = Crypto.decipher(user.binanceAPI.key,  Crypto.getKey(user.regDate, user.name))
+		let secret = Crypto.decipher(user.binanceAPI.secret,  Crypto.getKey(user.regDate, user.name))
+		this.Client = binanceAPI({
+			apiKey: key,
+			apiSecret: secret
+		})
+		WSS.users[userID].send('хер ' + userID)
+		this.currentOrder = {}
+		this.startTrade()
+		.catch((err) => console.log(err))
+		
+	}
+
+	startAuto(userUD, user) {
+		console.log('startAuto')
+	}
+
+	async startTrade() {
+		console.log('startTrade')
+		//TODO 
+		//1. создание ордера по начальным параметрам
+		//2. создание страховочных ордеров
+		//3. запуск цикла проверки статуса цены валюты 
+		//4. проверка и описание решений исходов
+		//end
+
+		//1. создание ордера по начальным параметрам
+		let price = await this.Client.allBookTickers()
+		price = Number(price[this.pair].bidPrice)
+		let quantity = Math.ceil((Number(this.botSettings.initialOrder) / price)*100) /100
+		let newOrderParams = {
+			symbol: this.pair,
+			quantity: quantity,
+			side: 'BUY',
+			price: price
+		}
+		console.log('-----')
+		console.log(newOrderParams)
+		let newOrder = await this.Client.orderTest(newOrderParams)
+		console.log('-----')
+		console.log(newOrder)
+		console.log('-----')
+
+		//2. создание страховочных ордеров
+		let deviation = Number(this.botSettings.deviation) / 100,
+			amout = Number(this.botSettings.safeOrder.amount),
+			currentPrice = price,
+			safeOrders = [],
+			decimal = Math.pow(10, (String(price).length - 2))
+		for(let i = 0; i < amout; i++) {
+			currentPrice -= Math.round( currentPrice * deviation * decimal) / decimal
+			let orderParams = {
+				symbol: this.pair,
+				quantity: quantity,
+				side: 'BUY',
+				price: currentPrice
+			}
+			
+			let newOrder = await this.Client.orderTest(orderParams)
+			console.log('---')
+			console.log(orderParams)
+			console.log(newOrder)
+			safeOrders.push(orderParams)
+		}
+
+		//3. запуск цикла проверки статуса цены валюты
 	}
 }
 /*

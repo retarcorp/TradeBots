@@ -70,54 +70,23 @@ app.get('/test', (req, res, next) => {
 		apiKey: 'UmPrRZJ6MRIRAwKqChcSpC4dkm1MMlX19a2S9tfipEW2Efmos7jzCvxIDUgFUTyw',
 		apiSecret: 'EbbvZhDI8TuOs1nJqQzqtoSDSzCuCrPmeMfMlTtiZiQdxTYV0vtKgr9phylXdkH8 '
 	})
-	// int = setInterval(()=>console.log(i++), 1000);
-	// int;
-	c.orderTest({
-		symbol: 'BNBBTC',
-		side: 'BUY',
-		quantity: 100,//Number(this.botSettings.amount),
-		price: 0.0015520//Number(this.botSettings.initialOrder)
-	})
-	.then( data => console.log(data))
-	.catch( err => console.log(err))
+	console.log('asd')
+	let symbol = 'ETHBTC'
+	c.prices().then(data => console.log(data[symbol]))
+	c.allBookTickers().then(data => console.log(data[symbol]))
+	// .then(res => console.log(then))
+
+	// c.allBookTickers()
+	// .then(res => console.log(then))
+	// c.orderTest({
+	// 	symbol: 'BNBBTC',
+	// 	side: 'BUY',
+	// 	quantity: 100,//Number(this.botSettings.amount),
+	// 	price: 0.0015520//Number(this.botSettings.initialOrder)
+	// })
+	// .then( data => console.log(data))
+	// .catch( err => console.log(err))
 	res.send('lol');
-	// let b = binanceAPI().options({
-	// 	APIKEY: 'asd',
-	// 	APISECRET: 'zc',
-	// 	useServerTime: true, 
-	// 	test: true
-	// })
-	// let a = b;
-	// //new Binance('name', 'UmPrRZJ6MRIRAwKqChcSpC4dkm1MMlX19a2S9tfipEW2Efmos7jzCvxIDUgFUTyw', 'EbbvZhDI8TuOs1nJqQzqtoSDSzCuCrPmeMfMlTtiZiQdxTYV0vtKgr9phylXdkH8');
-	// a.prices('BNBBTC', (error, ticker) => {
-	// 	console.log("Price of BNB: ", ticker.BNBBTC);
-	// });
-	// let user = {name: req.cookies.user.name};
-	// Mongo.select(user, 'users', data => {
-	// 	data = data[0];
-	// 	var a = Crypto.decipher(data.binanceAPI.key,  Crypto.getKey(data.regDate, data.name));
-	// 	var b = Crypto.decipher(data.binanceAPI.secret,  Crypto.getKey(data.regDate, data.name));
-	// 	let binance = binanceAPI().options({
-	// 		APIKEY: a,
-	// 		APISECRET: b,
-	// 		useServerTime: true, 
- 	// 		test: true
-	// 	})
-
-	// 	// bin.prices('BNBBTC', (error, ticker) => {
-	// 	// 	console.log("Price of BNB: ", ticker.BNBBTC);
-	// 	// });
-	// 	// binance.trades("SNMBTC", (error, trades, symbol) => {
-	// 	// 	console.log(symbol+" trade history", trades);
-	// 	// });
-	// 	var quantity = 1;
-	// 	binance.prices(function(error, ticker) {
-	// 		console.log("prices()", ticker);
-	// 		console.log("Price of BNB: ", ticker.BNBBTC);
-	// 	});
-
-	// 	res.send(data);
-	// })
 });
 
 
@@ -139,31 +108,3 @@ app.server.listen(app.get('port'));
 
 var WSS = require('./modules/WSS');
 WSS.init(app.server);
-
-
-// console.log(wss);
-
-// module.exports = app;
-// const WebSocket = require('ws');
-// // const app = require('../index');
-
-// const server = app.server;
-// // console.log(server)
-// const wss = new WebSocket.Server({server});
-// wss.on('connection', (ws) => {
-
-// 	ws.on('message', (mess) => {
-// 		wss.clients.forEach(client => {
-// 			client.send(mess);
-// 		});
-// 	});
-
-// 	// ws.on
-
-// })
-// wss.clients[0].send('asd');
-// module.exports = wss; 
-// app.listen(app.get('port'), () => {
-// 	console.log(`server start at port ::${app.get('port')}`);
-// });
-

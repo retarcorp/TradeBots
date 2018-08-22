@@ -79,7 +79,7 @@ const store = () =>
           };
           ws.onmessage = (msg) => {
             console.log('msg   ' + msg.data);
-            id = id === undefined ? msg.data : undefined;
+            id = id === undefined ? msg.data : id;
             commit("setWsId", id);
           }
           

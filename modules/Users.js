@@ -97,6 +97,8 @@ let Users = {
 
 	,Bots: {
 		getBotList(user, callback) {
+
+			console.log(user);
 			Mongo.select(user, 'users', (data) => {
 				data = data[0];
 				if(callback) 
@@ -161,6 +163,8 @@ let Users = {
 
 		,setStatus(user, botData, callback) {
 			try {
+				console.log(user)
+				console.log(botData)
 				Mongo.select(user, 'users', (data) => {
 					data = data[0]
 					const index = data.bots.findIndex(bot => bot.botID === botData.botID)
@@ -175,11 +179,6 @@ let Users = {
 							})
 						})
 					})
-					// .catch(error => callback({
-					// 	status: 'error',
-					// 	data: { status: '0' },
-					// 	message: error
-					// }))
 				})
 			}
 			catch(error) {

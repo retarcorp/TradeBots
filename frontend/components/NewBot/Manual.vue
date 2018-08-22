@@ -7,46 +7,53 @@
             </div>
             <div class="form-control newBot__settings-control">
                 <label class="label" for="main__pair">Основная пара:</label>
-                <select v-model="bot.pair" id="main__pair" type="text" class="input settings__input">
-                    <option value="ETHBTC">ETH/BTC</option>
-                    <option value="BNBBTC">BNB/BTC</option>
-                    <option value="BNBETH">BNB/ETH</option>
-                    <option value="BTCUSDT">BTC/USDT</option>
-                    <option value="ETHUSDT">ETH/USDT</option>
-                    <option value="BNBUSDT">BNB/USDT</option>
+                <select 
+                    v-model="bot.pair.from" 
+                    id="main__pair" 
+                    type="text" 
+                    class="input settings__input">
+                    <option value="ETH">ETH</option>
+                    <option value="BNB">BNB</option>
+                    <option value="BTC">BTC</option>
+                </select>
+            </div>
+            <div class="form-control newBot__settings-control">
+                <label class="label" for="main__pair">Котируемая пара:</label>
+                <select v-model="bot.pair.to" id="main__pair" type="text" class="input settings__input">
+                    <option 
+                        v-for="pair in filteredPairs" 
+                        :key="pair.id" 
+                        :value="pair"
+                        >{{ pair }}</option>
                 </select>
             </div>
             <div class="form-control newBot__settings-control">
                 <label class="label" for="start__order">Начальный ордер:</label>
-                <input v-model="bot.botSettings.initialOrder" id="start__order" type="text" class="input settings__input">
+                <input @blur="bot.botSettings.safeOrder.size = bot.botSettings.initialOrder" v-model="bot.botSettings.initialOrder" id="start__order" type="number" class="input settings__input">
             </div>
             <div class="form-control newBot__settings-control">
                 <label class="label" for="save__order">Страховочный ордер:</label>
-                <input v-model="bot.botSettings.safeOrder.size" id="save__order" type="text" class="input settings__input">
+                <input v-model="bot.botSettings.safeOrder.size" id="save__order" type="number" class="input settings__input">
             </div>
             <div class="form-control newBot__settings-control">
                 <label class="label" for="count__save-order">Кол-во страховочных ордеров:</label>
-                <input v-model="bot.botSettings.safeOrder.amount" id="count__save-order" type="text" class="input settings__input">
+                <input v-model="bot.botSettings.safeOrder.amount" id="count__save-order" type="number" class="input settings__input">
             </div>
             <div class="form-control newBot__settings-control">
                 <label class="label" for="count__bots">Макс открытых СО:</label>
-                <input v-model="bot.botSettings.maxOpenSafetyORders" id="count__max-save-order" type="text" class="input settings__input">
-            </div>
-            <div class="form-control newBot__settings-control">
-                <label class="label">Количество:</label>
-                <input v-model="bot.botSettings.amount" type="text" class="input">
+                <input v-model="bot.botSettings.maxOpenSafetyORders" id="count__max-save-order" type="number" class="input settings__input">
             </div>
             <div class="form-control newBot__settings-control" style="margin-top: 9px;">
                 <label class="label label__double-row" for="deviation">Отклонение от начального ордера %</label>
-                <input v-model="bot.botSettings.deviation" id="deviation" type="text" class="input settings__input">
+                <input v-model="bot.botSettings.deviation" id="deviation" type="number" class="input settings__input">
             </div>
             <div class="form-control newBot__settings-control">
                 <label class="label" for="stop__loss">Стоп лосс %</label>
-                <input v-model="bot.botSettings.stopLoss" id="stop__loss" type="text" class="input settings__input">
+                <input v-model="bot.botSettings.stopLoss" id="stop__loss" type="number" class="input settings__input">
             </div>
             <div class="form-control newBot__settings-control">
                 <label class="label" for="take__profit">Тейк профит %</label>
-                <input v-model="bot.botSettings.takeProffit" id="take__profit" type="text" class="input settings__input">
+                <input v-model="bot.botSettings.takeProfit" id="take__profit" type="number" class="input settings__input">
             </div>
             <div class="form-control newBot__settings-control">
                 <label class="label">Мартингейл</label>
@@ -103,10 +110,12 @@
                 default() {
                     return {
                         state: '1',
-                        pair: '',
+                        pair: {
+                            from: '',
+                            to: ''
+                        },
                         title: '',
                         botSettings: {
-                            amount: '',
                             initialOrder: '',
                             safeOrder: {
                                 size: '',
@@ -115,7 +124,7 @@
                             maxOpenSafetyORders: '',
                             deviation: '',
                             stopLoss: '',
-                            takeProffit: '',
+                            takeProfit: '',
                             martingale: {
                                 value: 1.01,
                                 active: '0'
@@ -124,6 +133,25 @@
 
                     }
                 }
+            }
+        },
+        data() {
+            return {
+                pairs: {
+                    ETH: ['BTC', 'USDT'],
+                    BNB: ['BTC', 'ETH', 'USDT'],
+                    BTC: ['USDT']
+                }
+            }
+        },
+        computed: {
+            filteredPairs() {
+                return this.pairs[this.bot.pair.from]
+            }
+        },
+        watch: {
+            'bot.pair.from'() {
+                this.bot.pair.to = ''
             }
         },
         methods: {
