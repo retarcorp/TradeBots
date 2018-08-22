@@ -27,7 +27,7 @@ module.exports = {
   /* Plugins */
   plugins: [
     { ssr: false, src: '~plugins/wsSetup' },
-    { ssr: false, src: '~plugins/routerCheck' }
+    // { ssr: false, src: '~plugins/routerCheck' }
   ],
 
   /*
