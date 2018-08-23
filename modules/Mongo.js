@@ -3,6 +3,7 @@ module.exports = {
 	init: function() {
 
 		this.Client = require('mongodb').MongoClient;
+		this.ObjectId = require('mongodb').ObjectID;
 		this.Assert = require('assert');
 
 		this.URL = 'mongodb://localhost:27017/TradeBots';
@@ -20,9 +21,11 @@ module.exports = {
 			this.Assert.equal(null, error);
 			console.log('Successfully conected to MongoDB');
 
+			this.cli = client;
+			this.db = this.cli.db(this.DB);
 			db = client.db(this.DB);
 
-			client.close();
+            //client.close();
 		});
 	}
 
@@ -31,15 +34,15 @@ module.exports = {
 			this.Assert.equal(null, error);
 			db = client.db(this.DB);
 
-			callback(db);			
+			callback(db, client);
 
-			client.close();
+			// client.close();
 		});
 	}
 
 	,insert: function(data, collection, callback) {
-		this.connect( (db) => {
-			let coll = db.collection(collection);
+		// this.connect( (db, client) => {
+			let coll = this.db.collection(collection);
 
 			//console.log(data, collection, coll);
 
@@ -48,16 +51,18 @@ module.exports = {
 			coll.insertMany(data, (err, data) => {
 				this.Assert.equal(err, null);
 				
-				if (callback) callback({ status: 'ok' });
+				if (callback) callback({ status: true });
 
 				console.log('Data inserted');
+
+                //client.close();
 			});
-		});
+		// });
 	}
 
 	,select: function(key, collection, callback) {
-		this.connect( (db) => {
-			let coll = db.collection(collection);
+		// this.connect( (db, client) => {
+			let coll = this.db.collection(collection);
 
 			if (!(typeof key == 'object')) key = {};
 
@@ -66,32 +71,51 @@ module.exports = {
 
 				if (callback) callback(data);
 				console.log('Data ejected');
+
+                //client.close();
 			});
-		});
+		// });
 	}
 
 	,update: function(key, change, collection, callback) {
-		this.connect( (db) => {
-			let coll = db.collection(collection);
+		// this.connect( (db, client) => {
+			let coll = this.db.collection(collection);
 
 			if (!(typeof key == 'object')) key = {};
 			if (!(typeof change == 'object')) change = {};
 
-			coll.updateMany(key, { $set: change }, { upsert: true }, (err, data) => {
+			coll.update(key, { $set: change }, { upsert: true }, (err, data) => {
 				this.Assert.equal(err, null);
+				
 				if (callback) callback(data);
 				console.log('Data updated');
+
+                //client.close();
 			});
-		});
+		// });
+	}
+
+	,count: function(key, collection, callback) {
+		// this.connect( (db, client) => {
+			let coll = this.db.collection(collection);
+
+			if (typeof key !== 'object') key = {};
+
+			coll.countDocuments(key)
+				.then( (count) => {
+					(callback) ? callback(count) : 0
+
+                    //client.close();
+                })
+				.catch(err => console.log(err));
+		// })
 	}
 
 	,delete: function(key, collection, callback) {
-		this.connect( (db) => {
-			let coll = db.collection(collection);
+		// this.connect( (db, client) => {
+			let coll = this.db.collection(collection);
 
 			if (!(typeof key == 'object')) key = { nothingToDelete: Infinity };
-
-			console.log(key);
 
 			coll.removeMany(key, (err, data) => {
 				this.Assert.equal(err, null);
@@ -99,13 +123,15 @@ module.exports = {
 				if (callback) callback(data);
 
 				console.log('Data deleted');
+
+                //client.close();
 			});
-		});
+		// });
 	}
 
 	,drop: function(collection, callback) {
-		this.connect( (db) => {
-			let coll = db.collection(collection);
+		// this.connect( (db) => {
+			let coll = this.db.collection(collection);
 
 			if (!collection.length) return;
 
@@ -116,6 +142,11 @@ module.exports = {
 
 				console.log('Collection deleted');
 			});
-		});
+		// });
+	}
+
+	,toObjectId: function(str) {
+		console.log(this.ObjectId(str));
+		return new this.ObjectId(str);
 	}
 }

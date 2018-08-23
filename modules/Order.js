@@ -1,55 +1,51 @@
 let Pair = require('./Pair');
 let DateInfo = require('./DateInfo');
 let binanceAPI = require('binance-api-node');
-
+/*
+{ symbol: 'ETHBTC',
+  orderId: 196357393,
+  clientOrderId: 'eTFfTS43QuiYSzwpQ4Xw7a',
+  transactTime: 1535028826765,
+  price: '0.04200000',
+  origQty: '0.02400000',
+  executedQty: '0.00000000',
+  cummulativeQuoteQty: '0.00000000',
+  status: 'NEW',
+  timeInForce: 'GTC',
+  type: 'LIMIT',
+  side: 'BUY',
+  fills: [] }
+*/
 const ORDER_STATE = require('../constants').ORDER_STATE;
 
 module.exports = class Order {
 	constructor({
-		pair = '',
-		state = ORDER_STATE.OPENED,
-		amount = 1,
-		price = 0,
-		total = amount * price,
-		dateInfo = new DateInfo(),
-		// data = {
-		// 	symbol,
-		// 	orderId,
-		// 	clientOrderId,
-		// 	transactTime,
-		// 	price,
-		// 	origQty,
-		// 	executedQty,
-		// 	status,
-		// 	timeInForce,
-		// 	type,
-		// 	side,
-		// 	time	
-		// },
-		orderId = 0
+		symbol = null,
+		orderId,
+		clientOrderId = null,
+		transactTime = null,
+		price = null,
+		origQty = null,
+		executedQty = null,
+		cummulativeQuoteQty = null,
+		status = null,
+		timeInForce = null,
+		type = null,
+		side = null,
+		fills = null
 	}) {
-		this.pair = pair;
-		this.state = state;
-		this.amount = amount;
-		this.price = price;
-		this.total = total;
-		this.dateInfo = dateInfo;
-		// this.data = data;
-	}
-
-	openOrder() {	
-		
+		this.symbol = symbol
+		this.orderId = orderId
+		this.clientOrderId = clientOrderId
+		this.transactTime = transactTime
+		this.price = price
+		this.origQty = origQty
+		this.executedQty = executedQty
+		this.cummulativeQuoteQty = cummulativeQuoteQty
+		this.status = status
+		this.timeInForce = timeInForce
+		this.type = type
+		this.side = side
+		this.fills = fills
 	}
 }
-/*
-{
-	pair: Pair,
-	state: number,
-	amount: number,
-	price: number,
-	total: number,
-	????status: boolean????,
-	dateInfo: DateInfo,
-	Data: string
-}
-*/

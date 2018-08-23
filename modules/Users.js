@@ -153,10 +153,11 @@ let Users = {
 				});
 				data.bots[index] = tempBot;
 				Mongo.update({name: data.name}, data, 'users', (data) => {
-					callback({
-						status: 'ok',
-						data: tempBot
-					});
+					if(callback)
+						callback({
+							status: 'ok',
+							data: tempBot
+						});
 				});
 			});
 		}
@@ -229,5 +230,4 @@ let Users = {
 		return salt;
 	}
 }
-
 module.exports = Users;

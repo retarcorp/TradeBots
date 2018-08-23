@@ -64,16 +64,27 @@ app.post('/signup', signup);
 
 app.get('/incomes', incomes);
 app.get('/statistics', statistics);
-
 app.get('/test', (req, res, next) => {
-	let c = binanceAPI({
-		apiKey: 'UmPrRZJ6MRIRAwKqChcSpC4dkm1MMlX19a2S9tfipEW2Efmos7jzCvxIDUgFUTyw',
-		apiSecret: 'EbbvZhDI8TuOs1nJqQzqtoSDSzCuCrPmeMfMlTtiZiQdxTYV0vtKgr9phylXdkH8 '
-	})
-	console.log('asd')
-	let symbol = 'ETHBTC'
-	c.prices().then(data => console.log(data[symbol]))
-	c.allBookTickers().then(data => console.log(data[symbol]))
+	// let c = binanceAPI({
+	// 	apiKey: 'pMK15sHEO3jS9RE9x4KA5zFfdxCKcxk9gDgyf4BhvGrhvEUn3wiZMTYcuqLEAkNh',
+	// 	apiSecret: 'A7pvWxoe0JzHfM1rvF7D2ymM3ZFUvdlOyLRmjeZ7m4gfCWaTOmLBwHcwMUSw3Znp'
+	// })
+	//0,0000182
+
+	// let symbol = "ETHBTC"
+	// c.order({
+	// 	symbol: symbol,
+	// 	side: 'BUY',
+	// 	price: 0.042,
+	// 	quantity: 0.024
+	// }).then(order => {
+	// 	console.log(order)
+	// })
+	// c.cancelOrder({
+	// 	symbol: symbol,
+	// 	orderId: 196357393
+	// }).then(data => console.log(data))
+	
 	// .then(res => console.log(then))
 
 	// c.allBookTickers()
