@@ -1,5 +1,6 @@
 let BotSettings = require('./BotSettings');
 let Order = require('./Order');
+let Pair = require('./Pair');
 const Crypto = require('../modules/Crypto');
 let binanceAPI = require('binance-api-node').default;
 const WSS = require('./WSS');
@@ -13,7 +14,7 @@ module.exports = class Bot {
 		status = CONSTANTS.BOT_STATUS.INACTIVE,
 		botFreeze = CONSTANTS.BOT_FREEZE_STATUS.INACTIVE,
 		botID = String(Date.now()),
-		pair = '',
+		pair = {},
 		currentOrder = null,
 		orders = [],
 		botSettings = {}
@@ -22,7 +23,7 @@ module.exports = class Bot {
 		this.state = state;
 		this.status = status;
 		this.botFreeze = botFreeze;
-		this.pair = pair;//new Pair(pair.from, pair.to);
+		this.pair = new Pair(pair.from, pair.to);
 		this.orders = orders;
 		this.currentOrder = currentOrder;
 		this.botSettings = new BotSettings(botSettings);
@@ -62,7 +63,7 @@ module.exports = class Bot {
 			apiKey: key,
 			apiSecret: secret
 		})
-		WSS.users[userID].send('хер ' + userID)
+		WSS.users[userID].send('userID = ' + userID)
 		this.currentOrder = {}
 		this.startTrade()
 		.catch((err) => console.log(err))
@@ -75,6 +76,7 @@ module.exports = class Bot {
 
 	async startTrade() {
 		console.log('startTrade')
+		let pair = this.pair.from + this.pair.to
 		//TODO 
 		//1. создание ордера по начальным параметрам
 		//2. создание страховочных ордеров
@@ -85,10 +87,10 @@ module.exports = class Bot {
 
 		//1. создание ордера по начальным параметрам
 		let price = await this.Client.allBookTickers()
-		price = Number(price[this.pair].bidPrice)
+		price = Number(price[pair].bidPrice)
 		let quantity = Math.ceil((Number(this.botSettings.initialOrder) / price)*100) /100
 		let newOrderParams = {
-			symbol: this.pair,
+			symbol: pair,
 			quantity: quantity,
 			side: 'BUY',
 			price: price
@@ -108,7 +110,7 @@ module.exports = class Bot {
 			currentPrice -=  currentPrice * deviation
 			currentPrice = Number(currentPrice.toFixed(decimal))
 			let orderParams = {
-				symbol: this.pair,
+				symbol: pair,
 				quantity: quantity,
 				side: 'BUY',
 				price: currentPrice
@@ -125,15 +127,15 @@ module.exports = class Bot {
 
 		//3. выставить ордер на продажу так, чтобы выйти в профит по takeProffit
 
-		let takeProffit = (Number(this.botSettings.takeProffit) + CONSTANTS.BINANCE_FEE) / 100,
-			proffitPrice = Number((price + price * takeProffit).toFixed(decimal)),
+		let takeProfit = (Number(this.botSettings.takeProfit) + CONSTANTS.BINANCE_FEE) / 100,
+			profitPrice = Number((price + price * takeProfit).toFixed(decimal)),
 			orderParams = {
-				symbol: this.pair,
+				symbol: pair,
 				quantity: quantity,
 				side: 'SELL',
-				price: proffitPrice,
+				price: profitPrice,
 				type: 'TAKE_PROFIT_LIMIT',
-				stopPrice: proffitPrice
+				stopPrice: profitPrice
 			}
 		console.log('---')
 		console.log(orderParams)
