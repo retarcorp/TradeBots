@@ -78,8 +78,9 @@ module.exports = class Bot {
 		//TODO 
 		//1. создание ордера по начальным параметрам
 		//2. создание страховочных ордеров
-		//3. запуск цикла проверки статуса цены валюты 
-		//4. проверка и описание решений исходов
+		//3. выставить ордер на продажу так, чтобы выйти в профит по takeProffit
+		//4. запуск цикла проверки статуса цены валюты 
+		//5. проверка и описание решений исходов
 		//end
 
 		//1. создание ордера по начальным параметрам
@@ -94,10 +95,8 @@ module.exports = class Bot {
 		}
 		console.log('-----')
 		console.log(newOrderParams)
-		let newOrder = await this.Client.orderTest(newOrderParams)
-		console.log('-----')
-		console.log(newOrder)
-		console.log('-----')
+		let newBuyOrder = await this.Client.orderTest(newOrderParams)
+		console.log(newBuyOrder)
 
 		//2. создание страховочных ордеров
 		let deviation = Number(this.botSettings.deviation) / 100,
@@ -120,18 +119,39 @@ module.exports = class Bot {
 			console.log(newOrder)
 			safeOrders.push(orderParams)
 		}
+		/*
+			тут нужно добавить создание new Order и запихнть в базу данных массив safeOrders
+		*/
 
-		//3. запуск цикла проверки статуса цены валюты
+		//3. выставить ордер на продажу так, чтобы выйти в профит по takeProffit
+
+		// Изменить на создание ордера с полем type = TAKE_PROFIT
+		let takeProffit = (Number(this.botSettings.takeProffit) + CONSTANTS.BINANCE_FEE) / 100,
+			proffitPrice = Number((price + price * takeProffit).toFixed(decimal)),
+			orderParams = {
+				symbol: this.pair,
+				quantity: quantity,
+				side: 'SELL',
+				price: proffitPrice,
+				type: 'TAKE_PROFIT_LIMIT',
+				stopPrice: proffitPrice
+			}
+		console.log('---')
+		console.log(orderParams)
+		let newSellOrder = await this.Client.orderTest(orderParams)
+		console.log(newSellOrder)
+
+
+		//4. запуск цикла проверки статуса цены валюты 
+		// Сделать интервал, сохранить его куда нибудь для возможности выключения
+		// значит, далее нужно .. хм.. чекать статусы ордера на продажу и страховочных
+		// если 1 - ордер на продажу завершен - закрыть все страховочные ордера и начать все сначала
+		// если 2 - ордер на продажу не завершен и сработал один из страховочных:
+		// пересчитать quantity, так как была еще куплена валюта
+		// пересчитать еще ченить 
+		// пересоздать takeProfit ордер и начать продолжить слежку
+		
+
+		/*!!! при любых изменениях сохранять в бд и отсылать юзеру измененную инфу !!!*/
 	}
 }
-/*
-{
-	title: string,
-	state: number[0,1],
-	status: number[0,1,2],
-	pair: Pair,
-	orders: [Order],
-	currentOrder: Order,
-	settings: BotSettings
-}
-*/

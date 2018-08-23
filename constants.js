@@ -55,6 +55,8 @@ const CONSTANTS = {
 		PROCESSED: 1,
 		COMPLETED: 2,
 		FAILED: 3
-	}
+	},
+
+	BINANCE_FEE: 0.1
 }
 module.exports = CONSTANTS
