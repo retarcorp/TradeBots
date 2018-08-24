@@ -182,7 +182,7 @@ let Users = {
 					const index = data.bots.findIndex(bot => bot.botID === botData.botID)
 					let newBot = new Bot(data.bots[index])
 					data.bots[index] = newBot
-					data.bots[index].changeStatus(botData.status, botData.userID, data)
+					data.bots[index].changeStatus(botData.status, data)
 					.then((d) => {
 						Mongo.update({name: data.name}, data, 'users', (data) => {
 							callback({
