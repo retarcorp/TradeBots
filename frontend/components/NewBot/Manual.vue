@@ -45,15 +45,15 @@
             </div>
             <div class="form-control newBot__settings-control" style="margin-top: 9px;">
                 <label class="label label__double-row" for="deviation">Отклонение от начального ордера %</label>
-                <input v-model="bot.botSettings.deviation" id="deviation" type="number" class="input settings__input">
+                <input v-model="bot.botSettings.deviation" id="deviation" type="number" step='0.01' class="input settings__input">
             </div>
             <div class="form-control newBot__settings-control">
                 <label class="label" for="stop__loss">Стоп лосс %</label>
-                <input v-model="bot.botSettings.stopLoss" id="stop__loss" type="number" class="input settings__input">
+                <input v-model="bot.botSettings.stopLoss" id="stop__loss" type="number" step='0.01' class="input settings__input">
             </div>
             <div class="form-control newBot__settings-control">
                 <label class="label" for="take__profit">Тейк профит %</label>
-                <input v-model="bot.botSettings.takeProfit" id="take__profit" type="number" class="input settings__input">
+                <input v-model="bot.botSettings.takeProfit" id="take__profit" type="number" step='0.01' class="input settings__input">
             </div>
             <div class="form-control newBot__settings-control">
                 <label class="label">Мартингейл</label>

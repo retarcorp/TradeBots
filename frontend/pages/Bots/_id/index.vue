@@ -30,8 +30,11 @@
                 </div> -->
                 <div v-show="!isChanging" class="settings__description">
                     <!-- <p class="settings__item">Дневной объем (BTC): <span>123</span></p> -->
-                    <p class="settings__item">Пара: 
-                        <span>{{ bot.pair }}</span>
+                    <p class="settings__item">Основная пара: 
+                        <span>{{ bot.pair.from }}</span>
+                    </p>
+                    <p class="settings__item">Котируемая пара: 
+                        <span>{{ bot.pair.to }}</span>
                     </p>
                     <template v-if="bot.state === '1'">
                         <p class="settings__item">Начальный ордер: 
@@ -42,8 +45,6 @@
                         <p class="settings__item">Кол-во страховочных ордеров: <span>{{ bot.botSettings.safeOrder.amount }}</span></p>
                         
                         <p class="settings__item">Отклонение от начального ордера: <span>{{ bot.botSettings.deviation }}%</span></p>
-                        
-                        <p class="settings__item">Количество: <span>{{ bot.botSettings.amount }}%</span></p>
                         
                         <p class="settings__item">Стоп лосс: <span>{{ bot.botSettings.stopLoss }}%</span></p>
                         
@@ -61,7 +62,6 @@
                         <p class="settings__item">Дневной объем(BTC): 
                             <span>{{ bot.botSettings.dailyVolumeBTC }}</span>
                         </p>
-                        <p class="settings__item">Количество: <span>{{ bot.botSettings.amount }}%</span></p>
                         <p>Условия для начала сделки</p>
                         <table class="table">
                             <tr class="table__tr" v-for="(signal,index) in bot.botSettings.tradingSignals" :key="signal.id">
@@ -174,11 +174,7 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
                     })
             },
             onDeleteBot() {
-                this.$store.commit('setSpiner', true);
                 this.$store.dispatch('deleteBot', this.bot.botID)
-                    .then(() => {
-                        this.$store.commit('setSpiner', false)
-                    })
             },
             onChangeSettings() {
                 this.isChanging = true;
@@ -187,17 +183,19 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
                 : this.currentComponent = "SettingsAutomatic"
             },
             onSaveSettings() {
-                this.isSaved = true
-                // this.$axios
-                //     .$post('/bots/update', this.bot)
-                //     .then(res => {
-                //         if(res.data.status === 'ok') {
-                //             this.isSaved = true;
-                //         } else {
-                //             console.log(res.message)
-                //         }
-                //     })
-                //     .catch(e => console.log(e))
+                this.$store.commit('setSpiner', true);
+                this.$axios
+                    .$post('/bots/update', this.bot)
+                    .then(res => {
+                        if(res.data.status === 'ok') {
+                            this.isSaved = true;
+                            this.$store.commit('setSpiner', false);
+                        } else {
+                            console.log(res.message)
+                            this.$store.commit('setSpiner', false);
+                        }
+                    })
+                    .catch(e => console.log(e))
             },
             onUpdated() {
                 this.isChanging = false;

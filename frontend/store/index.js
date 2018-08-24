@@ -131,8 +131,8 @@ const store = () =>
           })
           .then(res => {
             if (res.status === "ok") {
-              commit("deleteBot", res.data.botID);
               this.$router.push('/bots')
+              commit("deleteBot", res.data.botID);
               commit('setSpiner', false);
             } else {
               console.log(res.message);
