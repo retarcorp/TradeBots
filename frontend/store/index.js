@@ -35,6 +35,10 @@ const store = () =>
       }
     },
     mutations: {
+      setBot(state, payload) {
+        const index = state.botsList.findIndex(bot => bot.botID === payload.botID)
+        state.botsList[index] = payload;
+      },
       setWsId(state, payload) {
         state.wsID = payload
       },
