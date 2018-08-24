@@ -88,7 +88,7 @@
                     <li @click.prevent="isActive = false" class="tabs__item">Выполненные</li>
                 </ul>
                 <div class="tabs__content">
-                    <table v-show="isActive" class="page__table">
+                    <table v-show="isActive" class="table">
                         <tr class="table__tr">
                             <th class="table__th pair-head">Пара</th>
                             <th class="table__th side">Тип</th>
@@ -112,7 +112,7 @@
                             <td class="table__td total">{{ order.cummulativeQuoteQty }}</td>
                         </tr>
                     </table>
-                    <table v-show="!isActive" class="page__table">
+                    <table v-show="!isActive" class="table">
                         <tr class="table__tr">
                             <th class="table__th pair-head">Другая Пара</th>
                             <th class="table__th price-head">Другая Цена</th>
@@ -214,30 +214,6 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
 
 <style scoped>
 
-/* TABLE SETTING */
-
-.page__table{
-    width: 100%;
-    margin: 10px auto;
-    border-collapse: collapse;
-}
-.table__tr{
-    display: flex;
-    border-bottom: 1px solid #E3E3E3;
-}
-.table__tr:last-child{
-    border-bottom: none;
-}
-.table__td,
-.table__th{
-    flex: 1;
-    font-size: 14px;
-    font-weight: 500;
-    padding: 20px 0;
-    text-align: start;
-    display: flex;
-    align-items: center;
-}
 
 /*    */
 

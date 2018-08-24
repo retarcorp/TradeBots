@@ -2,7 +2,6 @@
     display: flex;
     align-items: center;
     margin-bottom: 1rem;
-    background-color: var(--color-success);
 }
 
 .bots__search-icon {
