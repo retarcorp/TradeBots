@@ -65,7 +65,6 @@ module.exports = class Bot {
 			apiKey: key,
 			apiSecret: secret
 		})
-		WSS.users[userID].send('userID = ' + userID)
 		this.currentOrder = {}
 		this.startTrade(user)
 		.catch((err) => console.log(err))
@@ -192,24 +191,12 @@ module.exports = class Bot {
 			// 	})
 			// 	.catch(err => {
 			// 		this.status = CONSTANTS.BOT_STATUS.INACTIVE
-			// 		WSS.users[userID].send({
-			// 			status: 'error',
-			// 			message: err
-			// 		})
 			// 	}))
 			// 	// }	
 			// }
 
 			this.status = CONSTANTS.BOT_STATUS.INACTIVE
 			this.updateBot(user)
-			// WSS.users[userID].send(JSON.stringify({
-			// 	status: 'ok',
-			// 	data: {
-			// 		orders: this.orders,
-			// 		status: this.status
-			// 	},
-			// 	message: 'trade is done'
-			// }))
 		}
 		else if( // ошибка ордера
 			currentSellOrder.status === CONSTANTS.ORDER_STATUS.CANCELED || 
@@ -220,14 +207,6 @@ module.exports = class Bot {
 			console.log('ОШИБКА')
 			this.status = CONSTANTS.BOT_STATUS.INACTIVE
 			this.updateBot(user)
-			// WSS.users[userID].send(JSON.stringify({
-			// 	status: 'error',
-			// 	data: {
-			// 		orders: this.orders,
-			// 		status: this.status
-			// 	},
-			// 	message: 'trade is faled'
-			// }))
 		}
 		else { // ордер в процессе
 			console.log('В ПРОЦЕССЕ')
@@ -250,14 +229,6 @@ module.exports = class Bot {
 			// 	}
 			// }
 			this.updateBot(user)
-			// WSS.users[userID].send(JSON.stringify({
-			// 	status: 'ok',
-			// 	data: {
-			// 		orders: this.orders,
-			// 		status: this.status
-			// 	},
-			// 	message: 'trade is working'
-			// }))	
 			let t = this
 			setTimeout(() => t.trade(user), 10000)
 			
