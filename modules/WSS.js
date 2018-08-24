@@ -8,14 +8,15 @@ module.exports = {
 	init(server) {
 		this.socket = new WebSocket.Server({server})
 		this.users = {}
-		this.userID = 1
 		this.setListneres()
 	}
 
 	,setListneres() {
 		this.socket.on('connection', (ws) => {
-			ws.userID = this.userID++
+			let id = Math.random()
+			ws.userID = id
 			ws.send(ws.userID)
+			console.log('соединение открыто ' + id)
 			this.users[ws.userID] = ws
 			ws.on('message', (mess) => {
 				ws.send(mess)
@@ -27,8 +28,14 @@ module.exports = {
 				// 	client.send(mess)
 				// })
 			})
-		
+			
+			ws.on('close', function() {
+				console.log('соединение закрыто ' + id)
+				// delete clients[ws.userID]
+			})
 		})
+
+		
 	}
 }
 
