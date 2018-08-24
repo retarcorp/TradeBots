@@ -96,17 +96,28 @@ let Users = {
 	}
 
 	,Bots: {
-		getBotList(user, callback) {
-
-			console.log(user);
+		get(user, botID, callback) {
+			Mongo.select(user, 'users', (data) => {
+				data = data[0];
+				if(callback) {
+					const i = data.bots.findIndex(bot => Number(bot.botID) === Number(botID))
+					callback({
+						status: 'ok',
+						data: data.bots[i] || {}
+					})
+				}
+			})
+		}
+		
+		,getBotList(user, callback) {
 			Mongo.select(user, 'users', (data) => {
 				data = data[0];
 				if(callback) 
 					callback({
 						status: 'ok',
 						data: data.bots || []
-					});
-			});
+					})
+			})
 		}
 		
 		,setBot(user, botData, callback) {
