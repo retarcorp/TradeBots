@@ -97,7 +97,7 @@
                             <th class="table__th total-head">Всего</th>
                         </tr>
                         <!-- TODO create component for 1 row -->
-                        <tr v-for="order in bot.orders"
+                        <tr v-for="order in openedOrders"
                             :key="order.id" 
                             class="table__tr">
                             <td class="table__td pair">{{ order.symbol }}</td>
@@ -114,12 +114,24 @@
                     </table>
                     <table v-show="!isActive" class="table">
                         <tr class="table__tr">
-                            <th class="table__th pair-head">Другая Пара</th>
-                            <th class="table__th price-head">Другая Цена</th>
-                            <th class="table__th quantity-head">Другое Количество</th>
-                            <th class="table__th total-head">Другое Всего</th>
+                            <th class="table__th pair-head">Пара</th>
+                            <th class="table__th side">Тип</th>
+                            <th class="table__th price-head">Цена</th>
+                            <th class="table__th quantity-head">Количество</th>
+                            <th class="table__th total-head">Всего</th>
                         </tr>
-                        <!-- status === 3 -->
+                        <tr v-for="order in closedOrders" :key="order.id">
+                            <td class="table__td pair">{{ order.symbol }}</td>
+                            <td 
+                                class="table__td side" 
+                                :class="order.side === 'BUY' ? 'text--success' : 'text--danger'"
+                                >{{ order.side }}</td>
+                            <td class="table__td price">
+                                {{ order.type !== 'MARKET' ? order.price : order.fills[0].price }}
+                            </td>
+                            <td class="table__td quantity">{{ order.origQty }}</td>
+                            <td class="table__td total">{{ order.cummulativeQuoteQty }}</td>
+                        </tr>
                     </table>
                     <div class="order__buttons">
                         <button class="button button--primary page__button button__cancel-sell">Отменить и продать</button>
@@ -149,6 +161,12 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
         computed: {
             bot() {
                 return this.$store.getters.getBot(this.$route.params.id)
+            },
+            openedOrders() {
+                return this.bot.orders.filter(order => order.status === 'NEW' || order.status === 'PARTIALLY_FILLED')
+            },
+            closedOrders() {
+                return this.bot.orders.filter(order => order.status !== 'NEW' && order.status !== 'PARTIALLY_FILLED')
             }
         },
         watch: {
