@@ -98,6 +98,7 @@ module.exports = class Bot {
 			side: 'BUY'
 			// price: price
 		}
+		this.quantity = quantity
 		console.log('-----')
 		let newBuyOrder = await this.Client.order(newOrderParams)
 		console.log(newBuyOrder)
@@ -108,23 +109,22 @@ module.exports = class Bot {
 			currentPrice = price,
 			safeOrders = [],
 			decimal = String(price).length - 2
-		// for(let i = 0; i < amout; i++) {
-		// 	currentPrice -=  currentPrice * deviation
-		// 	currentPrice = Number(currentPrice.toFixed(decimal))
-		// 	let orderParams = {
-		// 		symbol: pair,
-		// 		quantity: quantity,
-		// 		side: 'BUY',
-		// 		price: currentPrice
-		// 	}
-		// 	console.log('---')
-		// 	console.log(orderParams)
-		// 	let newOrder = await this.Client.orderTest(orderParams)
-		// 	console.log(newOrder)
-		// 	safeOrders.push(orderParams)
-		// }
-		// this.safeOrders.push(...safeOrders)
-		// this.orders.push(...safeOrders)
+		for(let i = 0; i < amout; i++) {
+			currentPrice -=  currentPrice * deviation
+			currentPrice = Number(currentPrice.toFixed(decimal))
+			let orderParams = {
+				symbol: pair,
+				quantity: quantity,
+				side: 'BUY',
+				price: currentPrice 	
+			}
+			console.log('---')
+			let newOrder = await this.Client.order(orderParams)
+			console.log(newOrder)
+			safeOrders.unshift(new Order(orderParams))
+		}
+		this.safeOrders.unshift(...safeOrders)
+		this.orders.unshift(...safeOrders)
 		/*
 			тут нужно добавить создание new Order и запихнть в базу данных массив safeOrders
 		*/
@@ -133,16 +133,19 @@ module.exports = class Bot {
 
 		let takeProfit = (Number(this.botSettings.takeProfit) + CONSTANTS.BINANCE_FEE) / 100,
 			profitPrice = Number((price + price * takeProfit).toFixed(decimal)),
+			stopLoss = Number(this.botSettings.stopLoss) / 100,
+			stopPrice = Number((price - price * stopLoss).toFixed(decimal)),
 			orderParams = {
 				symbol: pair,
 				quantity: quantity,
 				side: 'SELL',
 				price: profitPrice,
-				type: 'TAKE_PROFIT_LIMIT',
-				stopPrice: profitPrice
+				type: 'STOP_LOSS_LIMIT',//'TAKE_PROFIT_LIMIT',
+				stopPrice: stopPrice
 			}
+		this.profitPrice = profitPrice
+		this.stopPrice = stopPrice
 		console.log('---')
-		console.log(orderParams)
 		let newSellOrder = await this.Client.order(orderParams)
 		this.currentOrder = new Order(newSellOrder)
 		this.orders.unshift(this.currentOrder)
@@ -181,22 +184,23 @@ module.exports = class Bot {
 		// ордер завершен
 		if(currentSellOrder.status === CONSTANTS.ORDER_STATUS.FILLED) {
 			console.log('ЗАВЕРШЕНО')
-			// for(let i = 0; i < this.safeOrders.length; i++) {
-			// 	let order = this.safeOrders[i]
-			// 	let Order = await this.Client.getOrder({
-			// 		symbol: pair,
-			// 		orderId: order.orderId
-			// 	})
-			// 	// if(Order.side === CONSTANTS.ORDER_SIDE.BUY) {
-			// 	console.log(this.Client.cancelOrder({
-			// 		symbol: pair,
-			// 		orderId: Order.orderId
-			// 	})
-			// 	.catch(err => {
-			// 		this.status = CONSTANTS.BOT_STATUS.INACTIVE
-			// 	}))
-			// 	// }	
-			// }
+			for(let i = 0; i < this.safeOrders.length; i++) {
+				let order = this.safeOrders[i]
+				// let Order = await this.Client.getOrder({
+				// 	symbol: pair,
+				// 	orderId: order.orderId
+				// })
+				// if(Order.side === CONSTANTS.ORDER_SIDE.BUY) {
+				console.log(this.Client.cancelOrder({
+					symbol: pair,
+					orderId: order.orderId
+				})
+				.catch(err => {
+					console.log(err)
+					this.status = CONSTANTS.BOT_STATUS.INACTIVE
+				}))
+				// }	
+			}
 
 			this.status = CONSTANTS.BOT_STATUS.INACTIVE
 			// this.updateBot(user)
@@ -208,6 +212,23 @@ module.exports = class Bot {
 			currentSellOrder.status === CONSTANTS.ORDER_STATUS.EXPIRED
 		) {
 			console.log('ОШИБКА')
+			for(let i = 0; i < this.safeOrders.length; i++) {
+				let order = this.safeOrders[i]
+				// let Order = await this.Client.getOrder({
+				// 	symbol: pair,
+				// 	orderId: order.orderId
+				// })
+				// if(Order.side === CONSTANTS.ORDER_SIDE.BUY) {
+				console.log(this.Client.cancelOrder({
+					symbol: pair,
+					orderId: order.orderId
+				})
+				.catch(err => {
+					console.log(err)
+					this.status = CONSTANTS.BOT_STATUS.INACTIVE
+				}))
+				// }	
+			}
 			this.status = CONSTANTS.BOT_STATUS.INACTIVE
 			// this.updateBot(user)
 		}
@@ -215,25 +236,59 @@ module.exports = class Bot {
 			console.log('В ПРОЦЕССЕ')
 			let price = await this.Client.allBookTickers()
 			price = Number(price[pair].bidPrice)
-			// let firstSafeOrder = this.orders[0]
-			// for(let i = 0; i < this.safeOrders.length; i++) {
-			// 	let order = this.safeOrders[i],
-			// 		Order = await this.Client.getOrder({
-			// 			symbol: pair,
-			// 			orderId: order[i].orderId
-			// 		})
-			// 	if(
-			// 		(Number(Order.price) >= price && 
-			// 		Order.side === CONSTANTS.ORDER_SIDE.BUY) || 
-			// 		Order.status === CONSTANTS.ORDER_STATUS.FILLED
-			// 	) {
-			// 		//Пересчитать 
-			// 		break
-			// 	}
-			// }
-			// this.updateBot(user)
-			let t = this
-			setTimeout(() => t.trade(user), 10000)
+			console.log('поиск страховочных ордеров')
+			for(let i = 0; i < this.safeOrders.length; i++) {
+				let order = this.safeOrders[i]
+				console.log(`айдишник ${i} ордера - ${order.orderId}`)
+				let	Order = await this.Client.getOrder({
+						symbol: pair,
+						orderId: order.orderId
+					})
+				console.log(Order)
+				if( 
+					(Number(Order.price) >= price && 
+					Order.side === CONSTANTS.ORDER_SIDE.BUY) || 
+					Order.status === CONSTANTS.ORDER_STATUS.FILLED
+				) {
+					//Пересчитать 
+					console.log('пересчитываем', this.currentOrder.orderId)
+					this.Client.cancelOrder({
+						symbol: pair,
+						orderId: this.currentOrder.orderId
+					})
+					
+					let decimal = String(Order.price).length - 2,
+						takeProfit = (Number(this.botSettings.takeProfit) + CONSTANTS.BINANCE_FEE) / 100,
+						newProfitPrice = Number((Order.price + Order.price * takeProfit).toFixed(decimal))
+					
+					newProfitPrice = Number(((newProfitPrice + this.profitPrice) / 2).toFixed(decimal))
+					this.profitPrice = newProfitPrice
+
+					orderParams = {
+						symbol: pair,
+						quantity: this.quantity,
+						side: 'SELL',
+						price: this.profitPrice,
+						type: 'STOP_LOSS_LIMIT',//'TAKE_PROFIT_LIMIT',
+						stopPrice: this.stopPrice
+					}
+					
+					let newSellOrder = await this.Client.order(orderParams)
+					this.currentOrder = new Order(newSellOrder)
+					this.orders.unshift(this.currentOrder)
+
+					break
+				}
+			}
+			console.log('круг почета')
+			for(let i = 0; i < this.orders.length; i++) {
+				this.orders[i] = await this.Client.getOrder({
+					symbol: pair,
+					orderId: this.orders[i].orderId
+				})
+			}
+
+			setTimeout(() => this.trade(user), 10000)
 			
 		}
 		this.updateBot(user)
