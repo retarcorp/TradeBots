@@ -120,7 +120,7 @@
                             <th class="table__th quantity-head">Количество</th>
                             <th class="table__th total-head">Всего</th>
                         </tr>
-                        <tr v-for="order in closedOrders" :key="order.id">
+                        <tr v-for="order in closedOrders" :key="order.id" class="table__tr">
                             <td class="table__td pair">{{ order.symbol }}</td>
                             <td 
                                 class="table__td side" 
