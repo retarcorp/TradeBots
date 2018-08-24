@@ -71,7 +71,7 @@ module.exports = class Bot {
 		
 	}
 
-	startAuto(userUD, user) {
+	startAuto(user) {
 		console.log('startAuto')
 	}
 
@@ -101,7 +101,7 @@ module.exports = class Bot {
 		console.log('-----')
 		let newBuyOrder = await this.Client.order(newOrderParams)
 		console.log(newBuyOrder)
-		this.orders.push(new Order(newBuyOrder))
+		this.orders.unshift(new Order(newBuyOrder))
 		//2. создание страховочных ордеров
 		let deviation = Number(this.botSettings.deviation) / 100,
 			amout = Number(this.botSettings.safeOrder.amount),
@@ -145,7 +145,7 @@ module.exports = class Bot {
 		console.log(orderParams)
 		let newSellOrder = await this.Client.order(orderParams)
 		this.currentOrder = new Order(newSellOrder)
-		this.orders.push(this.currentOrder)
+		this.orders.unshift(this.currentOrder)
 		console.log(newSellOrder)
 
 
@@ -175,6 +175,9 @@ module.exports = class Bot {
 				orderId: this.currentOrder.orderId
 			})
 		console.log(currentSellOrder)
+		this.currentOrder = new Order(currentSellOrder)
+		const index = this.orders.findIndex(order => order.orderId === this.currentOrder.orderId)
+		this.orders[index] = this.currentOrder
 		// ордер завершен
 		if(currentSellOrder.status === CONSTANTS.ORDER_STATUS.FILLED) {
 			console.log('ЗАВЕРШЕНО')
@@ -196,7 +199,7 @@ module.exports = class Bot {
 			// }
 
 			this.status = CONSTANTS.BOT_STATUS.INACTIVE
-			this.updateBot(user)
+			// this.updateBot(user)
 		}
 		else if( // ошибка ордера
 			currentSellOrder.status === CONSTANTS.ORDER_STATUS.CANCELED || 
@@ -206,7 +209,7 @@ module.exports = class Bot {
 		) {
 			console.log('ОШИБКА')
 			this.status = CONSTANTS.BOT_STATUS.INACTIVE
-			this.updateBot(user)
+			// this.updateBot(user)
 		}
 		else { // ордер в процессе
 			console.log('В ПРОЦЕССЕ')
@@ -228,11 +231,12 @@ module.exports = class Bot {
 			// 		break
 			// 	}
 			// }
-			this.updateBot(user)
+			// this.updateBot(user)
 			let t = this
 			setTimeout(() => t.trade(user), 10000)
 			
 		}
+		this.updateBot(user)
 	}
 
 	updateBot(user) {
@@ -244,7 +248,27 @@ module.exports = class Bot {
 				return bot.botID === tempBot.botID
 			})
 			data.bots[index] = tempBot
-			Mongo.update({name: data.name}, data, 'users', data => console.log(data))
+			Mongo.update({name: data.name}, data, 'users')
 		})
 	}
 }
+
+
+/*
+ symbol: 'ETHBTC',
+  orderId: 196648474,
+  clientOrderId: 'MRh2w8ynxSoqvMMVDSO44E',
+  price: '0.04220000',
+  origQty: '0.03000000',
+  executedQty: '0.00000000',
+  cummulativeQuoteQty: '0.00000000',
+  status: 'NEW',
+  timeInForce: 'GTC',
+  type: 'TAKE_PROFIT_LIMIT',
+  side: 'SELL',
+  stopPrice: '0.04220000',
+  icebergQty: '0.00000000',
+  time: 1535100548933,
+  updateTime: 1535100548933,
+  isWorking: false }
+*/
