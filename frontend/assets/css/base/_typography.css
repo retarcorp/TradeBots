@@ -36,7 +36,7 @@
     color: inherit;
 }
 
-.text-success {
+.text--success {
     color: var(--color-success)
 }
 

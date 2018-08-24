@@ -91,6 +91,7 @@
                     <table v-show="isActive" class="page__table">
                         <tr class="table__tr">
                             <th class="table__th pair-head">Пара</th>
+                            <th class="table__th side">Тип</th>
                             <th class="table__th price-head">Цена</th>
                             <th class="table__th quantity-head">Количество</th>
                             <th class="table__th total-head">Всего</th>
@@ -99,10 +100,16 @@
                         <tr v-for="order in bot.orders"
                             :key="order.id" 
                             class="table__tr">
-                            <td class="table__td pair">{{ order.pair }}</td>
-                            <td class="table__td price">{{ order.price }}</td>
-                            <td class="table__td quantity">{{ order.amount }}</td>
-                            <td class="table__td total">{{ order.total }}</td>
+                            <td class="table__td pair">{{ order.symbol }}</td>
+                            <td 
+                                class="table__td side" 
+                                :class="order.side === 'BUY' ? 'text--success' : 'text--danger'"
+                                >{{ order.side }}</td>
+                            <td class="table__td price">
+                                {{ order.type !== 'MARKET' ? order.price : order.fills[0].price }}
+                            </td>
+                            <td class="table__td quantity">{{ order.origQty }}</td>
+                            <td class="table__td total">{{ order.cummulativeQuoteQty }}</td>
                         </tr>
                     </table>
                     <table v-show="!isActive" class="page__table">
