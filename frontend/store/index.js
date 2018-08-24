@@ -112,7 +112,7 @@ const store = () =>
       addNewBot({ commit }, payload) {
         commit("addNewBot", payload);
       },
-      setBotsList({ commit }) {
+      setBotsList({ commit, dispatch }) {
         commit('setSpiner', true);
         this.$axios
           .$get("/bots/getBotsList")
@@ -120,6 +120,13 @@ const store = () =>
             if (res.status === "ok") {
               commit("setBotsList", res.data);
               commit('setSpiner', false);
+              if(res.data.find(bot => bot.status === '1')) {
+                console.log('im here')
+                
+                setTimeout(() => {
+                  dispatch('setBotsList')
+                }, 5000);
+              }
             } else {
               console.log(res.message);
               commit('setSpiner', false);

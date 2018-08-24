@@ -170,21 +170,6 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
             }
         },
         methods: {
-            getOrdersWithInterval() {
-                this.$axios
-                    .$get('/bots/get')
-                    .then(res => {
-                        if(res.status === 'ok') {
-                            this.$store.commit('setBot', res.data)
-                            if(res.data.status === '1') {
-                                setTimeout(this.getOrdersWithInterval, 5000);
-                            }
-                        } else {
-                            console.log(res.message)
-                        }
-                    })
-                    .catch(e => console.log(e))
-            },
             setBotFreeze() {
                 this.bot.freeze === '0' 
                 ? this.bot.freeze = '1'
