@@ -257,7 +257,7 @@ module.exports = class Bot {
 			// 		status: this.status
 			// 	},
 			// 	message: 'trade is working'
-			// }))
+			// }))	
 			let t = this
 			setTimeout(() => t.trade(userID, user), 10000)
 			

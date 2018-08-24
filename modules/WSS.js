@@ -31,7 +31,7 @@ module.exports = {
 			
 			ws.on('close', function() {
 				console.log('соединение закрыто ' + id)
-				// delete clients[ws.userID]
+				// clients[ws.userID]
 			})
 		})
 
