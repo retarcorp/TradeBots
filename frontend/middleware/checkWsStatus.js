@@ -1,4 +1,7 @@
 export default function ({ store, route, redirect }) {
+  if(route.path === '/') {
+    redirect('/bots')
+  }
   if(route.path === '/signin' || route.path === '/signup') {
     console.log('here');
   } else {
