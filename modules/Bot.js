@@ -32,15 +32,15 @@ module.exports = class Bot {
 		this.botID = botID
 	}
 
-	async changeStatus(nextStatus, userID, user) {
+	async changeStatus(nextStatus, user) {
 		this.status = nextStatus;
 		if(this.status === CONSTANTS.BOT_STATUS.ACTIVE) {
 			console.log('АКТИВ')
 			if(this.state === CONSTANTS.BOT_STATE.MANUAL) {
-				this.startManual(userID, user)
+				this.startManual(user)
 			}
 			else if(this.state === CONSTANTS.BOT_STATE.AUTO) {
-				this.startAuto(userID, user)
+				this.startAuto(user)
 			}
 			else {
 				console.log('ЧТО-ТО ПОШЛО НЕ ТАК, ВЫКЛ')
@@ -57,7 +57,7 @@ module.exports = class Bot {
 		}
 	}
 
-	startManual(userID, user) {
+	startManual(user) {
 		console.log('startManual')
 		let key = Crypto.decipher(user.binanceAPI.key,  Crypto.getKey(user.regDate, user.name))
 		let secret = Crypto.decipher(user.binanceAPI.secret,  Crypto.getKey(user.regDate, user.name))
@@ -67,7 +67,7 @@ module.exports = class Bot {
 		})
 		WSS.users[userID].send('userID = ' + userID)
 		this.currentOrder = {}
-		this.startTrade(userID, user)
+		this.startTrade(user)
 		.catch((err) => console.log(err))
 		
 	}
@@ -76,7 +76,7 @@ module.exports = class Bot {
 		console.log('startAuto')
 	}
 
-	async startTrade(userID, user) {
+	async startTrade(user) {
 		console.log('startTrade')
 		let pair = this.pair.from + this.pair.to
 		//TODO 
@@ -160,7 +160,7 @@ module.exports = class Bot {
 		// пересчитать еще ченить 
 		// пересоздать takeProfit ордер и начать продолжить слежку
 
-		this.trade(userID, user)
+		this.trade(user)
 		.catch(err => {
 			console.log(err)
 		})
@@ -168,7 +168,7 @@ module.exports = class Bot {
 		/*!!! при любых изменениях сохранять в бд и отсылать юзеру измененную инфу !!!*/
 	}
 
-	async trade(userID, user) {
+	async trade(user) {
 		console.log('trade is going')
 		let pair = this.pair.from + this.pair.to,
 			currentSellOrder = await this.Client.getOrder({
@@ -259,7 +259,7 @@ module.exports = class Bot {
 			// 	message: 'trade is working'
 			// }))	
 			let t = this
-			setTimeout(() => t.trade(userID, user), 10000)
+			setTimeout(() => t.trade(user), 10000)
 			
 		}
 	}

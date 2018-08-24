@@ -6,22 +6,27 @@ var router = express.Router();
 router.get('/bots/getBotsList', (req, res, next) => {
 	let user = {name: req.cookies.user.name}
 	Users.Bots.getBotList(user, data => res.json(data))
-});
+})
+
+router.get('/bots/get', (req, res, next) => {
+	let user = {name: req.cookies.user.name}
+	Users.Bots.get(user, req.body.botID, data => res.json(data))
+})
 
 router.post('/bots/add', (req, res, next) => {
 	let user = {name: req.cookies.user.name}
 	Users.Bots.setBot(user, req.body, data => res.json(data))
-});
+})
 
 router.post('/bots/delete', (req, res, next) => {
 	let user = {name: req.cookies.user.name}
 	Users.Bots.setBot(user, req.body.botID, data => res.json(data))
-});
+})
 
 router.post('/bots/update', (req, res, next) => {
 	let user = {name: req.cookies.user.name}
 	Users.Bots.updateBot(user, req.body, data => res.json(data))
-});
+})
 
 router.post('/bots/setStatus', (req, res, next) => {
 	let user = {name: req.cookies.user.name}
