@@ -89,13 +89,13 @@ export default {
 
 @media screen and (min-width: 1240px) {
     .fixed {
-        position: static;
-        width: 50%;
-        max-width: 50%;
+        position: fixed;
+        width: 25%;
+        max-width: 25%;
     }
 
     .margin {
-        margin-left: 0px;
+        margin-left: 400px;
     }
 }
 </style>
