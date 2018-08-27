@@ -84,12 +84,13 @@
 
             <div class="bots__order">
                 <ul class="tabs__bar">
-                    <li @click.prevent="isActive = true" class="tabs__item">Выставленные ордера</li>
-                    <li @click.prevent="isActive = false" class="tabs__item">Выполненные</li>
+                    <li @click.prevent="isActive = true" class="tabs__item"  :style="isActive ? 'backgroundColor: #eee': ''">Выставленные ордера</li>
+                    <li @click.prevent="isActive = false" class="tabs__item"  :style="!isActive ? 'backgroundColor: #eee': ''">Выполненные</li>
                 </ul>
                 <div class="tabs__content">
                     <table v-show="isActive" class="table">
                         <tr class="table__tr">
+                            <th class="table__th date">Дата</th>
                             <th class="table__th pair-head">Пара</th>
                             <th class="table__th side">Тип</th>
                             <th class="table__th price-head">Цена</th>
@@ -100,6 +101,7 @@
                         <tr v-for="order in openedOrders"
                             :key="order.id" 
                             class="table__tr">
+                            <td class="table__td date">{{ order.date }}</td>
                             <td class="table__td pair">{{ order.symbol }}</td>
                             <td 
                                 class="table__td side" 
@@ -114,6 +116,7 @@
                     </table>
                     <table v-show="!isActive" class="table">
                         <tr class="table__tr">
+                            <th class="table__th date">Дата</th>
                             <th class="table__th pair-head">Пара</th>
                             <th class="table__th side">Тип</th>
                             <th class="table__th price-head">Цена</th>
@@ -121,6 +124,7 @@
                             <th class="table__th total-head">Всего</th>
                         </tr>
                         <tr v-for="order in closedOrders" :key="order.id" class="table__tr">
+                            <td class="table__td date">{{ order.date }}</td>
                             <td class="table__td pair">{{ order.symbol }}</td>
                             <td 
                                 class="table__td side" 
