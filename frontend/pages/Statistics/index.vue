@@ -19,30 +19,30 @@
         </ul>
         <div class="tabs__content">
             <table v-show="currentTab === 'opened'" class="table">
+                <tr class="table__tr">
+                    <th class="table__th date">Дата</th>
+                    <th class="table__th pair-head">Пара</th>
+                    <th class="table__th side">Тип</th>
+                    <th class="table__th price-head">Цена</th>
+                    <th class="table__th quantity-head">Количество</th>
+                    <th class="table__th total-head">Всего</th>
+                </tr>
                 <tbody class='overflow'>
-                    <tr class="table__tr">
-                        <th class="table__th date">Дата</th>
-                        <th class="table__th pair-head">Пара</th>
-                        <th class="table__th side">Тип</th>
-                        <th class="table__th price-head">Цена</th>
-                        <th class="table__th quantity-head">Количество</th>
-                        <th class="table__th total-head">Всего</th>
+                    <tr 
+                        v-for="order in openedOrders" 
+                        :key="order.id" 
+                        class="table__tr">
+                        <td class="table__td date">{{ order.time | date }}</td>
+                        <td class="table__td pair">{{ order.symbol }}</td>
+                        <td 
+                            class="table__td side" 
+                            :class="order.side === 'BUY' ? 'text--success' : 'text--danger'"
+                            >{{ order.side }}({{ order.type }})</td>
+                        <td class="table__td price">{{ order.type !== 'MARKET' ? order.price : (Number(order.cummulativeQuoteQty) / Number(order.origQty)).toFixed(order.price.length - 2) }}</td>
+                        <td class="table__td quantity">{{ order.origQty }}</td>
+                        <td class="table__td total">{{ order.cummulativeQuoteQty }}</td>
                     </tr>
                 </tbody>
-                <tr 
-                    v-for="order in openedOrders" 
-                    :key="order.id" 
-                    class="table__tr">
-                    <td class="table__td date">{{ order.time | date }}</td>
-                    <td class="table__td pair">{{ order.symbol }}</td>
-                    <td 
-                        class="table__td side" 
-                        :class="order.side === 'BUY' ? 'text--success' : 'text--danger'"
-                        >{{ order.side }}({{ order.type }})</td>
-                    <td class="table__td price">{{ order.type !== 'MARKET' ? order.price : (Number(order.cummulativeQuoteQty) / Number(order.origQty)).toFixed(order.price.length - 2) }}</td>
-                    <td class="table__td quantity">{{ order.origQty }}</td>
-                    <td class="table__td total">{{ order.cummulativeQuoteQty }}</td>
-                </tr>
             </table>
             <table v-show="currentTab === 'closed'" class="table">
                 <tr class="table__tr">
@@ -53,20 +53,22 @@
                     <th class="table__th quantity-head">Количество</th>
                     <th class="table__th total-head">Всего</th>
                 </tr>
-                <tr 
-                    v-for="order in closedOrders" 
-                    :key="order.id" 
-                    class="table__tr">
-                    <td class="table__td date">{{ order.time | date }}</td>
-                    <td class="table__td pair">{{ order.symbol }}</td>
-                    <td 
-                        class="table__td side" 
-                        :class="order.side === 'BUY' ? 'text--success' : 'text--danger'"
-                        >{{ order.side }}({{ order.type }})</td>
-                    <td class="table__td price">{{ order.type !== 'MARKET' ? order.price : (Number(order.cummulativeQuoteQty) / Number(order.origQty)).toFixed(order.price.length - 2) }}</td>
-                    <td class="table__td quantity">{{ order.origQty }}</td>
-                    <td class="table__td total">{{ order.cummulativeQuoteQty }}</td>
-                </tr>
+                <tbody class='overflow'>
+                    <tr 
+                        v-for="order in closedOrders" 
+                        :key="order.id" 
+                        class="table__tr">
+                        <td class="table__td date">{{ order.time | date }}</td>
+                        <td class="table__td pair">{{ order.symbol }}</td>
+                        <td 
+                            class="table__td side" 
+                            :class="order.side === 'BUY' ? 'text--success' : 'text--danger'"
+                            >{{ order.side }}({{ order.type }})</td>
+                        <td class="table__td price">{{ order.type !== 'MARKET' ? order.price : (Number(order.cummulativeQuoteQty) / Number(order.origQty)).toFixed(order.price.length - 2) }}</td>
+                        <td class="table__td quantity">{{ order.origQty }}</td>
+                        <td class="table__td total">{{ order.cummulativeQuoteQty }}</td>
+                    </tr>
+                </tbody>
             </table>
             <table v-show="currentTab === 'rejected'" class="table">
                 <tr class="table__tr">
@@ -77,20 +79,22 @@
                     <th class="table__th quantity-head">Количество</th>
                     <th class="table__th total-head">Всего</th>
                 </tr>
-                <tr 
-                    v-for="order in rejectedOrders" 
-                    :key="order.id" 
-                    class="table__tr">
-                    <td class="table__td date">{{ order.time | date }}</td>
-                    <td class="table__td pair">{{ order.symbol }}</td>
-                    <td 
-                        class="table__td side" 
-                        :class="order.side === 'BUY' ? 'text--success' : 'text--danger'"
-                        >{{ order.side }}({{ order.type }})</td>
-                    <td class="table__td price">{{ order.type !== 'MARKET' ? order.price : (Number(order.cummulativeQuoteQty) / Number(order.origQty)).toFixed(order.price.length - 2) }}</td>
-                    <td class="table__td quantity">{{ order.origQty }}</td>
-                    <td class="table__td total">{{ order.cummulativeQuoteQty }}</td>
-                </tr>
+                <tbody class='overflow'>
+                    <tr 
+                        v-for="order in rejectedOrders" 
+                        :key="order.id" 
+                        class="table__tr">
+                        <td class="table__td date">{{ order.time | date }}</td>
+                        <td class="table__td pair">{{ order.symbol }}</td>
+                        <td 
+                            class="table__td side" 
+                            :class="order.side === 'BUY' ? 'text--success' : 'text--danger'"
+                            >{{ order.side }}({{ order.type }})</td>
+                        <td class="table__td price">{{ order.type !== 'MARKET' ? order.price : (Number(order.cummulativeQuoteQty) / Number(order.origQty)).toFixed(order.price.length - 2) }}</td>
+                        <td class="table__td quantity">{{ order.origQty }}</td>
+                        <td class="table__td total">{{ order.cummulativeQuoteQty }}</td>
+                    </tr>
+                </tbody>
             </table>
         </div>
     </section>
@@ -139,11 +143,11 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 
 .overflow {
     display: block;
-    max-height: 45vh;
+    max-height: 75vh;
     overflow-y: auto;
 }
 
