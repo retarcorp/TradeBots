@@ -65,12 +65,17 @@ app.post('/signup', signup);
 app.get('/incomes', incomes);
 app.get('/statistics', statistics);
 app.get('/test', (req, res, next) => {
-	// let c = binanceAPI({
-	// 	apiKey: 'pMK15sHEO3jS9RE9x4KA5zFfdxCKcxk9gDgyf4BhvGrhvEUn3wiZMTYcuqLEAkNh',
-	// 	apiSecret: 'A7pvWxoe0JzHfM1rvF7D2ymM3ZFUvdlOyLRmjeZ7m4gfCWaTOmLBwHcwMUSw3Znp'
-	// })
+	let c = binanceAPI({
+		apiKey: 'pMK15sHEO3jS9RE9x4KA5zFfdxCKcxk9gDgyf4BhvGrhvEUn3wiZMTYcuqLEAkNh',
+		apiSecret: 'A7pvWxoe0JzHfM1rvF7D2ymM3ZFUvdlOyLRmjeZ7m4gfCWaTOmLBwHcwMUSw3Znp'
+	})
 	//0,0000182
-
+	c.orderTest({
+		symbol: 'BNBBTC',
+		price: 0.0015642,
+		quantity: 1,
+		icebergQty
+	})
 	// let symbol = "ETHBTC"
 	// c.order({
 	// 	symbol: symbol,

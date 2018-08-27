@@ -84,8 +84,13 @@
 
             <div class="bots__order">
                 <ul class="tabs__bar">
+<<<<<<< HEAD
                     <li @click.prevent="isActive = true" class="tabs__item"  :style="isActive ? 'backgroundColor: #eee': ''">Выставленные ордера</li>
                     <li @click.prevent="isActive = false" class="tabs__item"  :style="!isActive ? 'backgroundColor: #eee': ''">Выполненные</li>
+=======
+                    <li @click.prevent="isActive = true" class="tabs__item" :style="isActive ? 'backgroundColor: #eee': ''">Выставленные ордера</li>
+                    <li @click.prevent="isActive = false" class="tabs__item" :style="!isActive ? 'backgroundColor: #eee': ''">Выполненные</li>
+>>>>>>> 5a3185f67287f21be29742af0b7b3d9a88e3172d
                 </ul>
                 <div class="tabs__content">
                     <table v-show="isActive" class="table">
@@ -96,6 +101,7 @@
                             <th class="table__th price-head">Цена</th>
                             <th class="table__th quantity-head">Количество</th>
                             <th class="table__th total-head">Всего</th>
+                            <th class="table__th"></th>
                         </tr>
                         <!-- TODO create component for 1 row -->
                         <tr v-for="order in openedOrders"
@@ -108,10 +114,13 @@
                                 :class="order.side === 'BUY' ? 'text--success' : 'text--danger'"
                                 >{{ order.side }}</td>
                             <td class="table__td price">
-                                {{ order.type !== 'MARKET' ? order.price : order.fills[0].price }}
+                                {{ order.type !== 'MARKET' ? order.price : order.fills[0].price }}  
                             </td>
                             <td class="table__td quantity">{{ order.origQty }}</td>
                             <td class="table__td total">{{ order.cummulativeQuoteQty }}</td>
+                            <td class="table__td">
+                                <button @click.prevent="refuseOrder(order.orderId, bot.botID)" class="button table__button button--primary">Отменить</button>
+                            </td>
                         </tr>
                     </table>
                     <table v-show="!isActive" class="table">
@@ -138,8 +147,7 @@
                         </tr>
                     </table>
                     <div class="order__buttons">
-                        <button class="button button--primary page__button button__cancel-sell">Отменить и продать</button>
-                        <button class="button button--primary page__button button__cancel">Отменить сделку</button>
+                        <button @click.prevent="cancelAll(bot.botID)" class="button button--primary">Отменить и продать</button>
                     </div>
                 </div>
             </div>
@@ -192,6 +200,25 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
             }
         },
         methods: {
+            cancelAll(id) {
+                let answer = confirm('Точно выполнить данную операцию?');
+                if(answer) {
+                    this.$axios
+                        .$post('/bots/orders/cancelAll', {
+                            'botID': id
+                        })
+                }
+            },
+            refuseOrder(ordId, botId) {
+                let answer = confirm('Точно выполнить данную операцию?');
+                if(answer) {
+                    this.$axios
+                        .$post('/bots/orders/cancel', {
+                            'botID': botId,
+                            'orderId': ordId
+                        })
+                }
+            },
             setBotFreeze() {
                 this.bot.freeze === '0' 
                 ? this.bot.freeze = '1'

@@ -75,223 +75,338 @@ module.exports = class Bot {
 		console.log('startAuto')
 	}
 
+	getQuantity(price) {
+		return Math.ceil( (Number(this.botSettings.currentOrder) / price) * 100 ) /100
+	}
+	
+	getPair() {
+		return this.pair.from + this.pair.to
+	}
+
+	getDecimal(price) {
+		return String(price).length - 2
+	}
+
+	getDeviation() {
+		return Number(this.botSettings.deviation) / 100
+	}
+
+	getAmount() {
+		return Number(this.botSettings.safeOrder.amount)
+	}
+
+	getTakeProfit() {
+		return (Number(this.botSettings.takeProfit) + CONSTANTS.BINANCE_FEE) / 100
+	}
+
+	getProfitPrice(price) {
+		price = Number(price)
+		let takeProfit = this.getTakeProfit(),
+			decimal = this.getDecimal(price),
+			profitPrice = price + price * takeProfit
+		return this.toDecimal(profitPrice, decimal)
+	}
+	
+	getStopLoss() {
+		return Number(this.botSettings.stopLoss) / 100
+	}
+
+	getStopPrice() {
+		let stopLoss = this.getStopLoss(),
+			price = this.botSettings.firstBuyPrice,
+			decimal = this.getDecimal(price),
+			stopPrice = price - price * stopLoss
+		return this.toDecimal(stopPrice, decimal)
+	}
+
+	toDecimal(value, decimal) {
+		return Number(Number(value).toFixed(decimal))
+	}
+
+	async getLastPrice() {
+		let pair = this.getPair(),
+			// price = await this.Client.allBookTickers()
+			price = await this.Client.prices()
+		return Number(price[pair])
+	}
+
+	async newBuyOrder(price, quantity = 0, type = CONSTANTS.ORDER_TYPE.LIMIT) {
+		console.log(`new BUY order (${price})...`)
+		quantity = quantity ? Number(quantity) : this.getQuantity(price)
+		let pair = this.getPair(),
+			newOrderParams = {}
+		console.log(`quantity is ${quantity}`)
+		if(type === CONSTANTS.ORDER_TYPE.LIMIT)	{
+			newOrderParams = {
+				symbol: pair,
+				quantity: quantity,
+				side: CONSTANTS.ORDER_SIDE.BUY,
+				price: price
+			}
+		}
+		else {
+			newOrderParams = {
+				symbol: pair,
+				quantity: quantity,
+				type: type,
+				side: CONSTANTS.ORDER_SIDE.BUY,
+			}
+		}
+		try{
+			let newBuyOrder = await this.Client.order(newOrderParams)
+			if(type === CONSTANTS.ORDER_TYPE.MARKET) console.log(`market price is ${newBuyOrder.fills[0].price}`)
+			return new Order(newBuyOrder)
+		}
+		catch(error) {
+			console.log(error)
+		}
+	}
+
+	async newSellOrder(price, quantity = 0, type = CONSTANTS.ORDER_TYPE.LIMIT) {
+		console.log(`new SELL order (${price})...`)
+		quantity = quantity ? Number(quantity) : this.getQuantity(price)
+		let pair = this.getPair(),
+			newOrderParams = {}
+		console.log(`quantity is ${quantity}`)
+		if(type === CONSTANTS.ORDER_TYPE.LIMIT)	{
+			newOrderParams = {
+				symbol: pair,
+				quantity: quantity,
+				side: CONSTANTS.ORDER_SIDE.SELL,
+				price: price 	
+			}
+		}
+		else {
+			newOrderParams = {
+				symbol: pair,
+				quantity: quantity,
+				type: type,
+				side: CONSTANTS.ORDER_SIDE.SELL,
+			}
+		}	
+		try{
+			let newSellOrder = await this.Client.order(newOrderParams)
+			if(type === CONSTANTS.ORDER_TYPE.MARKET) console.log(`market price is ${newSellOrder.fills[0].price}`)
+			return new Order(newSellOrder)
+		}
+		catch(error) {
+			console.log(error)
+		}
+	}
+
+	async createSafeOrders(price) {
+		console.log(`create safe orders (amount - ${this.getAmount()})`)
+		let deviation = this.getDeviation(),
+			amout = this.getAmount(),
+			safeOrders = [],
+			decimal = this.getDecimal(price)
+		for(let i = 0; i < amout; i++) {
+			price -=  price * deviation
+			price = this.toDecimal(price, decimal)
+			console.log(`safe order (${price}), deviation is ${deviation}`)
+			let newOrder = await this.newBuyOrder(price)
+			safeOrders.unshift(newOrder)
+		}
+		return safeOrders
+	}
+
 	async startTrade(user) {
 		console.log('startTrade')
-		let pair = this.pair.from + this.pair.to
 		//TODO 
 		//1. создание ордера по начальным параметрам
-		//2. создание страховочных ордеров
-		//3. выставить ордер на продажу так, чтобы выйти в профит по takeProffit
+		//2. выставить ордер на продажу так, чтобы выйти в профит по takeProffit
+		//3. создание страховочных ордеров
 		//4. запуск цикла проверки статуса цены валюты 
 		//5. проверка и описание решений исходов
 		//end
 
 		//1. создание ордера по начальным параметрам
-		let price = await this.Client.allBookTickers()
-		price = Number(price[pair].bidPrice)
-		console.log(price)
-		let quantity = Math.ceil((Number(this.botSettings.initialOrder) / price)*100) /100
-		let newOrderParams = {
-			symbol: pair,
-			quantity: quantity,
-			type: CONSTANTS.ORDER_TYPE.MARKET,
-			side: 'BUY'
-			// price: price
-		}
-		this.quantity = quantity
-		console.log('-----')
-		let newBuyOrder = await this.Client.order(newOrderParams)
-		console.log(newBuyOrder)
-		this.orders.unshift(new Order(newBuyOrder))
-		//2. создание страховочных ордеров
-		let deviation = Number(this.botSettings.deviation) / 100,
-			amout = Number(this.botSettings.safeOrder.amount),
-			currentPrice = price,
-			safeOrders = [],
-			decimal = String(price).length - 2
-		for(let i = 0; i < amout; i++) {
-			currentPrice -=  currentPrice * deviation
-			currentPrice = Number(currentPrice.toFixed(decimal))
-			let orderParams = {
-				symbol: pair,
-				quantity: quantity,
-				side: 'BUY',
-				price: currentPrice 	
-			}
-			console.log('---')
-			let newOrder = await this.Client.order(orderParams)
-			console.log(newOrder)
-			safeOrders.unshift(new Order(orderParams))
-		}
+		let price = await this.getLastPrice(),
+			newBuyOrder = await this.newBuyOrder(price, null, CONSTANTS.ORDER_TYPE.MARKET)
+		this.orders.unshift(newBuyOrder)
+
+		//2. выставить ордер на продажу так, чтобы выйти в профит по takeProffit
+		price = Number(newBuyOrder.fills[0].price)
+		let quantity = Number(newBuyOrder.origQty)
+		this.botSettings.firstBuyPrice = price
+		let profitPrice = this.getProfitPrice(price)
+		let newSellOrder = await this.newSellOrder(profitPrice, quantity)	
+
+		this.currentOrder = newSellOrder
+		this.orders.unshift(newSellOrder)
+
+		//3. создание страховочных ордеров
+		let safeOrders = await this.createSafeOrders(price)
+		console.log(`кол-во страховочных ордеров - ${safeOrders.length}`)
 		this.safeOrders.unshift(...safeOrders)
 		this.orders.unshift(...safeOrders)
-		/*
-			тут нужно добавить создание new Order и запихнть в базу данных массив safeOrders
-		*/
-
-		//3. выставить ордер на продажу так, чтобы выйти в профит по takeProffit
-
-		let takeProfit = (Number(this.botSettings.takeProfit) + CONSTANTS.BINANCE_FEE) / 100,
-			profitPrice = Number((price + price * takeProfit).toFixed(decimal)),
-			stopLoss = Number(this.botSettings.stopLoss) / 100,
-			stopPrice = Number((price - price * stopLoss).toFixed(decimal)),
-			orderParams = {
-				symbol: pair,
-				quantity: quantity,
-				side: 'SELL',
-				price: profitPrice,
-				type: 'STOP_LOSS_LIMIT',//'TAKE_PROFIT_LIMIT',
-				stopPrice: stopPrice
-			}
-		this.profitPrice = profitPrice
-		this.stopPrice = stopPrice
-		console.log('---')
-		let newSellOrder = await this.Client.order(orderParams)
-		this.currentOrder = new Order(newSellOrder)
-		this.orders.unshift(this.currentOrder)
-		console.log(newSellOrder)
-
 
 		//4. запуск цикла проверки статуса цены валюты 
-		// Сделать интервал, сохранить его куда нибудь для возможности выключения
-		// или сделать рекурсивную функцию
-		// значит, далее нужно .. хм.. чекать статусы ордера на продажу и страховочных
-		// если 1 - ордер на продажу завершен - закрыть все страховочные ордера и начать все сначала
-		// если 2 - ордер на продажу не завершен и сработал один из страховочных:
-		// пересчитать quantity, так как была еще куплена валюта
-		// пересчитать еще ченить 
-		// пересоздать takeProfit ордер и начать продолжить слежку
-
 		this.trade(user)
 		.catch(err => {
 			console.log(err)
 		})
-
-		/*!!! при любых изменениях сохранять в бд и отсылать юзеру измененную инфу !!!*/
 	}
 
 	async trade(user) {
-		console.log('trade is going')
-		let pair = this.pair.from + this.pair.to,
-			currentSellOrder = await this.Client.getOrder({
-				symbol: pair,
-				orderId: this.currentOrder.orderId
-			})
-		console.log(currentSellOrder)
-		this.currentOrder = new Order(currentSellOrder)
-		const index = this.orders.findIndex(order => order.orderId === this.currentOrder.orderId)
-		this.orders[index] = this.currentOrder
-		// ордер завершен
-		if(currentSellOrder.status === CONSTANTS.ORDER_STATUS.FILLED) {
-			console.log('ЗАВЕРШЕНО')
-			for(let i = 0; i < this.safeOrders.length; i++) {
-				let order = this.safeOrders[i]
-				// let Order = await this.Client.getOrder({
-				// 	symbol: pair,
-				// 	orderId: order.orderId
-				// })
-				// if(Order.side === CONSTANTS.ORDER_SIDE.BUY) {
-				console.log(this.Client.cancelOrder({
-					symbol: pair,
-					orderId: order.orderId
-				})
-				.catch(err => {
-					console.log(err)
-					this.status = CONSTANTS.BOT_STATUS.INACTIVE
-				}))
-				// }	
-			}
-
-			this.status = CONSTANTS.BOT_STATUS.INACTIVE
-			// this.updateBot(user)
+		console.log('___________________________')
+		console.log('trade is going...')
+		this.currentOrder = await this.getOrder(this.currentOrder.orderId)
+		
+		if(this.checkFilling(this.currentOrder.status)) {
+			await this.disableBot('ЗАВЕРШЕНО')
 		}
-		else if( // ошибка ордера
-			currentSellOrder.status === CONSTANTS.ORDER_STATUS.CANCELED || 
-			currentSellOrder.status === CONSTANTS.ORDER_STATUS.PENDING_CANCEL ||
-			currentSellOrder.status === CONSTANTS.ORDER_STATUS.REJECTED || 
-			currentSellOrder.status === CONSTANTS.ORDER_STATUS.EXPIRED
-		) {
-			console.log('ОШИБКА')
-			for(let i = 0; i < this.safeOrders.length; i++) {
-				let order = this.safeOrders[i]
-				// let Order = await this.Client.getOrder({
-				// 	symbol: pair,
-				// 	orderId: order.orderId
-				// })
-				// if(Order.side === CONSTANTS.ORDER_SIDE.BUY) {
-				console.log(this.Client.cancelOrder({
-					symbol: pair,
-					orderId: order.orderId
-				})
-				.catch(err => {
-					console.log(err)
-					this.status = CONSTANTS.BOT_STATUS.INACTIVE
-				}))
-				// }	
-			}
-			this.status = CONSTANTS.BOT_STATUS.INACTIVE
-			// this.updateBot(user)
+		else if(this.checkFailing(this.currentOrder.status)) {
+			await this.disableBot('ОШИБКА')	
 		}
-		else { // ордер в процессе
+		else {
 			console.log('В ПРОЦЕССЕ')
-			let price = await this.Client.allBookTickers()
-			price = Number(price[pair].bidPrice)
-			console.log('поиск страховочных ордеров')
-			for(let i = 0; i < this.safeOrders.length; i++) {
-				let order = this.safeOrders[i]
-				console.log(`айдишник ${i} ордера - ${order.orderId}`)
-				let	Order = await this.Client.getOrder({
-						symbol: pair,
-						orderId: order.orderId
-					})
-				console.log(Order)
-				if( 
-					(Number(Order.price) >= price && 
-					Order.side === CONSTANTS.ORDER_SIDE.BUY) || 
-					Order.status === CONSTANTS.ORDER_STATUS.FILLED
-				) {
-					//Пересчитать 
-					console.log('пересчитываем', this.currentOrder.orderId)
-					this.Client.cancelOrder({
-						symbol: pair,
-						orderId: this.currentOrder.orderId
-					})
-					
-					let decimal = String(Order.price).length - 2,
-						takeProfit = (Number(this.botSettings.takeProfit) + CONSTANTS.BINANCE_FEE) / 100,
-						newProfitPrice = Number((Order.price + Order.price * takeProfit).toFixed(decimal))
-					
-					newProfitPrice = Number(((newProfitPrice + this.profitPrice) / 2).toFixed(decimal))
-					this.profitPrice = newProfitPrice
-
-					orderParams = {
-						symbol: pair,
-						quantity: this.quantity,
-						side: 'SELL',
-						price: this.profitPrice,
-						type: 'STOP_LOSS_LIMIT',//'TAKE_PROFIT_LIMIT',
-						stopPrice: this.stopPrice
-					}
-					
-					let newSellOrder = await this.Client.order(orderParams)
-					this.currentOrder = new Order(newSellOrder)
-					this.orders.unshift(this.currentOrder)
-
-					break
-				}
-			}
-			console.log('круг почета')
-			for(let i = 0; i < this.orders.length; i++) {
-				this.orders[i] = await this.Client.getOrder({
-					symbol: pair,
-					orderId: this.orders[i].orderId
-				})
-			}
-
-			setTimeout(() => this.trade(user), 10000)
-			
+			console.log(`current order qty - ${this.botSettings.currentOrder}`)
+			await this.isProcess()
+			await this.updateOrders(this.orders)
+			if(this.status === CONSTANTS.BOT_STATUS.ACTIVE)
+			setTimeout(() => this.trade(user), 5000)
 		}
 		this.updateBot(user)
+	}
+
+	async isProcess() {
+		let orders = this.safeOrders,
+			length = orders.length
+		if(length) {
+			let nextSafeOrders = []
+			console.log(`stopPrice - ${this.getStopPrice()}`)
+			console.log('проверяем страховочные ордера...')
+			for(let i = 0; i < length; i++) {
+				try {
+					let order = await this.getOrder(orders[i].orderId)
+					if(this.checkFilling(order.status)) {
+						console.log('найдет заюзаный страховочный, пересчет...')
+						this.canselOrder(this.currentOrder.orderId)
+						this.recountInitialOrder()
+						let newProfitPrice = this.recountProfitPrice(order)
+						let newSellOrder = await this.newSellOrder(newProfitPrice)
+						// this.safeOrders.splice(i, 1)//ПРИДУМАТЬ ДРУГОЕ УДАЛЕНИЕ ИЗ МАССИВА!
+						this.currentOrder = newSellOrder
+						this.orders.unshift(this.currentOrder)
+					}
+					else {
+						nextSafeOrders.push(order)
+					}
+				}
+				catch(error) {
+					console.log('error in find safe orders')
+					console.log(error)
+				}
+			}
+			this.safeOrders = nextSafeOrders
+		}
+		else {
+			console.log('страховочных нету, чекаем стоплосс...')
+			let price = await this.getLastPrice(),
+				stopPrice = this.getStopPrice()
+			console.log(`price - ${price}`)
+			console.log(`stopPrice - ${stopPrice}`)
+			if(stopPrice > price) {
+				console.log('стоплосс пройдет')
+				await this.canselOrder(this.currentOrder.orderId)
+				await this.newSellOrder(price, CONSTANTS.ORDER_TYPE.MARKET)
+				await this.disableBot('Все распродано по рынку, бот выключен')
+			}
+		}
+	}
+
+	recountInitialOrder() {
+		this.botSettings.currentOrder = String(Number(this.botSettings.currentOrder) + Number(this.botSettings.safeOrder.size))
+	}
+
+	recountProfitPrice(nextOrder) {
+		let prevProfitPrice = Number(this.currentOrder.price),
+			nextProfitPrice = Number(this.getProfitPrice(nextOrder.price)),
+			decimal = this.getDecimal(prevProfitPrice),
+			averagePrice = (prevProfitPrice + nextProfitPrice) / 2,
+			newProfitPrice = this.toDecimal(averagePrice, decimal)
+			console.log(`new profit price = 0.5*(${prevProfitPrice} + ${nextProfitPrice}) = ${newProfitPrice}`)
+		return newProfitPrice
+	}
+
+	checkFailing(status) {
+		return status === CONSTANTS.ORDER_STATUS.CANCELED || 
+			status === CONSTANTS.ORDER_STATUS.PENDING_CANCEL ||
+			status === CONSTANTS.ORDER_STATUS.REJECTED || 
+			status === CONSTANTS.ORDER_STATUS.EXPIRED
+	}
+
+	checkFilling(status) {
+		return status === CONSTANTS.ORDER_STATUS.FILLED
+	}
+
+	async getOrder(orderId) {
+		try{
+			let pair = this.getPair(),
+			order = await this.Client.getOrder({
+				symbol: pair,
+				orderId: orderId
+			})
+			return new Order(order)
+		}
+		catch(error) {
+			console.log(orderId)
+			console.log(error)
+		}
+	}
+
+	async canselOrder(orderId) {
+		try {
+			let pair = this.getPair()
+			console.log(`close order(${orderId})`)
+			return await this.Client.cancelOrder({
+				symbol: pair,
+				orderId: orderId
+			})
+		}
+		catch(error) {
+			console.log(orderId)
+			console.log(error)
+		}
+	}
+
+	async updateOrders(orders) {
+		console.log('круг почета')
+		let pair = this.pair.from + this.pair.to
+		for(let i = 0; i < orders.length; i++) {
+			try{
+				let orderData = await this.Client.getOrder({
+					symbol: pair,
+					orderId: orders[i].orderId
+				})
+				orders[i] = (orderData.type === CONSTANTS.ORDER_TYPE.MARKET) ? orders[i] : new Order(orderData)
+			}
+			catch(error) {
+				//in order - ${orders[i].orderId}
+				console.log(`error (code ${error.code})`)
+				// console.log(error)
+			}
+		}
+		console.log('конец почета')
+	}
+
+	async canselOrders(orders) {
+		console.log('закрываю ордера...')
+		for(let i = 0; i < orders.length; i++) {
+			await this.canselOrder(orders[i].orderId)
+		}
+		console.log('закрыл')
+	}
+
+	async disableBot(message) {
+		console.log(`disableBot start...(${message})`)
+		await this.canselOrders(this.safeOrders)
+		this.safeOrders = []
+		this.currentOrder = null
+		await this.updateOrders(this.orders)
+		this.status = CONSTANTS.BOT_STATUS.INACTIVE
+		console.log('disableBot end')
 	}
 
 	updateBot(user) {
