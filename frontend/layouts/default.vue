@@ -3,7 +3,7 @@
     <app-header></app-header>
     <alert></alert>
     <loader></loader>
-    <nuxt/>
+    <nuxt class='nuxtBlock'/>
   </div>
 </template>
 
@@ -21,5 +21,10 @@ import Loader from '~/components/Spinner';
 </script>
 
 <style>
+
+.nuxtBlock {
+  margin-top: 8rem;
+}
+
 </style>
 

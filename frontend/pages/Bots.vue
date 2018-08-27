@@ -1,7 +1,7 @@
 <template>
     <div class="container bots">
         <div class="row">
-            <div class="col-12 col-md-4 col-lg-4">
+            <div class="col-12 col-md-4 col-lg-4 fixed">
                 <div class="bots__search-wrapper">
                     <input v-model="search" type="text" class="input bots__search">
                     <span class="bots__search-icon">
@@ -10,7 +10,7 @@
                 </div>
                 <div class="bots__list">
                     <div v-for="bot in filteredBotList" :key="bot.id">
-                        <bot-item :id="bot.botID">{{ bot.title }}</bot-item>
+                        <bot-item :id="bot.botID">{{ bot.title }}&nbsp; ({{ bot.pair.from }} / {{bot.pair.to}})</bot-item>
                     </div>
                 </div>
                 <div>
@@ -20,7 +20,7 @@
                         >Добавить бота +</button>
                 </div>
             </div>
-            <div class="col-12 col-md-8 col-lg-8">
+            <div class="col-12 col-md-8 col-lg-8 margin">
                 <nuxt-child />
             </div>
         </div>
@@ -60,3 +60,42 @@ export default {
 }
 </script>
 
+<style>
+
+/* .bots {
+    position: relative;
+} */
+
+.fixed {
+    position: fixed;
+    max-width: 33.3333333%;
+}
+
+.margin {
+    margin-left: 400px;
+}
+
+@media screen and (max-width: 768px) {
+    .fixed {
+        position: static;
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .margin {
+        margin-left: 0px;
+    }
+}
+
+@media screen and (min-width: 1240px) {
+    .fixed {
+        position: static;
+        width: 50%;
+        max-width: 50%;
+    }
+
+    .margin {
+        margin-left: 0px;
+    }
+}
+</style>

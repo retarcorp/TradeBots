@@ -64,6 +64,13 @@
     background-color: #EFEFEF;
     padding: 2rem 0;
     margin-bottom: 2rem;
+    position: fixed;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 1140px;
+    z-index: 9999;
 }
 
 .nav {
