@@ -109,7 +109,7 @@
                                 :class="order.side === 'BUY' ? 'text--success' : 'text--danger'"
                                 >{{ order.side }}({{ order.type }})</td>
                             <td class="table__td price">
-                                {{ order.type !== 'MARKET' ? order.price : order.fills[0].price }}  
+                                {{ order.type !== 'MARKET' ? order.price : (Number(order.cummulativeQuoteQty) / Number(order.origQty)).toFixed(order.price.length - 2) }}  
                             </td>
                             <td class="table__td quantity">{{ order.origQty }}</td>
                             <td class="table__td total">{{ order.cummulativeQuoteQty }}</td>
@@ -135,7 +135,7 @@
                                 :class="order.side === 'BUY' ? 'text--success' : 'text--danger'"
                                 >{{ order.side }}({{ order.type }})</td>
                             <td class="table__td price">
-                                {{ order.type !== 'MARKET' ? order.price : order.fills[0].price }}
+                                {{ order.type !== 'MARKET' ? order.price : (Number(order.cummulativeQuoteQty) / Number(order.origQty)).toFixed(order.price.length - 2) }}
                             </td>
                             <td class="table__td quantity">{{ order.origQty }}</td>
                             <td class="table__td total">{{ order.cummulativeQuoteQty }}</td>
