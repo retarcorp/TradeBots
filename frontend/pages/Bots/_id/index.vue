@@ -106,7 +106,7 @@
                                 :class="order.side === 'BUY' ? 'text--success' : 'text--danger'"
                                 >{{ order.side }}</td>
                             <td class="table__td price">
-                                {{ order.type !== 'MARKET' ? order.price : order.fills[0].price }}
+                                {{ order.type !== 'MARKET' ? order.price : order.fills[0].price }}  
                             </td>
                             <td class="table__td quantity">{{ order.origQty }}</td>
                             <td class="table__td total">{{ order.cummulativeQuoteQty }}</td>

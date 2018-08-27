@@ -15,6 +15,7 @@
                     <option value="ETH">ETH</option>
                     <option value="BNB">BNB</option>
                     <option value="BTC">BTC</option>
+                    <option value="NANO">NANO</option>
                 </select>
             </div>
             <div class="form-control newBot__settings-control">
@@ -140,7 +141,8 @@
                 pairs: {
                     ETH: ['BTC', 'USDT'],
                     BNB: ['BTC', 'ETH', 'USDT'],
-                    BTC: ['USDT']
+                    BTC: ['USDT'],
+                    NANO: ['BTC']
                 }
             }
         },

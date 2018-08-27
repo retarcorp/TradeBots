@@ -70,7 +70,7 @@ module.exports = {
 				this.Assert.equal(err, null);
 
 				if (callback) callback(data);
-				console.log('Data ejected');
+				// console.log('Data ejected');
 
                 //client.close();
 			});
@@ -88,7 +88,7 @@ module.exports = {
 				this.Assert.equal(err, null);
 				
 				if (callback) callback(data);
-				console.log('Data updated');
+				// console.log('Data updated');
 
                 //client.close();
 			});
