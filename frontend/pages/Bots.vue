@@ -13,7 +13,7 @@
                         <bot-item :id="bot.botID">{{ bot.title }}&nbsp; ({{ bot.pair.from }} / {{bot.pair.to}})</bot-item>
                     </div>
                 </div>
-                <div>
+                <div class='bots__button'>
                     <button 
                         @click="onAddNewBot" 
                         class="button button--big button--primary bots__add-button"              
@@ -98,4 +98,11 @@ export default {
         margin-left: 400px;
     }
 }
+
+.bots__list {
+    height: 80vh;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
 </style>
