@@ -111,13 +111,16 @@ export default {
     },
     computed: {
         openedOrders() {
-            return this.orders.filter(ord => ord.status === 'NEW' || ord.status === 'PARTIALLY_FILLED')
+            return this.sortedOrders.filter(ord => ord.status === 'NEW' || ord.status === 'PARTIALLY_FILLED')
         },
         closedOrders() {
-            return this.orders.filter(ord => ord.status === 'FILLED' || ord.status === 'CANCELED')
+            return this.sortedOrders.filter(ord => ord.status === 'FILLED' || ord.status === 'CANCELED')
         },
         rejectedOrders() {
-            return this.orders.filter(ord => ord.status === 'PENDING_CANCEL' || ord.status === 'REJECTED' || ord.status === 'EXPIRED')
+            return this.sortedOrders.filter(ord => ord.status === 'PENDING_CANCEL' || ord.status === 'REJECTED' || ord.status === 'EXPIRED')
+        },
+        sortedOrders() {
+            this.orders.sort( (a, b) => a.time - b.time)
         }
     },
     created() {
@@ -127,7 +130,6 @@ export default {
                 if(res.status === 'ok') {
                     this.orders = res.data;
                     this.$store.commit('setSpiner', false);
-                    console.log(this.orders);
                 }
             })
     }
