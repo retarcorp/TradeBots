@@ -120,7 +120,8 @@ export default {
             return this.sortedOrders.filter(ord => ord.status === 'PENDING_CANCEL' || ord.status === 'REJECTED' || ord.status === 'EXPIRED')
         },
         sortedOrders() {
-            this.orders.sort( (a, b) => a.time - b.time)
+            let orders = Object.assign([], this.orders);
+            return orders.sort( (a, b) => b.time - a.time)
         }
     },
     created() {

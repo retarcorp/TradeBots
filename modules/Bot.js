@@ -26,6 +26,7 @@ module.exports = class Bot {
 		this.botFreeze = botFreeze
 		this.pair = new Pair(pair.from, pair.to)
 		this.orders = orders
+		this.tempOrders = []
 		this.currentOrder = currentOrder
 		this.safeOrders = []
 		this.botSettings = new BotSettings(botSettings)
@@ -54,15 +55,18 @@ module.exports = class Bot {
 			}
 			else {
 				console.log('ЧТО-ТО ПОШЛО НЕ ТАК, ВЫКЛ')
+				this.this.disableBot('чтото пошло не так при включнии бота')
 				this.status = CONSTANTS.BOT_STATUS.INACTIVE
 			}
 		}
 		else if(this.status === CONSTANTS.BOT_STATUS.INACTIVE) {
 			console.log('ИНАКТИВ')
+			this.this.disableBot('выключили бота извне')
 			this.currentOrder = null
 		}
 		else {
 			console.log('ЧТО-ТО НЕ ТО, ВЫКЛЮЧЕНИЕ')
+			this.this.disableBot('чтото не так с ботом, выключаемся')
 			this.status = CONSTANTS.BOT_STATUS.INACTIVE
 		}
 	}
@@ -264,7 +268,7 @@ module.exports = class Bot {
 			await this.disableBot('ЗАВЕРШЕНО')
 		}
 		else if(this.checkFailing(currentOrderStatus)) {
-			await this.disableBot('ОШИБКА')	
+			await this.disableBot('ОШИБКА или ЗАВЕРШЕНИЕ')	
 		}
 		else {
 			console.log('В ПРОЦЕССЕ')
@@ -354,6 +358,10 @@ module.exports = class Bot {
 		return status === CONSTANTS.ORDER_STATUS.CANCELED
 	}
 
+	checkProcessing(status) {
+		return (status === CONSTANTS.ORDER_STATUS.NEW || status === CONSTANTS.ORDER_STATUS.PARTIALLY_FILLED)
+	}
+
 	async getOrder(orderId) {
 		orderId = Number(orderId)
 		try{
@@ -391,11 +399,14 @@ module.exports = class Bot {
 		let pair = this.pair.from + this.pair.to
 		for(let i = 0; i < orders.length; i++) {
 			try{
-				let orderData = await this.Client.getOrder({
-					symbol: pair,
-					orderId: orders[i].orderId
-				})
-				orders[i] = new Order(orderData)
+				if(this.checkProcessing(orders.orderId)) {
+					console.log(i)
+					let orderData = await this.Client.getOrder({
+						symbol: pair,
+						orderId: orders[i].orderId
+					})
+					orders[i] = new Order(orderData)
+				}
 			}
 			catch(error) {
 				//in order - ${orders[i].orderId}
@@ -409,7 +420,8 @@ module.exports = class Bot {
 	async canselOrders(orders) {
 		console.log('закрываю ордера...')
 		for(let i = 0; i < orders.length; i++) {
-			await this.canselOrder(orders[i].orderId)
+			if(this.checkProcessing(orders.orderId)) 
+				await this.canselOrder(orders[i].orderId)
 		}
 		console.log('закрыл')
 	}
@@ -435,7 +447,7 @@ module.exports = class Bot {
 			let lastPrice = await this.getLastPrice(),
 				quantity = this.getQuantity(lastPrice)
 			let newOrder = await this.newSellOrder(lastPrice, quantity, CONSTANTS.ORDER_TYPE.MARKET)
-			
+			this.orders.unshift(newOrder)
 			await this.disableBot('ОТМЕНИТЬ И ПРОДАТЬ')
 		}
 		catch(error) {

@@ -202,6 +202,7 @@ let Users = {
 
 		,cancelOrder(user, resData, callback) {
 			try {
+				console.log('cancel order')
 				Mongo.select(user, 'users', (data) => {
 					data = data[0]
 					const index = data.bots.findIndex(bot => bot.botID === resData.botID)
@@ -226,6 +227,7 @@ let Users = {
 
 		,cancelAllOrders(user, resData, callback) {
 			try {
+				console.log('cancel all orders')
 				Mongo.select(user, 'users', (data) => {
 					data = data[0]
 					const index = data.bots.findIndex(bot => bot.botID === resData.botID)
