@@ -26,14 +26,23 @@ const CONSTANTS = {
 		USDT: { NAME: 'USDT', VALUE: 10 }
 	},
 
-	PAIRS: {
-		ETHBTC: 'ETHBTC',
-		BNBBTC: 'BNBBTC',
-		BNBETH: 'BNBETH',
-		BTCUSDT: 'BTCUSDT',
-		ETHUSDT: 'ETHUSDT',
-		BNBUSDT: 'BNBUSDT'
-	},
+	// PAIRS: {
+	// 	ETHBTC: 'ETHBTC',
+	// 	BNBBTC: 'BNBBTC',
+	// 	BNBETH: 'BNBETH',
+	// 	BTCUSDT: 'BTCUSDT',
+	// 	ETHUSDT: 'ETHUSDT',
+	// 	BNBUSDT: 'BNBUSDT'
+	// },
+
+	PAIRS: [
+		'ETHBTC',
+		'BNBBTC',
+		'BNBETH',
+		'BTCUSDT',
+		'ETHUSDT',
+		'BNBUSDT'
+	],
 
 	BOT_STATE: {
 		AUTO: '0',
