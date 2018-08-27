@@ -99,24 +99,26 @@
                             <th class="table__th"></th>
                         </tr>
                         <!-- TODO create component for 1 row -->
-                        <tr v-for="order in openedOrders"
-                            :key="order.id" 
-                            class="table__tr">
-                            <td class="table__td date">{{ order.time | date }}</td>
-                            <td class="table__td pair">{{ order.symbol }}</td>
-                            <td 
-                                class="table__td side" 
-                                :class="order.side === 'BUY' ? 'text--success' : 'text--danger'"
-                                >{{ order.side }}({{ order.type }})</td>
-                            <td class="table__td price">
-                                {{ order.type !== 'MARKET' ? order.price : (Number(order.cummulativeQuoteQty) / Number(order.origQty)).toFixed(order.price.length - 2) }}  
-                            </td>
-                            <td class="table__td quantity">{{ order.origQty }}</td>
-                            <td class="table__td total">{{ order.cummulativeQuoteQty }}</td>
-                            <td class="table__td">
-                                <button @click.prevent="refuseOrder(order.orderId, bot.botID)" class="button table__button button--primary">Отменить</button>
-                            </td>
-                        </tr>
+                        <tbody class='overflow'>
+                            <tr v-for="order in openedOrders"
+                                :key="order.id" 
+                                class="table__tr">
+                                <td class="table__td date">{{ order.time | date }}</td>
+                                <td class="table__td pair">{{ order.symbol }}</td>
+                                <td 
+                                    class="table__td side" 
+                                    :class="order.side === 'BUY' ? 'text--success' : 'text--danger'"
+                                    >{{ order.side }}({{ order.type }})</td>
+                                <td class="table__td price">
+                                    {{ order.type !== 'MARKET' ? order.price : (Number(order.cummulativeQuoteQty) / Number(order.origQty)).toFixed(order.price.length - 2) }}  
+                                </td>
+                                <td class="table__td quantity">{{ order.origQty }}</td>
+                                <td class="table__td total">{{ order.cummulativeQuoteQty }}</td>
+                                <td class="table__td">
+                                    <button @click.prevent="refuseOrder(order.orderId, bot.botID)" class="button table__button button--primary">Отменить</button>
+                                </td>
+                            </tr>
+                        </tbody>
                     </table>
                     <table v-show="!isActive" class="table">
                         <tr class="table__tr">
@@ -127,19 +129,21 @@
                             <th class="table__th quantity-head">Количество</th>
                             <th class="table__th total-head">Всего</th>
                         </tr>
-                        <tr v-for="order in closedOrders" :key="order.id" class="table__tr">
-                            <td class="table__td date">{{ order.time | date }}</td>
-                            <td class="table__td pair">{{ order.symbol }}</td>
-                            <td 
-                                class="table__td side" 
-                                :class="order.side === 'BUY' ? 'text--success' : 'text--danger'"
-                                >{{ order.side }}({{ order.type }})</td>
-                            <td class="table__td price">
-                                {{ order.type !== 'MARKET' ? order.price : (Number(order.cummulativeQuoteQty) / Number(order.origQty)).toFixed(order.price.length - 2) }}
-                            </td>
-                            <td class="table__td quantity">{{ order.origQty }}</td>
-                            <td class="table__td total">{{ order.cummulativeQuoteQty }}</td>
-                        </tr>
+                        <tbody class='overflow'>
+                            <tr v-for="order in closedOrders" :key="order.id" class="table__tr">
+                                <td class="table__td date">{{ order.time | date }}</td>
+                                <td class="table__td pair">{{ order.symbol }}</td>
+                                <td 
+                                    class="table__td side" 
+                                    :class="order.side === 'BUY' ? 'text--success' : 'text--danger'"
+                                    >{{ order.side }}({{ order.type }})</td>
+                                <td class="table__td price">
+                                    {{ order.type !== 'MARKET' ? order.price : (Number(order.cummulativeQuoteQty) / Number(order.origQty)).toFixed(order.price.length - 2) }}
+                                </td>
+                                <td class="table__td quantity">{{ order.origQty }}</td>
+                                <td class="table__td total">{{ order.cummulativeQuoteQty }}</td>
+                            </tr>
+                        </tbody>
                     </table>
                     <div class="order__buttons">
                         <button @click.prevent="cancelAll(bot.botID)" class="button button--primary">Отменить и продать</button>
@@ -271,8 +275,8 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
 
 /* TABS BAR */
 
-.bots__order {
-    max-height: calc(100vh - 20rem);
+.overflow {
+    max-height: calc(100vh - 50%);
     overflow-y: auto;
 }
 
