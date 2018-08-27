@@ -448,6 +448,7 @@ module.exports = class Bot {
 				quantity = this.getQuantity(lastPrice)
 			let newOrder = await this.newSellOrder(lastPrice, quantity, CONSTANTS.ORDER_TYPE.MARKET)
 			this.orders.unshift(newOrder)
+			await this.updateOrders(this.orders)
 			await this.disableBot('ОТМЕНИТЬ И ПРОДАТЬ')
 		}
 		catch(error) {
