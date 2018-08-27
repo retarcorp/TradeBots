@@ -223,7 +223,6 @@ let Users = {
 				console.log(error)
 			}
 		}
-		console.log(statistics)
 		let res = {
 			status: 'ok',
 			data: statistics

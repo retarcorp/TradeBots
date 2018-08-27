@@ -380,7 +380,7 @@ module.exports = class Bot {
 					symbol: pair,
 					orderId: orders[i].orderId
 				})
-				orders[i] = (orderData.type === CONSTANTS.ORDER_TYPE.MARKET) ? orders[i] : new Order(orderData)
+				orders[i] = new Order(orderData)
 			}
 			catch(error) {
 				//in order - ${orders[i].orderId}
