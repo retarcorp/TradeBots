@@ -22,6 +22,7 @@
                 <tr class="table__tr">
                     <th class="table__th date">Дата</th>
                     <th class="table__th pair-head">Пара</th>
+                    <th class="table__th side">Тип</th>
                     <th class="table__th price-head">Цена</th>
                     <th class="table__th quantity-head">Количество</th>
                     <th class="table__th total-head">Всего</th>
@@ -30,9 +31,13 @@
                     v-for="order in openedOrders" 
                     :key="order.id" 
                     class="table__tr">
-                    <td class="table__td date">{{ order.date }}</td>
-                    <td class="table__td pair">{{ order.pair.from }}/{{ order.pair.to }}</td>
-                    <td class="table__td price">{{ order.type !== 'MARKET' ? order.price : order.fills[0].price }}</td>
+                    <td class="table__td date">{{ order.time }}</td>
+                    <td class="table__td pair">{{ order.symbol }}</td>
+                    <td 
+                        class="table__td side" 
+                        :class="order.side === 'BUY' ? 'text--success' : 'text--danger'"
+                        >{{ order.side }}({{ order.type }})</td>
+                    <td class="table__td price">{{ order.type !== 'MARKET' ? order.price : (Number(order.cummulativeQuoteQty) / Number(order.origQty)) }}</td>
                     <td class="table__td quantity">{{ order.origQty }}</td>
                     <td class="table__td total">{{ order.cummulativeQuoteQty }}</td>
                 </tr>
@@ -41,6 +46,7 @@
                 <tr class="table__tr">
                     <th class="table__th date">Дата</th>
                     <th class="table__th pair-head">Пара</th>
+                    <th class="table__th side">Тип</th>
                     <th class="table__th price-head">Цена</th>
                     <th class="table__th quantity-head">Количество</th>
                     <th class="table__th total-head">Всего</th>
@@ -49,9 +55,13 @@
                     v-for="order in closedOrders" 
                     :key="order.id" 
                     class="table__tr">
-                    <td class="table__td date">{{ order.date }}</td>
-                    <td class="table__td pair">{{ order.pair.from }}/{{ order.pair.to }}</td>
-                    <td class="table__td price">{{ order.type !== 'MARKET' ? order.price : order.fills[0].price }}</td>
+                    <td class="table__td date">{{ order.time }}</td>
+                    <td class="table__td pair">{{ order.symbol }}</td>
+                    <td 
+                        class="table__td side" 
+                        :class="order.side === 'BUY' ? 'text--success' : 'text--danger'"
+                        >{{ order.side }}({{ order.type }})</td>
+                    <td class="table__td price">{{ order.type !== 'MARKET' ? order.price : Number(order.cummulativeQuoteQty) / Number(order.origQty) }}</td>
                     <td class="table__td quantity">{{ order.origQty }}</td>
                     <td class="table__td total">{{ order.cummulativeQuoteQty }}</td>
                 </tr>
@@ -60,6 +70,7 @@
                 <tr class="table__tr">
                     <th class="table__th date">Дата</th>
                     <th class="table__th pair-head">Пара</th>
+                    <th class="table__th side">Тип</th>
                     <th class="table__th price-head">Цена</th>
                     <th class="table__th quantity-head">Количество</th>
                     <th class="table__th total-head">Всего</th>
@@ -68,9 +79,13 @@
                     v-for="order in rejectedOrders" 
                     :key="order.id" 
                     class="table__tr">
-                    <td class="table__td date">{{ order.date }}</td>
-                    <td class="table__td pair">{{ order.pair.from }}/{{ order.pair.to }}</td>
-                    <td class="table__td price">{{ order.type !== 'MARKET' ? order.price : order.fills[0].price }}</td>
+                    <td class="table__td date">{{ order.time }}</td>
+                    <td class="table__td pair">{{ order.symbol }}</td>
+                    <td 
+                        class="table__td side" 
+                        :class="order.side === 'BUY' ? 'text--success' : 'text--danger'"
+                        >{{ order.side }}({{ order.type }})</td>
+                    <td class="table__td price">{{ order.type !== 'MARKET' ? order.price : Number(order.cummulativeQuoteQty) / Number(order.origQty) }}</td>
                     <td class="table__td quantity">{{ order.origQty }}</td>
                     <td class="table__td total">{{ order.cummulativeQuoteQty }}</td>
                 </tr>
@@ -102,7 +117,8 @@ export default {
         this.$axios.$get('/statistics')
             .then(res => {
                 if(res.status === 'ok') {
-                    this.orders = res.data.data
+                    this.orders = res.data
+                    console.log(this.orders)
                 }
             })
     }

@@ -4,7 +4,7 @@ const Bot = require('../modules/Bot')
 const Crypto = require('./Crypto')
 const CONSTANTS = require('../constants')
 const Binance = require('./Binance')
-const binanceAPI = require('node-binance-api')
+let binanceAPI = require('binance-api-node').default
 
 let Users = {
 	adminLogin(admin, callback) {
@@ -203,9 +203,10 @@ let Users = {
 		}
 	}
 
-	,async sendClientStatistics(userData, callback) {
+	,async sendClientStatistics(user) {
 		let key = Crypto.decipher(user.binanceAPI.key,  Crypto.getKey(user.regDate, user.name))
 		let secret = Crypto.decipher(user.binanceAPI.secret,  Crypto.getKey(user.regDate, user.name))
+
 		let Client = binanceAPI({
 			apiKey: key,
 			apiSecret: secret
@@ -216,13 +217,13 @@ let Users = {
 			let symbol = CONSTANTS.PAIRS[i]
 			try {
 				let list = await Client.allOrders({symbol})
-				statistics.push(list)
+				statistics.push(...list)
 			}
 			catch(error) {
 				console.log(error)
 			}
 		}
-
+		console.log(statistics)
 		let res = {
 			status: 'ok',
 			data: statistics
