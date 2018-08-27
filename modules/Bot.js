@@ -76,7 +76,7 @@ module.exports = class Bot {
 	}
 
 	getQuantity(price) {
-		return Math.floor((Number(this.botSettings.currentOrder) / price)*100) /100
+		return Math.ceil( (Number(this.botSettings.currentOrder) / price) * 100 ) /100
 	}
 	
 	getPair() {
@@ -125,16 +125,17 @@ module.exports = class Bot {
 
 	async getLastPrice() {
 		let pair = this.getPair(),
-			price = await this.Client.allBookTickers()
-		return Number(price[pair].bidPrice)
+			// price = await this.Client.allBookTickers()
+			price = await this.Client.prices()
+		return Number(price[pair])
 	}
 
-	async newBuyOrder(price, type = CONSTANTS.ORDER_TYPE.LIMIT) {
+	async newBuyOrder(price, quantity = 0, type = CONSTANTS.ORDER_TYPE.LIMIT) {
 		console.log(`new BUY order (${price})...`)
-		let quantity = this.getQuantity(price),
-			pair = this.getPair(),
+		quantity = quantity ? Number(quantity) : this.getQuantity(price)
+		let pair = this.getPair(),
 			newOrderParams = {}
-		console.log(quantity)
+		console.log(`quantity is ${quantity}`)
 		if(type === CONSTANTS.ORDER_TYPE.LIMIT)	{
 			newOrderParams = {
 				symbol: pair,
@@ -161,13 +162,12 @@ module.exports = class Bot {
 		}
 	}
 
-	async newSellOrder(price, type = CONSTANTS.ORDER_TYPE.LIMIT) {
+	async newSellOrder(price, quantity = 0, type = CONSTANTS.ORDER_TYPE.LIMIT) {
 		console.log(`new SELL order (${price})...`)
-		let quantity = this.getQuantity(price),
-			pair = this.getPair(),
+		quantity = quantity ? Number(quantity) : this.getQuantity(price)
+		let pair = this.getPair(),
 			newOrderParams = {}
-		console.log(await this.Client.accountInfo())
-		console.log(quantity)
+		console.log(`quantity is ${quantity}`)
 		if(type === CONSTANTS.ORDER_TYPE.LIMIT)	{
 			newOrderParams = {
 				symbol: pair,
@@ -221,15 +221,16 @@ module.exports = class Bot {
 		//end
 
 		//1. создание ордера по начальным параметрам
-		let price = await this.getLastPrice()
-		let newBuyOrder = await this.newBuyOrder(price, CONSTANTS.ORDER_TYPE.MARKET)
+		let price = await this.getLastPrice(),
+			newBuyOrder = await this.newBuyOrder(price, null, CONSTANTS.ORDER_TYPE.MARKET)
 		this.orders.unshift(newBuyOrder)
 
 		//2. выставить ордер на продажу так, чтобы выйти в профит по takeProffit
 		price = Number(newBuyOrder.fills[0].price)
+		let quantity = Number(newBuyOrder.origQty)
 		this.botSettings.firstBuyPrice = price
 		let profitPrice = this.getProfitPrice(price)
-		let newSellOrder = await this.newSellOrder(profitPrice)	
+		let newSellOrder = await this.newSellOrder(profitPrice, quantity)	
 
 		this.currentOrder = newSellOrder
 		this.orders.unshift(newSellOrder)
@@ -264,7 +265,7 @@ module.exports = class Bot {
 			await this.isProcess()
 			await this.updateOrders(this.orders)
 			if(this.status === CONSTANTS.BOT_STATUS.ACTIVE)
-			setTimeout(() => this.trade(user), 10000)
+			setTimeout(() => this.trade(user), 5000)
 		}
 		this.updateBot(user)
 	}

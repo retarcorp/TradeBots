@@ -1,9 +1,9 @@
-var md5 = require('md5');
-
-var Mongo = require('./Mongo');
-var Bot = require('../modules/Bot');
-var Crypto = require('./Crypto');
-var Binance = require('./Binance');
+const md5 = require('md5')
+const Mongo = require('./Mongo')
+const Bot = require('../modules/Bot')
+const Crypto = require('./Crypto')
+const Binance = require('./Binance')
+const binanceAPI = require('node-binance-api')
 
 let Users = {
 	adminLogin(admin, callback) {
@@ -199,6 +199,45 @@ let Users = {
 					message: error
 				})
 			}
+		}
+	}
+
+	,getClientStatistics(user, callback) {
+		try {
+			Mongo.select(user, 'users', (data) => {
+				data = data[0]
+
+				let key = Crypto.decipher(user.binanceAPI.key,  Crypto.getKey(user.regDate, user.name))
+				let secret = Crypto.decipher(user.binanceAPI.secret,  Crypto.getKey(user.regDate, user.name))
+				let Client = binanceAPI({
+					apiKey: key,
+					apiSecret: secret
+				})
+
+				let statistics = Client.allOrders()
+
+
+
+				const index = data.bots.findIndex(bot => bot.botID === botData.botID)
+				let newBot = new Bot(data.bots[index])
+				data.bots[index] = newBot
+				data.bots[index].changeStatus(botData.status, data)
+				.then((d) => {
+					Mongo.update({name: data.name}, data, 'users', (data) => {
+						callback({
+							status: 'ok',
+							data: { status: newBot.status }
+						})
+					})
+				})
+			})
+		}
+		catch(error) {
+			console.log(error)
+			callback({
+				status: 'error',
+				message: error
+			})
 		}
 	}
 
