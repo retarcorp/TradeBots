@@ -55,18 +55,18 @@ module.exports = class Bot {
 			}
 			else {
 				console.log('ЧТО-ТО ПОШЛО НЕ ТАК, ВЫКЛ')
-				this.this.disableBot('чтото пошло не так при включнии бота')
+				this.disableBot('чтото пошло не так при включнии бота')
 				this.status = CONSTANTS.BOT_STATUS.INACTIVE
 			}
 		}
 		else if(this.status === CONSTANTS.BOT_STATUS.INACTIVE) {
 			console.log('ИНАКТИВ')
-			this.this.disableBot('выключили бота извне')
+			this.disableBot('выключили бота извне')
 			this.currentOrder = null
 		}
 		else {
 			console.log('ЧТО-ТО НЕ ТО, ВЫКЛЮЧЕНИЕ')
-			this.this.disableBot('чтото не так с ботом, выключаемся')
+			this.disableBot('чтото не так с ботом, выключаемся')
 			this.status = CONSTANTS.BOT_STATUS.INACTIVE
 		}
 	}
