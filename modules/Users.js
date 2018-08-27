@@ -2,8 +2,9 @@ const md5 = require('md5')
 const Mongo = require('./Mongo')
 const Bot = require('../modules/Bot')
 const Crypto = require('./Crypto')
+const CONSTANTS = require('../constants')
 const Binance = require('./Binance')
-const binanceAPI = require('node-binance-api')
+let binanceAPI = require('binance-api-node').default
 
 let Users = {
 	adminLogin(admin, callback) {
@@ -202,33 +203,40 @@ let Users = {
 		}
 	}
 
+	,async sendClientStatistics(user) {
+		let key = Crypto.decipher(user.binanceAPI.key,  Crypto.getKey(user.regDate, user.name))
+		let secret = Crypto.decipher(user.binanceAPI.secret,  Crypto.getKey(user.regDate, user.name))
+
+		let Client = binanceAPI({
+			apiKey: key,
+			apiSecret: secret
+		})
+
+		let statistics = []
+		for(let i = 0; i < CONSTANTS.PAIRS.length; i++) {
+			let symbol = CONSTANTS.PAIRS[i]
+			try {
+				let list = await Client.allOrders({symbol})
+				statistics.push(...list)
+			}
+			catch(error) {
+				console.log(error)
+			}
+		}
+		console.log(statistics)
+		let res = {
+			status: 'ok',
+			data: statistics
+		}
+		return res
+	}
+
 	,getClientStatistics(user, callback) {
 		try {
 			Mongo.select(user, 'users', (data) => {
 				data = data[0]
-
-				let key = Crypto.decipher(user.binanceAPI.key,  Crypto.getKey(user.regDate, user.name))
-				let secret = Crypto.decipher(user.binanceAPI.secret,  Crypto.getKey(user.regDate, user.name))
-				let Client = binanceAPI({
-					apiKey: key,
-					apiSecret: secret
-				})
-
-				let statistics = Client.allOrders()
-
-
-
-				const index = data.bots.findIndex(bot => bot.botID === botData.botID)
-				let newBot = new Bot(data.bots[index])
-				data.bots[index] = newBot
-				data.bots[index].changeStatus(botData.status, data)
-				.then((d) => {
-					Mongo.update({name: data.name}, data, 'users', (data) => {
-						callback({
-							status: 'ok',
-							data: { status: newBot.status }
-						})
-					})
+				this.sendClientStatistics(data).then(res => {
+					callback(res)
 				})
 			})
 		}

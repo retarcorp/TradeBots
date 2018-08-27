@@ -84,8 +84,13 @@
 
             <div class="bots__order">
                 <ul class="tabs__bar">
+<<<<<<< HEAD
                     <li @click.prevent="isActive = true" class="tabs__item" :style="isActive ? 'backgroundColor: #eee': ''">Выставленные ордера</li>
                     <li @click.prevent="isActive = false" class="tabs__item" :style="!isActive ? 'backgroundColor: #eee': ''">Выполненные</li>
+=======
+                    <li @click.prevent="isActive = true" class="tabs__item"  :style="isActive ? 'backgroundColor: #eee': ''">Выставленные ордера</li>
+                    <li @click.prevent="isActive = false" class="tabs__item"  :style="!isActive ? 'backgroundColor: #eee': ''">Выполненные</li>
+>>>>>>> dc9bff6dcd81785e88854079bd5b78ca929da64e
                 </ul>
                 <div class="tabs__content">
                     <table v-show="isActive" class="table">
@@ -102,12 +107,12 @@
                         <tr v-for="order in openedOrders"
                             :key="order.id" 
                             class="table__tr">
-                            <td class="table__td date">{{ order.date }}</td>
+                            <td class="table__td date">{{ order.time }}</td>
                             <td class="table__td pair">{{ order.symbol }}</td>
                             <td 
                                 class="table__td side" 
                                 :class="order.side === 'BUY' ? 'text--success' : 'text--danger'"
-                                >{{ order.side }}</td>
+                                >{{ order.side }}({{ order.type }})</td>
                             <td class="table__td price">
                                 {{ order.type !== 'MARKET' ? order.price : order.fills[0].price }}  
                             </td>
@@ -128,12 +133,12 @@
                             <th class="table__th total-head">Всего</th>
                         </tr>
                         <tr v-for="order in closedOrders" :key="order.id" class="table__tr">
-                            <td class="table__td date">{{ order.date }}</td>
+                            <td class="table__td date">{{ order.time }}</td>
                             <td class="table__td pair">{{ order.symbol }}</td>
                             <td 
                                 class="table__td side" 
                                 :class="order.side === 'BUY' ? 'text--success' : 'text--danger'"
-                                >{{ order.side }}</td>
+                                >{{ order.side }}({{ order.type }})</td>
                             <td class="table__td price">
                                 {{ order.type !== 'MARKET' ? order.price : order.fills[0].price }}
                             </td>
