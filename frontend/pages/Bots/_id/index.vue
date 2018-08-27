@@ -102,7 +102,7 @@
                         <tr v-for="order in openedOrders"
                             :key="order.id" 
                             class="table__tr">
-                            <td class="table__td date">{{ order.time }}</td>
+                            <td class="table__td date">{{ order.time | date }}</td>
                             <td class="table__td pair">{{ order.symbol }}</td>
                             <td 
                                 class="table__td side" 
@@ -128,7 +128,7 @@
                             <th class="table__th total-head">Всего</th>
                         </tr>
                         <tr v-for="order in closedOrders" :key="order.id" class="table__tr">
-                            <td class="table__td date">{{ order.time }}</td>
+                            <td class="table__td date">{{ order.time | date }}</td>
                             <td class="table__td pair">{{ order.symbol }}</td>
                             <td 
                                 class="table__td side" 
@@ -163,6 +163,13 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
                 isActive: true,
                 currentComponent: null,
                 isChanging: false
+            }
+        },
+        filters: {
+            date(value) {
+                let date = new Date(value);
+                return ((date.getMonth() < 9) ? '0' : '') + (date.getMonth() + 1) + '-' +
+            ((date.getDate() < 10) ? '0' : '') + date.getDate() + ' ' + ((date.getHours() <= 9) ? '0' : '') + date.getHours() + ':' + ((date.getMinutes() <= 9) ? '0' : '') + date.getMinutes() + ':' + ((date.getSeconds() <= 9) ? '0' : '') + date.getSeconds()
             }
         },
         computed: {
