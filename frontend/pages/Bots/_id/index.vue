@@ -209,10 +209,12 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
             cancelAll(id) {
                 let answer = confirm('Точно выполнить данную операцию?');
                 if(answer) {
+                    this.$store.commit('setSpiner', true);
                     this.$axios
                         .$post('/bots/orders/cancelAll', {
                             'botID': id
                         })
+                        .then( () => this.$store.commit('setSpiner', false) )
                 }
             },
             refuseOrder(ordId, botId) {
@@ -223,6 +225,7 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
                             'botID': botId,
                             'orderId': ordId
                         })
+                        .then( () => this.$store.commit('setSpiner', false) )
                 }
             },
             setBotFreeze() {

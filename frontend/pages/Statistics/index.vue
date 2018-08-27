@@ -121,11 +121,13 @@ export default {
         }
     },
     created() {
+        this.$store.commit('setSpiner', true);
         this.$axios.$get('/statistics')
             .then(res => {
                 if(res.status === 'ok') {
-                    this.orders = res.data
-                    console.log(this.orders)
+                    this.orders = res.data;
+                    this.$store.commit('setSpiner', false);
+                    console.log(this.orders);
                 }
             })
     }
