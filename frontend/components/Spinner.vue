@@ -26,6 +26,7 @@
     display: inline-block;
     height: 4rem;
     width: 4rem;
+    z-index: 99999999;
 }
 </style>
 
