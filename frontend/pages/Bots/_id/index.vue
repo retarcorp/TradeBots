@@ -276,7 +276,8 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
 /* TABS BAR */
 
 .overflow {
-    max-height: calc(100vh - 50%);
+    display: block;
+    max-height: 45vh;
     overflow-y: auto;
 }
 
