@@ -19,14 +19,16 @@
         </ul>
         <div class="tabs__content">
             <table v-show="currentTab === 'opened'" class="table">
-                <tr class="table__tr">
-                    <th class="table__th date">Дата</th>
-                    <th class="table__th pair-head">Пара</th>
-                    <th class="table__th side">Тип</th>
-                    <th class="table__th price-head">Цена</th>
-                    <th class="table__th quantity-head">Количество</th>
-                    <th class="table__th total-head">Всего</th>
-                </tr>
+                <tbody class='overflow'>
+                    <tr class="table__tr">
+                        <th class="table__th date">Дата</th>
+                        <th class="table__th pair-head">Пара</th>
+                        <th class="table__th side">Тип</th>
+                        <th class="table__th price-head">Цена</th>
+                        <th class="table__th quantity-head">Количество</th>
+                        <th class="table__th total-head">Всего</th>
+                    </tr>
+                </tbody>
                 <tr 
                     v-for="order in openedOrders" 
                     :key="order.id" 
@@ -136,3 +138,13 @@ export default {
     }
 }
 </script>
+
+<style>
+
+.overflow {
+    display: block;
+    max-height: 45vh;
+    overflow-y: auto;
+}
+
+</style>
