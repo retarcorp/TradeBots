@@ -271,6 +271,11 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
 
 /* TABS BAR */
 
+.bots__order {
+    max-height: calc(100vh - 20rem);
+    overflow-y: auto;
+}
+
 .tabs__bar{
     border-bottom: 1px solid #CECECE;
 }
