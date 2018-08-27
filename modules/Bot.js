@@ -19,7 +19,7 @@ module.exports = class Bot {
 		currentOrder = null,
 		orders = [],
 		botSettings = {}
-	}) {
+	}, user) {
 		this.title = title
 		this.state = state
 		this.status = status
@@ -30,6 +30,16 @@ module.exports = class Bot {
 		this.safeOrders = []
 		this.botSettings = new BotSettings(botSettings)
 		this.botID = botID
+		if(user) this.setClient(user)
+	}
+
+	setClient(user) {
+		let key = Crypto.decipher(user.binanceAPI.key,  Crypto.getKey(user.regDate, user.name))
+		let secret = Crypto.decipher(user.binanceAPI.secret,  Crypto.getKey(user.regDate, user.name))
+		this.Client = binanceAPI({
+			apiKey: key,
+			apiSecret: secret
+		})
 	}
 
 	async changeStatus(nextStatus, user) {
@@ -59,12 +69,7 @@ module.exports = class Bot {
 
 	startManual(user) {
 		console.log('startManual')
-		let key = Crypto.decipher(user.binanceAPI.key,  Crypto.getKey(user.regDate, user.name))
-		let secret = Crypto.decipher(user.binanceAPI.secret,  Crypto.getKey(user.regDate, user.name))
-		this.Client = binanceAPI({
-			apiKey: key,
-			apiSecret: secret
-		})
+		this.setClient(user)
 		this.currentOrder = {}
 		this.startTrade(user)
 		.catch((err) => console.log(err))
@@ -76,6 +81,7 @@ module.exports = class Bot {
 	}
 
 	getQuantity(price) {
+		price = Number(price)
 		return Math.ceil( (Number(this.botSettings.currentOrder) / price) * 100 ) /100
 	}
 	
@@ -252,18 +258,17 @@ module.exports = class Bot {
 		console.log('___________________________')
 		console.log('trade is going...')
 		this.currentOrder = await this.getOrder(this.currentOrder.orderId)
+		let currentOrderStatus = this.currentOrder.status
 		
-		if(this.checkFilling(this.currentOrder.status)) {
+		if(this.checkFilling(currentOrderStatus)) {
 			await this.disableBot('ЗАВЕРШЕНО')
 		}
-		else if(this.checkFailing(this.currentOrder.status)) {
+		else if(this.checkFailing(currentOrderStatus)) {
 			await this.disableBot('ОШИБКА')	
 		}
 		else {
 			console.log('В ПРОЦЕССЕ')
 			console.log(`current order qty - ${this.botSettings.currentOrder}`)
-			let currentOrderStatus = this.currentOrder.status
-			if(this.checkCanceling(currentOrderStatus))
 			await this.isProcess()
 			await this.updateOrders(this.orders)
 			if(this.status === CONSTANTS.BOT_STATUS.ACTIVE)
@@ -415,6 +420,22 @@ module.exports = class Bot {
 		await this.updateOrders(this.orders)
 		this.status = CONSTANTS.BOT_STATUS.INACTIVE
 		console.log('disableBot end')
+	}
+
+	async cancelAllOrders() {
+		console.log('cancel all orders and sell by market')
+		try{
+			await this.canselOrders(this.safeOrders)
+			await this.canselOrder(this.currentOrder)
+			let lastPrice = await this.getLastPrice(),
+				quantity = this.getQuantity(lastPrice)
+			let newOrder = await this.newSellOrder(lastPrice, quantity, CONSTANTS.ORDER_TYPE.MARKET)
+			
+			await this.disableBot('ОТМЕНИТЬ И ПРОДАТЬ')
+		}
+		catch(error) {
+			console.log(error)
+		}
 	}
 
 	updateBot(user) {

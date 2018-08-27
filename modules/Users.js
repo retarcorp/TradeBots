@@ -205,6 +205,43 @@ let Users = {
 				Mongo.select(user, 'users', (data) => {
 					data = data[0]
 					const index = data.bots.findIndex(bot => bot.botID === resData.botID)
+					let bot = new Bot(data.bots[index])
+					bot.canselOrder(resData.orderId)
+					.then(order => {
+						callback({ 
+							status: 'ok',
+							data: order
+						})
+					})
+					.catch(error => callback({ 
+						status: 'error',
+						message: error 
+					}))
+				})
+			}
+			catch(error) {
+				console.log(error)
+			}
+		}
+
+		,cancelAllOrders(user, resData, callback) {
+			try {
+				Mongo.select(user, 'users', (data) => {
+					data = data[0]
+					const index = data.bots.findIndex(bot => bot.botID === resData.botID)
+					let bot = new Bot(data.bots[index], data)
+					bot.cancelAllOrders()
+					.then(data => {
+						callback({
+							status: 'ok'
+						})
+					})
+					.catch(error => {
+						callback({
+							status: 'error',
+							message: error
+						})
+					})
 				})
 			}
 			catch(error) {

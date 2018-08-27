@@ -41,29 +41,30 @@ app.use((req, res, next) => {
 	next();
 })
 
-app.set('port', process.env.PORT || 8072);
+app.set('port', process.env.PORT || 8072)
 
 
-app.get('/', index);
+app.get('/', index)
 
-app.get('/bots/getBotsList', bots);
-app.post('/bots/add', bots);
-app.post('/bots/delete', bots);
-app.post('/bots/update', bots);
-app.post('/bots/setStatus', bots);
+app.get('/bots/getBotsList', bots)
+app.post('/bots/add', bots)
+app.post('/bots/delete', bots)
+app.post('/bots/update', bots)
+app.post('/bots/setStatus', bots)
+app.post('/bots/orders/cancel', bots)
+app.post('/bots/orders/cancelAll', bots)
 
-app.get('/account/api', account);
-app.post('/account/api', account);
-app.delete('/account/api', account);
+app.get('/account/api', account)
+app.post('/account/api', account)
+app.delete('/account/api', account)
 
-app.get('/signin', signin);
-app.post('/signin', signin);
-app.get('/signout', signin);
-app.post('/signup', signup);
+app.get('/signin', signin)
+app.post('/signin', signin)
+app.get('/signout', signin)
+app.post('/signup', signup)
 
-
-app.get('/incomes', incomes);
-app.get('/statistics', statistics);
+app.get('/incomes', incomes)
+app.get('/statistics', statistics)
 app.get('/test', (req, res, next) => {
 	// let c = binanceAPI({
 	// 	apiKey: 'pMK15sHEO3jS9RE9x4KA5zFfdxCKcxk9gDgyf4BhvGrhvEUn3wiZMTYcuqLEAkNh',

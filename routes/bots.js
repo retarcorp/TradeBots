@@ -35,14 +35,14 @@ router.post('/bots/setStatus', (req, res, next) => {
 
 router.post('/bots/orders/cancel', (req, res, next) => {
 	let user = {name: req.cookies.user.name}
-	User.Bots.cancelOrder(user, req.body, data => res.json(data))
+	Users.Bots.cancelOrder(user, req.body, data => res.json(data))
 	//отменить ордер
 	//botID и orderId
 })
 
 router.post('/bots/orders/cancelAll', (req, res, next) => {
 	let user = {name: req.cookies.user.name}
-	User.Bots.cancelAllOrders(user, req.body, data => res.json(data))
+	Users.Bots.cancelAllOrders(user, req.body, data => res.json(data))
 	//отменить ордер
 	//botID
 })
