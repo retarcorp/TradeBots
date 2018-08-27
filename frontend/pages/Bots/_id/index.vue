@@ -84,13 +84,8 @@
 
             <div class="bots__order">
                 <ul class="tabs__bar">
-<<<<<<< HEAD
                     <li @click.prevent="isActive = true" class="tabs__item"  :style="isActive ? 'backgroundColor: #eee': ''">Выставленные ордера</li>
                     <li @click.prevent="isActive = false" class="tabs__item"  :style="!isActive ? 'backgroundColor: #eee': ''">Выполненные</li>
-=======
-                    <li @click.prevent="isActive = true" class="tabs__item" :style="isActive ? 'backgroundColor: #eee': ''">Выставленные ордера</li>
-                    <li @click.prevent="isActive = false" class="tabs__item" :style="!isActive ? 'backgroundColor: #eee': ''">Выполненные</li>
->>>>>>> 5a3185f67287f21be29742af0b7b3d9a88e3172d
                 </ul>
                 <div class="tabs__content">
                     <table v-show="isActive" class="table">
