@@ -205,7 +205,7 @@ let Users = {
 				Mongo.select(user, 'users', (data) => {
 					data = data[0]
 					const index = data.bots.findIndex(bot => bot.botID === resData.botID)
-					let bot = new Bot(data.bots[index])
+					let bot = new Bot(data.bots[index], data)
 					bot.canselOrder(resData.orderId)
 					.then(order => {
 						callback({ 

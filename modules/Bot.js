@@ -355,6 +355,7 @@ module.exports = class Bot {
 	}
 
 	async getOrder(orderId) {
+		orderId = Number(orderId)
 		try{
 			let pair = this.getPair(),
 			order = await this.Client.getOrder({
@@ -370,6 +371,7 @@ module.exports = class Bot {
 	}
 
 	async canselOrder(orderId) {
+		orderId = Number(orderId)
 		try {
 			let pair = this.getPair()
 			console.log(`close order(${orderId})`)
@@ -425,8 +427,11 @@ module.exports = class Bot {
 	async cancelAllOrders() {
 		console.log('cancel all orders and sell by market')
 		try{
+			console.log(this.safeOrders)
+			console.log(this.currentOrder)
+			console.log(this)
 			await this.canselOrders(this.safeOrders)
-			await this.canselOrder(this.currentOrder)
+			await this.canselOrder(this.currentOrder.orderId)
 			let lastPrice = await this.getLastPrice(),
 				quantity = this.getQuantity(lastPrice)
 			let newOrder = await this.newSellOrder(lastPrice, quantity, CONSTANTS.ORDER_TYPE.MARKET)
