@@ -61,12 +61,12 @@ module.exports = class Bot {
 		}
 		else if(this.status === CONSTANTS.BOT_STATUS.INACTIVE) {
 			console.log('ИНАКТИВ')
-			this.disableBot('выключили бота извне')
-			this.currentOrder = null
+			// this.disableBot('выключили бота извне')
+			// this.currentOrder = null
 		}
 		else {
 			console.log('ЧТО-ТО НЕ ТО, ВЫКЛЮЧЕНИЕ')
-			this.disableBot('чтото не так с ботом, выключаемся')
+			// this.disableBot('чтото не так с ботом, выключаемся')
 			this.status = CONSTANTS.BOT_STATUS.INACTIVE
 		}
 	}
