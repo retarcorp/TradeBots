@@ -29,6 +29,7 @@ module.exports = class Order {
 		executedQty = null,
 		cummulativeQuoteQty = null,
 		status = null,
+		time = null,
 		timeInForce = null,
 		type = null,
 		side = null,
@@ -47,5 +48,6 @@ module.exports = class Order {
 		this.type = type
 		this.side = side
 		this.fills = fills
+		this.time = time
 	}
 }
