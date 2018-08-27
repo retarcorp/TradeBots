@@ -262,6 +262,8 @@ module.exports = class Bot {
 		else {
 			console.log('В ПРОЦЕССЕ')
 			console.log(`current order qty - ${this.botSettings.currentOrder}`)
+			let currentOrderStatus = this.currentOrder.status
+			if(this.checkCanceling(currentOrderStatus))
 			await this.isProcess()
 			await this.updateOrders(this.orders)
 			if(this.status === CONSTANTS.BOT_STATUS.ACTIVE)
@@ -286,13 +288,11 @@ module.exports = class Bot {
 						this.recountInitialOrder()
 						let newProfitPrice = this.recountProfitPrice(order)
 						let newSellOrder = await this.newSellOrder(newProfitPrice)
-						// this.safeOrders.splice(i, 1)//ПРИДУМАТЬ ДРУГОЕ УДАЛЕНИЕ ИЗ МАССИВА!
 						this.currentOrder = newSellOrder
 						this.orders.unshift(this.currentOrder)
 					}
 					else if(this.checkCanceling(order.status)) {
 						console.log('найдет отмененный страховочный ордер...')
-						
 					}
 					else {
 						nextSafeOrders.push(order)
