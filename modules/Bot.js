@@ -290,6 +290,10 @@ module.exports = class Bot {
 						this.currentOrder = newSellOrder
 						this.orders.unshift(this.currentOrder)
 					}
+					else if(this.checkCanceling(order.status)) {
+						console.log('найдет отмененный страховочный ордер...')
+						
+					}
 					else {
 						nextSafeOrders.push(order)
 					}
@@ -339,6 +343,10 @@ module.exports = class Bot {
 
 	checkFilling(status) {
 		return status === CONSTANTS.ORDER_STATUS.FILLED
+	}
+
+	checkCanceling(status) {
+		return status === CONSTANTS.ORDER_STATUS.CANCELED
 	}
 
 	async getOrder(orderId) {

@@ -176,8 +176,6 @@ let Users = {
 
 		,setStatus(user, botData, callback) {
 			try {
-				console.log(user)
-				console.log(botData)
 				Mongo.select(user, 'users', (data) => {
 					data = data[0]
 					const index = data.bots.findIndex(bot => bot.botID === botData.botID)
@@ -199,6 +197,18 @@ let Users = {
 					status: 'error',
 					message: error
 				})
+			}
+		}
+
+		,cancelOrder(user, resData, callback) {
+			try {
+				Mongo.select(user, 'users', (data) => {
+					data = data[0]
+					const index = data.bots.findIndex(bot => bot.botID === resData.botID)
+				})
+			}
+			catch(error) {
+				console.log(error)
 			}
 		}
 	}

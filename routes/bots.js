@@ -30,7 +30,21 @@ router.post('/bots/update', (req, res, next) => {
 
 router.post('/bots/setStatus', (req, res, next) => {
 	let user = {name: req.cookies.user.name}
-	Users.Bots.setStatus(user , req.body, data => res.json(data))
+	Users.Bots.setStatus(user, req.body, data => res.json(data))
+})
+
+router.post('/bots/orders/cancel', (req, res, next) => {
+	let user = {name: req.cookies.user.name}
+	User.Bots.cancelOrder(user, req.body, data => res.json(data))
+	//отменить ордер
+	//botID и orderId
+})
+
+router.post('/bots/orders/cancelAll', (req, res, next) => {
+	let user = {name: req.cookies.user.name}
+	User.Bots.cancelAllOrders(user, req.body, data => res.json(data))
+	//отменить ордер
+	//botID
 })
 
 module.exports = router;
