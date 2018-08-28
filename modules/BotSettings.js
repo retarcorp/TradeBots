@@ -12,7 +12,13 @@ module.exports = class BotSettings {
 		martingale = null, //new Martingale(),
 		maxOpenSafetyOrders = null,
 		takeProfit = null,
-		stopLoss = null
+		stopLoss = null,
+		currentOrder = initialOrder,
+		firstBuyPrice = 0,
+		quantity = {
+			current: 0,
+			size: 0
+		}
 	}) {
 		this.tradingSignals = tradingSignals
 		this.initialOrder = initialOrder
@@ -25,10 +31,8 @@ module.exports = class BotSettings {
 		this.takeProfit = takeProfit
 		this.stopLoss = stopLoss
 		this.dailyVolumeBTC = dailyVolumeBTC
-		this.currentOrder = initialOrder
-		this.quantity = {
-			current: 0,
-			size: 0
-		}
+		this.currentOrder = currentOrder
+		this.firstBuyPrice = firstBuyPrice
+		this.quantity = quantity
 	}
 }

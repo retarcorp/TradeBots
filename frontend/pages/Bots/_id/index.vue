@@ -98,6 +98,7 @@
                             <th class="table__th price-head">Цена</th>
                             <th class="table__th quantity-head">Количество</th>
                             <th class="table__th total-head">Всего</th>
+                            <th class="table__th status-head">Статус</th>
                             <th class="table__th"></th>
                         </tr>
                         <!-- TODO create component for 1 row -->
@@ -116,6 +117,7 @@
                                 </td>
                                 <td class="table__td quantity">{{ order.origQty }}</td>
                                 <td class="table__td total">{{ order.cummulativeQuoteQty }}</td>
+                                <td class="table__td status">{{ order.status }}</td>
                                 <td class="table__td">
                                     <button @click.prevent="refuseOrder(order.orderId, bot.botID)" class="button table__button button--primary">Отменить</button>
                                 </td>
@@ -130,6 +132,7 @@
                             <th class="table__th price-head">Цена</th>
                             <th class="table__th quantity-head">Количество</th>
                             <th class="table__th total-head">Всего</th>
+                            <th class="table__th status-head">Статус</th>
                         </tr>
                         <tbody class='overflow'>
                             <tr v-for="order in closedOrders" :key="order.id" class="table__tr">
@@ -144,6 +147,7 @@
                                 </td>
                                 <td class="table__td quantity">{{ order.origQty }}</td>
                                 <td class="table__td total">{{ order.cummulativeQuoteQty }}</td>
+                                <td class="table__td status">{{ order.status }}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -183,10 +187,10 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
                 return this.$store.getters.getBot(this.$route.params.id)
             },
             openedOrders() {
-                return this.bot.orders.filter(order => order.status === 'NEW' || order.status === 'PARTIALLY_FILLED')
+                return this.bot.orders.filter(order => order !== null && (order.status === 'NEW' || order.status === 'PARTIALLY_FILLED'))
             },
             closedOrders() {
-                return this.bot.orders.filter(order => order.status !== 'NEW' && order.status !== 'PARTIALLY_FILLED')
+                return this.bot.orders.filter(order => order !== null && (order.status !== 'NEW' && order.status !== 'PARTIALLY_FILLED'))
             }
         },
         watch: {

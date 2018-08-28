@@ -26,6 +26,7 @@
                     <th class="table__th price-head">Цена</th>
                     <th class="table__th quantity-head">Количество</th>
                     <th class="table__th total-head">Всего</th>
+                    <th class="table__th status-head">Статус</th>
                 </tr>
                 <tbody class='overflow'>
                     <tr 
@@ -41,6 +42,7 @@
                         <td class="table__td price">{{ order.type !== 'MARKET' ? order.price : (Number(order.cummulativeQuoteQty) / Number(order.origQty)).toFixed(order.price.length - 2) }}</td>
                         <td class="table__td quantity">{{ order.origQty }}</td>
                         <td class="table__td total">{{ order.cummulativeQuoteQty }}</td>
+                        <td class="table__td status">{{ order.status }}</td>
                     </tr>
                 </tbody>
             </table>
@@ -52,6 +54,7 @@
                     <th class="table__th price-head">Цена</th>
                     <th class="table__th quantity-head">Количество</th>
                     <th class="table__th total-head">Всего</th>
+                    <th class="table__th status-head">Статус</th>
                 </tr>
                 <tbody class='overflow'>
                     <tr 
@@ -67,6 +70,7 @@
                         <td class="table__td price">{{ order.type !== 'MARKET' ? order.price : (Number(order.cummulativeQuoteQty) / Number(order.origQty)).toFixed(order.price.length - 2) }}</td>
                         <td class="table__td quantity">{{ order.origQty }}</td>
                         <td class="table__td total">{{ order.cummulativeQuoteQty }}</td>
+                        <td class="table__td status">{{ order.status }}</td>
                     </tr>
                 </tbody>
             </table>
@@ -78,6 +82,7 @@
                     <th class="table__th price-head">Цена</th>
                     <th class="table__th quantity-head">Количество</th>
                     <th class="table__th total-head">Всего</th>
+                    <th class="table__th status-head">Статус</th>
                 </tr>
                 <tbody class='overflow'>
                     <tr 
@@ -93,6 +98,7 @@
                         <td class="table__td price">{{ order.type !== 'MARKET' ? order.price : (Number(order.cummulativeQuoteQty) / Number(order.origQty)).toFixed(order.price.length - 2) }}</td>
                         <td class="table__td quantity">{{ order.origQty }}</td>
                         <td class="table__td total">{{ order.cummulativeQuoteQty }}</td>
+                        <td class="table__td status">{{ order.status }}</td>
                     </tr>
                 </tbody>
             </table>
