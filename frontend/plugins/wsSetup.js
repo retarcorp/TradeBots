@@ -1,4 +1,4 @@
 window.onNuxtReady((ctx) => {
-    ctx.$store.dispatch('wsInit')
+    // ctx.$store.dispatch('wsInit')
 })
 

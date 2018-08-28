@@ -3,7 +3,7 @@
         <div v-if="false" class='alertInfo__text alertInfo__text--success'>
             <p>Выполнено успешно!</p>
         </div>
-        <div v-else-if="true" class='alertInfo__text alertInfo__text--error'>
+        <div v-else-if="false" class='alertInfo__text alertInfo__text--error'>
             <p>{{getMessage||'system error'}} </p>
             <span class="close" @click='closeApp'>&times;</span>
         </div>

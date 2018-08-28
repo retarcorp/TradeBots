@@ -470,6 +470,7 @@ module.exports = class Bot {
 			await this.canselOrder(this.currentOrder.orderId)
 			let lastPrice = await this.getLastPrice(),
 				newOrder = await this.newSellOrder(lastPrice, CONSTANTS.ORDER_TYPE.MARKET)
+			//ПЕРЕДЕЛАТЬ ТУТ ПРОБЛЕМКА
 			this.orders.unshift(newOrder)
 			this.orders = await this.updateOrders(this.orders)
 			// await this.disableBot('ОТМЕНИТЬ И ПРОДАТЬ')
@@ -489,7 +490,7 @@ module.exports = class Bot {
 				return bot.botID === tempBot.botID
 			})
 			data.bots[index] = tempBot
-			Mongo.update({name: data.name}, data, 'users')
+			Mongo.update({name: data.name}, data, 'users', () => console.log('update bot end'))
 		})
 	}
 
