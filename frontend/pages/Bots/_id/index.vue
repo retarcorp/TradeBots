@@ -45,6 +45,8 @@
                         <p class="settings__item">Кол-во страховочных ордеров: <span>{{ bot.botSettings.safeOrder.amount }}</span></p>
                         
                         <p class="settings__item">Отклонение от начального ордера: <span>{{ bot.botSettings.deviation }}%</span></p>
+
+                        <p class="settings__item">Макс. открытых СО: <span>{{ bot.botSettings.maxOpenSafetyOrders }}%</span></p>
                         
                         <p class="settings__item">Стоп лосс: <span>{{ bot.botSettings.stopLoss }}%</span></p>
                         
