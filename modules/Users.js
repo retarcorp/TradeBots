@@ -182,12 +182,11 @@ let Users = {
 					let newBot = new Bot(data.bots[index])
 					data.bots[index] = newBot
 					data.bots[index].changeStatus(botData.status, data)
-					.then(d => {
+					.then((d) => {
 						Mongo.update({name: data.name}, data, 'users', (data) => {
 							callback({
 								status: 'ok',
-								data: {status: d.status},
-								message: d.message
+								data: { status: newBot.status }
 							})
 						})
 					})
@@ -206,25 +205,19 @@ let Users = {
 				console.log('cancel order')
 				Mongo.select(user, 'users', (data) => {
 					data = data[0]
-					console.log('!!!!ОТМЕНИТЬ ОРДЕР')
 					const index = data.bots.findIndex(bot => bot.botID === resData.botID)
-					// let bot = new Bot(data.bots[index], data)
-					// bot.orderForCanceled = resData.orderId
-					data.bots[index].orderForCanceled = resData.orderId
-					Mongo.update({name: data.name}, data, 'users', (data) => {
-						callback({ status: 'ok' })
+					let bot = new Bot(data.bots[index], data)
+					bot.canselOrder(resData.orderId)
+					.then(order => {
+						callback({ 
+							status: 'ok',
+							data: order
+						})
 					})
-					// bot.canselOrder(resData.orderId)
-					// .then(order => {
-					// 	callback({ 
-					// 		status: 'ok',
-					// 		data: order
-					// 	})
-					// })
-					// .catch(error => callback({ 
-					// 	status: 'error',
-					// 	message: error 
-					// }))
+					.catch(error => callback({ 
+						status: 'error',
+						message: error 
+					}))
 				})
 			}
 			catch(error) {
@@ -238,25 +231,19 @@ let Users = {
 				Mongo.select(user, 'users', (data) => {
 					data = data[0]
 					const index = data.bots.findIndex(bot => bot.botID === resData.botID)
-					console.log('!!!!ОТМЕНИТЬ И ПРОДАТЬ ВСЕ')
-					data.bots[index].isCancelAll = 1
-					Mongo.update({name: data.name}, data, 'users', (data) => {
-						callback({ status: 'ok' })
+					let bot = new Bot(data.bots[index], data)
+					bot.cancelAllOrders()
+					.then(data => {
+						callback({
+							status: 'ok'
+						})
 					})
-
-					// let bot = new Bot(data.bots[index], data)
-					// bot.cancelAllOrders()
-					// .then(data => {
-					// 	callback({
-					// 		status: 'ok'
-					// 	})
-					// })
-					// .catch(error => {
-					// 	callback({
-					// 		status: 'error',
-					// 		message: error
-					// 	})
-					// })
+					.catch(error => {
+						callback({
+							status: 'error',
+							message: error
+						})
+					})
 				})
 			}
 			catch(error) {
