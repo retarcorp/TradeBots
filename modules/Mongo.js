@@ -60,21 +60,25 @@ module.exports = {
 		// });
 	}
 
-	,select: function(key, collection, callback) {
-		// this.connect( (db, client) => {
-			let coll = this.db.collection(collection);
-
-			if (!(typeof key == 'object')) key = {};
-
+	,syncSelect: function(key, collection) {
+		let coll = this.db.collection(collection)
+		return new Promise((resolve, reject) => {
 			coll.find(key).toArray( (err, data) => {
-				this.Assert.equal(err, null);
+				this.Assert.equal(err, null)
+				if(err) reject(err)
+				resolve(data)
+			})
+		})
+	}
 
-				if (callback) callback(data);
-				// console.log('Data ejected');
+	,select: function(key, collection, callback) {
+		let coll = this.db.collection(collection)
 
-                //client.close();
-			});
-		// });
+		if (!(typeof key == 'object')) key = {};
+		coll.find(key).toArray( (err, data) => {
+			this.Assert.equal(err, null)
+			if (callback) callback(data)
+		})
 	}
 
 	,update: function(key, change, collection, callback) {
