@@ -42,7 +42,7 @@
             </div>
             <div class="form-control newBot__settings-control">
                 <label class="label" for="count__bots">Макс открытых СО:</label>
-                <input v-model="bot.botSettings.maxOpenSafetyORders" id="count__max-save-order" type="number" class="input settings__input">
+                <input v-model="bot.botSettings.maxOpenSafetyOrders" id="count__max-save-order" type="number" class="input settings__input">
             </div>
             <div class="form-control newBot__settings-control" style="margin-top: 9px;">
                 <label class="label label__double-row" for="deviation">Отклонение от начального ордера %</label>
