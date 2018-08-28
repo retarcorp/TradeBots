@@ -1,6 +1,7 @@
 <template>
     <nuxt-link :to="'/bots/' + id" class="bot">
         <div class="bot__name"><slot></slot></div>
+        <div v-show="isBotHasOrders" class="bot__status"><img src="~/assets/svg/market.svg"></div>
         <div class="bot__signal" :class="{'bot__signal--disabled' : !isBotActive}"></div>
     </nuxt-link>
 </template>
@@ -15,10 +16,16 @@
             }
         },
         computed: {
+            bot() {
+                return this.$store.getters.getBot(this.id)
+            },
+            isBotHasOrders() {
+                return this.bot.orders.length &&
+                        this.bot.orders.filter(order => order.status === 'NEW' || order.status === 'PARTIALLY_FILLED').length
+            },
             isBotActive() {
                 if(this.id) {
-                    let bot = this.$store.getters.getBot(this.id);
-                    return bot.status === '1'
+                    return this.bot.status === '1'
                 }
             }
         }
@@ -27,6 +34,7 @@
 
 <style scoped>
 .bot {
+    position: relative;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -42,6 +50,13 @@
 
 .bot:hover {
     background-color: #DCDCDC;
+}
+
+.bot__status {
+    position: absolute;
+    top: 50%;
+    left: 75%;
+    transform: translateY(-50%)
 }
 
 .bot__signal {
