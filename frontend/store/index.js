@@ -8,17 +8,9 @@ const store = () =>
     state: {
       isAuthorized: false,
       botsList: [],
-      isActive: false,
-      ws: null,
-      wsID: null
+      isActive: false
     },
     getters: {
-      getWs(state) {
-        return state.ws
-      },
-      getWsId(state) {
-        return state.wsID
-      },
       getSpinerStatus(state) {
         return state.isActive
       },
@@ -38,12 +30,6 @@ const store = () =>
       setBot(state, payload) {
         const index = state.botsList.findIndex(bot => bot.botID === payload.botID)
         state.botsList[index] = payload;
-      },
-      setWsId(state, payload) {
-        state.wsID = payload
-      },
-      wsInit(state, payload) {
-        state.ws = payload.ws;
       },
       setSpiner(state, payload) {
         state.isActive = payload
@@ -69,26 +55,6 @@ const store = () =>
       }
     },
     actions: {
-      wsInit({commit}) {
-          let ws = new WebSocket("ws://localhost:8072/");
-          let id;
-          ws.onopen = () => {
-            console.log("WS подключено");
-            commit('wsInit', {
-              ws
-            })
-          }
-          ws.onclose = eventclose => {
-            console.log("соеденение закрыто причина:" + eventclose.data);
-          };
-          ws.onmessage = (msg) => {
-            console.log('msg   ' + msg.data);
-            id = id === undefined ? msg.data : id;
-            commit("setWsId", id);
-          }
-          
-        
-      },
       setAuthorizedStatus({ commit }, payload) {
         commit("setAuthorized", payload);
       },
