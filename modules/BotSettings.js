@@ -1,6 +1,6 @@
-let Martingale = require('./Martingale');
-let SafeOrder = require('./SafeOrder');
-let TradingSignals = require('./TradingSignals');
+let Martingale = require('./Martingale')
+let SafeOrder = require('./SafeOrder')
+let TradingSignals = require('./TradingSignals')
 
 module.exports = class BotSettings {
 	constructor({
@@ -14,17 +14,21 @@ module.exports = class BotSettings {
 		takeProfit = null,
 		stopLoss = null
 	}) {
-		this.tradingSignals = tradingSignals;
-		this.initialOrder = initialOrder;
+		this.tradingSignals = tradingSignals
+		this.initialOrder = initialOrder
 		if(safeOrder) 
-			this.safeOrder = new SafeOrder(safeOrder.size, safeOrder.amount);
-		this.deviation = deviation;
+			this.safeOrder = new SafeOrder(safeOrder.size, safeOrder.amount)
+		this.deviation = deviation
 		if(martingale)
-			this.martingale = new Martingale(martingale.value, martingale.active);
-		this.maxOpenSafetyOrders = maxOpenSafetyOrders;
-		this.takeProfit = takeProfit;
-		this.stopLoss = stopLoss;
-		this.dailyVolumeBTC = dailyVolumeBTC;
-		this.currentOrder = initialOrder;
+			this.martingale = new Martingale(martingale.value, martingale.active)
+		this.maxOpenSafetyOrders = maxOpenSafetyOrders
+		this.takeProfit = takeProfit
+		this.stopLoss = stopLoss
+		this.dailyVolumeBTC = dailyVolumeBTC
+		this.currentOrder = initialOrder
+		this.quantity = {
+			current: 0,
+			size: 0
+		}
 	}
 }

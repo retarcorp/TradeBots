@@ -182,11 +182,12 @@ let Users = {
 					let newBot = new Bot(data.bots[index])
 					data.bots[index] = newBot
 					data.bots[index].changeStatus(botData.status, data)
-					.then((d) => {
+					.then(d => {
 						Mongo.update({name: data.name}, data, 'users', (data) => {
 							callback({
 								status: 'ok',
-								data: { status: newBot.status }
+								data: {status: d.status},
+								message: d.message
 							})
 						})
 					})

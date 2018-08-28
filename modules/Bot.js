@@ -26,7 +26,6 @@ module.exports = class Bot {
 		this.botFreeze = botFreeze
 		this.pair = new Pair(pair.from, pair.to)
 		this.orders = orders
-		this.tempOrders = []
 		this.currentOrder = currentOrder
 		this.safeOrders = []
 		this.botSettings = new BotSettings(botSettings)
@@ -43,31 +42,46 @@ module.exports = class Bot {
 		})
 	}
 
+	checkForActivate(nextStatus) {
+		let bot_status = CONSTANTS.BOT_STATUS
+		return (this.status === bot_status.INACTIVE && nextStatus === bot_status.ACTIVE && this.currentOrder === null)
+	}
+
+	checkForDeactivate(nextStatus) {
+		let bot_status = CONSTANTS.BOT_STATUS
+		return (this.status === bot_status.ACTIVE && nextStatus === bot_status.INACTIVE)
+	}
+
 	async changeStatus(nextStatus, user) {
-		this.status = nextStatus;
-		if(this.status === CONSTANTS.BOT_STATUS.ACTIVE) {
+		let message = ''
+		if(this.checkForActivate(nextStatus)) {
+			this.status = nextStatus
 			console.log('АКТИВ')
 			if(this.state === CONSTANTS.BOT_STATE.MANUAL) {
+				message = 'bot is starting trade (type MANUAL)'
 				this.startManual(user)
 			}
 			else if(this.state === CONSTANTS.BOT_STATE.AUTO) {
+				message = 'bot is starting trade (type AUTO)'
 				this.startAuto(user)
 			}
 			else {
-				console.log('ЧТО-ТО ПОШЛО НЕ ТАК, ВЫКЛ')
-				this.disableBot('чтото пошло не так при включнии бота')
+				message = "bot isn't starting (incorrect type)"
 				this.status = CONSTANTS.BOT_STATUS.INACTIVE
 			}
 		}
-		else if(this.status === CONSTANTS.BOT_STATUS.INACTIVE) {
+		else if(this.checkForDeactivate(nextStatus)) {
+			this.status = nextStatus
+			message = "bot is deactivated (wait for the end)"
 			console.log('ИНАКТИВ')
-			// this.disableBot('выключили бота извне')
-			// this.currentOrder = null
+			this.updateBot(user)
 		}
 		else {
-			console.log('ЧТО-ТО НЕ ТО, ВЫКЛЮЧЕНИЕ')
-			// this.disableBot('чтото не так с ботом, выключаемся')
-			this.status = CONSTANTS.BOT_STATUS.INACTIVE
+			message = "error (perhaps you are trying to disable the bot before it completes its previous cycle)"
+		}
+		return {
+			status: this.status,
+			message: message
 		}
 	}
 
@@ -84,9 +98,26 @@ module.exports = class Bot {
 		console.log('startAuto')
 	}
 
-	getQuantity(price) {
+	setQuantity(price) {
 		price = Number(price)
-		return Math.ceil( (Number(this.botSettings.currentOrder) / price) * 100 ) /100
+		this.botSettings.quantity = {
+			current: Math.ceil( (Number(this.botSettings.currentOrder) / price) * 100 ) /100,
+			size: Math.ceil( (Number(this.botSettings.currentOrder) / price) * 100 ) /100
+		}
+		return Number(this.botSettings.quantity.current)
+	}
+
+	getQuantity() {
+		return Number(this.botSettings.quantity.current)
+	}
+	
+	recountQuantity(time = 0) {
+		time = Number(time)
+		let current = Number(this.botSettings.quantity.current),
+			size = Number(this.botSettings.quantity.size)
+		current += time * size
+		this.botSettings.quantity.current = current
+		return current
 	}
 	
 	getPair() {
@@ -140,28 +171,19 @@ module.exports = class Bot {
 		return Number(price[pair])
 	}
 
-	async newBuyOrder(price, quantity = 0, type = CONSTANTS.ORDER_TYPE.LIMIT) {
-		console.log(`new BUY order (${price})...`)
-		quantity = quantity ? Number(quantity) : this.getQuantity(price)
+	async newBuyOrder(price = 0, type = CONSTANTS.ORDER_TYPE.LIMIT, quantity = this.getQuantity()) {
+		console.log(`new BUY order (${price}) ${quantity}...`)
 		let pair = this.getPair(),
-			newOrderParams = {}
-		console.log(`quantity is ${quantity}`)
-		if(type === CONSTANTS.ORDER_TYPE.LIMIT)	{
 			newOrderParams = {
 				symbol: pair,
-				quantity: quantity,
 				side: CONSTANTS.ORDER_SIDE.BUY,
-				price: price
+				quantity: quantity
 			}
-		}
-		else {
-			newOrderParams = {
-				symbol: pair,
-				quantity: quantity,
-				type: type,
-				side: CONSTANTS.ORDER_SIDE.BUY,
-			}
-		}
+		if(type === CONSTANTS.ORDER_TYPE.LIMIT)	
+			newOrderParams.price = price
+		else 
+			newOrderParams.type = type
+
 		try{
 			let newBuyOrder = await this.Client.order(newOrderParams)
 			if(type === CONSTANTS.ORDER_TYPE.MARKET) console.log(`market price is ${newBuyOrder.fills[0].price}`)
@@ -172,28 +194,19 @@ module.exports = class Bot {
 		}
 	}
 
-	async newSellOrder(price, quantity = 0, type = CONSTANTS.ORDER_TYPE.LIMIT) {
-		console.log(`new SELL order (${price})...`)
-		quantity = quantity ? Number(quantity) : this.getQuantity(price)
+	async newSellOrder(price = 0, type = CONSTANTS.ORDER_TYPE.LIMIT, quantity = this.getQuantity()) {
+		console.log(`new SELL order (${price}) ${quantity}...`)
 		let pair = this.getPair(),
-			newOrderParams = {}
-		console.log(`quantity is ${quantity}`)
-		if(type === CONSTANTS.ORDER_TYPE.LIMIT)	{
 			newOrderParams = {
 				symbol: pair,
-				quantity: quantity,
 				side: CONSTANTS.ORDER_SIDE.SELL,
-				price: price 	
+				quantity: quantity
 			}
-		}
-		else {
-			newOrderParams = {
-				symbol: pair,
-				quantity: quantity,
-				type: type,
-				side: CONSTANTS.ORDER_SIDE.SELL,
-			}
-		}	
+		if(type === CONSTANTS.ORDER_TYPE.LIMIT)	
+			newOrderParams.price = price
+		else 
+			newOrderParams.type = type
+
 		try{
 			let newSellOrder = await this.Client.order(newOrderParams)
 			if(type === CONSTANTS.ORDER_TYPE.MARKET) console.log(`market price is ${newSellOrder.fills[0].price}`)
@@ -232,15 +245,15 @@ module.exports = class Bot {
 
 		//1. создание ордера по начальным параметрам
 		let price = await this.getLastPrice(),
-			newBuyOrder = await this.newBuyOrder(price, null, CONSTANTS.ORDER_TYPE.MARKET)
+			quantity = this.setQuantity(price),
+			newBuyOrder = await this.newBuyOrder(null, CONSTANTS.ORDER_TYPE.MARKET)
 		this.orders.unshift(newBuyOrder)
 
 		//2. выставить ордер на продажу так, чтобы выйти в профит по takeProffit
 		price = Number(newBuyOrder.fills[0].price)
-		let quantity = Number(newBuyOrder.origQty)
 		this.botSettings.firstBuyPrice = price
 		let profitPrice = this.getProfitPrice(price)
-		let newSellOrder = await this.newSellOrder(profitPrice, quantity)	
+		let newSellOrder = await this.newSellOrder(profitPrice)	
 
 		this.currentOrder = newSellOrder
 		this.orders.unshift(newSellOrder)
@@ -260,7 +273,8 @@ module.exports = class Bot {
 
 	async trade(user) {
 		console.log('___________________________')
-		console.log('trade is going...')
+		this.updateBotStatus(user)
+		console.log('___trade is going___')
 		this.currentOrder = await this.getOrder(this.currentOrder.orderId)
 		let currentOrderStatus = this.currentOrder.status
 		
@@ -275,8 +289,21 @@ module.exports = class Bot {
 			console.log(`current order qty - ${this.botSettings.currentOrder}`)
 			await this.isProcess()
 			await this.updateOrders(this.orders)
-			if(this.status === CONSTANTS.BOT_STATUS.ACTIVE)
-			setTimeout(() => this.trade(user), 5000)
+			if(this.status === CONSTANTS.BOT_STATUS.ACTIVE) {
+				console.warn('___обычный trade___')
+				setTimeout(() => this.trade(user), 5000)
+			}
+			else if(this.status === CONSTANTS.BOT_STATUS.INACTIVE) {
+				console.warn('___бот выключен___')
+				if(this.currentOrder !== null) {
+					console.warn('-> ждем завершение цикла')
+					setTimeout(() => this.trade(user), 5000)
+				}
+				else {
+					console.warn('-> цикл завершен')
+					await this.disableBot('нажали выкл -> бот завершил работу -> выключаем бота')
+				}
+			}
 		}
 		this.updateBot(user)
 	}
@@ -287,21 +314,22 @@ module.exports = class Bot {
 		if(length) {
 			let nextSafeOrders = []
 			console.log(`stopPrice - ${this.getStopPrice()}`)
-			console.log('проверяем страховочные ордера...')
+			console.log('проверяем страховочные ордера')
 			for(let i = 0; i < length; i++) {
 				try {
 					let order = await this.getOrder(orders[i].orderId)
 					if(this.checkFilling(order.status)) {
-						console.log('найдет заюзаный страховочный, пересчет...')
+						console.log('найдет заюзаный страховочный, пересчет')
 						this.canselOrder(this.currentOrder.orderId)
 						this.recountInitialOrder()
 						let newProfitPrice = this.recountProfitPrice(order)
+						this.recountQuantity(1)
 						let newSellOrder = await this.newSellOrder(newProfitPrice)
 						this.currentOrder = newSellOrder
 						this.orders.unshift(this.currentOrder)
 					}
 					else if(this.checkCanceling(order.status)) {
-						console.log('найдет отмененный страховочный ордер...')
+						console.log('найдет отмененный страховочный ордер')
 					}
 					else {
 						nextSafeOrders.push(order)
@@ -321,7 +349,7 @@ module.exports = class Bot {
 			console.log(`price - ${price}`)
 			console.log(`stopPrice - ${stopPrice}`)
 			if(stopPrice > price) {
-				console.log('стоплосс пройдет')
+				console.log('стоплосс пройден')
 				await this.canselOrder(this.currentOrder.orderId)
 				await this.newSellOrder(price, CONSTANTS.ORDER_TYPE.MARKET)
 				await this.disableBot('Все распродано по рынку, бот выключен')
@@ -399,19 +427,16 @@ module.exports = class Bot {
 		let pair = this.pair.from + this.pair.to
 		for(let i = 0; i < orders.length; i++) {
 			try{
-				if(this.checkProcessing(orders.orderId)) {
 					console.log(i)
 					let orderData = await this.Client.getOrder({
 						symbol: pair,
 						orderId: orders[i].orderId
 					})
 					orders[i] = new Order(orderData)
-				}
 			}
 			catch(error) {
-				//in order - ${orders[i].orderId}
 				console.log(`error (code ${error.code})`)
-				// console.log(error)
+				console.error(error)
 			}
 		}
 		console.log('конец почета')
@@ -420,7 +445,6 @@ module.exports = class Bot {
 	async canselOrders(orders) {
 		console.log('закрываю ордера...')
 		for(let i = 0; i < orders.length; i++) {
-			if(this.checkProcessing(orders.orderId)) 
 				await this.canselOrder(orders[i].orderId)
 		}
 		console.log('закрыл')
@@ -439,14 +463,10 @@ module.exports = class Bot {
 	async cancelAllOrders() {
 		console.log('cancel all orders and sell by market')
 		try{
-			console.log(this.safeOrders)
-			console.log(this.currentOrder)
-			console.log(this)
 			await this.canselOrders(this.safeOrders)
 			await this.canselOrder(this.currentOrder.orderId)
 			let lastPrice = await this.getLastPrice(),
-				quantity = this.getQuantity(lastPrice)
-			let newOrder = await this.newSellOrder(lastPrice, quantity, CONSTANTS.ORDER_TYPE.MARKET)
+				newOrder = await this.newSellOrder(lastPrice, CONSTANTS.ORDER_TYPE.MARKET)
 			this.orders.unshift(newOrder)
 			await this.updateOrders(this.orders)
 			await this.disableBot('ОТМЕНИТЬ И ПРОДАТЬ')
@@ -457,6 +477,7 @@ module.exports = class Bot {
 	}
 
 	updateBot(user) {
+		console.log('update bot...')
 		user = { name: user.name }
 		Mongo.select(user, 'users', (data) => {
 			data = data[0]
@@ -466,6 +487,18 @@ module.exports = class Bot {
 			})
 			data.bots[index] = tempBot
 			Mongo.update({name: data.name}, data, 'users')
+		})
+	}
+
+	updateBotStatus(user) {
+		console.log('update bot status...')
+		user = { name: user.name }
+		Mongo.select(user, 'users', (data) => {
+			data = data[0]
+			const index = data.bots.findIndex(bot => {
+				return bot.botID === this.botID
+			})
+			this.status = data.bots[index].status
 		})
 	}
 }
