@@ -18,7 +18,8 @@ module.exports = class Bot {
 		pair = {},
 		currentOrder = null,
 		orders = [],
-		botSettings = {}
+		botSettings = {},
+		balance = 0
 	}, user) {
 		this.title = title
 		this.state = state
@@ -30,6 +31,7 @@ module.exports = class Bot {
 		this.safeOrders = []
 		this.botSettings = new BotSettings(botSettings)
 		this.botID = botID
+		this.balance = balance
 		if(user) this.setClient(user)
 	}
 
@@ -98,29 +100,29 @@ module.exports = class Bot {
 		console.log('startAuto')
 	}
 
-	setQuantity(price) {
-		price = Number(price)
-		this.botSettings.quantity = {
-			current: Math.ceil( (Number(this.botSettings.currentOrder) / price) * 100 ) /100,
-			size: Math.ceil( (Number(this.botSettings.currentOrder) / price) * 100 ) /100
-		}
-		console.log("SET КОЛИЧЕСТВО _________ " + this.botSettings.quantity.current, this.botSettings.quantity.size)
-		return Number(this.botSettings.quantity.current)
+	setQuantity(price = 0, quantity = 0) {
+		// this.botSettings.quantity = {
+		// 	current: Math.ceil( (Number(this.botSettings.currentOrder) / price) * 100 ) /100,
+		// 	size: Math.ceil( (Number(this.botSettings.currentOrder) / price) * 100 ) /100
+		// }
+		this.botSettings.quantity = price ? this.toDecimal(Number(this.botSettings.currentOrder) / price) + 0.01 : Number(quantity)
+		console.log("SET КОЛИЧЕСТВО _________ " + this.botSettings.quantity)
+		return Number(this.botSettings.quantity)
 	}
 
-	getQuantity() {
-		console.log("GET КОЛИЧЕСТВО _________ " + this.botSettings.quantity.current, this.botSettings.quantity.size)
-		return Number(this.botSettings.quantity.current)
+	getQuantity(price = 0) {
+		console.log("GET КОЛИЧЕСТВО _________ " + this.botSettings.quantity)
+		return price ? this.toDecimal(Number(this.botSettings.currentOrder) / price) : Number(this.botSettings.quantity)
 	}
 	
-	recountQuantity(time = 0) {
-		time = Number(time)
-		let current = Number(this.botSettings.quantity.current),
-			size = Number(this.botSettings.quantity.size)
-		current += time * size
-		current = this.toDecimal(current, 2)
-		this.botSettings.quantity.current = current
-		console.log("RECOUNT КОЛИЧЕСТВО _________ " + this.botSettings.quantity.current, this.botSettings.quantity.size)
+	recountQuantity(quantity = 0, side = 0) {
+		console.log(`recount _ ${quantity} _ ${side}`)
+		quantity = Number(quantity)
+		let current = Number(this.botSettings.quantity)
+		current += Math.pow(-1, side) * quantity
+		current = this.toDecimal(current)
+		this.botSettings.quantity = current
+		console.log("RECOUNT КОЛИЧЕСТВО _________ " + this.botSettings.quantity)
 		return current
 	}
 	
@@ -164,7 +166,7 @@ module.exports = class Bot {
 		return this.toDecimal(stopPrice, decimal)
 	}
 
-	toDecimal(value, decimal) {
+	toDecimal(value = 0, decimal = 2) {
 		return Number(Number(value).toFixed(decimal))
 	}
 
@@ -175,7 +177,7 @@ module.exports = class Bot {
 		return Number(price[pair])
 	}
 
-	async newBuyOrder(price = 0, type = CONSTANTS.ORDER_TYPE.LIMIT, quantity = this.getQuantity()) {
+	async newBuyOrder(price = 0, type = CONSTANTS.ORDER_TYPE.LIMIT, quantity = this.getQuantity(price)) {
 		console.log(`new BUY order (${price}) ${quantity}...`)
 		let pair = this.getPair(),
 			newOrderParams = {
@@ -191,14 +193,19 @@ module.exports = class Bot {
 		try{
 			let newBuyOrder = await this.Client.order(newOrderParams)
 			if(type === CONSTANTS.ORDER_TYPE.MARKET) console.log(`market price is ${newBuyOrder.fills[0].price}`)
+			// if(price) this.recountQuantity(newBuyOrder.origQty)
 			return new Order(newBuyOrder)
 		}
 		catch(error) {
-			console.log(error)
+			if(this.isError1013(error)) {
+				let order = await this.newBuyOrder(price, type, this.toDecimal(quantity + 0.01, 2))
+				return order
+			}
+			return {}
 		}
 	}
 
-	async newSellOrder(price = 0, type = CONSTANTS.ORDER_TYPE.LIMIT, quantity = this.getQuantity()) {
+	async newSellOrder(price = 0, type = CONSTANTS.ORDER_TYPE.LIMIT, quantity = this.getQuantity(), prevError = {}) {
 		console.log(`new SELL order (${price}) ${quantity}...`)
 		let pair = this.getPair(),
 			newOrderParams = {
@@ -213,14 +220,25 @@ module.exports = class Bot {
 
 		try{
 			let newSellOrder = await this.Client.order(newOrderParams)
-
 			if(type === CONSTANTS.ORDER_TYPE.MARKET) console.log(`market price is ${newSellOrder.fills[0].price}`)
+			this.recountQuantity(newSellOrder.origQty, 1)
 			return new Order(newSellOrder)
 		}
 		catch(error) {
-			let order = await this.newSellOrder(price, type, this.toDecimal(quantity - 0.01, 2))
 			console.log(error)
-			return order
+			if(quantity > 0) {
+				let step = 0.01
+				if(
+					(this.isError1013(error) && this.isError2010(prevError)) ||
+					(this.isError1013(prevError) && this.isError2010(error))
+				) return {}
+				else if(this.isError1013(error)) quantity += step
+				else if(this.isError2010(error)) quantity -= step
+
+				let order = await this.newSellOrder(price, type, this.toDecimal(quantity, 2), error)
+				return order
+			}
+			else return {}
 		}
 	}
 
@@ -235,9 +253,14 @@ module.exports = class Bot {
 			price = this.toDecimal(price, decimal)
 			console.log(`safe order (${price}), deviation is ${deviation}`)
 			let newOrder = await this.newBuyOrder(price)
-			safeOrders.unshift(newOrder)
+			if(newOrder.orderId)
+				safeOrders.unshift(newOrder)
 		}
 		return safeOrders
+	}	
+
+	async getBinanceTime() {
+		return await this.Client.time()
 	}
 
 	async startTrade(user) {
@@ -258,10 +281,10 @@ module.exports = class Bot {
 
 		//2. выставить ордер на продажу так, чтобы выйти в профит по takeProffit
 		price = Number(newBuyOrder.fills[0].price)
+
 		this.botSettings.firstBuyPrice = price
 		let profitPrice = this.getProfitPrice(price)
-		let newSellOrder = await this.newSellOrder(profitPrice)	
-
+		let newSellOrder = await this.newSellOrder(profitPrice)
 		this.currentOrder = newSellOrder
 		this.orders.unshift(newSellOrder)
 
@@ -278,8 +301,20 @@ module.exports = class Bot {
 		})
 	}
 
+	isError1013(error) { //MIN_NOTATIAN
+		let code = JSON.parse(JSON.stringify(error)).code
+		console.log(code)
+		return code === -1013
+	}
+
+	isError2010(error) { // insufficient balance
+		let code = JSON.parse(JSON.stringify(error)).code
+		return code === -2010
+	}
+
 	async trade(user) {
 		console.log('___________________________')
+		console.log('qty = ' + this.botSettings.quantity)
 		await this.updateBotParams(user)
 		console.log('___trade is going___')
 		this.currentOrder = await this.getOrder(this.currentOrder.orderId)
@@ -298,13 +333,13 @@ module.exports = class Bot {
 			this.orders = await this.updateOrders(this.orders)
 			if(this.status === CONSTANTS.BOT_STATUS.ACTIVE) {
 				console.warn('___обычный trade___')
-				setTimeout(() => this.trade(user), 5000)
+				setTimeout(() => this.trade(user), CONSTANTS.TIMEOUT)
 			}
 			else if(this.status === CONSTANTS.BOT_STATUS.INACTIVE) {
 				console.warn('___бот выключен___')
 				if(this.currentOrder !== null) {
 					console.warn('-> ждем завершение цикла')
-					setTimeout(() => this.trade(user), 5000)
+					setTimeout(() => this.trade(user), CONSTANTS.TIMEOUT)
 				}
 				else {
 					console.warn('-> цикл завершен')
@@ -327,10 +362,10 @@ module.exports = class Bot {
 					let order = await this.getOrder(orders[i].orderId)
 					if(this.checkFilling(order.status)) {
 						console.log('найден заюзаный страховочный, пересчет')
-						this.canselOrder(this.currentOrder.orderId)
+						await this.canselOrder(this.currentOrder.orderId)
 						this.recountInitialOrder()
+						this.recountQuantity(order.origQty)
 						let newProfitPrice = this.recountProfitPrice(order)
-						let quantity = this.recountQuantity(1)
 						let newSellOrder = await this.newSellOrder(newProfitPrice)
 						this.currentOrder = newSellOrder
 						this.orders.unshift(this.currentOrder)
@@ -418,10 +453,18 @@ module.exports = class Bot {
 		try {
 			let pair = this.getPair()
 			console.log(`close order(${orderId})`)
-			return await this.Client.cancelOrder({
+			let order = await this.getOrder(orderId),
+				side = order.side,
+				qty = order.origQty
+			let cancelOrder = await this.Client.cancelOrder({
 				symbol: pair,
 				orderId: orderId
-			})
+			}) 
+			console.log(cancelOrder, side)
+			if(this.isOrderSell(side)) {
+				this.recountQuantity(qty)
+			}
+			return cancelOrder
 		}
 		catch(error) {
 			console.log(orderId)
@@ -429,16 +472,30 @@ module.exports = class Bot {
 		}
 	}
 
+	isOrderSell(side) {
+		return side === CONSTANTS.ORDER_SIDE.SELL
+	}
+
+	isOrderBuy(side) {
+		return side === CONSTANTS.ORDER_SIDE.BUY
+	}
+
 	async updateOrders(orders) {
 		console.log('круг почета')
 		let pair = this.pair.from + this.pair.to
 		for(let i = 0; i < orders.length; i++) {
 			try{
-				let orderData = await this.Client.getOrder({
-					symbol: pair,
-					orderId: orders[i].orderId
-				})
-				orders[i] = new Order(orderData)
+				// console.log(orders[i].time)
+				if(!orders[i].isUpdate) {
+					console.log('!')
+					let orderData = await this.Client.getOrder({
+						symbol: pair,
+						orderId: orders[i].orderId
+					})
+					let order = new Order(orderData)
+					if(this.checkFailing(order.status) || this.checkFilling(order.status)) order.isUpdate = true
+					orders[i] = order
+				}
 			}
 			catch(error) {
 				console.log(`error (code ${error.code})`)

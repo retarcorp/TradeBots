@@ -86,6 +86,8 @@ const CONSTANTS = {
 	ORDER_TYPE: {
 		LIMIT: 'LIMIT', 
 		MARKET: 'MARKET'
-	}
+	},
+
+	TIMEOUT: 500
 }
 module.exports = CONSTANTS

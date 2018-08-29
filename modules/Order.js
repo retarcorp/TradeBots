@@ -33,7 +33,8 @@ module.exports = class Order {
 		timeInForce = null,
 		type = null,
 		side = null,
-		fills = null
+		fills = null,
+		isUpdate = false
 	}) {
 		this.symbol = symbol
 		this.orderId = orderId
@@ -49,5 +50,6 @@ module.exports = class Order {
 		this.side = side
 		this.fills = fills
 		this.time = time
+		this.isUpdate = isUpdate
 	}
 }

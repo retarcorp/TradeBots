@@ -15,10 +15,7 @@ module.exports = class BotSettings {
 		stopLoss = null,
 		currentOrder = initialOrder,
 		firstBuyPrice = 0,
-		quantity = {
-			current: 0,
-			size: 0
-		}
+		quantity = 0
 	}) {
 		this.tradingSignals = tradingSignals
 		this.initialOrder = initialOrder

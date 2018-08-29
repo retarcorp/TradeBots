@@ -24,9 +24,8 @@
                 return this.bot.state === '1'
             },
             isBotHasOrders() {
-                if(this.order)
                 return this.bot.orders.length &&
-                        this.bot.orders.filter(order => order.status === 'NEW' || order.status === 'PARTIALLY_FILLED').length
+                        this.bot.orders.filter(order => order && (order.status === 'NEW' || order.status === 'PARTIALLY_FILLED')).length
             },
             isBotActive() {
                 if(this.id) {
