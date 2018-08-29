@@ -8,7 +8,9 @@ const store = () =>
     state: {
       isAuthorized: false,
       botsList: [],
-      isActive: false
+      isActive: false,
+      status: '',
+      message: ''
     },
     getters: {
       getSpinerStatus(state) {
@@ -24,6 +26,12 @@ const store = () =>
         return id => {
           return state.botsList.find(bot => bot.botID === id);
         };
+      },
+      getMessage(state) {
+        return state.message;
+      },
+      getStatus(state) {
+        return state.status;
       }
     },
     mutations: {
@@ -52,11 +60,29 @@ const store = () =>
       updateBot(state, payload) {
         const index = state.botsList.findIndex(bot => bot.botID === payload.botID);
         state.botsList[index] = payload
+      },
+      setMessage(state, payload) {
+        state.message = payload;
+      },
+      setStatus(state, payload) {
+        state.status = payload;
+        if( payload === 'ok' || payload === 'info') {
+          setTimeout(function() { 
+            state.status = '';
+          }, 1500);
+        }
+      },
+      clearMessage(state) {
+        state.message = '';
+      },
+      clearStatus(state) {
+        state.status = '';
       }
     },
     actions: {
       setAuthorizedStatus({ commit }, payload) {
         commit("setAuthorized", payload);
+        commit('setStatus', 'ok');
       },
       addBot({ commit }, payload) {
         commit('setSpiner', true);
@@ -66,10 +92,12 @@ const store = () =>
             if (res.status === "ok") {
               commit("addBot", res.data);
               this.$router.push("/bots");
+              commit('setStatus', 'ok');
               commit('setSpiner', false);
-              
             } else {
               console.log(res.message);
+              commit('setStatus', 'error');
+              commit('setMessage', res.message)
               commit('setSpiner', false);
             }
           })
@@ -86,6 +114,9 @@ const store = () =>
             if (res.status === "ok") {
               commit("setBotsList", res.data);
               commit('setSpiner', false);
+              if( this.$router.currentRoute.path === '/bots' ) {
+                commit('setStatus', 'ok');
+              }
               if(res.data.find(bot => bot.status === '1')) {
                 // console.log('im here')
                 
@@ -96,6 +127,8 @@ const store = () =>
             } else {
               console.log(res.message);
               commit('setSpiner', false);
+              commit('setStatus', 'error');
+              commit('setMessage', res.message);
             }
           })
           .catch(e => console.log(e));
@@ -110,10 +143,13 @@ const store = () =>
             if (res.status === "ok") {
               this.$router.push('/bots')
               commit("deleteBot", res.data.botID);
+              commit('setStatus', 'ok');
               commit('setSpiner', false);
             } else {
               console.log(res.message);
               commit('setSpiner', false);
+              commit('setStatus', 'error');
+              commit('setMessage', res.message);
             }
           })
           .catch(e => console.log(e));
@@ -125,9 +161,12 @@ const store = () =>
           .then(res => {
             if (res.status === "ok") {
               commit("updateBot", res.data);
+              commit('setStatus', 'ok');
               commit('setSpiner', false);
             } else {
               commit('setSpiner', false);
+              commit('setStatus', 'error');
+              commit('setMessage', res.message);
             }
           })
           .catch(e => console.log(e));
