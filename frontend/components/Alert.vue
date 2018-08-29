@@ -1,9 +1,9 @@
 <template>
     <div class='alertInfo'>
-        <div v-if="false" class='alertInfo__text alertInfo__text--success'>
+        <div v-if="getStatus === 'ok'" class='alertInfo__text alertInfo__text--success'>
             <p>Выполнено успешно!</p>
         </div>
-        <div v-else-if="false" class='alertInfo__text alertInfo__text--error'>
+        <div v-else-if="getStatus === 'error'" class='alertInfo__text alertInfo__text--error'>
             <p>{{getMessage||'system error'}} </p>
             <span class="close" @click='closeApp'>&times;</span>
         </div>
@@ -15,11 +15,6 @@
 
 <script>
     export default {
-        data() {
-            return {
-
-            }
-        },
         computed: {
             getMessage() {
                 return this.$store.getters.getMessage;
@@ -30,7 +25,7 @@
         },
         methods: {
             closeApp() {
-                this.$store.dispatch('clearStatus');
+                this.$store.commit('clearStatus');
             }
         }
     }

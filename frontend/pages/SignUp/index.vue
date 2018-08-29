@@ -41,14 +41,16 @@
                     })
                     .then(res => {
                         if(res.status === 'ok') {
-                            this.$store.commit('setSpiner', false)
-                            this.$router.push('/signin')
+                            this.$store.commit('setSpiner', false);
+                            this.$router.push('/signin');
                         } else {
-                            this.$store.commit('setSpiner', false)
+                            this.$store.commit('setStatus', 'error');
+                            this.$store.commit('setMessage', res.message);
+                            this.$store.commit('setSpiner', false);
                         }
                     })
                     .catch(e => {
-                        this.$store.commit('setSpiner', false)
+                        this.$store.commit('setSpiner', false);
                     })
                 }
             }

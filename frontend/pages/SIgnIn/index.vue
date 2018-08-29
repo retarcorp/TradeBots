@@ -41,12 +41,14 @@
                         this.$store.commit('setSpiner', false)
                         this.$router.push('/bots')
                     } else {
-                        this.$store.commit('setSpiner', false)
+                        this.$store.commit('setSpiner', false);
+                        this.$store.commit('setStatus', 'error');
+                        this.$store.commit('setMessage', res.message);
                         console.log(res.message)
                     }
                 })
                 .catch(e => {
-                    this.$store.commit('setSpiner', false)
+                    this.$store.commit('setSpiner', false);
                 })
             }
         }
