@@ -142,12 +142,13 @@ export default {
             .then(res => {
                 if(res.status === 'ok') {
                     this.orders = res.data;
-                    commit('setStatus', 'ok');
+                    this.$store.commit('setStatus', 'ok');
                     this.$store.commit('setSpiner', false);
                 } else {
-                    commit('setStatus', 'error');
+                    this.$store.commit('setStatus', 'error');
                 }
             })
+            // .catch( error => this.$store.commit('setMessage', error))
     }
 }
 </script>
