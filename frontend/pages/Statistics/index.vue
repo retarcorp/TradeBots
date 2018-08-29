@@ -146,9 +146,10 @@ export default {
                     this.$store.commit('setSpiner', false);
                 } else {
                     this.$store.commit('setStatus', 'error');
+                    this.$store.commit('setMessage', res.message);
                 }
             })
-            // .catch( error => this.$store.commit('setMessage', error))
+            .catch( error => console.log(error))
     }
 }
 </script>
