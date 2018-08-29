@@ -82,7 +82,6 @@ const store = () =>
     actions: {
       setAuthorizedStatus({ commit }, payload) {
         commit("setAuthorized", payload);
-        commit('setStatus', 'ok');
       },
       addBot({ commit }, payload) {
         commit('setSpiner', true);
@@ -97,7 +96,7 @@ const store = () =>
             } else {
               console.log(res.message);
               commit('setStatus', 'error');
-              commit('setMessage', res.message)
+              commit('setMessage', res.message);
               commit('setSpiner', false);
             }
           })
@@ -114,9 +113,6 @@ const store = () =>
             if (res.status === "ok") {
               commit("setBotsList", res.data);
               commit('setSpiner', false);
-              if( this.$router.currentRoute.path === '/bots' ) {
-                commit('setStatus', 'ok');
-              }
               if(res.data.find(bot => bot.status === '1')) {
                 // console.log('im here')
                 
@@ -127,8 +123,6 @@ const store = () =>
             } else {
               console.log(res.message);
               commit('setSpiner', false);
-              commit('setStatus', 'error');
-              commit('setMessage', res.message);
             }
           })
           .catch(e => console.log(e));
