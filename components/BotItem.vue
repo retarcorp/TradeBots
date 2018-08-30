@@ -13,7 +13,7 @@
             id: {
                 type: String,
                 required: true,
-                default: 'add-new'
+                default: 'Novy'//'add-new'
             }
         },
         computed: {

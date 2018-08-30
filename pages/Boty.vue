@@ -50,7 +50,7 @@ export default {
     },
     methods: {
         onAddNewBot() {
-            this.$router.push('/Boty/Novyi')
+            this.$router.push('/Boty/Novy')
            
         }
     },

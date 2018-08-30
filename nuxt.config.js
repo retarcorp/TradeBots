@@ -69,11 +69,11 @@ module.exports = {
     mode: "out-in"
   }
 
-  ,serverMiddleware: [
-    {
-      path: '/*',
-      handler: '~index.js',
-    }
-  ]
+  // ,serverMiddleware: [
+  //   {
+  //     path: '/*',
+  //     handler: '~index.js',
+  //   }
+  // ]
 };
 
