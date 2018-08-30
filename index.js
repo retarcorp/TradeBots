@@ -25,26 +25,25 @@ var statistics = require('./routes/statistics');
 var app = express();
 
 
-app.use(cors({
-	origin: 'http://localhost:3000',
-	credentials: true
-  }));
+// app.use(cors({
+// 	origin: 'http://localhost:3000',
+// 	credentials: true
+//   }));
 app.use(cookieParser());
 app.use(expressSession({secret: 'kitty secret'}));
 app.use(express.static(__dirname + '/public'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.disable('x-powered-by');
-app.use((req, res, next) => {
-	res.header('Access-Control-Allow-Origin', 'http://localhost:3000');
-	res.header('Access-Control-Allow-Credentials', 'true')
-	next();
-})
+// app.use((req, res, next) => {
+// 	res.header('Access-Control-Allow-Origin', 'http://localhost:3000');
+// 	res.header('Access-Control-Allow-Credentials', 'true')
+// 	next();
+// })
 
-app.set('port', process.env.PORT || 8072)
+app.set('port', process.env.PORT || 9080)
 
-
-app.get('/', index)
+// app.get('/', index)
 
 app.get('/bots/getBotsList', bots)
 app.post('/bots/add', bots)
@@ -125,8 +124,6 @@ app.use(function(err, req, res, next){
 	res.sendFile('500.html', {root: 'public/'});  
 }); 
 
-app.server = http.createServer(app);
-app.server.listen(app.get('port'));
-
-var WSS = require('./modules/WSS');
-WSS.init(app.server);
+//app.listen();
+//app.server = http.createServer(app);
+//app.listen(app.get('port'));
