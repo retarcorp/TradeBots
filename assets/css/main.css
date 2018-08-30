@@ -1,0 +1,24 @@
+@import '@/assets/css/base/_reset.css';
+@import '@/assets/css/base/_typography.css';
+
+@import '@/assets/css/utils/_helpers.css';
+@import '@/assets/css/utils/_variables.css';
+
+@import '@/assets/css/components/_buttons.css';
+@import '@/assets/css/components/_forms.css';
+@import '@/assets/css/components/_tables.css';
+@import '@/assets/css/components/_tabs.css';
+@import '@/assets/css/components/_checkbox.css';
+@import '@/assets/css/components/_header.css';
+
+@import '@/assets/css/layout/_grid.css';
+
+@import '@/assets/css/pages/_signin.css';
+@import '@/assets/css/pages/_bots.css';
+@import '@/assets/css/pages/_account.css';
+@import '@/assets/css/pages/_incomes.css';
+
+@import '@/assets/css/pages/admin/_signin.css';
+@import '@/assets/css/pages/admin/_rates.css';
+
+@import '@/assets/css/transitions/allpages.css';

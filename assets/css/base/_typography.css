@@ -1,0 +1,57 @@
+.title {
+    color: var(--color-primary)
+}
+
+.title--big {
+    font-size: 2.4rem;
+    line-height: 2.8rem;
+}
+
+.title--medium {
+    font-size: 2rem;
+    line-height: 2.3rem;
+}
+
+.title--small {
+    font-size: 1.8rem;
+    line-height: 2.1rem;
+}
+
+.title--extra-small {
+    font-size: 1.4rem;
+    line-height: 1.6rem; 
+}
+
+.label {
+    display: inline-block;
+    font-size: 1.5rem;
+    line-height: 1.8rem;
+    color: inherit;
+    margin-bottom: 1.1rem;
+}
+
+.text {
+    font-size: 1.4rem;
+    line-height: 1.6rem;
+    color: inherit;
+}
+
+.text--success {
+    color: var(--color-success)
+}
+
+.text--danger {
+    color: var(--color-danger)
+}
+
+.text-active {
+    color: var(--color-active)
+}
+
+.link,
+.link:hover {
+    color: inherit;
+    text-decoration: none;
+    font-size: 1.4rem;
+    line-height: 1.6rem;
+}

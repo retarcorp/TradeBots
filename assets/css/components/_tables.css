@@ -1,0 +1,27 @@
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.table__tr {
+    display: flex;
+    border-bottom: 1px solid var(--border-color-primary);
+}
+.table__tr:last-child {
+    border-bottom: none;
+}
+.table__td,
+.table__th {
+    flex: 1;
+    font-size: 1.4rem;
+    font-weight: 500;
+    padding: 2rem 0;
+    text-align: start;
+    display: flex;
+    align-items: center;
+}
+
+.table__button {
+    padding: .5rem 1rem;
+    font-size: 1.2rem;
+    margin-bottom: 0
+}

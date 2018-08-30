@@ -1,0 +1,32 @@
+.bots__search-wrapper {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.bots__search-icon {
+    display: block;
+    align-self: stretch;
+    padding: 1.3rem 1.8rem;
+    background-color: var(--border-color-light);
+}
+
+.bots__add-button {
+    width: 100%;
+    margin-top: 3rem;
+    font-weight: 700;
+}
+
+.newBot {
+    padding: 1.4rem;
+    border: 1px solid var(--border-color-light)
+}
+
+.newBot__title {
+    margin-bottom: 2rem;
+}
+
+.newBot__mode {
+    padding-bottom: 2.3rem;
+    border-bottom: 1px solid var(--bg-color-primary)
+}

@@ -1,0 +1,36 @@
+.m-auto {
+    margin: auto
+}
+
+.mx-auto {
+    margin: 0 auto
+}
+
+.absolute-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.border-right {
+    border-right: 1px solid
+}
+
+.pl-3 {
+    padding-left: 3rem
+}
+
+.text-right {
+    text-align: right
+}
+
+.text-center {
+    text-align: center;
+}
+
+.d-flex {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+}

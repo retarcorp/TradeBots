@@ -1,0 +1,94 @@
+/* Binance */
+
+.binanse__title {
+    margin-bottom: 1.3rem;
+}
+
+.binance__sub-title {
+    margin-bottom: 3rem;
+}
+
+.binance__form {
+    max-width: 31.7rem;
+    width: 100%;
+}
+
+.form__actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 2rem;
+}
+/* Settings */
+.settings__title {
+    margin-bottom: 3.6rem;
+}
+
+.settings__form {
+    max-width: 31.7rem;
+    width: 100%;
+}
+
+/* Tariff */
+.tariff__title {
+    margin-bottom: 4rem;
+}
+
+.tariff__container {
+    display: flex;
+    flex-wrap: wrap;
+    max-width: 57rem;
+    justify-content: space-around;
+}
+
+.tariff__item {
+    max-width: 24.4rem;
+    width: 100%;
+    padding: 1.3rem 1.8rem;
+    border: 1px solid var(--border-color-primary);
+    margin-bottom: 2.3rem;
+}
+
+.tariff__item-title {
+    margin-bottom: 3rem;
+    margin-top: 5rem;
+}
+
+.list-capabilities__item {
+    display: flex;
+    align-items: center;
+    list-style-type: none;
+    position: relative;
+    font-size: 2rem;
+    font-weight: 500;
+    padding-left: 4rem;
+}
+
+.list-capabilities__item:not(:last-child){
+    margin-bottom: 1.7rem;
+}
+
+.tariff__select-button {
+    display: block;
+    background-color: var(--bg-color-dark);
+    text-align: center;
+    font-weight: 500;
+    margin: 3.3rem auto 0;
+}
+
+/* Balance */
+.balance__table {
+    margin: 1rem auto;
+}
+
+.balance__header {
+    margin-bottom: 2.2rem;
+}
+
+.balance__title {
+    margin-bottom: 2.5rem;
+}
+
+.code-purse {
+    display: block;
+    margin-top: 1.5rem;
+}
