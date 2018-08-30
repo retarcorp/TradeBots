@@ -1,0 +1,2 @@
+Successfully init
+Successfully conected to MongoDB

@@ -1,0 +1,39 @@
+Thu, 30 Aug 2018 13:53:07 GMT express-session deprecated undefined resave option; provide resave option at server.js:44:9
+Thu, 30 Aug 2018 13:53:07 GMT express-session deprecated undefined saveUninitialized option; provide saveUninitialized option at server.js:44:9
+(node:3560) DeprecationWarning: current URL string parser is deprecated, and will be removed in a future version. To use the new parser, pass option { useNewUrlParser: true } to MongoClient.connect.
+Thu, 30 Aug 2018 13:53:07 GMT express-session deprecated undefined resave option; provide resave option at index.js:33:9
+Thu, 30 Aug 2018 13:53:07 GMT express-session deprecated undefined saveUninitialized option; provide saveUninitialized option at index.js:33:9
+TypeError: Cannot read property 'collection' of undefined
+    at Object.select (C:\inetpub\wwwroot\TradeBots\modules\Mongo.js:75:22)
+    at Object.getBotList (C:\inetpub\wwwroot\TradeBots\modules\Users.js:114:10)
+    at router.get (C:\inetpub\wwwroot\TradeBots\routes\bots.js:8:13)
+    at Layer.handle [as handle_request] (C:\inetpub\wwwroot\TradeBots\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\inetpub\wwwroot\TradeBots\node_modules\express\lib\router\route.js:137:13)
+    at Route.dispatch (C:\inetpub\wwwroot\TradeBots\node_modules\express\lib\router\route.js:112:3)
+    at Layer.handle [as handle_request] (C:\inetpub\wwwroot\TradeBots\node_modules\express\lib\router\layer.js:95:5)
+    at C:\inetpub\wwwroot\TradeBots\node_modules\express\lib\router\index.js:281:22
+    at Function.process_params (C:\inetpub\wwwroot\TradeBots\node_modules\express\lib\router\index.js:335:12)
+    at next (C:\inetpub\wwwroot\TradeBots\node_modules\express\lib\router\index.js:275:10)
+    at Function.handle (C:\inetpub\wwwroot\TradeBots\node_modules\express\lib\router\index.js:174:3)
+    at router (C:\inetpub\wwwroot\TradeBots\node_modules\express\lib\router\index.js:47:12)
+    at Layer.handle [as handle_request] (C:\inetpub\wwwroot\TradeBots\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\inetpub\wwwroot\TradeBots\node_modules\express\lib\router\route.js:137:13)
+    at Route.dispatch (C:\inetpub\wwwroot\TradeBots\node_modules\express\lib\router\route.js:112:3)
+    at Layer.handle [as handle_request] (C:\inetpub\wwwroot\TradeBots\node_modules\express\lib\router\layer.js:95:5)
+TypeError: Cannot read property 'collection' of undefined
+    at Object.select (C:\inetpub\wwwroot\TradeBots\modules\Mongo.js:75:22)
+    at Object.getBotList (C:\inetpub\wwwroot\TradeBots\modules\Users.js:114:10)
+    at router.get (C:\inetpub\wwwroot\TradeBots\routes\bots.js:8:13)
+    at Layer.handle [as handle_request] (C:\inetpub\wwwroot\TradeBots\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\inetpub\wwwroot\TradeBots\node_modules\express\lib\router\route.js:137:13)
+    at Route.dispatch (C:\inetpub\wwwroot\TradeBots\node_modules\express\lib\router\route.js:112:3)
+    at Layer.handle [as handle_request] (C:\inetpub\wwwroot\TradeBots\node_modules\express\lib\router\layer.js:95:5)
+    at C:\inetpub\wwwroot\TradeBots\node_modules\express\lib\router\index.js:281:22
+    at Function.process_params (C:\inetpub\wwwroot\TradeBots\node_modules\express\lib\router\index.js:335:12)
+    at next (C:\inetpub\wwwroot\TradeBots\node_modules\express\lib\router\index.js:275:10)
+    at Function.handle (C:\inetpub\wwwroot\TradeBots\node_modules\express\lib\router\index.js:174:3)
+    at router (C:\inetpub\wwwroot\TradeBots\node_modules\express\lib\router\index.js:47:12)
+    at Layer.handle [as handle_request] (C:\inetpub\wwwroot\TradeBots\node_modules\express\lib\router\layer.js:95:5)
+    at next (C:\inetpub\wwwroot\TradeBots\node_modules\express\lib\router\route.js:137:13)
+    at Route.dispatch (C:\inetpub\wwwroot\TradeBots\node_modules\express\lib\router\route.js:112:3)
+    at Layer.handle [as handle_request] (C:\inetpub\wwwroot\TradeBots\node_modules\express\lib\router\layer.js:95:5)

@@ -1,0 +1,21 @@
+Successfully init
+Successfully init
+Successfully conected to MongoDB
+Successfully conected to MongoDB
+1535449745061
+{ name: 'asd@asd.asd', admin: false } Session {
+  cookie: 
+   { path: '/',
+     _expires: null,
+     originalMaxAge: null,
+     httpOnly: true },
+  logged: true,
+  user: { name: 'asd@asd.asd', admin: false } }
+{ name: 'asd@asd.asd', admin: false } Session {
+  cookie: 
+   { path: '/',
+     _expires: null,
+     originalMaxAge: null,
+     httpOnly: true },
+  logged: true,
+  user: { name: 'asd@asd.asd', admin: false } }

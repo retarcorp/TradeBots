@@ -1,0 +1,3 @@
+Thu, 30 Aug 2018 14:59:19 GMT express-session deprecated undefined resave option; provide resave option at server.js:44:9
+Thu, 30 Aug 2018 14:59:19 GMT express-session deprecated undefined saveUninitialized option; provide saveUninitialized option at server.js:44:9
+(node:6652) DeprecationWarning: current URL string parser is deprecated, and will be removed in a future version. To use the new parser, pass option { useNewUrlParser: true } to MongoClient.connect.
