@@ -55,34 +55,42 @@ module.exports = class Bot {
 	}
 
 	async changeStatus(nextStatus, user) {
-		let message = ''
+		let message = '',
+			status = ''
 		if(this.checkForActivate(nextStatus)) {
 			this.status = nextStatus
 			console.log('АКТИВ')
 			if(this.state === CONSTANTS.BOT_STATE.MANUAL) {
-				message = 'bot is starting trade (type MANUAL)'
+				status = 'ok'	
+				message = 'Бот запущен (РУЧНОЙ)'
 				this.startManual(user)
 			}
 			else if(this.state === CONSTANTS.BOT_STATE.AUTO) {
-				message = 'bot is starting trade (type AUTO)'
+				status = 'ok'	
+				message = 'Бот запущен (АВТО)'
 				this.startAuto(user)
 			}
 			else {
-				message = "bot isn't starting (incorrect type)"
+				status = 'error'	
+				message = "Ошибка (НЕИЗВЕСТНЫЙ ТИП БОТА)"
 				this.status = CONSTANTS.BOT_STATUS.INACTIVE
 			}
 		}
 		else if(this.checkForDeactivate(nextStatus)) {
 			this.status = nextStatus
-			message = "bot is deactivated (wait for the end)"
+			status = 'info'
+			message = "Бот перестанет работать после завершения текущего цикла"
 			console.log('ИНАКТИВ')
 			await this.syncUpdateBot(user)
 		}
 		else {
-			message = "error (perhaps you are trying to disable the bot before it completes its previous cycle)"
+			this.status = CONSTANTS.BOT_STATUS.INACTIVE
+			status = 'error'
+			message = "Ошибка (Возможно вы пытаетесь включить бота, который не завершил свой последний цикл)"
 		}
 		return {
-			status: this.status,
+			status: status,
+			data: { status: this.status },
 			message: message
 		}
 	}
@@ -197,11 +205,20 @@ module.exports = class Bot {
 			return new Order(newBuyOrder)
 		}
 		catch(error) {
-			if(this.isError1013(error)) {
-				let order = await this.newBuyOrder(price, type, this.toDecimal(quantity + 0.01, 2))
+			console.log(this.errorCode(error))
+			if(quantity > 0) {
+				let step = 0.01
+				if(
+					(this.isError1013(error) && this.isError2010(prevError)) ||
+					(this.isError1013(prevError) && this.isError2010(error))
+				) return await this.disableBot('Невозможно купить монеты')
+				else if(this.isError1013(error)) quantity += step
+				else if(this.isError2010(error)) quantity -= step
+
+				let order = await this.newSellOrder(price, type, this.toDecimal(quantity, 2), error)
 				return order
 			}
-			return {}
+			else return {}
 		}
 	}
 
@@ -225,13 +242,13 @@ module.exports = class Bot {
 			return new Order(newSellOrder)
 		}
 		catch(error) {
-			console.log(error)
+			console.log(this.errorCode(error))
 			if(quantity > 0) {
 				let step = 0.01
 				if(
 					(this.isError1013(error) && this.isError2010(prevError)) ||
 					(this.isError1013(prevError) && this.isError2010(error))
-				) return {}
+				) return await this.disableBot('Невозможно продать монеты')
 				else if(this.isError1013(error)) quantity += step
 				else if(this.isError2010(error)) quantity -= step
 
@@ -261,6 +278,10 @@ module.exports = class Bot {
 
 	async getBinanceTime() {
 		return await this.Client.time()
+	}
+
+	async firstBuyOrder(price) {
+		
 	}
 
 	async startTrade(user) {
@@ -301,13 +322,17 @@ module.exports = class Bot {
 		})
 	}
 
-	isError1013(error) { //MIN_NOTATIAN
+	errorCode(error = new Error('default err')) {
+		return JSON.parse(JSON.stringify(error)).code
+	}
+
+	isError1013(error = new Error('default err')) { //MIN_NOTATIAN
 		let code = JSON.parse(JSON.stringify(error)).code
 		console.log(code)
 		return code === -1013
 	}
 
-	isError2010(error) { // insufficient balance
+	isError2010(error = new Error('default err')) { // insufficient balance
 		let code = JSON.parse(JSON.stringify(error)).code
 		return code === -2010
 	}
@@ -455,20 +480,39 @@ module.exports = class Bot {
 			console.log(`close order(${orderId})`)
 			let order = await this.getOrder(orderId),
 				side = order.side,
-				qty = order.origQty
-			let cancelOrder = await this.Client.cancelOrder({
-				symbol: pair,
-				orderId: orderId
-			}) 
-			console.log(cancelOrder, side)
-			if(this.isOrderSell(side)) {
-				this.recountQuantity(qty)
+				qty = order.origQty,
+				status = '',
+				message = ''
+			try {
+				let cancelOrder = await this.Client.cancelOrder({
+					symbol: pair,
+					orderId: orderId
+				})
+				console.log(cancelOrder, side)
+				if(this.isOrderSell(side)) {
+					this.recountQuantity(qty)
+				}
+				status = 'ok'
+				message = `ордер ${cancelOrder.orderId} завершен`
 			}
-			return cancelOrder
+			catch(error) {
+				console.log(this.errorCode(error))
+				status = 'error'
+				message = `ошибка при завершении ордера ${cancelOrder.orderId}`
+			}
+			return {
+				status: status,
+				message: message,
+				data: { order: cancelOrder }
+			}
 		}
 		catch(error) {
-			console.log(orderId)
-			console.log(error)
+			console.log(this.errorCode(error))
+			return {
+				status: 'error',
+				message: error,
+				data: { orderId: orderId }
+			}
 		}
 	}
 
@@ -542,9 +586,17 @@ module.exports = class Bot {
 			await this.syncUpdateBot(user)
 			// await this.disableBot('ОТМЕНИТЬ И ПРОДАТЬ')
 			console.log('cancel end____')
+			return {
+				status: 'ok',
+				message: 'Все ордера отменены и монеты распроданы по рынку'
+			}
 		}
 		catch(error) {
-			console.log(error)
+			console.log(this.errorCode(error))
+			return {
+				status: 'error',
+				message: `Ошибка при "отменить и продать все"(код ошибки ${this.errorCode(error)}) :: ${error}`
+			}
 		}
 	}
 
@@ -563,7 +615,8 @@ module.exports = class Bot {
 	}
 
 	async syncUpdateBot(user) {
-		console.log('update bot...')
+		console.log('sync update bot...')
+		console.log(this.status)
 		user = { name: user.name }
 		let data = await Mongo.syncSelect(user, 'users')
 		data = data[0]
@@ -573,7 +626,7 @@ module.exports = class Bot {
 		})
 		data.bots[index] = tempBot
 		await Mongo.syncUpdate({name: data.name}, data, 'users')
-		console.log('update bot end')
+		console.log('sync update bot end')
 	}
 
 	async updateBotParams(user) {

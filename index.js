@@ -43,7 +43,6 @@ app.disable('x-powered-by');
 
 app.set('port', process.env.PORT || 9080)
 
-// app.get('/', index)
 
 app.get('/bots/getBotsList', bots)
 app.post('/bots/add', bots)
@@ -64,51 +63,7 @@ app.post('/signup', signup)
 
 app.get('/incomes', incomes)
 app.get('/statistics', statistics)
-app.get('/test', (req, res, next) => {
-	let c = binanceAPI({
-		apiKey: 'pMK15sHEO3jS9RE9x4KA5zFfdxCKcxk9gDgyf4BhvGrhvEUn3wiZMTYcuqLEAkNh',
-		apiSecret: 'A7pvWxoe0JzHfM1rvF7D2ymM3ZFUvdlOyLRmjeZ7m4gfCWaTOmLBwHcwMUSw3Znp'
-	})
-	c.time().then(time => console.log(time))
-	//0,0000182
-	// c.orderTest({
-	// 	symbol: 'BNBBTC',
-	// 	price: 0.0015642,
-	// 	quantity: 1,
-	// 	icebergQty
-	// })
 
-	// c.allOrders({
-	// 	symbol: 'BNBBTC'
-	// }).then(data => console.log(data))
-	// let symbol = "ETHBTC"
-	// c.order({
-	// 	symbol: symbol,
-	// 	side: 'BUY',
-	// 	price: 0.042,
-	// 	quantity: 0.024
-	// }).then(order => {
-	// 	console.log(order)
-	// })
-	// c.cancelOrder({
-	// 	symbol: symbol,
-	// 	orderId: 196357393
-	// }).then(data => console.log(data))
-	
-	// .then(res => console.log(then))
-
-	// c.allBookTickers()
-	// .then(res => console.log(then))
-	// c.orderTest({
-	// 	symbol: 'BNBBTC',
-	// 	side: 'BUY',
-	// 	quantity: 100,//Number(this.botSettings.amount),
-	// 	price: 0.0015520//Number(this.botSettings.initialOrder)
-	// })
-	// .then( data => console.log(data))
-	// .catch( err => console.log(err))
-	res.send('lol');
-});
 
 
 // пользовательская страница 404 

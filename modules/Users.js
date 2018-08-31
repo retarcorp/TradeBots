@@ -184,10 +184,7 @@ let Users = {
 					data.bots[index].changeStatus(botData.status, data)
 					.then((d) => {
 						Mongo.update({name: data.name}, data, 'users', (data) => {
-							callback({
-								status: 'ok',
-								data: { status: newBot.status }
-							})
+							callback(d)
 						})
 					})
 				})
@@ -208,10 +205,11 @@ let Users = {
 					const index = data.bots.findIndex(bot => bot.botID === resData.botID)
 					let bot = new Bot(data.bots[index], data)
 					bot.canselOrder(resData.orderId)
-					.then(order => {
+					.then(d => {
 						callback({ 
-							status: 'ok',
-							data: order
+							status: d.status,
+							message: d.message,
+							data: d.order
 						})
 					})
 					.catch(error => callback({ 
@@ -233,10 +231,8 @@ let Users = {
 					const index = data.bots.findIndex(bot => bot.botID === resData.botID)
 					let bot = new Bot(data.bots[index], data)
 					bot.cancelAllOrders(user)
-					.then(data => {
-						callback({
-							status: 'ok'
-						})
+					.then(d => {
+						callback(d)
 					})
 					.catch(error => {
 						callback({
@@ -253,30 +249,34 @@ let Users = {
 	}
 
 	,async sendClientStatistics(user) {
-		let key = Crypto.decipher(user.binanceAPI.key,  Crypto.getKey(user.regDate, user.name))
-		let secret = Crypto.decipher(user.binanceAPI.secret,  Crypto.getKey(user.regDate, user.name))
-
-		let Client = binanceAPI({
-			apiKey: key,
-			apiSecret: secret
-		})
+		let Client = this.getClientAPI(user)
 
 		let statistics = []
 		for(let i = 0; i < CONSTANTS.PAIRS.length; i++) {
 			let symbol = CONSTANTS.PAIRS[i]
+			let list = []
 			try {
-				let list = await Client.allOrders({symbol})
-				statistics.push(...list)
+				list = await Client.allOrders({symbol})
 			}
 			catch(error) {
 				console.log(error)
 			}
+			statistics.push(...list)
 		}
-		let res = {
+		return {
 			status: 'ok',
 			data: statistics
 		}
-		return res
+	}
+
+	,getClientAPI(user) {
+		let key = Crypto.decipher(user.binanceAPI.key,  Crypto.getKey(user.regDate, user.name))
+		let secret = Crypto.decipher(user.binanceAPI.secret,  Crypto.getKey(user.regDate, user.name))
+
+		return binanceAPI({
+			apiKey: key,
+			apiSecret: secret
+		})
 	}
 
 	,getClientStatistics(user, callback) {
