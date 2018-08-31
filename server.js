@@ -17,7 +17,7 @@ const Mongo = require('./modules/Mongo').init();
 // const Users = require('./modules/Users');
 // const Crypto = require('./modules/Crypto');
 // const Binance = require('./modules/Binance');
-// let binanceAPI = require('binance-api-node').default;
+let binanceAPI = require('binance-api-node').default;
 
 //Routers
 var signin = require('./routes/signin');
@@ -64,6 +64,15 @@ app.post('/signup', signup)
 
 app.get('/bots/getBotsList', bots)
 app.get('/statistics', statistics)
+
+app.get('/test', (req, res, next) => {
+	let c = binanceAPI({
+		apiKey: 'pMK15sHEO3jS9RE9x4KA5zFfdxCKcxk9gDgyf4BhvGrhvEUn3wiZMTYcuqLEAkNh',
+		apiSecret: 'A7pvWxoe0JzHfM1rvF7D2ymM3ZFUvdlOyLRmjeZ7m4gfCWaTOmLBwHcwMUSw3Znp'
+	})
+	c.exchangeInfo().then( data => console.log(data.rateLimits))
+	res.send('lol')
+})
 
 app.use(nuxt.render);
 app.listen(process.env.PORT || 8072);
