@@ -38,7 +38,7 @@ module.exports = {
     ["@nuxtjs/axios"]
   ],
   axios: {
-    baseURL: "http://localhost:8072/",
+    baseURL: "/",
     credentials: true,
     withCredentials: true
   },
@@ -68,5 +68,12 @@ module.exports = {
     name: "page",
     mode: "out-in"
   }
+
+  // ,serverMiddleware: [
+  //   {
+  //     path: '/*',
+  //     handler: '~index.js',
+  //   }
+  // ]
 };
 

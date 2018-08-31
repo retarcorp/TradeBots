@@ -8,7 +8,7 @@
         </div>
         <div class="d-flex">
             <span class="auth-form__forgot-password">Забыли пароль?</span>
-            <p class="auth-form__not-have-account"><nuxt-link to="/signup" class="link">Регистрация</nuxt-link></p>
+            <p class="auth-form__not-have-account"><nuxt-link to="/Registratsia" class="link">Регистрация</nuxt-link></p>
         </div>
     </form>
 </template>
@@ -39,7 +39,7 @@
                     if(res.status === 'ok') {
                         this.$store.dispatch('setAuthorizedStatus', true)
                         this.$store.commit('setSpiner', false)
-                        this.$router.push('/bots')
+                        this.$router.push('/Boty')
                     } else {
                         this.$store.commit('setSpiner', false);
                         this.$store.commit('setStatus', 'error');

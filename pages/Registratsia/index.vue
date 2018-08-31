@@ -11,7 +11,7 @@
                 :class="{'button--disabled': !isFormValid}"
                 :disabled="!isFormValid">Регистрация</button>
         </div>
-        <p class="form__question">Уже есть аккаунт? <nuxt-link to="/signin" class="link">Войти</nuxt-link></p>
+        <p class="form__question">Уже есть аккаунт? <nuxt-link to="/Vhod" class="link">Войти</nuxt-link></p>
     </form>
 </template>
 
@@ -42,7 +42,7 @@
                     .then(res => {
                         if(res.status === 'ok') {
                             this.$store.commit('setSpiner', false);
-                            this.$router.push('/signin');
+                            this.$router.push('/Vhod');
                         } else {
                             this.$store.commit('setStatus', 'error');
                             this.$store.commit('setMessage', res.message);

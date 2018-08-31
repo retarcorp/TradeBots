@@ -1,5 +1,5 @@
 <template>
-    <nuxt-link :to="'/bots/' + id" class="bot">
+    <nuxt-link :to="'/Boty/' + id" class="bot">
         <div class="bot__state" :class="{'bot__state--manual': isBotManual}"></div>
         <div class="bot__name"><slot></slot></div>
         <div v-show="isBotHasOrders" class="bot__status"><img src="~/assets/svg/market.svg"></div>
@@ -13,7 +13,7 @@
             id: {
                 type: String,
                 required: true,
-                default: 'add-new'
+                default: 'Novy'//'add-new'
             }
         },
         computed: {

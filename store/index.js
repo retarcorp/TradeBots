@@ -90,7 +90,7 @@ const store = () =>
           .then(res => {
             if (res.status === "ok") {
               commit("addBot", res.data);
-              this.$router.push("/bots");
+              this.$router.push("/Boty");
               commit('setStatus', 'ok');
               commit('setSpiner', false);
             } else {
@@ -135,7 +135,7 @@ const store = () =>
           })
           .then(res => {
             if (res.status === "ok") {
-              this.$router.push('/bots')
+              this.$router.push('/Boty')
               commit("deleteBot", res.data.botID);
               commit('setStatus', 'ok');
               commit('setSpiner', false);
