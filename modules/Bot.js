@@ -281,7 +281,7 @@ module.exports = class Bot {
 	}
 
 	async firstBuyOrder(price) {
-		
+
 	}
 
 	async startTrade(user) {
@@ -587,7 +587,7 @@ module.exports = class Bot {
 			// await this.disableBot('ОТМЕНИТЬ И ПРОДАТЬ')
 			console.log('cancel end____')
 			return {
-				status: 'ok',
+				status: 'info',
 				message: 'Все ордера отменены и монеты распроданы по рынку'
 			}
 		}

@@ -120,8 +120,6 @@ const store = () =>
             if (res.status === "ok") {
               commit("setBotsList", res.data);
               commit('setSpiner', false);
-              commit('setMessage', res.message);
-              commit('setStatus', 'info');
               if(res.data.find(bot => bot.status === '1')) {
                 // console.log('im here')
                 
@@ -129,7 +127,12 @@ const store = () =>
                   dispatch('setBotsList')
                 }, 5000);
               }
-            } else {
+            } 
+            else if(res.status === 'info') {
+              commit('setMessage', res.message);
+              commit('setStatus', 'info');
+            }
+            else {
               console.log(res.message);
               commit('setMessage', res.message);
               commit('setStatus', 'error');

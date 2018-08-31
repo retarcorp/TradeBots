@@ -204,7 +204,14 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
                     .then(res => {
                         if(res.status === 'ok') {
                             this.$store.dispatch('setBotsList')
-                        } else {
+                        } 
+                        else if(res.status === 'info') {
+                            this.$store.commit('setMessage', res.message)
+                            this.$store.commit('setStatus', res.status)
+                        }
+                        else {
+                            this.$store.commit('setMessage', res.message)
+                            this.$store.commit('setStatus', res.status)
                             this.bot.status = res.data.status;
                         }
                     })
@@ -220,7 +227,18 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
                         .$post('/bots/orders/cancelAll', {
                             'botID': id
                         })
-                        .then( () => this.$store.commit('setSpiner', false) )
+                        .then( res => {
+                            this.$store.commit('setSpiner', false) 
+                            if(res.status === 'info') {
+                                this.$store.commit('setMessage', res.message)
+                                this.$store.commit('setStatus', res.status)
+                            }
+                            else {
+                                this.$store.commit('setMessage', res.message)
+                                this.$store.commit('setStatus', res.status)
+                                this.bot.status = res.data.status;
+                            }
+                        })
                 }
             },
             refuseOrder(ordId, botId) {
