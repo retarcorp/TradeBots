@@ -10,6 +10,7 @@
         <div v-else-if="getStatus === 'info'" class='alertInfo__text alertInfo__text--primary'>
             <p>{{getMessage||'information received'}} </p>
         </div>
+        
     </div> 
 </template>
 
@@ -67,10 +68,55 @@
     background-color: #2196f3;
 }
 
+.alertInfo__text--confirm {
+    display: flex;
+    flex-direction: column;
+    max-width: 500px;
+    min-width: 400px;
+    margin: 0 auto;
+    background-color: #f4c542;
+}
+
 .close {
     color: #fff;
     font-size: 2.8rem;
     font-weight: bold;
+}
+
+.alertInfo__button {
+    color: black;
+    user-select: none;
+    padding: .7em 1.5em; 
+    outline: none;
+    height: 25px;
+    width: 85px; 
+}
+
+.alertInfo__button--ok {
+    background: rgb(212,75,56);
+}
+
+.alertInfo__button--ok {
+    background: white;
+    font-size: 1.6rem;
+    text-align: center;
+    border: none;
+    cursor: pointer;
+}
+
+.alertInfo__button--cancel {
+    background: white;
+    font-size: 1.6rem;
+    text-align: center;
+    border: none;
+    cursor: pointer;
+}
+
+.alertInfo__buttons {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    width: 40%;
 }
 
 .close:hover,

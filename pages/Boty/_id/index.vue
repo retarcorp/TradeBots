@@ -1,5 +1,20 @@
 <template>
     <div>
+        <div v-if="getStatus === 'confirm'" class='confirm-block' @click="checkWindow">
+            <div class='confirm-block__content'>
+                <p>Точно выполнить данную операцию?</p>
+                <div class='confirm-block__buttons-box'>
+                    <button  
+                        class='button button--success'
+                        @click='onConfirm'>Oк
+                    </button>
+                    <button
+                        class='button'
+                        @click='onCancel'>Отмена
+                    </button>
+                </div>
+            </div>
+        </div>
         <section class="bots__right-settings bot__manual">
             <div class="settings__header">
                 <h1 class="bots__name">{{ bot.title }}</h1>
@@ -152,7 +167,7 @@
                         </tbody>
                     </table>
                     <div class="order__buttons">
-                        <button @click.prevent="cancelAll(bot.botID)" class="button button--primary">Отменить и продать</button>
+                        <button @click.prevent="cancelAll" class="button button--primary">Отменить и продать</button>
                     </div>
                 </div>
             </div>
@@ -191,7 +206,13 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
             },
             closedOrders() {
                 return this.bot.orders.filter(order => order !== null && (order.status !== 'NEW' && order.status !== 'PARTIALLY_FILLED'))
-            }
+            },
+            clientAnswer() {
+                return this.$store.getters.getClientAnswer;
+            },
+            getStatus() {
+                return this.$store.getters.getStatus;
+            },
         },
         watch: {
             'bot.status'(value) {
@@ -202,48 +223,55 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
                         'userID': this.$store.getters.getWsId
                     })
                     .then(res => {
-                        if(res.status === 'ok') {
-                            this.$store.dispatch('setBotsList')
-                        } 
-                        else if(res.status === 'info') {
-                            this.$store.commit('setMessage', res.message)
-                            this.$store.commit('setStatus', res.status)
-                        }
-                        else {
-                            this.$store.commit('setMessage', res.message)
-                            this.$store.commit('setStatus', res.status)
-                            this.bot.status = res.data.status;
-                        }
+                        this.checkStatus(res);
                     })
                     .catch(e => console.log(e))
             }
         },
         methods: {
-            cancelAll(id) {
-                let answer = confirm('Точно выполнить данную операцию?');
-                if(answer) {
+            checkWindow(event) {
+                if (event.target.getAttribute('class') === 'confirm-block') {
+                    this.$store.commit('clearStatus');
+                }
+            },
+            checkStatus(res) {
+                if(res.status === 'ok') {
+                    this.$store.dispatch('setBotsList');
+                }
+                else if(res.status === 'info') {
+                    this.$store.commit('setMessage', res.message);
+                    this.$store.commit('setStatus', res.status);
+                } else {
+                    this.$store.commit('setMessage', res.message);
+                    this.$store.commit('setStatus', res.status);
+                    this.bot.status = res.data.status;
+                }
+            },
+            onConfirm() {
+                this.$store.commit('setClientAnswer');
+                this.onCancel();
+                this.cancelAll();
+                this.$store.commit('clearAnswer');
+            },
+            onCancel() {
+                this.$store.commit('clearStatus');
+            },
+            cancelAll() {
+                this.$store.commit('setStatus', 'confirm');
+                if(this.clientAnswer) {
                     this.$store.commit('setSpiner', true);
                     this.$axios
                         .$post('/bots/orders/cancelAll', {
-                            'botID': id
+                            'botID': this.bot.botID
                         })
                         .then( res => {
                             this.$store.commit('setSpiner', false) 
-                            if(res.status === 'info') {
-                                this.$store.commit('setMessage', res.message)
-                                this.$store.commit('setStatus', res.status)
-                            }
-                            else {
-                                this.$store.commit('setMessage', res.message)
-                                this.$store.commit('setStatus', res.status)
-                                this.bot.status = res.data.status;
-                            }
+                            this.checkStatus(res);
                         })
                 }
             },
             refuseOrder(ordId, botId) {
-                let answer = confirm('Точно выполнить данную операцию?');
-                if(answer) {
+                if(this.clientAnswer) {
                     this.$axios
                         .$post('/bots/orders/cancel', {
                             'botID': botId,
@@ -268,8 +296,8 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
             onChangeSettings() {
                 this.isChanging = true;
                 this.bot.state === '1' 
-                ? this.currentComponent = "SettingsManual"
-                : this.currentComponent = "SettingsAutomatic"
+                    ? this.currentComponent = "SettingsManual"
+                    : this.currentComponent = "SettingsAutomatic"
             },
             onSaveSettings() {
                 this.$store.commit('setSpiner', true);
@@ -298,8 +326,45 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
 
 
 /*    */
+.confirm-block {
+    display: block;
+    position: fixed;
+    z-index: 1; 
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%; 
+    overflow: auto; 
+    background-color: rgb(0,0,0);
+    background-color: rgba(0,0,0,0.4); 
+}
 
+.confirm-block__content {
+    background-color: #fefefe;
+    margin: 10% auto; 
+    padding: 20px;
+    border: 1px solid #888;
+    width: 60%; 
+}
 
+.confirm-block__content p {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.confirm-block__buttons-box {
+    display: flex;
+    justify-content: center;
+}
+
+.button:not(:last-child) {
+    margin-right: 25px;
+}
+
+.confirm-block__buttons-box button{
+    height: 3rem;
+    width: 10rem;
+}
 /* TABS BAR */
 
 .overflow {

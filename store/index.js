@@ -11,7 +11,8 @@ const store = () =>
       isActive: false,
       status: '',
       message: '',
-      statisticsList: []
+      statisticsList: [],
+      clientAnswer: false
     },
     getters: {
       getSpinerStatus(state) {
@@ -36,6 +37,9 @@ const store = () =>
       },
       getStatisticsList(state) {
         return state.statisticsList;
+      },
+      getClientAnswer(state) {
+        return state.clientAnswer;
       }
     },
     mutations: {
@@ -73,7 +77,7 @@ const store = () =>
         if( payload === 'ok' || payload === 'info') {
           setTimeout(function() { 
             state.status = '';
-          }, 1500);
+          }, 1000);
         }
       },
       setStatisticsList(state, payload) {
@@ -84,13 +88,19 @@ const store = () =>
       },
       clearStatus(state) {
         state.status = '';
+      },
+      setClientAnswer(state) {
+        state.clientAnswer = true;
+      },
+      clearAnswer(state) {
+        state.clientAnswer = false;
       }
     },
     actions: {
       setAuthorizedStatus({ commit }, payload) {
         commit("setAuthorized", payload);
       },
-      addBot({ commit }, payload) {
+      addBot({ commit, dispatch }, payload) {
         commit('setSpiner', true);
         this.$axios
           .$post("/bots/add", payload)
@@ -101,10 +111,7 @@ const store = () =>
               commit('setStatus', 'ok');
               commit('setSpiner', false);
             } else {
-              console.log(res.message);
-              commit('setStatus', 'error');
-              commit('setMessage', res.message);
-              commit('setSpiner', false);
+              dispatch('lounchBadMutations');
             }
           })
           .catch(e => console.log(e));
@@ -122,26 +129,20 @@ const store = () =>
               commit('setSpiner', false);
               if(res.data.find(bot => bot.status === '1')) {
                 // console.log('im here')
-                
                 setTimeout(() => {
                   dispatch('setBotsList')
                 }, 5000);
               }
-            } 
-            else if(res.status === 'info') {
+            } else if(res.status === 'info') {
               commit('setMessage', res.message);
               commit('setStatus', 'info');
-            }
-            else {
-              console.log(res.message);
-              commit('setMessage', res.message);
-              commit('setStatus', 'error');
-              commit('setSpiner', false);
+            } else {
+              dispatch('lounchBadMutations');
             }
           })
           .catch(e => console.log(e));
       },
-      deleteBot({ commit }, payload) {
+      deleteBot({ commit, dispatch }, payload) {
         commit('setSpiner', true);
         this.$axios
           .$post("/bots/delete", {
@@ -154,30 +155,33 @@ const store = () =>
               commit('setStatus', 'ok');
               commit('setSpiner', false);
             } else {
-              console.log(res.message);
-              commit('setSpiner', false);
-              commit('setStatus', 'error');
-              commit('setMessage', res.message);
+              dispatch('lounchBadMutations');
             }
           })
           .catch(e => console.log(e));
       },
-      updateBot({ commit }, payload) {
+      updateBot({ commit, dispatch }, payload) {
         commit('setSpiner', true);
         this.$axios
           .$post("/bots/update", payload)
           .then(res => {
             if (res.status === "ok") {
-              commit("updateBot", res.data);
-              commit('setStatus', 'ok');
-              commit('setSpiner', false);
+              dispatch('lounchGoodMutations', res.data);
             } else {
-              commit('setSpiner', false);
-              commit('setStatus', 'error');
-              commit('setMessage', res.message);
+              dispatch('lounchBadMutations');
             }
           })
           .catch(e => console.log(e));
+      },
+      lounchGoodMutations({commit}, payload) {
+        commit("updateBot", payload);
+        commit('setStatus', 'ok');
+        commit('setSpiner', false);
+      },
+      lounchBadMutations({commit}) {
+        commit('setSpiner', false);
+        commit('setStatus', 'error');
+        commit('setMessage', res.message);
       }
     }
   });

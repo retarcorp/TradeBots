@@ -85,6 +85,10 @@ export default {
     .margin {
         margin-left: 0px;
     }
+
+    .bots__add-button {
+        padding-bottom: 15px; 
+    }
 }
 
 @media screen and (min-width: 1240px) {

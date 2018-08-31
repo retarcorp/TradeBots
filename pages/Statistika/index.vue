@@ -146,11 +146,13 @@ export default {
                 if(res.status === 'ok') {
                     this.orders = res.data;
                     this.$store.commit('setStatisticsList', this.orders);
+                    this.$store.commit('setMessage', res.message);
+                    this.$store.commit('setStatus', res.status);
                     this.$store.commit('setSpiner', false);
                 } 
                 else if(res.status === 'info') {
                     this.$store.commit('setMessage', res.message);
-                    this.$store.commit('setStatus', 'info');
+                    this.$store.commit('setStatus', res.status);
                 }
                 else {
                     this.$store.commit('setStatus', 'error');
