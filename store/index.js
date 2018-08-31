@@ -10,7 +10,8 @@ const store = () =>
       botsList: [],
       isActive: false,
       status: '',
-      message: ''
+      message: '',
+      statisticsList: []
     },
     getters: {
       getSpinerStatus(state) {
@@ -32,6 +33,9 @@ const store = () =>
       },
       getStatus(state) {
         return state.status;
+      },
+      getStatisticsList(state) {
+        return state.statisticsList;
       }
     },
     mutations: {
@@ -71,6 +75,9 @@ const store = () =>
             state.status = '';
           }, 1500);
         }
+      },
+      setStatisticsList(state, payload) {
+        state.statisticsList = payload;
       },
       clearMessage(state) {
         state.message = '';
@@ -113,6 +120,8 @@ const store = () =>
             if (res.status === "ok") {
               commit("setBotsList", res.data);
               commit('setSpiner', false);
+              commit('setMessage', res.message);
+              commit('setStatus', 'info');
               if(res.data.find(bot => bot.status === '1')) {
                 // console.log('im here')
                 
@@ -122,6 +131,8 @@ const store = () =>
               }
             } else {
               console.log(res.message);
+              commit('setMessage', res.message);
+              commit('setStatus', 'error');
               commit('setSpiner', false);
             }
           })
