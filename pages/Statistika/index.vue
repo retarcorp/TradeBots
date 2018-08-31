@@ -132,8 +132,11 @@ export default {
             return this.sortedOrders.filter(ord => ord.status === 'PENDING_CANCEL' || ord.status === 'REJECTED' || ord.status === 'EXPIRED')
         },
         sortedOrders() {
-            let orders = Object.assign([], this.orders);
-            return orders.sort( (a, b) => b.time - a.time)
+            // let orders = Object.assign([], this.orders);
+            return this.statisticsList.sort((a, b) => b.time - a.time)
+        },
+        statisticsList() {
+            return this.$store.getters.getStatisticsList;
         }
     },
     created() {
@@ -142,7 +145,9 @@ export default {
             .then(res => {
                 if(res.status === 'ok') {
                     this.orders = res.data;
-                    this.$store.commit('setStatus', 'ok');
+                    this.$store.commit('setStatisticsList', this.orders);
+                    this.$store.commit('setMessage', res.message);
+                    this.$store.commit('setStatus', 'info');
                     this.$store.commit('setSpiner', false);
                 } else {
                     this.$store.commit('setStatus', 'error');

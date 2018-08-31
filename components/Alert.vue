@@ -4,11 +4,11 @@
             <p>Выполнено успешно!</p>
         </div>
         <div v-else-if="getStatus === 'error'" class='alertInfo__text alertInfo__text--error'>
-            <p>{{getMessage||'system error'}} </p>
+            <p>{{getMessage||'system error'}}</p>
             <span class="close" @click='closeApp'>&times;</span>
         </div>
         <div v-else-if="getStatus === 'info'" class='alertInfo__text alertInfo__text--primary'>
-            <p>Информация получена.</p>
+            <p>{{getMessage||'information received'}} </p>
         </div>
     </div> 
 </template>
