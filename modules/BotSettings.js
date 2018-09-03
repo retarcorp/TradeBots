@@ -11,6 +11,7 @@ module.exports = class BotSettings {
 		deviation = null,
 		martingale = null, //new Martingale(),
 		maxOpenSafetyOrders = null,
+		quantityOfUsedSafeOrders = 0,
 		takeProfit = null,
 		stopLoss = null,
 		currentOrder = initialOrder,
@@ -30,6 +31,7 @@ module.exports = class BotSettings {
 		this.dailyVolumeBTC = dailyVolumeBTC
 		this.currentOrder = currentOrder
 		this.firstBuyPrice = firstBuyPrice
-		this.quantity = quantity
+		this.quantity = quantity // количество монет
+		this.quantityOfUsedSafeOrders = quantityOfUsedSafeOrders
 	}
 }

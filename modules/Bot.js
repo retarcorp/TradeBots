@@ -119,9 +119,12 @@ module.exports = class Bot {
 		return Number(this.botSettings.quantity)
 	}
 
-	getQuantity(price = 0) {
+	getQuantity(price = 0, initialFlag = 0) {
 		console.log("GET КОЛИЧЕСТВО _________ " + this.botSettings.quantity)
-		return !price ? this.toDecimal(Number(this.botSettings.currentOrder) / price) : Number(this.botSettings.quantity)
+		if(!initialFlag)
+			return price ? this.toDecimal(Number(this.botSettings.currentOrder) / price) : Number(this.botSettings.quantity)
+		else 
+			return this.toDecimal(Number(this.botSettings.initialOrder) / price)
 	}
 	
 	recountQuantity(quantity = 0, side = 0) {
@@ -149,6 +152,14 @@ module.exports = class Bot {
 
 	getAmount() {
 		return Number(this.botSettings.safeOrder.amount)
+	}
+
+	getMaxOpenedAmount() {
+		return Number(this.botSettings.maxOpenSafetyOrders)
+	}
+
+	getQtyOfUsedSafeOrders() {
+		return Number(this.botSettings.quantityOfUsedSafeOrders)
 	}
 
 	getTakeProfit() {
@@ -216,8 +227,8 @@ module.exports = class Bot {
 				else if(this.isError1013(error)) quantity += step
 				else if(this.isError2010(error)) quantity -= step
 				
-				console.log(this.toDecimal(quantity, 2), quantity)
-				let order = await this.newSellOrder(price, type, this.toDecimal(quantity, 2), error)
+				console.log(this.toDecimal(quantity, 2))
+				let order = await this.newBuyOrder(price, type, this.toDecimal(quantity, 2), error)
 				return order
 			}
 			else return {}
@@ -261,28 +272,64 @@ module.exports = class Bot {
 		}
 	}
 
-	async createSafeOrders(price) {
-		console.log(`create safe orders (amount - ${this.getAmount()})`)
-		let deviation = this.getDeviation(),
-			amout = this.getAmount(),
-			safeOrders = [],
-			decimal = this.getDecimal(price)
-		for(let i = 0; i < amout; i++) {
-			price -=  price * deviation
-			price = this.toDecimal(price, decimal)
-			console.log(`safe order (${price}), deviation is ${deviation}`)
-			let newOrder = await this.newBuyOrder(price)
+	async createSafeOrders(price = 0) {
+		price = Number(price)
+		let amount = this.getMaxOpenedAmount(),
+			safeOrders = []
+		console.log(`create safe orders (amount - ${amount})`)
+		for(let i = 0; i < amount; i++) {
+			let newOrder = await this.createSafeOrder(price)
+			console.log(newOrder)
 			if(newOrder.orderId)
-				safeOrders.unshift(newOrder)
+				safeOrders.push(newOrder)
 		}
 		return safeOrders
-	}	
+	}
+	
+	async createSafeOrder(price = 0) {
+		price = Number(price)
+		console.log(`create safe order`)
+		let maxOpenSafetyOrders = this.getMaxOpenedAmount(),
+			currentQtySafetyOrders = this.getQtyOfUsedSafeOrders(),
+			deviation = this.getDeviation(),
+			decimal = this.getDecimal(price || Number(this.lastSafeOrderPrice())),
+			newOrder = {}
+		console.log(maxOpenSafetyOrders, currentQtySafetyOrders)
+		if(maxOpenSafetyOrders - currentQtySafetyOrders > 0) {
+			console.log('??')
+			this.botSettings.quantityOfUsedSafeOrders ++
+			let lastSafeOrderPrice = Number(this.lastSafeOrderPrice()) || price,
+				newPrice = this.toDecimal(lastSafeOrderPrice - lastSafeOrderPrice * deviation, decimal)
+			try {
+				console.log(newPrice)
+				newOrder = await this.newBuyOrder(newPrice, CONSTANTS.ORDER_TYPE.LIMIT, this.getQuantity())
+			}
+			catch(error) {
+				console.log(error)
+				console.log(error)
+			}
+			console.log(`create safe order end (price ${newPrice})`)
+		}	
+		return newOrder
+	}
+
+	lastSafeOrderPrice() {
+		let orders = this.safeOrders,
+			lastOrder = orders[0],
+			length = orders.length
+
+		for (let i = 1; i < length; ++i) 
+			if (orders[i].price < lastOrder.price) lastOrder = orders[i];
+
+		return lastOrder ? lastOrder.price : 0
+	}
 
 	async getBinanceTime() {
 		return await this.Client.time()
 	}
 
 	async firstBuyOrder(orderId = 0, counter = 0) {
+		console.log('firstBuy', orderId)
 		let price = await this.getLastPrice(),
 			order
 		if(!orderId) {
@@ -302,10 +349,11 @@ module.exports = class Bot {
 			return {}
 		}
 		else {
-			setTimeout(async () => {
-				console.log('чек чек ' + counter)
-				return await this.firstBuyOrder(orderId, counter++)
-			}, 3000)
+			return await this.firstBuyOrder(orderId, counter++)
+			// setTimeout(async () => {
+			// 	console.log('чек чек ' + counter)
+			// 	return await this.firstBuyOrder(orderId, counter++)
+			// }, 3000)
 		}
 	}
 
@@ -324,7 +372,8 @@ module.exports = class Bot {
 		// 	quantity = this.setQuantity(price),
 		// 	newBuyOrder = await this.newBuyOrder(null, CONSTANTS.ORDER_TYPE.MARKET)
 		let newBuyOrder = await this.firstBuyOrder()
-		this.orders.unshift(newBuyOrder)
+		console.log(newBuyOrder)
+		this.orders.push(newBuyOrder)
 		//2. выставить ордер на продажу так, чтобы выйти в профит по takeProffit
 		let price = Number(newBuyOrder.price)
 
@@ -332,13 +381,13 @@ module.exports = class Bot {
 		let profitPrice = this.getProfitPrice(price)
 		let newSellOrder = await this.newSellOrder(profitPrice)
 		this.currentOrder = newSellOrder
-		this.orders.unshift(newSellOrder)
+		this.orders.push(newSellOrder)
 
 		//3. создание страховочных ордеров
 		let safeOrders = await this.createSafeOrders(price)
 		console.log(`кол-во страховочных ордеров - ${safeOrders.length}`)
-		this.safeOrders.unshift(...safeOrders)
-		this.orders.unshift(...safeOrders)
+		this.safeOrders.push(...safeOrders)
+		this.orders.push(...safeOrders)
 
 		//4. запуск цикла проверки статуса цены валюты 
 		this.trade(user)
@@ -418,17 +467,22 @@ module.exports = class Bot {
 				try {
 					let order = await this.getOrder(orders[i].orderId)
 					if(this.checkFilling(order.status)) {
+						this.botSettings.quantityOfUsedSafeOrders --
 						console.log('найден заюзаный страховочный, пересчет')
-						await this.canselOrder(this.currentOrder.orderId)
+						await this.cancelOrder(this.currentOrder.orderId)
 						this.recountInitialOrder()
 						this.recountQuantity(order.origQty)
 						let newProfitPrice = this.recountProfitPrice(order)
 						let newSellOrder = await this.newSellOrder(newProfitPrice)
+						let newSafeOrder = await this.createSafeOrder()
 						this.currentOrder = newSellOrder
-						this.orders.unshift(this.currentOrder)
+						this.orders.push(this.currentOrder)
+						nextSafeOrders.push(newSafeOrder)
 					}
 					else if(this.checkCanceling(order.status)) {
 						console.log('найдет отмененный страховочный ордер')
+						let newSafeOrder = await this.createSafeOrder()
+						nextSafeOrders.push(newSafeOrder)
 					}
 					else {
 						nextSafeOrders.push(order)
@@ -449,7 +503,7 @@ module.exports = class Bot {
 			console.log(`stopPrice - ${stopPrice}`)
 			if(stopPrice > price) {
 				console.log('стоплосс пройден')
-				await this.canselOrder(this.currentOrder.orderId)
+				await this.cancelOrder(this.currentOrder.orderId)
 				await this.newSellOrder(price, CONSTANTS.ORDER_TYPE.MARKET)
 				await this.disableBot('Все распродано по рынку, бот выключен')
 			}
@@ -502,12 +556,12 @@ module.exports = class Bot {
 		catch(error) {
 			console.log(orderId)
 			console.log(error)
-			if(this.isError1021(error)) order = await this.this.getOrder(orderId)
+			if(this.isError1021(error)) order = await this.getOrder(orderId)
 		}
 		return new Order(order)
 	}
 
-	async canselOrder(orderId) {
+	async cancelOrder(orderId) {
 		orderId = Number(orderId)
 		try {
 			let pair = this.getPair()
@@ -584,19 +638,20 @@ module.exports = class Bot {
 		return orders
 	}
 
-	async canselOrders(orders) {
+	async cancelOrders(orders) {
 		console.log('закрываю ордера...')
 		for(let i = 0; i < orders.length; i++) {
-			await this.canselOrder(orders[i].orderId)
+			await this.cancelOrder(orders[i].orderId)
 		}
 		console.log('закрыл')
 	}
 
 	async disableBot(message) {
 		console.log(`disableBot start...(${message})`)
-		await this.canselOrders(this.safeOrders)
+		await this.cancelOrders(this.safeOrders)
 		this.safeOrders = []
 		this.currentOrder = null
+		this.botSettings.quantityOfUsedSafeOrders = 0
 		this.botSettings.currentOrder = this.botSettings.initialOrder
 		this.botSettings.quantity = {
 			current: 0,
@@ -611,11 +666,11 @@ module.exports = class Bot {
 	async cancelAllOrders(user) {
 		console.log('cancel all orders and sell by market')
 		try{
-			await this.canselOrders(this.safeOrders)
-			await this.canselOrder(this.currentOrder.orderId)
+			await this.cancelOrders(this.safeOrders)
+			await this.cancelOrder(this.currentOrder.orderId)
 			let lastPrice = await this.getLastPrice(),
 				newOrder = await this.newSellOrder(lastPrice, CONSTANTS.ORDER_TYPE.MARKET)
-			this.orders.unshift(newOrder)
+			this.orders.push(newOrder)
 			this.orders = await this.updateOrders(this.orders)
 			await this.syncUpdateBot(user)
 			// await this.disableBot('ОТМЕНИТЬ И ПРОДАТЬ')

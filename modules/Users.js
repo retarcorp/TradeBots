@@ -204,7 +204,7 @@ let Users = {
 					data = data[0]
 					const index = data.bots.findIndex(bot => bot.botID === resData.botID)
 					let bot = new Bot(data.bots[index], data)
-					bot.canselOrder(resData.orderId)
+					bot.cancelOrder(resData.orderId)
 					.then(d => {
 						callback({ 
 							status: d.status,

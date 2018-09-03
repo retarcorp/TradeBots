@@ -271,6 +271,7 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
                 }
             },
             refuseOrder(ordId, botId) {
+                this.$store.commit('setStatus', 'confirm');
                 if(this.clientAnswer) {
                     this.$axios
                         .$post('/bots/orders/cancel', {
