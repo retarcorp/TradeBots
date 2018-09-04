@@ -12,11 +12,13 @@ module.exports = class BotSettings {
 		martingale = null, //new Martingale(),
 		maxOpenSafetyOrders = null,
 		quantityOfUsedSafeOrders = 0,
+		quantityOfActiveSafeOrders = 0,
 		takeProfit = null,
 		stopLoss = null,
 		currentOrder = initialOrder,
 		firstBuyPrice = 0,
-		quantity = 0
+		quantity = 0,
+		quantityM = 0
 	}) {
 		this.tradingSignals = tradingSignals
 		this.initialOrder = initialOrder
@@ -33,5 +35,7 @@ module.exports = class BotSettings {
 		this.firstBuyPrice = firstBuyPrice
 		this.quantity = quantity // количество монет
 		this.quantityOfUsedSafeOrders = quantityOfUsedSafeOrders
+		this.quantityOfActiveSafeOrders = quantityOfActiveSafeOrders
+		this.quantityM = quantityM
 	}
 }

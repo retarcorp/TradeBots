@@ -114,28 +114,59 @@ module.exports = class Bot {
 		// 	size: Math.ceil( (Number(this.botSettings.currentOrder) / price) * 100 ) /100
 		// }
 		this.botSettings.quantity = price ? this.toDecimal(Number(this.botSettings.currentOrder) / price) + 0.01 : Number(quantity)
+		// this.botSettings.quantityM = price ? this.toDecimal(Number(this.botSettings.currentOrder) / price) + 0.1 : Number(quantityM)
 		console.log(price, this.botSettings.currentOrder, this.botSettings.quantity, price * this.botSettings.quantity)
 		console.log("SET КОЛИЧЕСТВО _________ " + this.botSettings.quantity)
+		// console.log('QUANTITYM = ' + this.botSettings.quantityM)
 		return Number(this.botSettings.quantity)
 	}
 
-	getQuantity(price = 0, initialFlag = 0) {
+	getMartingaleValue() {
+		return Number(this.botSettings.martingale.value)
+	}
+
+	getMartingaleActive() {
+		return Number(this.botSettings.martingale.active)
+	}
+
+	getQuantity(price = 0, safeFlag = 0) {
+		price = Number(price)
 		console.log("GET КОЛИЧЕСТВО _________ " + this.botSettings.quantity)
-		if(!initialFlag)
+		if(!safeFlag)
 			return price ? this.toDecimal(Number(this.botSettings.currentOrder) / price) : Number(this.botSettings.quantity)
-		else 
-			return this.toDecimal(Number(this.botSettings.initialOrder) / price)
+		else {
+			// if(!this.getMartingaleActive())
+				return this.toDecimal(Number(this.botSettings.safeOrder.size) / price)
+			// else {
+			// 	let ret = this.toDecimal(Number(this.botSettings.initialOrder) / price)
+			// 	ret += ret * this.getMartingaleValue()
+			// 	return ret
+			// }
+		}
 	}
 	
 	recountQuantity(quantity = 0, side = 0) {
-		console.log(`recount _ ${quantity} _ ${side}`)
 		quantity = Number(quantity)
+		// if(!this.this.getMartingaleActive()) {
+		console.log(`recount _ ${quantity} _ ${side}`)
 		let current = Number(this.botSettings.quantity)
 		current += Math.pow(-1, side) * quantity
 		current = this.toDecimal(current)
 		this.botSettings.quantity = current
 		console.log("RECOUNT КОЛИЧЕСТВО _________ " + this.botSettings.quantity)
 		return current
+		// }
+		// else if(!side){
+		// 	console.log(`recount martingale_ ${quantity} ${this.botSettings.quantity}`)
+		// 	let current = Number(this.botSettings.quantity)
+		// 	if(quantity)
+		// 		current = quantity
+		// 	else {
+		// 		current += this.getMartingaleValue() * current
+		// 	}
+		// 	this.botSettings.quantity = current
+		// 	return current
+		// }
 	}
 	
 	getPair() {
@@ -162,8 +193,12 @@ module.exports = class Bot {
 		return Number(this.botSettings.quantityOfUsedSafeOrders)
 	}
 
+	getQtyOfActiveSafeOrders() {
+		return Number(this.botSettings.quantityOfActiveSafeOrders)
+	}
+
 	getTakeProfit() {
-		return (Number(this.botSettings.takeProfit) + CONSTANTS.BINANCE_FEE) / 100
+		return (Number(this.botSettings.takeProfit) + 2 * CONSTANTS.BINANCE_FEE) / 100
 	}
 
 	getProfitPrice(price) {
@@ -272,13 +307,21 @@ module.exports = class Bot {
 		}
 	}
 
-	async createSafeOrders(price = 0) {
+	async createSafeOrders(price = 0, quantity = 0) {
 		price = Number(price)
 		let amount = this.getMaxOpenedAmount(),
-			safeOrders = []
+			safeOrders = [],
+			curPrice = price,
+			curQty = quantity
 		console.log(`create safe orders (amount - ${amount})`)
 		for(let i = 0; i < amount; i++) {
-			let newOrder = await this.createSafeOrder(price)
+			let newOrder = {}
+			if(!this.getMartingaleActive())
+				newOrder = await this.createSafeOrder(curPrice)
+			else 
+				newOrder = await this.createSafeOrder(curPrice, curQty)
+			curPrice = newOrder.price
+			curQty = newOrder.origQty
 			console.log(newOrder)
 			if(newOrder.orderId)
 				safeOrders.push(newOrder)
@@ -286,23 +329,32 @@ module.exports = class Bot {
 		return safeOrders
 	}
 	
-	async createSafeOrder(price = 0) {
+	async createSafeOrder(price = 0, quantity = 0) {
 		price = Number(price)
 		console.log(`create safe order`)
-		let maxOpenSafetyOrders = this.getMaxOpenedAmount(),
-			currentQtySafetyOrders = this.getQtyOfUsedSafeOrders(),
+		let maxOpenSO = this.getMaxOpenedAmount(),
+			currentQtyUsedSO = this.getQtyOfUsedSafeOrders(),
+			currentQtyActiveSO = this.getQtyOfActiveSafeOrders(),
+			maxAmountSO = this.getAmount(),
 			deviation = this.getDeviation(),
-			decimal = this.getDecimal(price || Number(this.lastSafeOrderPrice())),
+			lastSafeOrder = this.lastSafeOrder() || {},
+			decimal = this.getDecimal(price || Number(lastSafeOrder.price)),
 			newOrder = {}
-		console.log(maxOpenSafetyOrders, currentQtySafetyOrders)
-		if(maxOpenSafetyOrders - currentQtySafetyOrders > 0) {
+		console.log(maxOpenSO, currentQtyActiveSO, maxAmountSO, currentQtyUsedSO)
+		if(maxOpenSO > currentQtyActiveSO && maxAmountSO > currentQtyUsedSO) {
 			console.log('??')
 			this.botSettings.quantityOfUsedSafeOrders ++
-			let lastSafeOrderPrice = Number(this.lastSafeOrderPrice()) || price,
-				newPrice = this.toDecimal(lastSafeOrderPrice - lastSafeOrderPrice * deviation, decimal)
+			this.botSettings.quantityOfActiveSafeOrders ++
+			let lastSafeOrderPrice = Number(lastSafeOrder.price) || price,
+				newPrice = this.toDecimal(lastSafeOrderPrice - lastSafeOrderPrice * deviation, decimal),
+				qty = 0
+			if(quantity) qty = this.toDecimal(quantity * this.getMartingaleValue()) 
+			else if(this.getMartingaleActive()) qty = this.toDecimal(Number(lastSafeOrder.origQty) * this.getMartingaleValue())
+			else qty = this.getQuantity(newPrice, 1)
+
 			try {
 				console.log(newPrice)
-				newOrder = await this.newBuyOrder(newPrice, CONSTANTS.ORDER_TYPE.LIMIT, this.getQuantity())
+				newOrder = await this.newBuyOrder(newPrice, CONSTANTS.ORDER_TYPE.LIMIT, qty)
 			}
 			catch(error) {
 				console.log(error)
@@ -313,7 +365,7 @@ module.exports = class Bot {
 		return newOrder
 	}
 
-	lastSafeOrderPrice() {
+	lastSafeOrder() {
 		let orders = this.safeOrders,
 			lastOrder = orders[0],
 			length = orders.length
@@ -321,7 +373,7 @@ module.exports = class Bot {
 		for (let i = 1; i < length; ++i) 
 			if (orders[i].price < lastOrder.price) lastOrder = orders[i];
 
-		return lastOrder ? lastOrder.price : 0
+		return lastOrder
 	}
 
 	async getBinanceTime() {
@@ -330,6 +382,7 @@ module.exports = class Bot {
 
 	async firstBuyOrder(orderId = 0, counter = 0) {
 		console.log('firstBuy', orderId)
+		counter++
 		let price = await this.getLastPrice(),
 			order
 		if(!orderId) {
@@ -349,7 +402,8 @@ module.exports = class Bot {
 			return {}
 		}
 		else {
-			return await this.firstBuyOrder(orderId, counter++)
+			console.log(counter)
+			return await this.firstBuyOrder(orderId, counter)
 			// setTimeout(async () => {
 			// 	console.log('чек чек ' + counter)
 			// 	return await this.firstBuyOrder(orderId, counter++)
@@ -375,7 +429,8 @@ module.exports = class Bot {
 		console.log(newBuyOrder)
 		this.orders.push(newBuyOrder)
 		//2. выставить ордер на продажу так, чтобы выйти в профит по takeProffit
-		let price = Number(newBuyOrder.price)
+		let price = Number(newBuyOrder.price),
+			qty = Number(newBuyOrder.origQty)
 
 		this.botSettings.firstBuyPrice = price
 		let profitPrice = this.getProfitPrice(price)
@@ -384,7 +439,7 @@ module.exports = class Bot {
 		this.orders.push(newSellOrder)
 
 		//3. создание страховочных ордеров
-		let safeOrders = await this.createSafeOrders(price)
+		let safeOrders = await this.createSafeOrders(price, qty)
 		console.log(`кол-во страховочных ордеров - ${safeOrders.length}`)
 		this.safeOrders.push(...safeOrders)
 		this.orders.push(...safeOrders)
@@ -435,7 +490,7 @@ module.exports = class Bot {
 		else {
 			console.log('В ПРОЦЕССЕ')
 			console.log(`current order qty - ${this.botSettings.currentOrder}`)
-			await this.isProcess()
+			await this.isProcess(user)
 			this.orders = await this.updateOrders(this.orders)
 			if(this.status === CONSTANTS.BOT_STATUS.ACTIVE) {
 				console.warn('___обычный trade___')
@@ -456,9 +511,10 @@ module.exports = class Bot {
 		await this.syncUpdateBot(user)
 	}
 
-	async isProcess() {
+	async isProcess(user) {
 		let orders = this.safeOrders,
 			length = orders.length
+		console.log(orders, length)
 		if(length) {
 			let nextSafeOrders = []
 			console.log(`stopPrice - ${this.getStopPrice()}`)
@@ -466,23 +522,30 @@ module.exports = class Bot {
 			for(let i = 0; i < length; i++) {
 				try {
 					let order = await this.getOrder(orders[i].orderId)
+					this.botSettings.quantityOfActiveSafeOrders -- 
 					if(this.checkFilling(order.status)) {
-						this.botSettings.quantityOfUsedSafeOrders --
+						// this.botSettings.quantityOfUsedSafeOrders --
 						console.log('найден заюзаный страховочный, пересчет')
 						await this.cancelOrder(this.currentOrder.orderId)
 						this.recountInitialOrder()
 						this.recountQuantity(order.origQty)
 						let newProfitPrice = this.recountProfitPrice(order)
-						let newSellOrder = await this.newSellOrder(newProfitPrice)
-						let newSafeOrder = await this.createSafeOrder()
+						let newSellOrder = await this.newSellOrder(newProfitPrice, CONSTANTS.ORDER_TYPE.LIMIT, this.getQuantity())
+						let newSafeOrder = await this.createSafeOrder(null)
 						this.currentOrder = newSellOrder
 						this.orders.push(this.currentOrder)
-						nextSafeOrders.push(newSafeOrder)
+						if(newSafeOrder.orderId) {
+							this.orders.push(newSafeOrder)
+							nextSafeOrders.push(newSafeOrder)
+						}
 					}
 					else if(this.checkCanceling(order.status)) {
 						console.log('найдет отмененный страховочный ордер')
-						let newSafeOrder = await this.createSafeOrder()
-						nextSafeOrders.push(newSafeOrder)
+						let newSafeOrder = await this.createSafeOrder(null)
+						if(newSafeOrder.orderId) {
+							this.orders.push(newSafeOrder)
+							nextSafeOrders.push(newSafeOrder)
+						}
 					}
 					else {
 						nextSafeOrders.push(order)
@@ -503,11 +566,13 @@ module.exports = class Bot {
 			console.log(`stopPrice - ${stopPrice}`)
 			if(stopPrice > price) {
 				console.log('стоплосс пройден')
-				await this.cancelOrder(this.currentOrder.orderId)
-				await this.newSellOrder(price, CONSTANTS.ORDER_TYPE.MARKET)
+				await this.cancelAllOrders(user)
+				// await this.cancelOrder(this.currentOrder.orderId)
+				// await this.newSellOrder(price, CONSTANTS.ORDER_TYPE.MARKET)
 				await this.disableBot('Все распродано по рынку, бот выключен')
 			}
 		}
+		await this.syncUpdateBot(user)
 	}
 
 	recountInitialOrder() {
@@ -652,6 +717,7 @@ module.exports = class Bot {
 		this.safeOrders = []
 		this.currentOrder = null
 		this.botSettings.quantityOfUsedSafeOrders = 0
+		this.botSettings.quantityOfActiveSafeOrders = 0
 		this.botSettings.currentOrder = this.botSettings.initialOrder
 		this.botSettings.quantity = {
 			current: 0,
