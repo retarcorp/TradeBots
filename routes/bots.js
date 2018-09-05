@@ -47,4 +47,9 @@ router.post('/bots/orders/cancelAll', (req, res, next) => {
 	//botID
 })
 
+router.post('/bots/setFreeze', (req, res, next) => {
+	let user = {name: req.cookies.user.name}
+	Users.Bots.freezeBot(user, req.body, data => res.json(data))
+})
+
 module.exports = router;

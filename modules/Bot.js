@@ -13,22 +13,29 @@ module.exports = class Bot {
 		title = 'Untitled bot',
 		state = CONSTANTS.BOT_STATE.MANUAL,
 		status = CONSTANTS.BOT_STATUS.INACTIVE,
-		botFreeze = CONSTANTS.BOT_FREEZE_STATUS.INACTIVE,
+		freeze = CONSTANTS.BOT_FREEZE_STATUS.INACTIVE,
+		preFreeze = freeze,
 		botID = String(Date.now()),
 		pair = {},
 		currentOrder = null,
 		orders = [],
+		freezeOrders = {
+			safe: [],
+			current: null,
+		},
 		botSettings = {},
 		balance = 0
 	}, user) {
 		this.title = title
 		this.state = state
 		this.status = status
-		this.botFreeze = botFreeze
+		this.freeze = freeze
+		this.preFreeze = preFreeze
 		this.pair = new Pair(pair.from, pair.to)
 		this.orders = orders
 		this.currentOrder = currentOrder
 		this.safeOrders = []
+		this.freezeOrders = freezeOrders
 		this.botSettings = new BotSettings(botSettings)
 		this.botID = botID
 		this.balance = balance
@@ -402,12 +409,11 @@ module.exports = class Bot {
 			return {}
 		}
 		else {
-			console.log(counter)
-			return await this.firstBuyOrder(orderId, counter)
-			// setTimeout(async () => {
+			// return await this.firstBuyOrder(orderId, counter)
+			// setTimeout(() => {
 			// 	console.log('чек чек ' + counter)
-			// 	return await this.firstBuyOrder(orderId, counter++)
-			// }, 3000)
+				return this.firstBuyOrder(orderId, counter)
+			// }, CONSTANTS.ORDER_TIMEOUT)
 		}
 	}
 
@@ -435,20 +441,22 @@ module.exports = class Bot {
 		this.botSettings.firstBuyPrice = price
 		let profitPrice = this.getProfitPrice(price)
 		let newSellOrder = await this.newSellOrder(profitPrice)
-		this.currentOrder = newSellOrder
-		this.orders.push(newSellOrder)
+		if(this.status === CONSTANTS.BOT_STATUS.ACTIVE) {
+			this.currentOrder = newSellOrder
+			this.orders.push(newSellOrder)
 
-		//3. создание страховочных ордеров
-		let safeOrders = await this.createSafeOrders(price, qty)
-		console.log(`кол-во страховочных ордеров - ${safeOrders.length}`)
-		this.safeOrders.push(...safeOrders)
-		this.orders.push(...safeOrders)
+			//3. создание страховочных ордеров
+			let safeOrders = await this.createSafeOrders(price, qty)
+			console.log(`кол-во страховочных ордеров - ${safeOrders.length}`)
+			this.safeOrders.push(...safeOrders)
+			this.orders.push(...safeOrders)
 
-		//4. запуск цикла проверки статуса цены валюты 
-		this.trade(user)
-		.catch(err => {
-			console.log(err)
-		})
+			//4. запуск цикла проверки статуса цены валюты 
+			this.trade(user)
+			.catch(err => {
+				console.log(err)
+			})
+		}
 	}
 
 	errorCode(error = new Error('default err')) {
@@ -490,11 +498,33 @@ module.exports = class Bot {
 		else {
 			console.log('В ПРОЦЕССЕ')
 			console.log(`current order qty - ${this.botSettings.currentOrder}`)
-			await this.isProcess(user)
-			this.orders = await this.updateOrders(this.orders)
+			if(this.freeze === CONSTANTS.BOT_FREEZE_STATUS.INACTIVE) {
+				await this.isProcess(user)
+				this.orders = await this.updateOrders(this.orders)
+			}
 			if(this.status === CONSTANTS.BOT_STATUS.ACTIVE) {
 				console.warn('___обычный trade___')
-				setTimeout(() => this.trade(user), CONSTANTS.TIMEOUT)
+				const activeF = CONSTANTS.BOT_FREEZE_STATUS.ACTIVE,
+					inactiveF = CONSTANTS.BOT_FREEZE_STATUS.INACTIVE
+				console.log(activeF, inactiveF)
+				console.log(this.freeze, this.preFreeze)
+				if(this.freeze === activeF && this.preFreeze === inactiveF) {
+					// если сейчас бот заморожен, а раньше разморожен -> заморозить
+					console.log('-> заморозить')
+					await this.freezeBot()
+					setTimeout(() => this.trade(user), CONSTANTS.TIMEOUT)
+				}
+				else if(this.freeze === inactiveF && this.preFreeze === activeF) {
+					// если сейчас бот разморожен, а раньше заморожен -> разморозить
+					console.log('-> разморозить')
+					await this.unfreezeBot()
+					setTimeout(() => this.trade(user), CONSTANTS.TIMEOUT)
+				}
+				else {
+					// если пред и текущие значения равны -> продолжать цикл
+					console.log('-> продолжать цикл')
+					setTimeout(() => this.trade(user), CONSTANTS.TIMEOUT)
+				}
 			}
 			else if(this.status === CONSTANTS.BOT_STATUS.INACTIVE) {
 				console.warn('___бот выключен___')
@@ -514,7 +544,7 @@ module.exports = class Bot {
 	async isProcess(user) {
 		let orders = this.safeOrders,
 			length = orders.length
-		console.log(orders, length)
+
 		if(length) {
 			let nextSafeOrders = []
 			console.log(`stopPrice - ${this.getStopPrice()}`)
@@ -703,6 +733,38 @@ module.exports = class Bot {
 		return orders
 	}
 
+	async createOrders(orders = []/*, type = 'safe'*/) {
+		console.log('создаю ордера...')
+		const length = orders.length
+		let newOrders = []
+
+		for(let i = 0; i < length; i++) {
+			let order = await this.createOrder(orders[i])
+			if(order.orderId)
+				newOrders.push(order)
+		}
+
+		// if(type === 'safe') {
+		// 	this.safeOrders = newOrders
+		// }
+		console.log('создал ордера.')
+		return newOrders
+	}
+
+	async createOrder(order = {}) {
+		console.log('создаю ордер...')
+		let { side, price, type, origQty } = order,
+			newOrder = {}
+
+		if(side === CONSTANTS.ORDER_SIDE.BUY) 
+			newOrder = await this.newBuyOrder(price, type, origQty)
+		else if(side === CONSTANTS.ORDER_SIDE.SELL) 
+			newOrder = await this.newSellOrder(price, type, origQty)
+
+		console.log('создал ордер.')
+		return newOrder
+	}
+
 	async cancelOrders(orders) {
 		console.log('закрываю ордера...')
 		for(let i = 0; i < orders.length; i++) {
@@ -769,9 +831,12 @@ module.exports = class Bot {
 		})
 	}
 
-	async syncUpdateBot(user) {
+	async syncUpdateBot(user, message) {
+		message && console.log(message)
 		console.log('sync update bot...')
 		console.log(this.status)
+		console.log(this.freeze)
+		console.log(this.preFreeze)
 		user = { name: user.name }
 		let data = await Mongo.syncSelect(user, 'users')
 		data = data[0]
@@ -794,6 +859,93 @@ module.exports = class Bot {
 		})
 		let bot = data.bots[index]
 		this.status = bot.status
+		this.freeze = bot.freeze
+		this.preFreeze = bot.preFreeze
+	}
+
+	async unfreezeBot() {
+		console.log('UNFREEZE BOT')
+		this.preFreeze = CONSTANTS.BOT_FREEZE_STATUS.INACTIVE
+
+		// TODO
+		// создать новые ордера по копиям из freezeOrders
+		let newSafeOrders = await this.createOrders(this.freezeOrders.safe),
+			newCurOrder = await this.createOrder(this.freezeOrders.current)
+
+		this.safeOrders = newSafeOrders
+		this.currentOrder = newCurOrder
+
+		//разморозить
+		// return {
+		// 	status: 'ok',
+		// 	message: 'бот успешно разморожен',
+		// 	data: { freeze: this.freeze }
+		// }
+	}
+
+	cloneDeep(obj) { // полное клонирование объекта
+		return JSON.parse(JSON.stringify(obj))
+	}
+
+	async freezeBot() {
+		console.log('FREEZE BOT')
+		this.preFreeze = CONSTANTS.BOT_FREEZE_STATUS.ACTIVE
+
+		// TODO
+		console.log(this.currentOrder)
+		// отменить все ордера
+		// переместив их копии в объект freezeOrders
+		let freezeSO = [],
+			freezeCO = this.cloneDeep(this.currentOrder)
+
+		this.safeOrders.forEach(order => {
+			frezeSO.push(new Order(order))
+		})
+		
+		this.freezeOrders.safe = freezeSO
+		this.freezeOrders.current = freezeCO
+
+		await this.cancelOrders(this.safeOrders)
+		await this.cancelOrder(this.currentOrder)
+		//заморозить
+		// return {
+		// 	status: 'ok',
+		// 	message: 'бот успешно заморожен',
+		// 	data: { freeze: this.freeze }
+		// }
+	}
+
+	async changeFreeze(nextFreeze, user) {
+		const active = CONSTANTS.BOT_FREEZE_STATUS.ACTIVE,
+			inactive = CONSTANTS.BOT_FREEZE_STATUS.INACTIVE
+		let res = {
+			status: 'error',
+			message: 'Получены неверные данные.'
+		}
+		console.log('__')
+		console.log(this.freeze, this.preFreeze)
+		if(nextFreeze === inactive) {
+			console.log('inactive')
+			this.preFreeze = this.freeze
+			this.freeze = inactive
+			res = {
+				status: 'info',
+				message: 'Бот будет разморожен.'
+			}
+		}
+		else if(nextFreeze === active) {
+			console.log('active')
+			this.preFreeze = this.freeze
+			this.freeze = active
+			res = {
+				status: 'info',
+				message: 'Бот будет заморожен.'
+			}
+		}
+		console.log(this.freeze, this.preFreeze)
+		console.log('__')
+		await this.syncUpdateBot(user, 'ОБНОВЛЕние ФРЕЕЕЕЗЕЕЕ БООТ')
+		return res
 	}
 }
 

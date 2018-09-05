@@ -56,7 +56,7 @@ const CONSTANTS = {
 
 	BOT_FREEZE_STATUS: {
 		INACTIVE: '0',
-		ACRTIVE: '1'
+		ACTIVE: '1'
 	},
 
 	ORDER_STATE: {
@@ -88,6 +88,8 @@ const CONSTANTS = {
 		MARKET: 'MARKET'
 	},
 
-	TIMEOUT: 500
+	TIMEOUT: 500,
+
+	ORDER_TIMEOUT: 1000
 }
 module.exports = CONSTANTS

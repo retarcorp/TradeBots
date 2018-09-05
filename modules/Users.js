@@ -190,21 +190,21 @@ let Users = {
 				})
 			}
 			catch(error) {
-				res.json({
+				callback({
 					status: 'error',
 					message: error
 				})
 			}
 		}
 
-		,cancelOrder(user, resData, callback) {
+		,cancelOrder(user, reqData, callback) {
 			try {
 				console.log('cancel order')
 				Mongo.select(user, 'users', (data) => {
 					data = data[0]
-					const index = data.bots.findIndex(bot => bot.botID === resData.botID)
+					const index = data.bots.findIndex(bot => bot.botID === reqData.botID)
 					let bot = new Bot(data.bots[index], data)
-					bot.cancelOrder(resData.orderId)
+					bot.cancelOrder(reqData.orderId)
 					.then(d => {
 						callback({ 
 							status: d.status,
@@ -220,15 +220,19 @@ let Users = {
 			}
 			catch(error) {
 				console.log(error)
+				callback({
+					status: 'error',
+					message: error
+				})
 			}
 		}
 
-		,cancelAllOrders(user, resData, callback) {
+		,cancelAllOrders(user, reqData, callback) {
 			try {
 				console.log('cancel all orders')
 				Mongo.select(user, 'users', (data) => {
 					data = data[0]
-					const index = data.bots.findIndex(bot => bot.botID === resData.botID)
+					const index = data.bots.findIndex(bot => bot.botID === reqData.botID)
 					let bot = new Bot(data.bots[index], data)
 					bot.cancelAllOrders(user)
 					.then(d => {
@@ -244,6 +248,40 @@ let Users = {
 			}
 			catch(error) {
 				console.log(error)
+				callback({
+					status: 'error',
+					message: error
+				})
+			}
+		}
+
+		,freezeBot(user, reqData, callback) {
+			try {
+				console.log('freeze bot') 
+				Mongo.select(user, 'users', (data) => {
+					data = data[0]
+					const index = data.bots.findIndex(bot => bot.botID === reqData.botID)
+					let bot = new Bot(data.bots[index], data)
+					data.bots[index] = bot
+					// bot.changeFreeze(reqData.freeze, data)
+					data.bots[index].changeFreeze(reqData.freeze, data)
+					.then(d => {
+						Mongo.update({name: data.name}, data, 'users', (data) => {
+							callback(d)
+						})
+					})
+					.catch(error => callback({
+						status: 'error',
+						message: error
+					}))
+				})
+			}
+			catch(error) {
+				console.log(error)
+				callback({
+					status: 'error',
+					message: error
+				})
 			}
 		}
 	}

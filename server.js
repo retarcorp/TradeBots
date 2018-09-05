@@ -52,6 +52,7 @@ app.post('/bots/update', bots)
 app.post('/bots/setStatus', bots)
 app.post('/bots/orders/cancel', bots)
 app.post('/bots/orders/cancelAll', bots)
+app.post('/bots/setFreeze', bots)
 
 app.get('/account/api', account)
 app.post('/account/api', account)
