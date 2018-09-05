@@ -24,7 +24,7 @@
                     <!-- Send request to server -->
                     <button @click.prevent="setBotFreeze" 
                         class="button button--primary button__freeze"
-                        >Заморозить</button>
+                        >{{ bot.freeze == '1' ? 'Разморозить' : 'Заморозить'}}</button>
                     <label class="checkbox">
                         <input 
                             v-model="bot.status" 
@@ -290,6 +290,7 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
                         botID: this.bot.botID,
                         freeze: this.bot.freeze
                     })
+                    .then( (res) => this.$store.commit('setBotFreeze', res.data.freeze))
             },
             onDeleteBot() {
                 this.$store.dispatch('deleteBot', this.bot.botID)

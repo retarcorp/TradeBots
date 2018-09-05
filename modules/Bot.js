@@ -141,20 +141,12 @@ module.exports = class Bot {
 		console.log("GET КОЛИЧЕСТВО _________ " + this.botSettings.quantity)
 		if(!safeFlag)
 			return price ? this.toDecimal(Number(this.botSettings.currentOrder) / price) : Number(this.botSettings.quantity)
-		else {
-			// if(!this.getMartingaleActive())
-				return this.toDecimal(Number(this.botSettings.safeOrder.size) / price)
-			// else {
-			// 	let ret = this.toDecimal(Number(this.botSettings.initialOrder) / price)
-			// 	ret += ret * this.getMartingaleValue()
-			// 	return ret
-			// }
-		}
+		else 
+			return this.toDecimal(Number(this.botSettings.safeOrder.size) / price)
 	}
 	
 	recountQuantity(quantity = 0, side = 0) {
 		quantity = Number(quantity)
-		// if(!this.this.getMartingaleActive()) {
 		console.log(`recount _ ${quantity} _ ${side}`)
 		let current = Number(this.botSettings.quantity)
 		current += Math.pow(-1, side) * quantity
@@ -162,18 +154,6 @@ module.exports = class Bot {
 		this.botSettings.quantity = current
 		console.log("RECOUNT КОЛИЧЕСТВО _________ " + this.botSettings.quantity)
 		return current
-		// }
-		// else if(!side){
-		// 	console.log(`recount martingale_ ${quantity} ${this.botSettings.quantity}`)
-		// 	let current = Number(this.botSettings.quantity)
-		// 	if(quantity)
-		// 		current = quantity
-		// 	else {
-		// 		current += this.getMartingaleValue() * current
-		// 	}
-		// 	this.botSettings.quantity = current
-		// 	return current
-		// }
 	}
 	
 	getPair() {
@@ -412,7 +392,7 @@ module.exports = class Bot {
 			// return await this.firstBuyOrder(orderId, counter)
 			// setTimeout(() => {
 			// 	console.log('чек чек ' + counter)
-				return this.firstBuyOrder(orderId, counter)
+			return await this.firstBuyOrder(orderId, counter)
 			// }, CONSTANTS.ORDER_TIMEOUT)
 		}
 	}
@@ -488,6 +468,7 @@ module.exports = class Bot {
 		console.log('___trade is going___')
 		this.currentOrder = await this.getOrder(this.currentOrder.orderId)
 		let currentOrderStatus = this.currentOrder.status
+
 		
 		if(this.checkFilling(currentOrderStatus)) {
 			await this.disableBot('ЗАВЕРШЕНО')
@@ -857,18 +838,18 @@ module.exports = class Bot {
 		const index = data.bots.findIndex(bot => {
 			return bot.botID === this.botID
 		})
+		console.log(`UPDATE BOT PARAMS BEFORE ${this.status} ${this.freeze}`)
 		let bot = data.bots[index]
 		this.status = bot.status
 		this.freeze = bot.freeze
 		this.preFreeze = bot.preFreeze
+		console.log(`UPDATE BOT PARAMS AFTER ${this.status} ${this.freeze}`)
 	}
 
 	async unfreezeBot() {
 		console.log('UNFREEZE BOT')
 		this.preFreeze = CONSTANTS.BOT_FREEZE_STATUS.INACTIVE
 
-		// TODO
-		// создать новые ордера по копиям из freezeOrders
 		let newSafeOrders = await this.createOrders(this.freezeOrders.safe),
 			newCurOrder = await this.createOrder(this.freezeOrders.current)
 
@@ -888,31 +869,36 @@ module.exports = class Bot {
 	}
 
 	async freezeBot() {
-		console.log('FREEZE BOT')
+		console.log('FREEZE BOT//////////////////////////////////////////')
 		this.preFreeze = CONSTANTS.BOT_FREEZE_STATUS.ACTIVE
 
-		// TODO
 		console.log(this.currentOrder)
-		// отменить все ордера
-		// переместив их копии в объект freezeOrders
 		let freezeSO = [],
 			freezeCO = this.cloneDeep(this.currentOrder)
-
 		this.safeOrders.forEach(order => {
-			frezeSO.push(new Order(order))
+			freezeSO.push(new Order(order))
 		})
 		
 		this.freezeOrders.safe = freezeSO
 		this.freezeOrders.current = freezeCO
 
 		await this.cancelOrders(this.safeOrders)
-		await this.cancelOrder(this.currentOrder)
+		await this.cancelOrder(this.currentOrder.orderId)
 		//заморозить
 		// return {
 		// 	status: 'ok',
 		// 	message: 'бот успешно заморожен',
 		// 	data: { freeze: this.freeze }
 		// }
+	}
+
+	async changeFreeze1(nextFreeze, user) {
+		this.freeze = nextFreeze
+		console.log('asd')
+		return {
+			status: 'ok',
+			data: { freeze: this.freeze }
+		}
 	}
 
 	async changeFreeze(nextFreeze, user) {
@@ -930,6 +916,7 @@ module.exports = class Bot {
 			this.freeze = inactive
 			res = {
 				status: 'info',
+				data: { freeze: this.freeze },
 				message: 'Бот будет разморожен.'
 			}
 		}
@@ -939,11 +926,12 @@ module.exports = class Bot {
 			this.freeze = active
 			res = {
 				status: 'info',
+				data: { freeze: this.freeze },
 				message: 'Бот будет заморожен.'
 			}
 		}
 		console.log(this.freeze, this.preFreeze)
-		console.log('__')
+		console.log('_//////////////////////////////////////////_')
 		await this.syncUpdateBot(user, 'ОБНОВЛЕние ФРЕЕЕЕЗЕЕЕ БООТ')
 		return res
 	}

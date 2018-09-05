@@ -263,7 +263,6 @@ let Users = {
 					const index = data.bots.findIndex(bot => bot.botID === reqData.botID)
 					let bot = new Bot(data.bots[index], data)
 					data.bots[index] = bot
-					// bot.changeFreeze(reqData.freeze, data)
 					data.bots[index].changeFreeze(reqData.freeze, data)
 					.then(d => {
 						Mongo.update({name: data.name}, data, 'users', (data) => {
@@ -284,6 +283,7 @@ let Users = {
 				})
 			}
 		}
+
 	}
 
 	,async sendClientStatistics(user) {

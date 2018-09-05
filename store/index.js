@@ -10,6 +10,7 @@ const store = () =>
       botsList: [],
       isActive: false,
       status: '',
+      freeze: '',
       message: '',
       statisticsList: [],
       clientAnswer: false
@@ -49,6 +50,9 @@ const store = () =>
       },
       setSpiner(state, payload) {
         state.isActive = payload
+      },
+      setBotFreeze(state, payload) {
+        state.freeze = payload
       },
       setAuthorized(state, payload) {
         state.isAuthorized = payload;
