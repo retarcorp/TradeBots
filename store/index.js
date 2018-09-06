@@ -131,7 +131,7 @@ const store = () =>
             if (res.status === "ok") {
               commit("setBotsList", res.data);
               commit('setSpiner', false);
-              if(res.data.find(bot => bot.status === '1')) {
+              if(res.data.find(bot => bot.status === true)) {
                 // console.log('im here')
                 setTimeout(() => {
                   dispatch('setBotsList')

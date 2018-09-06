@@ -13,7 +13,12 @@ const bodyParser = require('body-parser');
 const expressSession = require('express-session');
 const cookieParser = require('cookie-parser');
 
-const Mongo = require('./modules/Mongo').init();
+const Mongo = require('./modules/Mongo')
+const Users = require('./modules/Users')
+Mongo.init()
+.then(data => {
+	Users.Bots.setBotsArray()
+})
 // const Users = require('./modules/Users');
 // const Crypto = require('./modules/Crypto');
 // const Binance = require('./modules/Binance');

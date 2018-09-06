@@ -1,6 +1,6 @@
 module.exports = {
 
-	init: function() {
+	init: async function() {
 
 		this.Client = require('mongodb').MongoClient;
 		this.ObjectId = require('mongodb').ObjectID;
@@ -9,7 +9,7 @@ module.exports = {
 		this.URL = 'mongodb://localhost:27017/TradeBots';
 		this.DB = 'TradeBots';
 
-		this.trace();
+		await this.syncTrace();
 
 		console.log('Successfully init');
 
@@ -27,6 +27,22 @@ module.exports = {
 
             //client.close();
 		});
+	}
+
+	, syncTrace: function() {
+		return new Promise( (resolve, reject) => {
+
+			this.Client.connect(this.URL, (error, client) => {
+				this.Assert.equal(null, error);
+				console.log('Successfully conected to MongoDB');
+	
+				this.cli = client;
+				this.db = this.cli.db(this.DB);
+				db = client.db(this.DB);
+				if (error) reject(error)
+				resolve({status: 'ok'})
+			});
+		})
 	}
 
 	,connect: function(callback) {

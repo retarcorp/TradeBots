@@ -21,17 +21,17 @@
                 <span v-if="bot.state === '0'" class="settings__type">(Автоматический)</span>
                 <span v-else class="settings__type">(Ручной)</span>
                 <div class="bots__buttons-status">
-                    <!-- Send request to server -->
-                    <!-- <button @click.prevent="setBotFreeze" 
+                    <!-- Send request to server v-model="bot.status":true-value="true"
+                            :false-value="false" -->
+                    <button @click.prevent="setBotFreeze" 
                         class="button button--primary button__freeze"
-                        >{{ bot.freeze == '1' ? 'Разморозить' : 'Заморозить'}}</button> -->
+                        >{{ bot.freeze == '1' ? 'Разморозить' : 'Заморозить'}}</button>
                     <label class="checkbox">
                         <input 
-                            v-model="bot.status" 
+                            @click.prevent="setStatus(!Number(bot.status))"
                             type="checkbox" 
                             class="checkbox__input button__status"
-                            true-value="1"
-                            false-value="0">
+                            >
                         <div class="checkbox__text"></div>
                     </label>
                 </div>
@@ -229,6 +229,18 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
             }
         },
         methods: {
+            setStatus(value) {
+                this.$axios
+                    .$post('/bots/setStatus', {
+                        'botID': this.bot.botID,
+                        'status': value,
+                        'userID': this.$store.getters.getWsId
+                    })
+                    .then(res => {
+                        this.checkStatus(res);
+                    })
+                    .catch(e => console.log(e))
+            },
             checkWindow(event) {
                 if (event.target.getAttribute('class') === 'confirm-block') {
                     this.$store.commit('clearStatus');

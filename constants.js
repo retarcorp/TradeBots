@@ -50,8 +50,8 @@ const CONSTANTS = {
 	},
 
 	BOT_STATUS: {
-		INACTIVE: '0',
-		ACTIVE: '1'
+		INACTIVE: false,//'0',
+		ACTIVE: true//'1'
 	},
 
 	BOT_FREEZE_STATUS: {

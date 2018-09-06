@@ -29,7 +29,7 @@
             },
             isBotActive() {
                 if(this.id) {
-                    return this.bot.status === '1'
+                    return this.bot.status === true
                 }
             }
         }

@@ -7,6 +7,7 @@ const Binance = require('./Binance')
 let binanceAPI = require('binance-api-node').default
 
 let Users = {
+
 	adminLogin(admin, callback) {
 		this.find(admin, 'admin', callback);
 	}
@@ -97,7 +98,20 @@ let Users = {
 	}
 
 	,Bots: {
-		get(user, botID, callback) {
+		Bots: []
+
+		,setBotsArray() {
+			Mongo.select({}, 'users', (users) => {
+				users.forEach(user => {
+					user.bots.forEach(bot => {
+						this.Bots.push(new Bot(bot))
+						console.log(bot.title)
+					})
+				})
+			})
+		}
+
+		,get(user, botID, callback) {
 			Mongo.select(user, 'users', (data) => {
 				data = data[0];
 				if(callback) {
@@ -122,13 +136,15 @@ let Users = {
 		}
 		
 		,setBot(user, botData, callback) {
+			console.log(this.Bots)
 			Mongo.select(user, 'users', (data) => {
 				data = data[0];
 				let tempBot;
-				console.log(botData);
+				// console.log(botData);
 				if(typeof botData === 'object'){
 					tempBot = new Bot(botData);
 					data.bots.push(tempBot);
+					this.Bots.push(tempBot)
 				}
 				else {
 					let tempBots = [];
@@ -136,6 +152,9 @@ let Users = {
 						if(bot.botID !== botData) tempBots.push(bot);
 					});
 					data.bots = tempBots;
+
+					const index = this.Bots.findIndex(bot => bot.botID === botData)
+					this.Bots.splice(index, 1)
 				}
 				Mongo.update({name: data.name}, data, 'users', (data) => {
 					if(typeof botData === 'object') {
@@ -160,10 +179,12 @@ let Users = {
 			Mongo.select(user, 'users', (data) => {
 				data = data[0];
 				let tempBot = new Bot(botData);
-				const index = data.bots.findIndex(bot => {
-					return bot.botID === tempBot.botID
-				});
+				const index = data.bots.findIndex(bot => bot.botID === tempBot.botID);
 				data.bots[index] = tempBot;
+
+				const newIndex = this.Bots.findIndex(bot => bot.botID === tempBot.botID)
+				this.Bots[newIndex] = tempBot
+
 				Mongo.update({name: data.name}, data, 'users', (data) => {
 					if(callback)
 						callback({
@@ -178,15 +199,25 @@ let Users = {
 			try {
 				Mongo.select(user, 'users', (data) => {
 					data = data[0]
-					const index = data.bots.findIndex(bot => bot.botID === botData.botID)
-					let newBot = new Bot(data.bots[index])
-					data.bots[index] = newBot
-					data.bots[index].changeStatus(botData.status, data)
-					.then((d) => {
+
+					const index = this.Bots.findIndex(bot => bot.botID === botData.botID)
+
+					this.Bots[index].changeStatus(botData.status, data)
+					.then( d => {
 						Mongo.update({name: data.name}, data, 'users', (data) => {
 							callback(d)
 						})
 					})
+
+					// const index = data.bots.findIndex(bot => bot.botID === botData.botID)
+					// let newBot = new Bot(data.bots[index])
+					// data.bots[index] = newBot
+					// data.bots[index].changeStatus(botData.status, data)
+					// .then((d) => {
+					// 	Mongo.update({name: data.name}, data, 'users', (data) => {
+					// 		callback(d)
+					// 	})
+					// })
 				})
 			}
 			catch(error) {
@@ -199,12 +230,15 @@ let Users = {
 
 		,cancelOrder(user, reqData, callback) {
 			try {
-				console.log('cancel order')
+				// console.log('cancel order')
 				Mongo.select(user, 'users', (data) => {
 					data = data[0]
-					const index = data.bots.findIndex(bot => bot.botID === reqData.botID)
-					let bot = new Bot(data.bots[index], data)
-					bot.cancelOrder(reqData.orderId)
+					// const index = data.bots.findIndex(bot => bot.botID === reqData.botID)
+					const index = this.Bots.findIndex(bot => bot.botID === reqData.botID)
+
+					// let bot = new Bot(data.bots[index], data)
+
+					this.Bots[index].cancelOrder(reqData.orderId)
 					.then(d => {
 						callback({ 
 							status: d.status,
@@ -219,7 +253,7 @@ let Users = {
 				})
 			}
 			catch(error) {
-				console.log(error)
+				// console.log(error)
 				callback({
 					status: 'error',
 					message: error
@@ -229,12 +263,14 @@ let Users = {
 
 		,cancelAllOrders(user, reqData, callback) {
 			try {
-				console.log('cancel all orders')
+				// console.log('cancel all orders')
 				Mongo.select(user, 'users', (data) => {
 					data = data[0]
-					const index = data.bots.findIndex(bot => bot.botID === reqData.botID)
-					let bot = new Bot(data.bots[index], data)
-					bot.cancelAllOrders(user)
+					// const index = data.bots.findIndex(bot => bot.botID === reqData.botID)
+					// let bot = new Bot(data.bots[index], data)
+					const index = this.Bots.findIndex(bot => bot.botID === reqData.botID)
+
+					this.Bots[index].cancelAllOrders(user)
 					.then(d => {
 						callback(d)
 					})
@@ -247,7 +283,7 @@ let Users = {
 				})
 			}
 			catch(error) {
-				console.log(error)
+				// console.log(error)
 				callback({
 					status: 'error',
 					message: error
@@ -257,13 +293,15 @@ let Users = {
 
 		,freezeBot(user, reqData, callback) {
 			try {
-				console.log('freeze bot') 
+				console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~') 
+				console.log(this.Bots)
 				Mongo.select(user, 'users', (data) => {
 					data = data[0]
-					const index = data.bots.findIndex(bot => bot.botID === reqData.botID)
-					let bot = new Bot(data.bots[index], data)
-					data.bots[index] = bot
-					data.bots[index].changeFreeze(reqData.freeze, data)
+					// const index = data.bots.findIndex(bot => bot.botID === reqData.botID)
+					const index = this.Bots.findIndex(bot => bot.botID === reqData.botID)
+					// let bot = new Bot(data.bots[index], data)
+					// data.bots[index] = bot
+					this.Bots[index].changeFreeze(reqData.freeze, data)
 					.then(d => {
 						Mongo.update({name: data.name}, data, 'users', (data) => {
 							callback(d)
@@ -276,7 +314,7 @@ let Users = {
 				})
 			}
 			catch(error) {
-				console.log(error)
+				// console.log(error)
 				callback({
 					status: 'error',
 					message: error
@@ -297,7 +335,7 @@ let Users = {
 				list = await Client.allOrders({symbol})
 			}
 			catch(error) {
-				console.log(error)
+				// console.log(error)
 			}
 			statistics.push(...list)
 		}
@@ -327,7 +365,7 @@ let Users = {
 			})
 		}
 		catch(error) {
-			console.log(error)
+			// console.log(error)
 			callback({
 				status: 'error',
 				message: error
@@ -345,7 +383,7 @@ let Users = {
 		};
 		session.logged = true;
 		session.user = session.user || user1;
-		console.log(user1, session)
+		// console.log(user1, session)
 		if (!req.cookies.user){
 			res.cookie('user', user1);
 		}
@@ -374,4 +412,5 @@ let Users = {
 		return salt;
 	}
 }
+
 module.exports = Users;
