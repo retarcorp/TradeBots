@@ -22,9 +22,9 @@
                 <span v-else class="settings__type">(Ручной)</span>
                 <div class="bots__buttons-status">
                     <!-- Send request to server -->
-                    <button @click.prevent="setBotFreeze" 
+                    <!-- <button @click.prevent="setBotFreeze" 
                         class="button button--primary button__freeze"
-                        >{{ bot.freeze == '1' ? 'Разморозить' : 'Заморозить'}}</button>
+                        >{{ bot.freeze == '1' ? 'Разморозить' : 'Заморозить'}}</button> -->
                     <label class="checkbox">
                         <input 
                             v-model="bot.status" 
