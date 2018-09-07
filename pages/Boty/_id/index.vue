@@ -280,12 +280,12 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
             onConfirm() {
                 if( this.getStatus === 'confirm') {
                     this.$store.commit('setClientAnswer', 'accept');
-                    this.onCancel();
+                    this.cancelAll();
                 } else if( this.getStatus === 'confirmCurrent' ) {
                     this.$store.commit('setClientAnswer', 'acceptCurrent');
                     this.refuseOrder();
                 }
-                this.cancelAll();
+                this.onCancel();
                 this.$store.commit('clearAnswer');
             },
             onCancel() {
