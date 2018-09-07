@@ -28,9 +28,10 @@
                         >{{ bot.freeze == '1' ? 'Разморозить' : 'Заморозить'}}</button>
                     <label class="checkbox">
                         <input 
-                            @click.prevent="setStatus(!Number(bot.status))"
+                            @change.prevent="setStatus(!bot.status)"
                             type="checkbox" 
                             class="checkbox__input button__status"
+                            :value="bot.status ? true : false"
                             >
                         <div class="checkbox__text"></div>
                     </label>
@@ -216,16 +217,16 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
         },
         watch: {
             'bot.status'(value) {
-                this.$axios
-                    .$post('/bots/setStatus', {
-                        'botID': this.bot.botID,
-                        'status': value,
-                        'userID': this.$store.getters.getWsId
-                    })
-                    .then(res => {
-                        this.checkStatus(res);
-                    })
-                    .catch(e => console.log(e))
+                // this.$axios
+                //     .$post('/bots/setStatus', {
+                //         'botID': this.bot.botID,
+                //         'status': value,
+                //         'userID': this.$store.getters.getWsId
+                //     })
+                //     .then(res => {
+                        // this.checkStatus(res);
+                    // })
+                    // .catch(e => console.log(e))
             }
         },
         methods: {
