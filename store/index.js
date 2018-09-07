@@ -93,11 +93,11 @@ const store = () =>
       clearStatus(state) {
         state.status = '';
       },
-      setClientAnswer(state) {
-        state.clientAnswer = true;
+      setClientAnswer(state, payload) {
+        state.clientAnswer = payload;
       },
       clearAnswer(state) {
-        state.clientAnswer = false;
+        state.clientAnswer = '';
       }
     },
     actions: {

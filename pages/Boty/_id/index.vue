@@ -15,6 +15,21 @@
                 </div>
             </div>
         </div>
+        <div v-else-if="getStatus === 'confirmCurrent'" class='confirm-block' @click="checkWindow">
+            <div class='confirm-block__content'>
+                <p>Точно выполнить данную операцию?</p>
+                <div class='confirm-block__buttons-box'>
+                    <button  
+                        class='button button--success'
+                        @click='onConfirm'>Oк
+                    </button>
+                    <button
+                        class='button'
+                        @click='onCancel'>Отмена
+                    </button>
+                </div>
+            </div>
+        </div>
         <section class="bots__right-settings bot__manual">
             <div class="settings__header">
                 <h1 class="bots__name">{{ bot.title }}</h1>
@@ -135,7 +150,7 @@
                                 <td class="table__td total">{{ order.cummulativeQuoteQty }}</td>
                                 <td class="table__td status">{{ order.status }}</td>
                                 <td class="table__td">
-                                    <button @click.prevent="refuseOrder(order.orderId, bot.botID)" class="button table__button button--primary">Отменить</button>
+                                    <button @click.prevent="refuseCurrentOrder(order.orderId, bot.botID)" class="button table__button button--primary">Отменить</button>
                                 </td>
                             </tr>
                         </tbody>
@@ -188,7 +203,9 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
             return {
                 isActive: true,
                 currentComponent: null,
-                isChanging: false
+                isChanging: false,
+                tmpOrd: null,
+                tmpBotId: null
             }
         },
         filters: {
@@ -261,8 +278,13 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
                 }
             },
             onConfirm() {
-                this.$store.commit('setClientAnswer');
-                this.onCancel();
+                if( this.getStatus === 'confirm') {
+                    this.$store.commit('setClientAnswer', 'accept');
+                    this.onCancel();
+                } else if( this.getStatus === 'confirmCurrent' ) {
+                    this.$store.commit('setClientAnswer', 'acceptCurrent');
+                    this.refuseOrder();
+                }
                 this.cancelAll();
                 this.$store.commit('clearAnswer');
             },
@@ -271,7 +293,7 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
             },
             cancelAll() {
                 this.$store.commit('setStatus', 'confirm');
-                if(this.clientAnswer) {
+                if(this.clientAnswer === 'accept') {
                     this.$store.commit('setSpiner', true);
                     this.$axios
                         .$post('/bots/orders/cancelAll', {
@@ -283,13 +305,18 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
                         })
                 }
             },
-            refuseOrder(ordId, botId) {
-                this.$store.commit('setStatus', 'confirm');
-                if(this.clientAnswer) {
+            refuseCurrentOrder(ordId, botId) {
+                this.tmpOrd = ordId;
+                this.tmpBotId = botId;
+                this.refuseOrder();
+            },
+            refuseOrder() {
+                this.$store.commit('setStatus', 'confirmCurrent');
+                if(this.clientAnswer === 'acceptCurrent') {
                     this.$axios
                         .$post('/bots/orders/cancel', {
-                            'botID': botId,
-                            'orderId': ordId
+                            'botID': this.tmpBotId,
+                            'orderId': this.tmpOrd
                         })
                         .then( () => this.$store.commit('setSpiner', false) )
                 }
