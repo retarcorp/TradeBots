@@ -1,21 +1,6 @@
 <template>
     <div>
-        <div v-if="getStatus === 'confirm'" class='confirm-block' @click="checkWindow">
-            <div class='confirm-block__content'>
-                <p>Точно выполнить данную операцию?</p>
-                <div class='confirm-block__buttons-box'>
-                    <button  
-                        class='button button--success'
-                        @click='onConfirm'>Oк
-                    </button>
-                    <button
-                        class='button'
-                        @click='onCancel'>Отмена
-                    </button>
-                </div>
-            </div>
-        </div>
-        <div v-else-if="getStatus === 'confirmCurrent'" class='confirm-block' @click="checkWindow">
+        <div v-if="getStatus === 'confirm' || getStatus === 'confirmCurrent'" class='confirm-block' @click="checkWindow">
             <div class='confirm-block__content'>
                 <p>Точно выполнить данную операцию?</p>
                 <div class='confirm-block__buttons-box'>
