@@ -31,6 +31,23 @@
                 <label class="label">Дневной объём (BTC):</label>
                 <input v-model="bot.botSettings.dailyVolumeBTC" type="number" class="input">
             </div>
+            <div class="form-control newBot__settings-control">
+                <label class="label" for="start__order">Начальный ордер:</label>
+                <input v-model="bot.botSettings.initialOrder" id="start__order" type="number" class="input settings__input">
+            </div>
+            <div class="form-control newBot__settings-control">
+                <label class="label" for="stop__loss">Стоп лосс %</label>
+                <input 
+                    v-model="bot.botSettings.stopLoss" 
+                    id="stop__loss" 
+                    type="number" 
+                    step='0.01'
+                    class="input settings__input">
+            </div>
+            <div class="form-control newBot__settings-control">
+                <label class="label" for="take__profit">Тейк профит %</label>
+                <input v-model="bot.botSettings.takeProfit" id="take__profit" type="number" step='0.01' class="input settings__input">
+            </div>
         </div>
         <div class="newBot__conditions">
             <div class="newBot__conditions-title">Условия для начала сделки:</div>
@@ -109,7 +126,10 @@ export default {
                     },
                     title: '',
                     botSettings: {
+                        initialOrder: 0,
                         dailyVolumeBTC: '',
+                        stopLoss: 0,
+                        takeProfit: 0,
                         tradingSignals: []
                     }
 

@@ -113,6 +113,10 @@ module.exports = class Bot {
 
 	startAuto(user) {
 		console.log('- auto')
+		this.setClient(user)
+		this.currentOrder = {}
+		this.startTrade(user)
+		.catch( err => console.log(err) )
 	}
 
 	setQuantity(price = 0, quantity = 0) {
@@ -396,7 +400,23 @@ module.exports = class Bot {
 
 	async startTrade(user) {
 		console.log('-- startTrade')
+		if(this.state === CONSTANTS.BOT_STATE.AUTO)	this.startTradeAuto(user)
+		else if(this.state === CONSTANTS.BOT_STATE.MANUAL) this.startTradeManual(user)	
+	}
 
+	async startTradeAuto(user) {
+		console.log('-- startTradeAuto')
+		await this.pushTradingSignals()
+		// TODO
+		// у нас есть пара и список сигналов.
+		// сначала мы в бд записываем сигналы, которые нам нужны.
+		// после, ждем обновления этих сигналов
+		// если один из сигналов подходит, то мы закупаем монет по initialOrder
+		// и открываем ордер на продажу по takeProffit и выставляем стоплосс
+	}
+
+	async startTradeManual(user) {
+		console.log('-- startTradeManual')
 		let newBuyOrder = await this.firstBuyOrder()
 		let qty = this.setQuantity(null, Number(newBuyOrder.origQty))
 		this.orders.push(newBuyOrder)
@@ -418,6 +438,10 @@ module.exports = class Bot {
 			.catch(err => {
 			})
 		}
+	}
+
+	async pushTradingSignals() {
+		let data = Mongo.syncInsert({tr: 'tr'}, 'tradingSignals')
 	}
 
 	errorCode(error = new Error('default err')) {

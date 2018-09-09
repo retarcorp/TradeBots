@@ -80,13 +80,26 @@
                         <p class="settings__item">Дневной объем(BTC): 
                             <span>{{ bot.botSettings.dailyVolumeBTC }}</span>
                         </p>
-                        <p>Условия для начала сделки</p>
+                        <p class="settings__item">Начальный ордер: 
+                            <span>{{ bot.botSettings.initialOrder }}</span>
+                        </p>
+                        <p class="settings__item">Стоп лосс:  
+                            <span>{{ bot.botSettings.stopLoss }}%</span>
+                        </p>
+                        <p class="settings__item">Тейк профит:  
+                            <span>{{ bot.botSettings.takeProfit }}%</span>
+                        </p>
                         <table class="table">
-                            <tr class="table__tr" v-for="(signal,index) in bot.botSettings.tradingSignals" :key="signal.id">
-                                <td class="table__td">{{ index + 1 }}. {{ signal.signal }}</td>
-                                <td class="table__td">{{ signal.timeframe }}</td>
-                                <td class="table__td">{{ signal.transactionTerm }}</td>
-                            </tr>
+                            <thead>
+                                <p>Условия для начала сделки:</p>
+                            </thead>
+                            <tbody>
+                                <tr class="table__tr" v-for="(signal,index) in bot.botSettings.tradingSignals" :key="signal.id">
+                                    <td class="table__td">{{ index + 1 }}. {{ signal.signal }}</td>
+                                    <td class="table__td">{{ signal.timeframe }}</td>
+                                    <td class="table__td">{{ signal.transactionTerm }}</td>
+                                </tr>
+                            </tbody>
                         </table>
                     </template>
                     
