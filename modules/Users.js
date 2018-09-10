@@ -412,9 +412,5 @@ let Users = {
 		return salt;
 	}
 }
-<<<<<<< HEAD
 
 module.exports = Users;
-=======
-module.exports = Users;
->>>>>>> parse

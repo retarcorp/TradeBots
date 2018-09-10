@@ -21,26 +21,14 @@
                 <span v-if="bot.state === '0'" class="settings__type">(Автоматический)</span>
                 <span v-else class="settings__type">(Ручной)</span>
                 <div class="bots__buttons-status">
-<<<<<<< HEAD
-                    <!-- Send request to server v-model="bot.status":true-value="true"
-                            :false-value="false" -->
-                    <button @click.prevent="setBotFreeze"
-=======
                     <!-- Send request to server -->
                     <button @click.prevent="setBotFreeze"
->>>>>>> parse
                         class="button button--primary button__freeze"
                         >{{ bot.freeze == '1' ? 'Разморозить' : 'Заморозить'}}</button>
                     <label class="checkbox">
-<<<<<<< HEAD
                         <input
                             @change.prevent="setStatus(!bot.status)"
                             type="checkbox"
-=======
-                        <input
-                            v-model="bot.status"
-                            type="checkbox"
->>>>>>> parse
                             class="checkbox__input button__status"
                             :value="bot.status ? true : false"
                             >
@@ -248,6 +236,9 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
             }
         },
         methods: {
+            setStatus(nextStatus) {
+
+            },
             checkWindow(event) {
                 if (event.target.getAttribute('class') === 'confirm-block') {
                     this.$store.commit('clearStatus');
