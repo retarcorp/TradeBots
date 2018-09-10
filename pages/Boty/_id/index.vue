@@ -4,7 +4,7 @@
             <div class='confirm-block__content'>
                 <p>Точно выполнить данную операцию?</p>
                 <div class='confirm-block__buttons-box'>
-                    <button  
+                    <button
                         class='button button--success'
                         @click='onConfirm'>Oк
                     </button>
@@ -21,15 +21,26 @@
                 <span v-if="bot.state === '0'" class="settings__type">(Автоматический)</span>
                 <span v-else class="settings__type">(Ручной)</span>
                 <div class="bots__buttons-status">
+<<<<<<< HEAD
                     <!-- Send request to server v-model="bot.status":true-value="true"
                             :false-value="false" -->
-                    <button @click.prevent="setBotFreeze" 
+                    <button @click.prevent="setBotFreeze"
+=======
+                    <!-- Send request to server -->
+                    <button @click.prevent="setBotFreeze"
+>>>>>>> parse
                         class="button button--primary button__freeze"
                         >{{ bot.freeze == '1' ? 'Разморозить' : 'Заморозить'}}</button>
                     <label class="checkbox">
-                        <input 
+<<<<<<< HEAD
+                        <input
                             @change.prevent="setStatus(!bot.status)"
-                            type="checkbox" 
+                            type="checkbox"
+=======
+                        <input
+                            v-model="bot.status"
+                            type="checkbox"
+>>>>>>> parse
                             class="checkbox__input button__status"
                             :value="bot.status ? true : false"
                             >
@@ -46,38 +57,38 @@
                 </div> -->
                 <div v-show="!isChanging" class="settings__description">
                     <!-- <p class="settings__item">Дневной объем (BTC): <span>123</span></p> -->
-                    <p class="settings__item">Основная пара: 
+                    <p class="settings__item">Основная пара:
                         <span>{{ bot.pair.from }}</span>
                     </p>
-                    <p class="settings__item">Котируемая пара: 
+                    <p class="settings__item">Котируемая пара:
                         <span>{{ bot.pair.to }}</span>
                     </p>
                     <template v-if="bot.state === '1'">
-                        <p class="settings__item">Начальный ордер: 
+                        <p class="settings__item">Начальный ордер:
                             <span>{{ bot.botSettings.initialOrder }}</span>
                         </p>
                         <p class="settings__item">Страховочный ордер: <span>{{ bot.botSettings.safeOrder.size }}</span></p>
-                        
+
                         <p class="settings__item">Кол-во страховочных ордеров: <span>{{ bot.botSettings.safeOrder.amount }}</span></p>
-                        
+
                         <p class="settings__item">Отклонение от начального ордера: <span>{{ bot.botSettings.deviation }}%</span></p>
 
                         <p class="settings__item">Макс. открытых СО: <span>{{ bot.botSettings.maxOpenSafetyOrders }}</span></p>
-                        
+
                         <p class="settings__item">Стоп лосс: <span>{{ bot.botSettings.stopLoss }}%</span></p>
-                        
+
                         <p class="settings__item">Тейк профит: <span>{{ bot.botSettings.takeProfit }}%</span></p>
-                        
-                        <p class="settings__item">Мартингейл: 
+
+                        <p class="settings__item">Мартингейл:
                             <span>{{ bot.botSettings.martingale.active === '0' ? 'Выкл': 'Вкл' }}</span>
                         </p>
-                        
+
                         <p v-if="bot.botSettings.martingale.active !== '0'" class="settings__item">Увеличение страховочного ордера: <span>{{ bot.botSettings.martingale.value }}</span></p>
-                        
+
                     </template>
 
                     <template v-else>
-                        <p class="settings__item">Дневной объем(BTC): 
+                        <p class="settings__item">Дневной объем(BTC):
                             <span>{{ bot.botSettings.dailyVolumeBTC }}</span>
                         </p>
                         <p>Условия для начала сделки</p>
@@ -89,7 +100,7 @@
                             </tr>
                         </table>
                     </template>
-                    
+
                 </div>
                 <div>
                     <component @changed="onUpdated" :bot="bot" :is="currentComponent"></component>
@@ -120,16 +131,16 @@
                         <!-- TODO create component for 1 row -->
                         <tbody class='overflow'>
                             <tr v-for="order in openedOrders"
-                                :key="order.id" 
+                                :key="order.id"
                                 class="table__tr">
                                 <td class="table__td date">{{ order.time | date }}</td>
                                 <td class="table__td pair">{{ order.symbol }}</td>
-                                <td 
-                                    class="table__td side" 
+                                <td
+                                    class="table__td side"
                                     :class="order.side === 'BUY' ? 'text--success' : 'text--danger'"
                                     >{{ order.side }}({{ order.type }})</td>
                                 <td class="table__td price">
-                                    {{ order.type !== 'MARKET' ? order.price : (Number(order.cummulativeQuoteQty) / Number(order.origQty)).toFixed(order.price.length - 2) }}  
+                                    {{ order.type !== 'MARKET' ? order.price : (Number(order.cummulativeQuoteQty) / Number(order.origQty)).toFixed(order.price.length - 2) }}
                                 </td>
                                 <td class="table__td quantity">{{ order.origQty }}</td>
                                 <td class="table__td total">{{ order.cummulativeQuoteQty }}</td>
@@ -154,8 +165,8 @@
                             <tr v-for="order in closedOrders" :key="order.id" class="table__tr">
                                 <td class="table__td date">{{ order.time | date }}</td>
                                 <td class="table__td pair">{{ order.symbol }}</td>
-                                <td 
-                                    class="table__td side" 
+                                <td
+                                    class="table__td side"
                                     :class="order.side === 'BUY' ? 'text--success' : 'text--danger'"
                                     >{{ order.side }}({{ order.type }})</td>
                                 <td class="table__td price">
@@ -177,6 +188,7 @@
 </template>
 
 <script>
+let oldHref = location.href;
 import SettingsManual from '~/components/NewBot/Manual';
 import SettingsAutomatic from '~/components/NewBot/Automatic';
     export default {
@@ -219,20 +231,7 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
         },
         watch: {
             'bot.status'(value) {
-                // this.$axios
-                //     .$post('/bots/setStatus', {
-                //         'botID': this.bot.botID,
-                //         'status': value,
-                //         'userID': this.$store.getters.getWsId
-                //     })
-                //     .then(res => {
-                        // this.checkStatus(res);
-                    // })
-                    // .catch(e => console.log(e))
-            }
-        },
-        methods: {
-            setStatus(value) {
+                if(oldHref === location.href){
                 this.$axios
                     .$post('/bots/setStatus', {
                         'botID': this.bot.botID,
@@ -243,7 +242,12 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
                         this.checkStatus(res);
                     })
                     .catch(e => console.log(e))
-            },
+                    } else {
+                    oldHref = location.href
+                    }
+            }
+        },
+        methods: {
             checkWindow(event) {
                 if (event.target.getAttribute('class') === 'confirm-block') {
                     this.$store.commit('clearStatus');
@@ -285,7 +289,7 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
                             'botID': this.bot.botID
                         })
                         .then( res => {
-                            this.$store.commit('setSpiner', false) 
+                            this.$store.commit('setSpiner', false)
                             this.checkStatus(res);
                         })
                 }
@@ -307,7 +311,7 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
                 }
             },
             setBotFreeze() {
-                this.bot.freeze === '0' 
+                this.bot.freeze === '0'
                 ? this.bot.freeze = '1'
                 : this.bot.freeze = '0'
                 this.$axios
@@ -322,7 +326,7 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
             },
             onChangeSettings() {
                 this.isChanging = true;
-                this.bot.state === '1' 
+                this.bot.state === '1'
                     ? this.currentComponent = "SettingsManual"
                     : this.currentComponent = "SettingsAutomatic"
             },
@@ -356,22 +360,22 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
 .confirm-block {
     display: block;
     position: fixed;
-    z-index: 1; 
+    z-index: 1;
     left: 0;
     top: 0;
     width: 100%;
-    height: 100%; 
-    overflow: auto; 
+    height: 100%;
+    overflow: auto;
     background-color: rgb(0,0,0);
-    background-color: rgba(0,0,0,0.4); 
+    background-color: rgba(0,0,0,0.4);
 }
 
 .confirm-block__content {
     background-color: #fefefe;
-    margin: 10% auto; 
+    margin: 10% auto;
     padding: 20px;
     border: 1px solid #888;
-    width: 60%; 
+    width: 60%;
 }
 
 .confirm-block__content p {
@@ -546,4 +550,3 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
     margin-bottom: 1rem;
 }
 </style>
-

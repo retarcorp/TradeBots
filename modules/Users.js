@@ -123,18 +123,18 @@ let Users = {
 				}
 			})
 		}
-		
+
 		,getBotList(user, callback) {
 			Mongo.select(user, 'users', (data) => {
 				data = data[0];
-				if(callback) 
+				if(callback)
 					callback({
 						status: 'ok',
 						data: data.bots || []
 					})
 			})
 		}
-		
+
 		,setBot(user, botData, callback) {
 			console.log(this.Bots)
 			Mongo.select(user, 'users', (data) => {
@@ -240,15 +240,15 @@ let Users = {
 
 					this.Bots[index].cancelOrder(reqData.orderId)
 					.then(d => {
-						callback({ 
+						callback({
 							status: d.status,
 							message: d.message,
 							data: d.order
 						})
 					})
-					.catch(error => callback({ 
+					.catch(error => callback({
 						status: 'error',
-						message: error 
+						message: error
 					}))
 				})
 			}
@@ -412,5 +412,9 @@ let Users = {
 		return salt;
 	}
 }
+<<<<<<< HEAD
 
 module.exports = Users;
+=======
+module.exports = Users;
+>>>>>>> parse
