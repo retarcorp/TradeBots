@@ -126,6 +126,9 @@ export default {
                     },
                     title: '',
                     botSettings: {
+                        initialOrder: 0,
+                        stopLoss: 0,
+                        takeProfit: 0,
                         dailyVolumeBTC: '',
                         tradingSignals: []
                     }
