@@ -12,6 +12,7 @@ var bots = require('./routes/bots');
 const bodyParser = require('body-parser');
 const expressSession = require('express-session');
 const cookieParser = require('cookie-parser');
+const cors = require('cors');
 
 const Mongo = require('./modules/Mongo')
 const Users = require('./modules/Users')
@@ -25,11 +26,12 @@ Mongo.init()
 // let binanceAPI = require('binance-api-node').default;	
 
 //Routers
-var signin = require('./routes/signin');
-var signup = require('./routes/signup');
-var bots = require('./routes/bots');
-var account = require('./routes/account');
-var statistics = require('./routes/statistics');
+var signin = require('./routes/signin')
+var signup = require('./routes/signup')
+var bots = require('./routes/bots')
+var account = require('./routes/account')
+var statistics = require('./routes/statistics')
+var tradeSignals = require('./routes/tradeSignals')
 
 
 var options = {};
@@ -42,6 +44,15 @@ if (typeof options.rootDir !== 'string') {
 options.dev = false; // Force production mode (no webpack middleware called)
 
 var nuxt = new Nuxt(options);
+app.use(cors({
+  origin: 'chrome-extension://pmjpmhnebaljfhlbhdmpdekpddpimjbh',
+  credentials: true
+  }));
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', 'chrome-extension://pmjpmhnebaljfhlbhdmpdekpddpimjbh');
+  res.header('Access-Control-Allow-Credentials', 'true')
+  next();
+})
 
 app.use(cookieParser());
 app.use(expressSession({secret: 'kitty secret'}));
@@ -54,6 +65,7 @@ app.use(account)
 app.use(signin)
 app.use(signup)
 app.use(statistics)
+app.use(tradeSignals)
 
 app.use(nuxt.render);
 app.listen(process.env.PORT || 8072);

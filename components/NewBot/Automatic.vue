@@ -73,11 +73,11 @@
                         >{{ tr.name }}</option>
                 </select>
                 <select
-                    v-model="autoItem.transactionTerm"
+                    v-model="autoItem.checkRating"
                     class="newBot__conditions-select">
                     <option value="default" disabled selected>Рекомендация</option>
                     <option
-                        v-for="rec in transactionTerms"
+                        v-for="rec in checkRating"
                         :key="rec.id"
                         :value="rec.id"
                         >{{ rec.name }}</option>
@@ -142,28 +142,24 @@ export default {
             autoItem: {
                 signal: 'default' ,
                 timeframe: 'default' ,
-                transactionTerm: 'default' 
+                checkRating: 'default' 
             },
             signals: [
                 { id: 'Tradingview', name: 'Tradingview'}
             ],
             timefraims: [
-                { id:"1M", name: '1M' },
-                { id:"3M", name: '3M' },
-                { id:"5M", name: '5M' },
-                { id:"15M", name: '15' },
-                { id:"30M", name: '30' },
-                { id:"1H", name: '1H' },
-                { id:"2H", name: '2H' },
-                { id:"4H", name: '4H' },
-                { id:"6H", name: '6H' },
-                { id:"12H", name: '12' },
-                { id:"1D", name: '1D' },
-                { id:"1W", name: '1W' }
+                { id:"1m", name: '1m' },
+                { id:"5m", name: '5m' },
+                { id:"15m", name: '15m' },
+                { id:"1h", name: '1h' },
+                { id:"4h", name: '4h' },
+                { id:"1d", name: '1d' },
+                { id:"1w", name: '1w' },
+                { id:"1M", name: '1M' }
             ],
-            transactionTerms: [
-                { id: 'BUY', name: 'Buy'},
-                { id: 'STRONG_BUY', name: 'Strong Buy'}
+            checkRating: [
+                { id: 'Buy', name: 'Buy'},
+                { id: 'Strong Buy', name: 'Strong Buy'}
             ],
             pairs: {
                 ETH: ['BTC', 'USDT'],
@@ -193,7 +189,7 @@ export default {
             this.autoItem = {
                 signal: 'default',
                 timeframe: 'default',
-                transactionTerm: 'default'
+                checkRating: 'default'
             }
         },
         onDeleteItem(i) {

@@ -1,22 +1,21 @@
 const CONSTANTS = {
 	TIMEFRAME: {
-		M1: '1M',
-		M3: '3M',
-		M5: '5M',
-		M15: '15M',
-		M30: '30M',
-		H1: '1H',
-		H2: '2H',
-		H4: '4H',
-		H6: '6H',
-		H12: '12H',
-		D1: '1D',
-		W1: '1W'
+		m1: '1m',
+		m5: '5m',
+		m15: '15m',
+		h1: '1h',
+		h4: '4h',
+		d1: '1d',
+		w1: '1w',
+		M1: '1M'
 	},
 
 	TRANSACTION_TERMS: {
-		BUY: 0,
-		STRONG_BUY: 1
+		BUY: 'Buy',
+		STRONG_BUY: 'Strong Buy',
+		SELL: 'Sell',
+		STRONG_SELL: 'Strong Sell',
+		NEUTRAL: 'Neutral'
 	},
 
 	VOLUME_LIMIT: {
@@ -90,6 +89,8 @@ const CONSTANTS = {
 
 	TIMEOUT: 500,
 
-	ORDER_TIMEOUT: 1000
+	ORDER_TIMEOUT: 1000,
+
+	TRADING_SIGNALS_COLLECTION: 'tradingSignals'
 }
 module.exports = CONSTANTS

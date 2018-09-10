@@ -96,7 +96,7 @@
                                 <tr class="table__tr" v-for="(signal,index) in bot.botSettings.tradingSignals" :key="signal.id">
                                     <td class="table__td">{{ index + 1 }}. {{ signal.signal }}</td>
                                     <td class="table__td">{{ signal.timeframe }}</td>
-                                    <td class="table__td">{{ signal.transactionTerm }}</td>
+                                    <td class="table__td">{{ signal.checkRating }}</td>
                                 </tr>
                             </tbody>
                         </table>

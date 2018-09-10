@@ -67,7 +67,7 @@ module.exports = {
 			coll.insertMany(data, (err, data) => {
 				this.Assert.equal(err, null);
 
-				if (callback) callback({ status: true });
+				if (callback) callback({ status: 'ok' });
 
 				console.log('Data inserted');
 
@@ -111,6 +111,18 @@ module.exports = {
 		})
 	}
 
+	,syncSelect: function(key, collection) {
+		let coll = this.db.collection(collection)
+		return new Promise( (resolve, reject) => {
+			if (!(typeof key == 'object')) key = {};
+			coll.find(key).toArray( (err, data) => {
+				this.Assert.equal(err, null)
+				if(err) reject(err)
+				resolve(data)
+			})
+		})
+	}
+
 	,syncUpdate: function(key, change, collection) {
 		// this.connect( (db, client) => {
 		let coll = this.db.collection(collection)
@@ -122,6 +134,19 @@ module.exports = {
 				this.Assert.equal(err, null)
 				if (err) reject(err)
 				resolve(data)
+			})
+		})
+	}
+
+	,updateMany: function(key, change, collection, callback) {
+		let coll = this.db.collection(collection);
+		let length = change.length - 1
+
+		if (!(typeof key == 'object')) key = {};
+		change.forEach((elem, i) => {
+			delete elem._id
+			this.update({ id: elem.id }, elem, collection, (err, data) => {
+				if(i == length && callback) callback(data) 
 			})
 		})
 	}
