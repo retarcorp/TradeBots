@@ -236,8 +236,17 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
             }
         },
         methods: {
-            setStatus(nextStatus) {
-
+            setStatus(value) {
+                this.$axios
+                    .$post('/bots/setStatus', {
+                        'botID': this.bot.botID,
+                        'status': value,
+                        'userID': this.$store.getters.getWsId
+                    })
+                    .then(res => {
+                        this.checkStatus(res);
+                    })
+                    .catch(e => console.log(e))
             },
             checkWindow(event) {
                 if (event.target.getAttribute('class') === 'confirm-block') {
