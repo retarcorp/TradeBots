@@ -880,6 +880,7 @@ module.exports = class Bot {
 	}
 
 	cloneDeep(obj) { // полное клонирование объекта
+		return Object.assign({}, obj)
 		return JSON.parse(JSON.stringify(obj))
 	}
 
