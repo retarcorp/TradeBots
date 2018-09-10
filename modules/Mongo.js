@@ -76,6 +76,20 @@ module.exports = {
 		// });
 	}
 
+	,syncInsert: function(data, collection) {
+		let coll = this.db.collection(collection);
+
+		if (!data.length) data = [data];
+
+		return new Promise( (resolve, reject) => {
+			coll.insertMany(data, (err, data) => {
+				this.Assert.equal(err, null)
+				if(err) reject(err)
+				resolve(data)
+			})
+		})
+	}
+
 	,syncSelect: function(key, collection) {
 		let coll = this.db.collection(collection)
 		return new Promise((resolve, reject) => {
