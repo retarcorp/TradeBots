@@ -127,11 +127,6 @@ export default {
                     title: '',
                     botSettings: {
                         initialOrder: 0,
-<<<<<<< HEAD
-                        stopLoss: 0,
-                        takeProfit: 0,
-=======
->>>>>>> server
                         dailyVolumeBTC: '',
                         stopLoss: 0,
                         takeProfit: 0,
