@@ -26,6 +26,8 @@ var bots = require('./routes/bots');
 var account = require('./routes/account');
 var statistics = require('./routes/statistics');
 
+var parse = require('./routes/parse');
+
 var options = {};
 if (fs.existsSync(nuxtConfigFile)) {
   options = require(nuxtConfigFile);
@@ -44,7 +46,13 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.disable('x-powered-by');
 
+app.use((req, res, next) => {
+	res.header('Access-Control-Allow-Origin', 'http://localhost:8072');
+	res.header('Access-Control-Allow-Credentials', 'true')
+	next();
+})
 
+app.post('/parse', parse)
 app.get('/bots/getBotsList', bots)
 app.post('/bots/add', bots)
 app.post('/bots/delete', bots)

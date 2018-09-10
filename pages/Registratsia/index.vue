@@ -4,9 +4,9 @@
         <input v-model="email" type="email" class="input auth-form__input" placeholder="Email">
         <input v-model="password" type="password" class="input auth-form__input" placeholder="Пароль">
         <input v-model="confirmPassword" type="password" class="input auth-form__input" placeholder="Подтверждение пароля">
-        <div class="d-flex">  
-            <button 
-                type="submit" 
+        <div class="d-flex">
+            <button
+                type="submit"
                 class="button button--success auth-form__button"
                 :class="{'button--disabled': !isFormValid}"
                 :disabled="!isFormValid">Регистрация</button>
@@ -40,7 +40,7 @@
                         password: this.password
                     })
                     .then(res => {
-                        if(res.status === 'ok') {
+                        if(res.status) {
                             this.$store.commit('setSpiner', false);
                             this.$router.push('/Vhod');
                         } else {
@@ -71,4 +71,3 @@
     border: 1px solid
 }
 </style>
-
