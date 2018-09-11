@@ -23,7 +23,7 @@ Mongo.init()
 // const Users = require('./modules/Users');
 // const Crypto = require('./modules/Crypto');
 // const Binance = require('./modules/Binance');
-// let binanceAPI = require('binance-api-node').default;	
+let binanceAPI = require('binance-api-node').default;
 
 //Routers
 var signin = require('./routes/signin')
@@ -66,6 +66,30 @@ app.use(signin)
 app.use(signup)
 app.use(statistics)
 app.use(tradeSignals)
+
+app.get('/test', (req,res,next) => {
+	var client = binanceAPI({
+	apiKey: 'UR86Pb7vTMdqZraNTg4yVGojzLeKRcEGVR5x4TR1uA043pY3wdKTrVr2c0omIxA4',
+	apiSecret: 'hfH8xnJ7TtJVfTsCvuHbTSz3Xcx93HZU6tLg6yiB2al7EcxG87K0G6Aen8vKWoVf'
+	})
+	client.prices().then(data => {
+		let obj = {
+			bnb:[],
+			btc:[],
+			eth:[],
+			usdt:[]
+		}
+		for(let key in data) {
+			key.match(/ETH$/) ? obj.eth.push(key.slice(0,-3)) : null;
+			key.match(/BTC$/) ? obj.btc.push(key.slice(0,-3)) : null;
+			key.match(/BNB$/) ? obj.bnb.push(key.slice(0,-3)) : null;
+			key.match(/USDT$/) ? obj.usdt.push(key.slice(0,-4)) : null
+		}
+		console.log(obj)
+
+	})
+	res.send('ok')
+})
 
 app.use(nuxt.render);
 app.listen(process.env.PORT || 8072);
