@@ -203,6 +203,19 @@ module.exports = {
 		// });
 	}
 
+	,syncDelete: function(key, collection) {
+		let coll = this.db.collection(collection);
+		if (!(typeof key == 'object')) key = { nothingToDelete: Infinity };
+
+		return new Promise( (resolve, reject) => {
+			coll.removeMany(key, (err, data) => {
+				this.Assert.equal(err, null);
+				if(err) reject(err)
+				resolve(data)
+			});
+		})
+	}
+
 	,drop: function(collection, callback) {
 		// this.connect( (db) => {
 			let coll = this.db.collection(collection);

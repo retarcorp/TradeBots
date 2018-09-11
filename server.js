@@ -67,6 +67,16 @@ app.use(signup)
 app.use(statistics)
 app.use(tradeSignals)
 
+app.get('/test1', (req, res, next) => {
+	var client = binanceAPI({
+		apiKey: 'UR86Pb7vTMdqZraNTg4yVGojzLeKRcEGVR5x4TR1uA043pY3wdKTrVr2c0omIxA4',
+		apiSecret: 'hfH8xnJ7TtJVfTsCvuHbTSz3Xcx93HZU6tLg6yiB2al7EcxG87K0G6Aen8vKWoVf'
+		})
+
+	client.dailyStats({symbol: 'BNBBTC'}).then(data => res.json(data))
+	
+})
+
 app.get('/test', (req,res,next) => {
 	var client = binanceAPI({
 	apiKey: 'UR86Pb7vTMdqZraNTg4yVGojzLeKRcEGVR5x4TR1uA043pY3wdKTrVr2c0omIxA4',

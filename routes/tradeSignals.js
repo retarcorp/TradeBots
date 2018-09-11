@@ -4,26 +4,22 @@ const CONSTANTS = require('../constants')
 var router = express.Router();
 
 router.get('/api/tradeSignals/getData', (req, res, next) => {
-	console.log('get')
+	console.log('/api/tradeSignals/getData')
 	Mongo.select({}, CONSTANTS.TRADING_SIGNALS_COLLECTION, data => {
-		setTimeout(() => { res.send(data) }, 1000)
+		setTimeout(() => { res.send(data) }, 5000)
 	})
 })
 
 router.post('/api/tradeSignals/postData', (req, res, next) => {
+	console.log('/api/tradeSignals/postData')
 	let data = req.body
 	Mongo.updateMany({}, data, CONSTANTS.TRADING_SIGNALS_COLLECTION, data => {
-		res.send({
-			status: 'ok',
-			data: data
-		})
+		setTimeout(() => {
+			res.send({
+				status: 'ok',
+				data: data
+			})
+		}, 5000)
 	})
 })
-/*
-setTimeout(() => {res.send({
-			status: 'ok',
-			data: data
-		})}, 10000)
-		*/
-
 module.exports = router;

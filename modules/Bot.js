@@ -6,6 +6,7 @@ let binanceAPI = require('binance-api-node').default
 const WSS = require('./WSS')
 const TradingSignals = require('../modules/TradingSignals')
 let Mongo = require('./Mongo')
+let sleep = require('system-sleep')
 
 const CONSTANTS = require('../constants')
 
@@ -207,6 +208,10 @@ module.exports = class Bot {
 		return this.toDecimal(stopPrice, decimal)
 	}
 
+	getBTCVolume() {
+		return Number(this.botSettings.dailyVolumeBTC)
+	}
+
 	toDecimal(value = 0, decimal = 2) {
 		return Number(Number(value).toFixed(decimal))
 	}
@@ -369,33 +374,32 @@ module.exports = class Bot {
 		return await this.Client.time()
 	}
 
-	async firstBuyOrder(orderId = 0, counter = 0) {
+	async firstBuyOrder(orderId = 0) {
 		console.log('--- firstBuyOrder')
-		counter++
-		let price = await this.getLastPrice(),
-			order
+		let order = {}
 		if(!orderId) {
-			// console.log('СОЗДАЕМ ОРДЕЕЕР')
-			let quantity = this.setQuantity(price), 
+			let price = await this.getLastPrice(),
+				quantity = this.setQuantity(price), 
 				newBuyOrder = await this.newBuyOrder(price, CONSTANTS.ORDER_TYPE.LIMIT, quantity)
 			orderId = newBuyOrder.orderId
 		}
-		order = await this.getOrder(orderId)
+
+		while(!(
+			this.checkFilling(order.status) ||
+			this.checkCanceling(order.status) || 
+			this.checkFailing(order.status)
+		))
+		{ 
+			order = await this.getOrder(orderId) 
+			sleep(5000)
+		}
+
 
 		if(this.checkFilling(order.status)) {
-			// console.log('ФИЛИНГ')
 			return new Order(order)
 		}
 		else if(this.checkCanceling(order.status) || this.checkFailing(order.status)) {
-			// console.log('ниХУЯ')
 			return {}
-		}
-		else {
-			// return await this.firstBuyOrder(orderId, counter)
-			// setTimeout(() => {
-			// 	console.log('чек чек ' + counter)
-			return await this.firstBuyOrder(orderId, counter)
-			// }, CONSTANTS.ORDER_TIMEOUT)
 		}
 	}
 
@@ -409,66 +413,86 @@ module.exports = class Bot {
 		console.log('-- startTradeAuto')
 		await this.pushTradingSignals()
 		let signal = await this.checkSignals()
-		console.log(signal)
-		//создать новый ордер по сигналам
-		let newBuyOrder = await this.firstBuyOrder()
-		let qty = this.setQuantity(null, Number(newBuyOrder.origQty))
-		this.orders.push(newBuyOrder)
-		let price = Number(newBuyOrder.price)
+		console.log('signal = ' + signal)
+		let volumeBTCFlag = await this.checkVolumeBTC()
+		console.log('volumeBTCFlag = ' + volumeBTCFlag)
+		
+		if(volumeBTCFlag) {
+			//создать новый ордер по сигналам
+			let newBuyOrder = await this.firstBuyOrder()
+			let qty = this.setQuantity(null, Number(newBuyOrder.origQty))
+			this.orders.push(newBuyOrder)
+			let price = Number(newBuyOrder.price)
 
-		this.botSettings.firstBuyPrice = price
-		let profitPrice = this.getProfitPrice(price)
-		let newSellOrder = await this.newSellOrder(profitPrice, CONSTANTS.ORDER_TYPE.LIMIT, qty)
-		if(this.status === CONSTANTS.BOT_STATUS.ACTIVE) {
-			this.currentOrder = newSellOrder
-			this.orders.push(newSellOrder)
+			this.botSettings.firstBuyPrice = price
+			let profitPrice = this.getProfitPrice(price)
+			let newSellOrder = await this.newSellOrder(profitPrice, CONSTANTS.ORDER_TYPE.LIMIT, qty)
+			if(this.status === CONSTANTS.BOT_STATUS.ACTIVE) {
+				this.currentOrder = newSellOrder
+				this.orders.push(newSellOrder)
 
-			this.tradeAuto(user)
-			.catch(err => {
-			})
+				this.tradeAuto(user)
+				.catch(err => {
+				})
+			}
 		}
+		else await this.startTradeAuto(user)
+	}
+
+	async checkVolumeBTC() {
+		let pair = this.getPair(),
+			currentBTCvolume = this.getBTCVolume(),
+			BTCvolume = await this.Client.dailyStats({ symbol: pair })
+		BTCvolume = Number(BTCvolume.quoteVolume)
+		console.log(currentBTCvolume, BTCvolume)
+		if(currentBTCvolume <= BTCvolume)
+			return true
+		else return await this.checkVolumeBTC()
 	}
 
 	async checkSignals() {
-		// console.log('--- checkSignals')
-		let signals = await Mongo.syncSelect({}, CONSTANTS.TRADING_SIGNALS_COLLECTION),
-			currentSignals = []
-		console.log(signals)
-		signals.forEach(signal => {
-			if(this.isCurrentSignal(signal)) currentSignals.push(signal)
-		})
-		// this.botSettings.tradingSignals = currentSignals
 		let ret = {
-			flag: false,
-			signal: {}
-		}
+				flag: false,
+				signal: {}
+			}
 		
-		currentSignals.forEach(signal => {
-			if(signal.checkRating === signal.rating) 
-				ret = {
-					flag: true,
-					signal: signal
-				}
-		})
-		// console.log(ret.flag)
-		if(!ret.flag) return await this.checkSignals()
-		else return ret.signal
+		while(!ret.flag) {
+			console.log('itr')
+			let signals = await Mongo.syncSelect({}, CONSTANTS.TRADING_SIGNALS_COLLECTION),
+				currentSignals = []
+			
+			signals.forEach(signal => {
+				if(this.isCurrentSignal(signal)) currentSignals.push(signal)
+			})
+			
+			currentSignals.forEach(signal => {
+				if(signal.checkRating === signal.rating || (signal.checkRating === CONSTANTS.TRANSACTION_TERMS.BUY && signal.rating === CONSTANTS.TRANSACTION_TERMS.STRONG_BUY)) 
+					ret = {
+						flag: true,
+						signal: signal
+					}
+			})
+			await sleep(5000)
+		}
+		return ret.signal
 	}
 
 	isCurrentSignal(signal) {
 		// console.log('---- isCurrentSignal')
-		let ret = false
-		this.botSettings.tradingSignals.forEach(curSignal => {
-			console.log('asssssssssss')
-			// console.log(curSignal.symbol === signal.symbol,
-			// 	curSignal.timeframe === signal.timeframe,
-			// 	curSignal.checkRating === signal.checkRating)
+		let ret = false,
+			l = this.botSettings.tradingSignals.length,
+			symbol = this.getPair()
+		for(let i = 0; i < l; i++) {
+			let curSignal = this.botSettings.tradingSignals[i]
 			if(
-				curSignal.symbol === signal.symbol &&
+				symbol === signal.symbol &&
 				curSignal.timeframe === signal.timeframe &&
 				curSignal.checkRating === signal.checkRating
-				) ret =  true
-		})
+				) {
+					this.botSettings.tradingSignals[i].rating = signal.rating
+					ret =  true
+				}
+		}
 		return ret
 	}
 
@@ -478,9 +502,11 @@ module.exports = class Bot {
 		let currentOrderStatus = this.currentOrder.status
 
 		if(this.checkFilling(currentOrderStatus) && !Number(this.freeze) && !Number(this.preFreeze)) {
+			await this.clearTradingSignals()
 			await this.disableBot('|is END')
 		}
 		else if(this.checkFailing(currentOrderStatus) && !Number(this.freeze) && !Number(this.preFreeze)) {
+			await this.clearTradingSignals()
 			await this.disableBot('|is FAIL or ENDING')	
 		}
 		else {
@@ -519,6 +545,7 @@ module.exports = class Bot {
 				else {
 					console.log('----- bot is disabled')
 					// console.warn('-> цикл завершен')
+					await this.clearTradingSignals()
 					await this.disableBot('нажали выкл -> бот завершил работу -> выключаем бота')
 				}
 			}
@@ -533,6 +560,17 @@ module.exports = class Bot {
 		for(let i = 0; i < l; i++) {
 			let signal = new TradingSignals(signals[i], this.getPair())
 			await Mongo.syncInsert(signal, CONSTANTS.TRADING_SIGNALS_COLLECTION)
+		}
+	}
+
+	async clearTradingSignals() {
+		console.log('---- clearTradingSignals')
+		let signals = this.botSettings.tradingSignals,
+			l = signals.length
+		for(let i = 0; i < l; i++) {
+			let signal = signals[i]	
+			await Mongo.syncDelete({ id: signal.id }, CONSTANTS.TRADING_SIGNALS_COLLECTION)
+			// await Mongo.syncDelete({ id: signal.id }, CONSTANTS.TRADING_SIGNALS_COLLECTION)
 		}
 	}
 
