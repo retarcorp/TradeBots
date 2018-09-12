@@ -83,7 +83,7 @@ const CONSTANTS = {
 	},
 
 	ORDER_TYPE: {
-		LIMIT: 'LIMIT', 
+		LIMIT: 'LIMIT',
 		MARKET: 'MARKET'
 	},
 
@@ -91,6 +91,8 @@ const CONSTANTS = {
 
 	ORDER_TIMEOUT: 1000,
 
-	TRADING_SIGNALS_COLLECTION: 'tradingSignals'
+	TRADING_SIGNALS_COLLECTION: 'tradingSignals',
+
+	SYMBOLS_LIST_COLLECTION: 'symbolsList'
 }
 module.exports = CONSTANTS

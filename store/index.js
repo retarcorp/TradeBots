@@ -80,7 +80,7 @@ const store = () =>
       setStatus(state, payload) {
         state.status = payload;
         if( payload === 'ok' || payload === 'info') {
-          setTimeout(function() { 
+          setTimeout(function() {
             state.status = '';
           }, 1000);
         }
