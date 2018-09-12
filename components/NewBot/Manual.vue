@@ -38,7 +38,7 @@
             </div>
             <div class="form-control newBot__settings-control">
                 <label class="label" for="count__save-order">Кол-во страховочных ордеров:</label>
-                <input @blur="checkStopLoss(); checkMaxOrders(); bot.botSettings.maxOpenSafetyOrders = bot.botSettings.safeOrder.amount" v-model="bot.botSettings.safeOrder.amount" id="count__save-order" type="number" class="input settings__input">
+                <input @blur="checkStopLoss(); checkMaxOrders();" v-model="bot.botSettings.safeOrder.amount" id="count__save-order" type="number" class="input settings__input">
             </div>
             <div class="form-control newBot__settings-control">
                 <label class="label" for="count__bots">Макс открытых СО:</label>
@@ -173,11 +173,14 @@
         methods: {
             checkMaxOrders() {
                 let bs = this.bot.botSettings
-                if(bs.maxOpenSafetyOrders > bs.safeOrder.amount) {
+                bs.maxOpenSafetyOrders = bs.safeOrder.amount
+                if(bs.maxOpenSafetyOrders >= bs.safeOrder.amount) {
                     if(bs.safeOrder.amount >= 3) {
                         bs.maxOpenSafetyOrders = 3
                     }
-                    bs.maxOpenSafetyOrders = bs.safeOrder.amount
+                    else {
+                        bs.maxOpenSafetyOrders = bs.safeOrder.amount
+                    }
                 }
             },
             checkStopLoss() {
