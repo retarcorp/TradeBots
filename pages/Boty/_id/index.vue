@@ -27,10 +27,10 @@
                         >{{ bot.freeze == '1' ? 'Разморозить' : 'Заморозить'}}</button>
                     <label class="checkbox">
                         <input
-                            @change.prevent="setStatus(!bot.status)"
+                            @change.prevent="setStatus(bot.status)"
                             type="checkbox"
                             class="checkbox__input button__status"
-                            :value="bot.status ? true : false"
+                            v-model="bot.status"
                             >
                         <div class="checkbox__text"></div>
                     </label>
@@ -230,24 +230,24 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
                 return this.$store.getters.getStatus;
             },
         },
-        watch: {
-            'bot.status'(value) {
-                if(oldHref === location.href){
-                this.$axios
-                    .$post('/bots/setStatus', {
-                        'botID': this.bot.botID,
-                        'status': value,
-                        'userID': this.$store.getters.getWsId
-                    })
-                    .then(res => {
-                        this.checkStatus(res);
-                    })
-                    .catch(e => console.log(e))
-                    } else {
-                    oldHref = location.href
-                    }
-            }
-        },
+        // watch: {
+        //     'bot.status'(value) {
+        //         if(oldHref === location.href){
+        //         this.$axios
+        //             .$post('/bots/setStatus', {
+        //                 'botID': this.bot.botID,
+        //                 'status': value,
+        //                 'userID': this.$store.getters.getWsId
+        //             })
+        //             .then(res => {
+        //                 this.checkStatus(res);
+        //             })
+        //             .catch(e => console.log(e))
+        //             } else {
+        //             oldHref = location.href
+        //             }
+        //     }
+        // },
         methods: {
             setStatus(value) {
                 this.$axios
