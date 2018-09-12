@@ -18,7 +18,7 @@ module.exports = class BotSettings {
 		currentOrder = initialOrder,
 		firstBuyPrice = 0,
 		quantity = 0,
-		quantityM = 0
+		decimalQty = 0
 	}) {
 		this.tradingSignals = tradingSignals
 		this.initialOrder = initialOrder
@@ -36,6 +36,6 @@ module.exports = class BotSettings {
 		this.quantity = quantity // количество монет
 		this.quantityOfUsedSafeOrders = quantityOfUsedSafeOrders
 		this.quantityOfActiveSafeOrders = quantityOfActiveSafeOrders
-		this.quantityM = quantityM
+		this.decimalQty = decimalQty
 	}
 }

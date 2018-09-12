@@ -185,7 +185,6 @@ export default {
         }
     },
     methods: {
-
         addItem() {
             this.bot.botSettings.tradingSignals.push(this.autoItem)
             this.autoItem = {

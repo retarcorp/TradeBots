@@ -14,7 +14,9 @@ const store = () =>
       message: '',
       statisticsList: [],
       clientAnswer: false,
-      pairs: {}
+      pairs: {},
+      minNotional: 0.001,
+      lotSize: 0.01
     },
     getters: {
       getSpinerStatus(state) {
@@ -102,10 +104,41 @@ const store = () =>
       },
       setSymbolsList(state, payload) {
         state.pairs = payload
+      },
+      setLotSize(state, payload) {
+        state.lotSize = payload
+      },
+      setMinNotional(state, payload) {
+        state.minNotional = payload
       }
     },
     actions: {
-      getSymbolsList({ commit }){
+      getMinNotional({ commit }, payload) {
+        console.log(payload)
+        this.$axios
+        .$get(`/api/symbol/getLotSize:${payload}`)
+        .then(res => {
+          if(res.status === 'ok') {
+            commit('setMinNotional', res.minNotional)
+          }
+        })
+        .catch(err => {
+          console.log(err)
+        })
+      },
+      getLotSize({ commit }, payload) {
+        this.$axios
+          .$get(`/api/symbol/getLotSize:${payload}`)
+          .then(res => {
+            if(res.status === 'ok') {
+              commit('setLotSize', res.lotSize)
+            }
+          })
+          .catch(err => {
+            console.log(err)
+          })
+      },
+      getSymbolsList({ commit }) {
         commit('setSpiner', true)
         this.$axios
           .$get('/api/symbol/list')

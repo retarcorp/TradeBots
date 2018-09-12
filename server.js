@@ -16,14 +16,18 @@ const cors = require('cors');
 
 const Mongo = require('./modules/Mongo')
 const Users = require('./modules/Users')
+let Symbols = require('./modules/Symbols')
 Mongo.init()
 .then(data => {
 	Users.Bots.setBotsArray()
+	Symbols.initClient()
+	Symbols.updateSymbolsPriceFilter()
 })
 // const Users = require('./modules/Users');
 // const Crypto = require('./modules/Crypto');
 // const Binance = require('./modules/Binance');
 let binanceAPI = require('binance-api-node').default;
+
 
 //Routers
 var signin = require('./routes/signin')
@@ -69,16 +73,9 @@ app.use(statistics)
 app.use(tradeSignals)
 app.use(symbolList)
 
-app.get('/test1', (req, res, next) => {
-	var client = binanceAPI({
-		apiKey: 'UR86Pb7vTMdqZraNTg4yVGojzLeKRcEGVR5x4TR1uA043pY3wdKTrVr2c0omIxA4',
-		apiSecret: 'hfH8xnJ7TtJVfTsCvuHbTSz3Xcx93HZU6tLg6yiB2al7EcxG87K0G6Aen8vKWoVf'
-		})
-
-	client.dailyStats({symbol: 'BNBBTC'}).then(data => res.json(data))
-
+app.get('/test', (req, res, next) => {
+	Symbols.updateSymbolsPriceFilter().then(data => res.send(data))
 })
-
 
 app.use(nuxt.render);
 app.listen(process.env.PORT || 8072);

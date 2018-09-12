@@ -42,7 +42,7 @@
             </div>
             <div class="form-control newBot__settings-control">
                 <label class="label" for="count__bots">Макс открытых СО:</label>
-                <input @blur="checkMaxOrders" v-model="bot.botSettings.maxOpenSafetyOrders" id="count__max-save-order" type="number" class="input settings__input">
+                <input @blur="checkMaxOrders(true)" v-model="bot.botSettings.maxOpenSafetyOrders" id="count__max-save-order" type="number" class="input settings__input">
             </div>
             <div class="form-control newBot__settings-control" style="margin-top: 9px;">
                 <label class="label label__double-row" for="deviation">Отклонение от начального ордера %</label>
@@ -171,15 +171,15 @@
             }
         },
         methods: {
-            checkMaxOrders() {
-                let bs = this.bot.botSettings
-                bs.maxOpenSafetyOrders = bs.safeOrder.amount
-                if(bs.maxOpenSafetyOrders >= bs.safeOrder.amount) {
-                    if(bs.safeOrder.amount >= 3) {
+            checkMaxOrders(flag) {
+                let bs = this.bot.botSettings,
+                    temp = flag ? bs.maxOpenSafetyOrders : bs.safeOrder.amount
+                if(temp >= bs.safeOrder.amount) {
+                    if(bs.safeOrder.amount >= 3 && !flag) {
                         bs.maxOpenSafetyOrders = 3
                     }
-                    else {
-                        bs.maxOpenSafetyOrders = bs.safeOrder.amount
+                    else if(temp > bs.safeOrder.amount) {
+                        bs.maxOpenSafetyOrders = 3
                     }
                 }
             },

@@ -2,6 +2,7 @@ let BotSettings = require('./BotSettings')
 let Order = require('./Order')
 let Pair = require('./Pair')
 const Crypto = require('../modules/Crypto')
+const Symbols = require('./Symbols')
 let binanceAPI = require('binance-api-node').default
 const WSS = require('./WSS')
 const TradingSignals = require('../modules/TradingSignals')
@@ -67,6 +68,7 @@ module.exports = class Bot {
 		let message = '',
 			status = ''
 		if(this.checkForActivate(nextStatus)) {
+			this.botSettings.decimalQty = await Symbols.getLotSize(this.getPair())
 			this.status = nextStatus
 			console.log('activate bot')
 			if(this.state === CONSTANTS.BOT_STATE.MANUAL) {
@@ -140,7 +142,7 @@ module.exports = class Bot {
 		price = Number(price)
 		// console.log("GET КОЛИЧЕСТВО _________ " + this.botSettings.quantity)
 		if(!safeFlag)
-			return price ? this.toDecimal(Number(this.botSettings.currentOrder) / price) : Number(this.botSettings.quantity)
+			return price ? this.toDecimal(Number(this.botSettings.currentOrder) / price + this.botSettings.decimalQty) : Number(this.botSettings.quantity)
 		else 
 			return this.toDecimal(Number(this.botSettings.safeOrder.size) / price)
 	}
@@ -161,7 +163,8 @@ module.exports = class Bot {
 	}
 
 	getDecimal(price) {
-		return String(price).length - 2
+		if(price) return String(price).length - 2
+		return String(this.botSettings.decimalQty).length - 2
 	}
 
 	getDeviation() {
@@ -212,7 +215,7 @@ module.exports = class Bot {
 		return Number(this.botSettings.dailyVolumeBTC)
 	}
 
-	toDecimal(value = 0, decimal = 2) {
+	toDecimal(value = 0, decimal = this.getDecimal()) {
 		return Number(Number(value).toFixed(decimal))
 	}
 
@@ -246,7 +249,7 @@ module.exports = class Bot {
 		}
 		catch(error) {
 			if(quantity > 0) {
-				let step = 0.01
+				let step = this.botSettings.decimalQty
 				if(
 					(this.isError1013(error) && this.isError2010(prevError)) ||
 					(this.isError1013(prevError) && this.isError2010(error))
@@ -255,7 +258,7 @@ module.exports = class Bot {
 				else if(this.isError2010(error)) quantity -= step
 				
 				// console.log(this.toDecimal(quantity, 2))
-				let order = await this.newBuyOrder(price, type, this.toDecimal(quantity, 2), error)
+				let order = await this.newBuyOrder(price, type, this.toDecimal(quantity), error)
 				return order
 			}
 			else return {}
@@ -285,15 +288,15 @@ module.exports = class Bot {
 		catch(error) {
 			// console.log(this.errorCode(error))
 			if(quantity > 0) {
-				let step = 0.01
+				let step = this.botSettings.decimalQty
 				if(
 					(this.isError1013(error) && this.isError2010(prevError)) ||
 					(this.isError1013(prevError) && this.isError2010(error))
 				) return await this.disableBot('Невозможно продать монеты')
 				else if(this.isError1013(error)) quantity += step
 				else if(this.isError2010(error)) quantity -= step
-
-				let order = await this.newSellOrder(price, type, this.toDecimal(quantity, 2), error)
+				console.log(price,  this.toDecimal(quantity))
+				let order = await this.newSellOrder(price, type, this.toDecimal(quantity), error)
 				return order
 			}
 			else return {}
@@ -390,6 +393,7 @@ module.exports = class Bot {
 			this.checkFailing(order.status)
 		))
 		{ 
+			console.log('1')
 			order = await this.getOrder(orderId) 
 			sleep(5000)
 		}
@@ -1060,15 +1064,6 @@ module.exports = class Bot {
 		// 	message: 'бот успешно заморожен',
 		// 	data: { freeze: this.freeze }
 		// }
-	}
-
-	async changeFreeze1(nextFreeze, user) {
-		this.freeze = nextFreeze
-		// console.log('asd')
-		return {
-			status: 'ok',
-			data: { freeze: this.freeze }
-		}
 	}
 
 	async changeFreeze(nextFreeze, user) {

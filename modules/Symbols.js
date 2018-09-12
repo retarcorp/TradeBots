@@ -2,14 +2,20 @@ const Mongo = require('./Mongo');
 const CONSTANTS = require('../constants');
 const binanceAPI = require('binance-api-node').default
 
-module.exports = {
-  updateSymbolsList : () => {
-    let client = binanceAPI({
-  	apiKey: 'UR86Pb7vTMdqZraNTg4yVGojzLeKRcEGVR5x4TR1uA043pY3wdKTrVr2c0omIxA4',
-  	apiSecret: 'hfH8xnJ7TtJVfTsCvuHbTSz3Xcx93HZU6tLg6yiB2al7EcxG87K0G6Aen8vKWoVf'
+var Symbols = {
+	Client: null,
+
+	initClient: function() {
+		this.Client = binanceAPI({
+			apiKey: '',
+			apiSecret: ''
 		})
+	},
+
+  updateSymbolsList: function() {
 		return new Promise( (resolve, reject) => {
-			client.prices().then(data => {
+			this.Client.prices()
+			.then(data => {
 				let obj = {
 					BNB:[],
 					BTC:[],
@@ -22,11 +28,62 @@ module.exports = {
 					key.match(/BNB$/) ? obj.BNB.push(key.slice(0,-3)) : null;
 					key.match(/USDT$/) ? obj.USDT.push(key.slice(0,-4)) : null
 				}
-				Mongo.update({},obj,CONSTANTS.SYMBOLS_LIST_COLLECTION, (data, err) => {
+				Mongo.update({}, obj, CONSTANTS.SYMBOLS_LIST_COLLECTION, (data, err) => {
 					if(err) reject(err)
 					resolve(data)
 				})
 			})
 		})
-  }
+	},
+
+	getSymbolsPriceFilter: function() {
+		return new Promise( (resolve, reject) => {
+			Mongo.select({}, CONSTANTS.SYMBOLS_PRICE_FILTER_COLLECTION, (data, err) => {
+				if(err) reject(err)
+				resolve(data[0].symbols)
+			}) 
+		})
+	},
+	
+	updateSymbolsPriceFilter: function() {
+		console.log('update SymbolsPriceFilter')
+		return new Promise( (resolve, reject) => {
+			this.Client.exchangeInfo()
+			.then(data => {
+				Mongo.update({}, {symbols: data.symbols, id: 123}, CONSTANTS.SYMBOLS_PRICE_FILTER_COLLECTION, (data, err) => {
+					if(err) reject(err)
+					resolve(data)
+				})
+			})
+		})
+	},
+
+	getLotSize: async function(_symbol) {
+		if(_symbol.length > 4) {
+			let symbols = await this.getSymbolsPriceFilter(),
+				symbol = symbols.find(elem => elem.symbol === _symbol),
+				lotSize = symbol.filters.find(elem => elem.filterType === CONSTANTS.SYMBOLS_FILTERS.LOT_SIZE)
+
+			return Number(lotSize.minQty)
+		}
+		else {
+			return 0.001
+		}
+	},
+
+	getMinNotional: async function(_symbol) {
+		if(_symbol.length > 4) {
+			let symbols = await this.getSymbolsPriceFilter(),
+				symbol = symbols.find(elem => elem.symbol === _symbol),
+				minNotional = symbol.filters.find(elem => elem.filterType === CONSTANTS.SYMBOLS_FILTERS.MIN_NOTIONAL)
+
+			return Number(minNotional.minNotional)
+		}
+		else {
+			return 0.001
+		}
+	}
 }
+
+
+module.exports = Symbols
