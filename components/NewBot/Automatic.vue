@@ -8,18 +8,19 @@
             <div class="form-control newBot__settings-control">
                 <label class="label" for="main__pair">Основная пара:</label>
                 <select 
-                    v-model="bot.pair.from" 
+                    v-model="bot.pair.to" 
                     id="main__pair" 
                     type="text" 
                     class="input settings__input">
                     <option value="ETH">ETH</option>
                     <option value="BNB">BNB</option>
                     <option value="BTC">BTC</option>
+                    <option value="USDT">USDT</option>
                 </select>
             </div>
             <div class="form-control newBot__settings-control">
                 <label class="label" for="main__pair">Котируемая пара:</label>
-                <select v-model="bot.pair.to" id="main__pair" type="text" class="input settings__input">
+                <select v-model="bot.pair.from" id="main__pair" type="text" class="input settings__input">
                     <option 
                         v-for="pair in filteredPairs" 
                         :key="pair.id" 
@@ -174,7 +175,7 @@ export default {
                 .find(field => this.autoItem[field] === 'default')         
         },
         filteredPairs() {
-                return this.pairs[this.bot.pair.from]
+                return this.$store.pairs[this.bot.pair.to]
         }
     },
     watch: {

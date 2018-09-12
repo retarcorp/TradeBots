@@ -13,7 +13,8 @@ const store = () =>
       freeze: '',
       message: '',
       statisticsList: [],
-      clientAnswer: false
+      clientAnswer: false,
+      pairs: {}
     },
     getters: {
       getSpinerStatus(state) {
@@ -98,9 +99,26 @@ const store = () =>
       },
       clearAnswer(state) {
         state.clientAnswer = '';
+      },
+      setSymbolList(state, payload) {
+        state.pairs = payload
       }
     },
     actions: {
+      getList({ commit }, payload){
+        commit('setSpiner', true)
+        this.$axios
+          .$get('/api/symbol/list')
+          .then(res => {
+            if(res.status === 'ok') {
+              commit('setSymbolList', res.data)
+            }
+            else console.error(res)
+          })
+          .catch(err => {
+            console.error(err)
+          })
+      },
       setAuthorizedStatus({ commit }, payload) {
         commit("setAuthorized", payload);
       },
@@ -123,6 +141,7 @@ const store = () =>
       addNewBot({ commit }, payload) {
         commit("addNewBot", payload);
       },
+      
       setBotsList({ commit, dispatch }) {
         commit('setSpiner', true);
         this.$axios
