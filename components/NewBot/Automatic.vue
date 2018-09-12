@@ -7,10 +7,10 @@
             </div>
             <div class="form-control newBot__settings-control">
                 <label class="label" for="main__pair">Основная пара:</label>
-                <select 
-                    v-model="bot.pair.from" 
-                    id="main__pair" 
-                    type="text" 
+                <select
+                    v-model="bot.pair.from"
+                    id="main__pair"
+                    type="text"
                     class="input settings__input">
                     <option value="ETH">ETH</option>
                     <option value="BNB">BNB</option>
@@ -20,9 +20,9 @@
             <div class="form-control newBot__settings-control">
                 <label class="label" for="main__pair">Котируемая пара:</label>
                 <select v-model="bot.pair.to" id="main__pair" type="text" class="input settings__input">
-                    <option 
-                        v-for="pair in filteredPairs" 
-                        :key="pair.id" 
+                    <option
+                        v-for="pair in filteredPairs"
+                        :key="pair.id"
                         :value="pair"
                         >{{ pair }}</option>
                 </select>
@@ -37,10 +37,10 @@
             </div>
             <div class="form-control newBot__settings-control">
                 <label class="label" for="stop__loss">Стоп лосс %</label>
-                <input 
-                    v-model="bot.botSettings.stopLoss" 
-                    id="stop__loss" 
-                    type="number" 
+                <input
+                    v-model="bot.botSettings.stopLoss"
+                    id="stop__loss"
+                    type="number"
                     step='0.01'
                     class="input settings__input">
             </div>
@@ -56,9 +56,9 @@
                     v-model="autoItem.signal"
                     class="newBot__conditions-select">
                     <option value="default" disabled selected>Стратегия</option>
-                    <option 
-                        v-for="signal in signals" 
-                        :key="signal.id" 
+                    <option
+                        v-for="signal in signals"
+                        :key="signal.id"
                         :value="signal.id"
                         >{{ signal.name }}</option>
                 </select>
@@ -66,9 +66,9 @@
                     v-model="autoItem.timeframe"
                     class="newBot__conditions-select">
                     <option value="default" disabled selected>Таймфрейм</option>
-                    <option 
-                        v-for="tr in timefraims" 
-                        :key="tr.id" 
+                    <option
+                        v-for="tr in timefraims"
+                        :key="tr.id"
                         :value="tr.id"
                         >{{ tr.name }}</option>
                 </select>
@@ -83,7 +83,7 @@
                         >{{ rec.name }}</option>
                 </select>
                 <button
-                    @click.prevent="addItem" 
+                    @click.prevent="addItem"
                     class="button button--success newBot__conditions-select"
                     :class="{'button--disabled' : isFormValid}"
                     :disabled="isFormValid">Добавить условие</button>
@@ -99,7 +99,7 @@
         <div class="text-right">
             <button
                 @click.prevent="addAutomaticBot"
-                :disabled="bot.botSettings.tradingSignals.length === 0" 
+                :disabled="bot.botSettings.tradingSignals.length === 0"
                 class="button button--success"
                 :class="{'button--disabled': bot.botSettings.tradingSignals.length === 0}"
                 >{{ (bot && bot.botID) ? 'Сохранить' : 'Добавить' }}</button>
@@ -142,7 +142,7 @@ export default {
             autoItem: {
                 signal: 'default' ,
                 timeframe: 'default' ,
-                checkRating: 'default' 
+                checkRating: 'default'
             },
             signals: [
                 { id: 'Tradingview', name: 'Tradingview'}
@@ -171,7 +171,7 @@ export default {
     computed: {
         isFormValid() {
             return Object.keys(this.autoItem)
-                .find(field => this.autoItem[field] === 'default')         
+                .find(field => this.autoItem[field] === 'default')
         },
         filteredPairs() {
                 return this.pairs[this.bot.pair.from]
@@ -275,4 +275,3 @@ export default {
     opacity: .5;
 }
 </style>
-
