@@ -100,18 +100,18 @@ const store = () =>
       clearAnswer(state) {
         state.clientAnswer = '';
       },
-      setSymbolList(state, payload) {
+      setSymbolsList(state, payload) {
         state.pairs = payload
       }
     },
     actions: {
-      getList({ commit }, payload){
+      getSymbolsList({ commit }){
         commit('setSpiner', true)
         this.$axios
           .$get('/api/symbol/list')
           .then(res => {
             if(res.status === 'ok') {
-              commit('setSymbolList', res.data)
+              commit('setSymbolsList', res.data)
             }
             else console.error(res)
           })

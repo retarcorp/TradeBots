@@ -161,7 +161,7 @@ module.exports = {
 			coll.update(key, { $set: change }, { upsert: true }, (err, data) => {
 				this.Assert.equal(err, null);
 
-				if (callback) callback(data);
+				if (callback) callback(data, err);
 				// console.log('Data updated');
 
                 //client.close();

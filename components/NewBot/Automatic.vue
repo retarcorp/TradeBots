@@ -6,6 +6,16 @@
                 <input v-model="bot.title" type="text" class="input">
             </div>
             <div class="form-control newBot__settings-control">
+                <label class="label" for="main__pair">Котируемая пара:</label>
+                <select v-model="bot.pair.from" id="main__pair" type="text" class="input settings__input">
+                    <option 
+                        v-for="pair in filteredPairs" 
+                        :key="pair.id" 
+                        :value="pair"
+                        >{{ pair }}</option>
+                </select>
+            </div>
+            <div class="form-control newBot__settings-control">
                 <label class="label" for="main__pair">Основная пара:</label>
                 <select 
                     v-model="bot.pair.to" 
@@ -18,16 +28,7 @@
                     <option value="USDT">USDT</option>
                 </select>
             </div>
-            <div class="form-control newBot__settings-control">
-                <label class="label" for="main__pair">Котируемая пара:</label>
-                <select v-model="bot.pair.from" id="main__pair" type="text" class="input settings__input">
-                    <option 
-                        v-for="pair in filteredPairs" 
-                        :key="pair.id" 
-                        :value="pair"
-                        >{{ pair }}</option>
-                </select>
-            </div>
+            
             <div class="form-control newBot__settings-control">
                 <label class="label">Дневной объём (BTC):</label>
                 <input v-model="bot.botSettings.dailyVolumeBTC" type="number" class="input">
@@ -175,12 +176,12 @@ export default {
                 .find(field => this.autoItem[field] === 'default')
         },
         filteredPairs() {
-                return this.$store.pairs[this.bot.pair.to]
+            return this.$store.state.pairs[this.bot.pair.to]
         }
     },
     watch: {
-        'bot.pair.from'() {
-            this.bot.pair.to = ''
+        'bot.pair.to'() {
+            this.bot.pair.from = ''
         }
     },
     methods: {

@@ -32,6 +32,7 @@ var bots = require('./routes/bots')
 var account = require('./routes/account')
 var statistics = require('./routes/statistics')
 var tradeSignals = require('./routes/tradeSignals')
+var symbolList = require('./routes/symbolsList')
 
 
 var options = {};
@@ -66,6 +67,7 @@ app.use(signin)
 app.use(signup)
 app.use(statistics)
 app.use(tradeSignals)
+app.use(symbolList)
 
 app.get('/test1', (req, res, next) => {
 	var client = binanceAPI({

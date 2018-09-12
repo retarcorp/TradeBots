@@ -89,7 +89,7 @@ module.exports = class Bot {
 			this.status = nextStatus
 			status = 'info'
 			message = "Бот перестанет работать после завершения текущего цикла"
-			console.log('deactivate bot')
+			console.log('deactivate bot') 
 			await this.syncUpdateBot(user)
 		}
 		else {

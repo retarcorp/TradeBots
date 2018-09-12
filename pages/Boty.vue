@@ -56,6 +56,7 @@ export default {
     },
     created() {
         this.$store.dispatch('setBotsList')
+        this.$store.dispatch('getSymbolsList')
     }
 }
 </script>

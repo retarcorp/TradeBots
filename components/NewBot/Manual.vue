@@ -6,6 +6,16 @@
                 <input v-model="bot.title" id="bot__name" type="text" class="input settings__input">
             </div>
             <div class="form-control newBot__settings-control">
+                <label class="label" for="main__pair">Котируемая пара:</label>
+                <select v-model="bot.pair.from" id="main__pair" type="text" class="input settings__input">
+                    <option 
+                        v-for="pair in filteredPairs" 
+                        :key="pair.id" 
+                        :value="pair"
+                        >{{ pair }}</option>
+                </select>
+            </div>
+            <div class="form-control newBot__settings-control">
                 <label class="label" for="main__pair">Основная пара:</label>
                 <select 
                     v-model="bot.pair.to" 
@@ -16,16 +26,6 @@
                     <option value="BNB">BNB</option>
                     <option value="BTC">BTC</option>
                     <option value="NANO">USDT</option>
-                </select>
-            </div>
-            <div class="form-control newBot__settings-control">
-                <label class="label" for="main__pair">Котируемая пара:</label>
-                <select v-model="bot.pair.from" id="main__pair" type="text" class="input settings__input">
-                    <option 
-                        v-for="pair in filteredPairs" 
-                        :key="pair.id" 
-                        :value="pair"
-                        >{{ pair }}</option>
                 </select>
             </div>
             <div class="form-control newBot__settings-control">
@@ -162,18 +162,22 @@
                         this.bot.botSettings.takeProfit != 0
             },
             filteredPairs() {
-                return this.$store.pairs[this.bot.pair.to]
+                return this.$store.state.pairs[this.bot.pair.to]
             }
         },
         watch: {
-            'bot.pair.from'() {
-                this.bot.pair.to = ''
+            'bot.pair.to'() {
+                this.bot.pair.from = ''
             }
         },
         methods: {
             checkMaxOrders() {
-                if(this.bot.botSettings.maxOpenSafetyOrders > this.bot.botSettings.safeOrder.amount) {
-                    this.bot.botSettings.maxOpenSafetyOrders = this.bot.botSettings.safeOrder.amount
+                let bs = this.bot.botSettings
+                if(bs.maxOpenSafetyOrders > bs.safeOrder.amount) {
+                    if(bs.safeOrder.amount >= 3) {
+                        bs.maxOpenSafetyOrders = 3
+                    }
+                    bs.maxOpenSafetyOrders = bs.safeOrder.amount
                 }
             },
             checkStopLoss() {
