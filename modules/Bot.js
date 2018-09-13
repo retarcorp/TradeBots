@@ -47,12 +47,24 @@ module.exports = class Bot {
 	}
 
 	setClient(user) {
-		let key = Crypto.decipher(user.binanceAPI.key,  Crypto.getKey(user.regDate, user.name))
-		let secret = Crypto.decipher(user.binanceAPI.secret,  Crypto.getKey(user.regDate, user.name))
+		let key = '',
+			secret = '',
+			ret = true
+		try {
+			key = Crypto.decipher(user.binanceAPI.key,  Crypto.getKey(user.regDate, user.name))
+			secret = Crypto.decipher(user.binanceAPI.secret,  Crypto.getKey(user.regDate, user.name))
+		}
+		catch(err) {
+			console.log(err)
+			key = ''
+			secret = ''
+			ret = false
+		}
 		this.Client = binanceAPI({
 			apiKey: key,
 			apiSecret: secret
 		})
+		return ret
 	}
 
 	checkForActivate(nextStatus) {
@@ -67,12 +79,13 @@ module.exports = class Bot {
 
 	continueTrade(user) {
 		console.log('****************continueTrade****************')
-		this.setClient(user)
-		if(this.state === CONSTANTS.BOT_STATE.MANUAL) {
-			this.tradeManual(user)
-		}
-		else if(this.state === CONSTANTS.BOT_STATE.AUTO) {
-			this.tradeAuto(user)
+		if(this.setClient(user)) {
+			if(this.state === CONSTANTS.BOT_STATE.MANUAL) {
+				this.tradeManual(user)
+			}
+			else if(this.state === CONSTANTS.BOT_STATE.AUTO) {
+				this.tradeAuto(user)
+			}
 		}
 	}
 

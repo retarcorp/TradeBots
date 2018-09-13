@@ -130,6 +130,7 @@ module.exports = {
 		if (!(typeof key == 'object')) key = {}
 		if (!(typeof change == 'object')) change = {}
 		return new Promise( (resolve, reject) => {
+			delete change._id
 			coll.update(key, { $set: change }, { upsert: true }, (err, data) => {
 				this.Assert.equal(err, null)
 				if (err) reject(err)
