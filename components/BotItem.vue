@@ -3,7 +3,7 @@
         <div class="bot__state" :class="{'bot__state--manual': isBotManual}"></div>
         <div class="bot__name"><slot></slot></div>
         <div v-show="isBotHasOrders" class="bot__status"><img src="~/assets/svg/market.svg"></div>
-        <div class="bot__signal" :class="{'bot__signal--disabled' : !isBotActive}"></div>
+        <div class="bot__signal" :class="{'bot__signal--disabled' : !isBotActive, 'bot__signal--freeze' : isBotFreeze}"></div>
     </nuxt-link>
 </template>
 
@@ -31,12 +31,21 @@
                 if(this.id) {
                     return this.bot.status === true
                 }
+            },
+            isBotFreeze() {
+                if(this.id) {
+                    return this.bot.freeze === '1'
+                }
             }
         }
     }
 </script>
 
 <style scoped>
+a.nuxt-link-exact-active {
+    background-color: #DCDCDC !important; 
+}
+
 .bot {
     position: relative;
     display: flex;
@@ -86,6 +95,10 @@
 
 .bot__signal--disabled {
     background-color: inherit;
+}
+
+.bot__signal--freeze {
+    background-color: #74b9ff;
 }
 </style>
 

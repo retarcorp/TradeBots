@@ -63,7 +63,6 @@ var Symbols = {
 			let symbols = await this.getSymbolsPriceFilter(),
 				symbol = symbols.find(elem => elem.symbol === _symbol),
 				lotSize = symbol.filters.find(elem => elem.filterType === CONSTANTS.SYMBOLS_FILTERS.LOT_SIZE)
-
 			return Number(lotSize.minQty)
 		}
 		else {

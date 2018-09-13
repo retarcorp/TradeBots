@@ -29,6 +29,7 @@ let Users = {
 				,password: password
 				,salt: salt
 				,admin: admin
+				,ordersList: {}
 				,bots: []
 				,binanceAPI: {
 					name: null,
@@ -87,7 +88,7 @@ let Users = {
 				retData = {
 					name: data.binanceAPI.name,
 					key: Crypto.decipher(data.binanceAPI.key, Crypto.getKey(data.regDate, data.name)),
-					secret: '***'
+					secret: '*******'
 				}
 			}
 			if(callback) callback({
@@ -104,8 +105,9 @@ let Users = {
 			Mongo.select({}, 'users', (users) => {
 				users.forEach(user => {
 					user.bots.forEach(bot => {
-						this.Bots.push(new Bot(bot))
-						console.log(bot.title)
+						bot = new Bot(bot)
+						this.Bots.push(bot)
+						bot.continueTrade(user)
 					})
 				})
 			})
@@ -203,11 +205,7 @@ let Users = {
 					const index = this.Bots.findIndex(bot => bot.botID === botData.botID)
 
 					this.Bots[index].changeStatus(botData.status, data)
-					.then( d => {
-						Mongo.update({name: data.name}, data, 'users', (data) => {
-							callback(d)
-						})
-					})
+					.then( d => callback(d) )
 
 					// const index = data.bots.findIndex(bot => bot.botID === botData.botID)
 					// let newBot = new Bot(data.bots[index])
@@ -302,11 +300,7 @@ let Users = {
 					// let bot = new Bot(data.bots[index], data)
 					// data.bots[index] = bot
 					this.Bots[index].changeFreeze(reqData.freeze, data)
-					.then(d => {
-						Mongo.update({name: data.name}, data, 'users', (data) => {
-							callback(d)
-						})
-					})
+					.then(d => callback(d) )
 					.catch(error => callback({
 						status: 'error',
 						message: error
@@ -324,21 +318,30 @@ let Users = {
 
 	}
 
-	,async sendClientStatistics(user) {
-		let Client = this.getClientAPI(user)
+	,async sendClientStatistics(userData) {
+		let statistics = [],
+			ordersList = userData.ordersList 
 
-		let statistics = []
-		for(let i = 0; i < CONSTANTS.PAIRS.length; i++) {
-			let symbol = CONSTANTS.PAIRS[i]
-			let list = []
-			try {
-				list = await Client.allOrders({symbol})
+		if(ordersList) {
+			for(bot in ordersList) {
+				statistics.push(...ordersList[bot])
 			}
-			catch(error) {
-				// console.log(error)
-			}
-			statistics.push(...list)
 		}
+
+		// let Client = this.getClientAPI(user)
+
+		// let statistics = []
+		// for(let i = 0; i < CONSTANTS.PAIRS.length; i++) {
+		// 	let symbol = CONSTANTS.PAIRS[i]
+		// 	let list = []
+		// 	try {
+		// 		list = await Client.allOrders({symbol})
+		// 	}
+		// 	catch(error) {
+		// 		// console.log(error)
+		// 	}
+		// 	statistics.push(...list)
+		// }
 		return {
 			status: 'ok',
 			data: statistics

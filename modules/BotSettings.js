@@ -1,6 +1,7 @@
 let Martingale = require('./Martingale')
 let SafeOrder = require('./SafeOrder')
 let TradingSignals = require('./TradingSignals')
+const Symbols = require('./Symbols')
 
 module.exports = class BotSettings {
 	constructor({

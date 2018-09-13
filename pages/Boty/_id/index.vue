@@ -44,12 +44,11 @@
                     <input id="counter_bots" type="text" class="page__input settings__input">
                 </div> -->
                 <div v-show="!isChanging" class="settings__description">
-                    <!-- <p class="settings__item">Дневной объем (BTC): <span>123</span></p> -->
                     <p class="settings__item">Основная пара:
-                        <span>{{ bot.pair.from }}</span>
+                        <span>{{ bot.pair.to }}</span>
                     </p>
                     <p class="settings__item">Котируемая пара:
-                        <span>{{ bot.pair.to }}</span>
+                        <span>{{ bot.pair.from }}</span>
                     </p>
                     <template v-if="bot.state === '1'">
                         <p class="settings__item">Начальный ордер:

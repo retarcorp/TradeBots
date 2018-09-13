@@ -6,16 +6,6 @@
                 <input v-model="bot.title" type="text" class="input">
             </div>
             <div class="form-control newBot__settings-control">
-                <label class="label" for="main__pair">Котируемая пара:</label>
-                <select v-model="bot.pair.from" id="main__pair" type="text" class="input settings__input">
-                    <option 
-                        v-for="pair in filteredPairs" 
-                        :key="pair.id" 
-                        :value="pair"
-                        >{{ pair }}</option>
-                </select>
-            </div>
-            <div class="form-control newBot__settings-control">
                 <label class="label" for="main__pair">Основная пара:</label>
                 <select 
                     v-model="bot.pair.to" 
@@ -26,6 +16,16 @@
                     <option value="BNB">BNB</option>
                     <option value="BTC">BTC</option>
                     <option value="USDT">USDT</option>
+                </select>
+            </div>
+            <div class="form-control newBot__settings-control">
+                <label class="label" for="main__pair">Котируемая пара:</label>
+                <select v-model="bot.pair.from" id="main__pair" type="text" class="input settings__input">
+                    <option 
+                        v-for="pair in filteredPairs" 
+                        :key="pair.id" 
+                        :value="pair"
+                        >{{ pair }}</option>
                 </select>
             </div>
             

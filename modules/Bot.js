@@ -22,6 +22,7 @@ module.exports = class Bot {
 		pair = {},
 		currentOrder = null,
 		orders = [],
+		safeOrders = [],
 		freezeOrders = {
 			safe: [],
 			current: null,
@@ -37,7 +38,7 @@ module.exports = class Bot {
 		this.pair = new Pair(pair.from, pair.to)
 		this.orders = orders
 		this.currentOrder = currentOrder
-		this.safeOrders = []
+		this.safeOrders = safeOrders
 		this.freezeOrders = freezeOrders
 		this.botSettings = new BotSettings(botSettings)
 		this.botID = botID
@@ -64,6 +65,17 @@ module.exports = class Bot {
 		return (this.status === bot_status.ACTIVE && nextStatus === bot_status.INACTIVE)
 	}
 
+	continueTrade(user) {
+		console.log('****************continueTrade****************')
+		this.setClient(user)
+		if(this.state === CONSTANTS.BOT_STATE.MANUAL) {
+			this.tradeManual(user)
+		}
+		else if(this.state === CONSTANTS.BOT_STATE.AUTO) {
+			this.tradeAuto(user)
+		}
+	}
+
 	async changeStatus(nextStatus, user) {
 		let message = '',
 			status = ''
@@ -74,11 +86,13 @@ module.exports = class Bot {
 			if(this.state === CONSTANTS.BOT_STATE.MANUAL) {
 				status = 'ok'	
 				message = 'Бот запущен (РУЧНОЙ)'
+				await this.syncUpdateBot(user)
 				this.startManual(user)
 			}
 			else if(this.state === CONSTANTS.BOT_STATE.AUTO) {
 				status = 'ok'	
 				message = 'Бот запущен (АВТО)'
+				await this.syncUpdateBot(user)
 				this.startAuto(user)
 			}
 			else {
@@ -98,6 +112,7 @@ module.exports = class Bot {
 			this.status = CONSTANTS.BOT_STATUS.INACTIVE
 			status = 'error'
 			message = "Ошибка (Возможно вы пытаетесь включить бота, который не завершил свой последний цикл)"
+			await this.syncUpdateBot(user)
 		}
 		return {
 			status: status,
@@ -162,9 +177,15 @@ module.exports = class Bot {
 		return this.pair.from + this.pair.to
 	}
 
-	getDecimal(price) {
-		if(price) return String(price).length - 2
-		return String(this.botSettings.decimalQty).length - 2
+	countDecimalNumber(x) {
+		return (x.toString().includes('.')) ? (x.toString().split('.').pop().length) : (0);
+	} 
+
+	getDecimal(price = 0) {
+		price = price ? price : this.botSettings.decimalQty
+		let ret = 0
+		if(this.countDecimalNumber(price)) ret = String(price).length - 2
+		return ret
 	}
 
 	getDeviation() {
@@ -216,6 +237,7 @@ module.exports = class Bot {
 	}
 
 	toDecimal(value = 0, decimal = this.getDecimal()) {
+		// console.log(decimal)
 		return Number(Number(value).toFixed(decimal))
 	}
 
@@ -295,7 +317,7 @@ module.exports = class Bot {
 				) return await this.disableBot('Невозможно продать монеты')
 				else if(this.isError1013(error)) quantity += step
 				else if(this.isError2010(error)) quantity -= step
-				console.log(price,  this.toDecimal(quantity))
+				console.log('newSell', price,  this.toDecimal(quantity))
 				let order = await this.newSellOrder(price, type, this.toDecimal(quantity), error)
 				return order
 			}
@@ -448,7 +470,6 @@ module.exports = class Bot {
 			currentBTCvolume = this.getBTCVolume(),
 			BTCvolume = await this.Client.dailyStats({ symbol: pair })
 		BTCvolume = Number(BTCvolume.quoteVolume)
-		console.log(currentBTCvolume, BTCvolume)
 		if(currentBTCvolume <= BTCvolume)
 			return true
 		else return await this.checkVolumeBTC()
@@ -682,7 +703,6 @@ module.exports = class Bot {
 		console.log('---- in PROCESS')
 		let orders = this.safeOrders || [],
 			length = orders.length
-
 		if(length) {
 			console.log('----- checked safeorders')
 			let nextSafeOrders = []
@@ -732,8 +752,8 @@ module.exports = class Bot {
 			// console.log('страховочных нету, чекаем стоплосс...')
 			let price = await this.getLastPrice(),
 				stopPrice = this.getStopPrice()
-			// console.log(`price - ${price}`)
-			// console.log(`stopPrice - ${stopPrice}`)
+			console.log(`price - ${price}`)
+			console.log(`stopPrice - ${stopPrice}`)
 			if(stopPrice > price) {
 				console.log('------ stoploss is braked')
 				// console.log('стоплосс пройден')
@@ -982,6 +1002,7 @@ module.exports = class Bot {
 		// console.log(this.status)
 		// console.log(this.freeze)
 		// console.log(this.preFreeze)
+		await this.syncUpdateUserOrdersList(user)
 		user = { name: user.name }
 		let data = await Mongo.syncSelect(user, 'users')
 		data = data[0]
@@ -990,9 +1011,24 @@ module.exports = class Bot {
 			return bot.botID === tempBot.botID
 		})
 		data.bots[index] = tempBot
-		await Mongo.syncUpdate({name: data.name}, data, 'users')
+		await Mongo.syncUpdate({botID: data.botID}, data, 'users')
 		console.log('] sync upd ')
 		// console.log('sync update bot end')
+	}
+
+	async syncUpdateUserOrdersList(user) {
+		console.log('[ syncUpdateUserOrdersList')
+		user = { name: user.name }
+		let data = await Mongo.syncSelect(user, 'users')
+		data = data[0]
+		!data.ordersList && (data.ordersList = {})
+		let _id = `${this.title}${this.botID}`
+		!data.ordersList[_id] && (data.ordersList[_id] = [])
+		
+		data.ordersList[_id] = this.orders
+		await Mongo.syncUpdate(user, data, 'users')
+
+		console.log('] syncUpdateUserOrdersList')
 	}
 
 	async updateBotParams(user) {
