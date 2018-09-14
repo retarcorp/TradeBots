@@ -138,7 +138,6 @@ let Users = {
 		}
 
 		,setBot(user, botData, callback) {
-			console.log(this.Bots)
 			Mongo.select(user, 'users', (data) => {
 				data = data[0];
 				let tempBot;

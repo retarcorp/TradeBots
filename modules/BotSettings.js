@@ -21,7 +21,7 @@ module.exports = class BotSettings {
 		quantity = 0,
 		decimalQty = 0
 	}) {
-		this.tradingSignals = tradingSignals
+		this.tradingSignals = tradingSignals.map(elem => new TradingSignals(elem))
 		this.initialOrder = initialOrder
 		if(safeOrder) 
 			this.safeOrder = new SafeOrder(safeOrder.size, safeOrder.amount)

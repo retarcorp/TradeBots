@@ -30,14 +30,7 @@ let binanceAPI = require('binance-api-node').default;
 
 
 //Routers
-var signin = require('./routes/signin')
-var signup = require('./routes/signup')
-var bots = require('./routes/bots')
-var account = require('./routes/account')
-var statistics = require('./routes/statistics')
-var tradeSignals = require('./routes/tradeSignals')
-var symbolList = require('./routes/symbolsList')
-
+var routers = require('./routes/routes')
 
 var options = {};
 if (fs.existsSync(nuxtConfigFile)) {
@@ -65,17 +58,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.disable('x-powered-by');
 
-app.use(bots)
-app.use(account)
-app.use(signin)
-app.use(signup)
-app.use(statistics)
-app.use(tradeSignals)
-app.use(symbolList)
-
-app.get('/test', (req, res, next) => {
-	Symbols.updateSymbolsPriceFilter().then(data => res.send(data))
-})
+app.use(routers)
 
 app.use(nuxt.render);
 app.listen(process.env.PORT || 8072);

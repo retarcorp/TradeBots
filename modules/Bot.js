@@ -412,7 +412,7 @@ module.exports = class Bot {
 		return await this.Client.time()
 	}
 
-	async firstBuyOrder(orderId = 0) {
+	async firstBuyOrder(user = {}, orderId = 0) {
 		console.log('--- firstBuyOrder')
 		let order = {}
 		if(!orderId) {
@@ -430,7 +430,13 @@ module.exports = class Bot {
 		{ 
 			console.log('1')
 			order = await this.getOrder(orderId) 
-			sleep(5000)
+			const ind = this.orders.findIndex(elem => elem.orderId === order.orderId)
+			if(ind === -1) this.orders.push(new Order(order))
+			else this.orders[ind] = new Order(order)
+
+			await this.syncUpdateBot(user)
+
+			sleep(CONSTANTS.ORDER_TIMEOUT)
 		}
 
 
@@ -450,17 +456,16 @@ module.exports = class Bot {
 
 	async startTradeAuto(user) {
 		console.log('-- startTradeAuto')
-		await this.pushTradingSignals()
-		let signal = await this.checkSignals()
-		console.log('signal = ' + signal)
 		let volumeBTCFlag = await this.checkVolumeBTC()
 		console.log('volumeBTCFlag = ' + volumeBTCFlag)
-		
 		if(volumeBTCFlag) {
+			await this.pushTradingSignals()
+			let signal = await this.checkSignals()
+			console.log('signal = ' + signal)
 			//создать новый ордер по сигналам
-			let newBuyOrder = await this.firstBuyOrder()
+			let newBuyOrder = await this.firstBuyOrder(user)
 			let qty = this.setQuantity(null, Number(newBuyOrder.origQty))
-			this.orders.push(newBuyOrder)
+			// this.orders.push(newBuyOrder)
 			let price = Number(newBuyOrder.price)
 
 			this.botSettings.firstBuyPrice = price
@@ -494,97 +499,113 @@ module.exports = class Bot {
 				signal: {}
 			}
 		
-		while(!ret.flag) {
-			console.log('itr')
-			let signals = await Mongo.syncSelect({}, CONSTANTS.TRADING_SIGNALS_COLLECTION),
-				currentSignals = []
+		while(!ret.flag || this.status !== CONSTANTS.BOT_STATUS.INACTIVE) {
+			await sleep(CONSTANTS.ORDER_TIMEOUT)
+			console.log('itr ' + this.title)
+			let signals = await Mongo.syncSelect({}, CONSTANTS.TRADING_SIGNALS_COLLECTION)
 			
 			signals.forEach(signal => {
-				if(this.isCurrentSignal(signal)) currentSignals.push(signal)
+				this.isCurrentSignal(signal)
 			})
 			
-			currentSignals.forEach(signal => {
-				if(signal.checkRating === signal.rating || (signal.checkRating === CONSTANTS.TRANSACTION_TERMS.BUY && signal.rating === CONSTANTS.TRANSACTION_TERMS.STRONG_BUY)) 
+			this.botSettings.tradingSignals.forEach(signal => {
+				if(this.isEqualSignals(signal))
 					ret = {
 						flag: true,
 						signal: signal
 					}
 			})
-			await sleep(5000)
 		}
 		return ret.signal
+	}
+
+	isEqualSignals(signal) {
+		return signal.checkRating === signal.rating || (signal.checkRating === CONSTANTS.TRANSACTION_TERMS.BUY && signal.rating === CONSTANTS.TRANSACTION_TERMS.STRONG_BUY)
 	}
 
 	isCurrentSignal(signal) {
 		// console.log('---- isCurrentSignal')
 		let ret = false,
 			l = this.botSettings.tradingSignals.length,
-			symbol = this.getPair()
-		for(let i = 0; i < l; i++) {
-			let curSignal = this.botSettings.tradingSignals[i]
-			if(
-				symbol === signal.symbol &&
-				curSignal.timeframe === signal.timeframe &&
-				curSignal.checkRating === signal.checkRating
-				) {
-					this.botSettings.tradingSignals[i].rating = signal.rating
-					ret =  true
-				}
+			symbol = this.getPair(),
+			ind = this.botSettings.TradingSignals.findIndex(elem => elem.id === signal.id)
+
+		if(ind !== -1) {
+			this.botSettings.tradingSignals[ind].rating = signal.rating
+			ret = true
 		}
+
 		return ret
+
+		// for(let i = 0; i < l; i++) {
+		// 	let curSignal = this.botSettings.tradingSignals[i]
+		// 	if(
+		// 		curSignal.id === signal.id
+		// 		// symbol === signal.symbol &&
+		// 		// curSignal.timeframe === signal.timeframe &&
+		// 		// curSignal.checkRating === signal.checkRating
+		// 		) {
+		// 			this.botSettings.tradingSignals[i].rating = signal.rating
+		// 			ret =  true
+		// 			break
+		// 		}
+		// }
+		// return ret
 	}
 
 	async tradeAuto(user) {
 		console.log('----------- tradeAuto ------------')
-		this.currentOrder = await this.getOrder(this.currentOrder.orderId)
-		let currentOrderStatus = this.currentOrder.status
+		if(this.currentOrder) {
+			this.currentOrder = await this.getOrder(this.currentOrder.orderId)
+			let currentOrderStatus = this.currentOrder.status
 
-		if(this.checkFilling(currentOrderStatus) && !Number(this.freeze) && !Number(this.preFreeze)) {
-			await this.clearTradingSignals()
-			await this.disableBot('|is END')
-		}
-		else if(this.checkFailing(currentOrderStatus) && !Number(this.freeze) && !Number(this.preFreeze)) {
-			await this.clearTradingSignals()
-			await this.disableBot('|is FAIL or ENDING')	
-		}
-		else {
-			if(this.freeze === CONSTANTS.BOT_FREEZE_STATUS.INACTIVE) {
-				await this.isProcess(user)
-				this.orders = await this.updateOrders(this.orders)
+			if(this.checkFilling(currentOrderStatus) && !Number(this.freeze) && !Number(this.preFreeze)) {
+				await this.clearTradingSignals()
+				await this.disableBot('|is END')
 			}
-			if(this.status === CONSTANTS.BOT_STATUS.ACTIVE) {
-				const activeF = CONSTANTS.BOT_FREEZE_STATUS.ACTIVE,
-					inactiveF = CONSTANTS.BOT_FREEZE_STATUS.INACTIVE
-				if(this.freeze === activeF && this.preFreeze === inactiveF) {
-					// если сейчас бот заморожен, а раньше разморожен -> заморозить
-					await this.freezeBot(user)
-					setTimeout(() => this.tradeAuto(user), CONSTANTS.TIMEOUT)
-				}
-				else if(this.freeze === inactiveF && this.preFreeze === activeF) {
-					// если сейчас бот разморожен, а раньше заморожен -> разморозить
-					// console.log('-> разморозить')
-					await this.unfreezeBot(user)
-					setTimeout(() => this.tradeAuto(user), CONSTANTS.TIMEOUT)
-				}
-				else {
-					console.warn('----- general tradeManual')
-					// если пред и текущие значения равны -> продолжать цикл
-					// console.log('-> продолжать цикл')
-					setTimeout(() => this.tradeAuto(user), CONSTANTS.TIMEOUT)
-				}
+			else if(this.checkFailing(currentOrderStatus) && !Number(this.freeze) && !Number(this.preFreeze)) {
+				await this.clearTradingSignals()
+				await this.disableBot('|is FAIL or ENDING')	
 			}
-			else if(this.status === CONSTANTS.BOT_STATUS.INACTIVE) {
-				// console.warn('___бот выключен___')
-				if(this.currentOrder !== null) {
-					console.log('------ wait for disabling bot')
-					// console.warn('-> ждем завершение цикла')
-					setTimeout(() => this.tradeAuto(user), CONSTANTS.TIMEOUT)
+			else {
+				if(this.freeze === CONSTANTS.BOT_FREEZE_STATUS.INACTIVE) {
+					await this.isProcess(user)
+					this.orders = await this.updateOrders(this.orders)
 				}
-				else {
-					console.log('----- bot is disabled')
-					// console.warn('-> цикл завершен')
-					await this.clearTradingSignals()
-					await this.disableBot('нажали выкл -> бот завершил работу -> выключаем бота')
+				if(this.status === CONSTANTS.BOT_STATUS.ACTIVE) {
+					const activeF = CONSTANTS.BOT_FREEZE_STATUS.ACTIVE,
+						inactiveF = CONSTANTS.BOT_FREEZE_STATUS.INACTIVE
+					if(this.freeze === activeF && this.preFreeze === inactiveF) {
+						// если сейчас бот заморожен, а раньше разморожен -> заморозить
+						await this.freezeBot(user)
+						setTimeout(() => this.tradeAuto(user), CONSTANTS.TIMEOUT)
+					}
+					else if(this.freeze === inactiveF && this.preFreeze === activeF) {
+						// если сейчас бот разморожен, а раньше заморожен -> разморозить
+						// console.log('-> разморозить')
+						await this.unfreezeBot(user)
+						setTimeout(() => this.tradeAuto(user), CONSTANTS.TIMEOUT)
+					}
+					else {
+						console.warn('----- general tradeManual')
+						// если пред и текущие значения равны -> продолжать цикл
+						// console.log('-> продолжать цикл')
+						setTimeout(() => this.tradeAuto(user), CONSTANTS.TIMEOUT)
+					}
+				}
+				else if(this.status === CONSTANTS.BOT_STATUS.INACTIVE) {
+					// console.warn('___бот выключен___')
+					if(this.currentOrder !== null) {
+						console.log('------ wait for disabling bot')
+						// console.warn('-> ждем завершение цикла')
+						setTimeout(() => this.tradeAuto(user), CONSTANTS.TIMEOUT)
+					}
+					else {
+						console.log('----- bot is disabled')
+						// console.warn('-> цикл завершен')
+						await this.clearTradingSignals()
+						await this.disableBot('нажали выкл -> бот завершил работу -> выключаем бота')
+					}
 				}
 			}
 		}
@@ -602,21 +623,24 @@ module.exports = class Bot {
 	}
 
 	async clearTradingSignals() {
-		console.log('---- clearTradingSignals')
+		console.log('[ clearTradingSignals')
 		let signals = this.botSettings.tradingSignals,
 			l = signals.length
 		for(let i = 0; i < l; i++) {
 			let signal = signals[i]	
+			console.log(signal)
+			console.log(`clear ${i+1} signal (${signal.id})`)
 			await Mongo.syncDelete({ id: signal.id }, CONSTANTS.TRADING_SIGNALS_COLLECTION)
 			// await Mongo.syncDelete({ id: signal.id }, CONSTANTS.TRADING_SIGNALS_COLLECTION)
 		}
+		console.log('] clearTradingSignals')
 	}
 
 	async startTradeManual(user) {
 		console.log('-- startTradeManual')
-		let newBuyOrder = await this.firstBuyOrder()
+		let newBuyOrder = await this.firstBuyOrder(user)
 		let qty = this.setQuantity(null, Number(newBuyOrder.origQty))
-		this.orders.push(newBuyOrder)
+		// this.orders.push(newBuyOrder)
 		let price = Number(newBuyOrder.price)
 
 		this.botSettings.firstBuyPrice = price
@@ -660,52 +684,54 @@ module.exports = class Bot {
 
 	async tradeManual(user) {
 		console.log('----------- tradeManual ------------')
-		this.currentOrder = await this.getOrder(this.currentOrder.orderId)
-		let currentOrderStatus = this.currentOrder.status
-		
-		if(this.checkFilling(currentOrderStatus) && !Number(this.freeze) && !Number(this.preFreeze)) {
-			await this.disableBot('|is END')
-		}
-		else if(this.checkFailing(currentOrderStatus) && !Number(this.freeze) && !Number(this.preFreeze)) {
-			await this.disableBot('|is FAIL or ENDING')	
-		}
-		else {
-			if(this.freeze === CONSTANTS.BOT_FREEZE_STATUS.INACTIVE) {
-				await this.isProcess(user)
-				this.orders = await this.updateOrders(this.orders)
+		if(this.currentOrder) {
+			this.currentOrder = await this.getOrder(this.currentOrder.orderId)
+			let currentOrderStatus = this.currentOrder.status
+			
+			if(this.checkFilling(currentOrderStatus) && !Number(this.freeze) && !Number(this.preFreeze)) {
+				await this.disableBot('|is END')
 			}
-			if(this.status === CONSTANTS.BOT_STATUS.ACTIVE) {
-				const activeF = CONSTANTS.BOT_FREEZE_STATUS.ACTIVE,
-					inactiveF = CONSTANTS.BOT_FREEZE_STATUS.INACTIVE
-				if(this.freeze === activeF && this.preFreeze === inactiveF) {
-					// если сейчас бот заморожен, а раньше разморожен -> заморозить
-					await this.freezeBot(user)
-					setTimeout(() => this.tradeManual(user), CONSTANTS.TIMEOUT)
-				}
-				else if(this.freeze === inactiveF && this.preFreeze === activeF) {
-					// если сейчас бот разморожен, а раньше заморожен -> разморозить
-					// console.log('-> разморозить')
-					await this.unfreezeBot(user)
-					setTimeout(() => this.tradeManual(user), CONSTANTS.TIMEOUT)
-				}
-				else {
-					console.warn('----- general tradeManual')
-					// если пред и текущие значения равны -> продолжать цикл
-					// console.log('-> продолжать цикл')
-					setTimeout(() => this.tradeManual(user), CONSTANTS.TIMEOUT)
-				}
+			else if(this.checkFailing(currentOrderStatus) && !Number(this.freeze) && !Number(this.preFreeze)) {
+				await this.disableBot('|is FAIL or ENDING')	
 			}
-			else if(this.status === CONSTANTS.BOT_STATUS.INACTIVE) {
-				// console.warn('___бот выключен___')
-				if(this.currentOrder !== null) {
-					console.log('------ wait for disabling bot')
-					// console.warn('-> ждем завершение цикла')
-					setTimeout(() => this.tradeManual(user), CONSTANTS.TIMEOUT)
+			else {
+				if(this.freeze === CONSTANTS.BOT_FREEZE_STATUS.INACTIVE) {
+					await this.isProcess(user)
+					this.orders = await this.updateOrders(this.orders)
 				}
-				else {
-					console.log('----- bot is disabled')
-					// console.warn('-> цикл завершен')
-					await this.disableBot('нажали выкл -> бот завершил работу -> выключаем бота')
+				if(this.status === CONSTANTS.BOT_STATUS.ACTIVE) {
+					const activeF = CONSTANTS.BOT_FREEZE_STATUS.ACTIVE,
+						inactiveF = CONSTANTS.BOT_FREEZE_STATUS.INACTIVE
+					if(this.freeze === activeF && this.preFreeze === inactiveF) {
+						// если сейчас бот заморожен, а раньше разморожен -> заморозить
+						await this.freezeBot(user)
+						setTimeout(() => this.tradeManual(user), CONSTANTS.TIMEOUT)
+					}
+					else if(this.freeze === inactiveF && this.preFreeze === activeF) {
+						// если сейчас бот разморожен, а раньше заморожен -> разморозить
+						// console.log('-> разморозить')
+						await this.unfreezeBot(user)
+						setTimeout(() => this.tradeManual(user), CONSTANTS.TIMEOUT)
+					}
+					else {
+						console.warn('----- general tradeManual')
+						// если пред и текущие значения равны -> продолжать цикл
+						// console.log('-> продолжать цикл')
+						setTimeout(() => this.tradeManual(user), CONSTANTS.TIMEOUT)
+					}
+				}
+				else if(this.status === CONSTANTS.BOT_STATUS.INACTIVE) {
+					// console.warn('___бот выключен___')
+					if(this.currentOrder !== null) {
+						console.log('------ wait for disabling bot')
+						// console.warn('-> ждем завершение цикла')
+						setTimeout(() => this.tradeManual(user), CONSTANTS.TIMEOUT)
+					}
+					else {
+						console.log('----- bot is disabled')
+						// console.warn('-> цикл завершен')
+						await this.disableBot('нажали выкл -> бот завершил работу -> выключаем бота')
+					}
 				}
 			}
 		}
@@ -919,10 +945,6 @@ module.exports = class Bot {
 				newOrders.push(order)
 		}
 
-		// if(type === 'safe') {
-		// 	this.safeOrders = newOrders
-		// }
-		// console.log('создал ордера.')
 		return newOrders
 	}
 
