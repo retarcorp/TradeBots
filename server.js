@@ -60,5 +60,11 @@ app.disable('x-powered-by');
 
 app.use(routers)
 
+app.get('/test', (req, res, next) => {
+  let user = {name: req.cookies.user.name}
+  res.send('test')
+  // Mongo.update(user, {bots: []},'users', data => res.send(data))
+})
+
 app.use(nuxt.render);
 app.listen(process.env.PORT || 8072);
