@@ -184,6 +184,9 @@
                 </div>
             </div>
         </section>
+        <div class="log">
+            <div class="log-line" v-for="line in lines" :key="line">{{line}}</div>
+        </div>
     </div>
 </template>
 
@@ -228,6 +231,9 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
             getStatus() {
                 return this.$store.getters.getStatus;
             },
+            lines() {
+                return this.bot.log;
+            }
         },
         // watch: {
         //     'bot.status'(value) {
@@ -369,6 +375,21 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
 
 
 /*    */
+.log {
+    word-wrap: break-word;
+    padding: 1rem;
+    max-height: 200px;
+    min-height: 100px;
+    overflow: auto;
+    border: 1px solid #EFEFEF;
+    padding: 2rem;
+    font-size: 1.5rem;
+}
+
+.log-line {
+    margin: 0.5rem;
+}
+
 .confirm-block {
     display: block;
     position: fixed;

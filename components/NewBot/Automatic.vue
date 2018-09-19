@@ -20,6 +20,7 @@
             </div>
             <div class="form-control newBot__settings-control">
                 <label class="label" for="main__pair">Котируемая пара:</label>
+                
                 <select v-model="bot.pair.from" id="main__pair" type="text" class="input settings__input">
                     <option 
                         v-for="pair in filteredPairs" 
@@ -27,6 +28,29 @@
                         :value="pair"
                         >{{ pair }}</option>
                 </select>
+            </div>
+            
+            <div class="newBot__list botPairsList">
+                <div
+                    v-for="(item) in bot.pair.requested"
+                    :key="item"
+                    :item="item"
+                    class="pair-item"
+                    >
+                        {{ `${item}` }}
+                        <button
+                            @click.prevent="onDeletePair(i)"
+                            class="button pairs-list__delete-button"
+                            :class="button__cancel">x
+                        </button>
+                </div>
+                
+                <button
+                    @click.prevent="addPair"
+                    class="button button--success pair_btn"
+                    :class="{'button--disabled' : isFormValid_Pairs}"
+                    :disabled="isFormValid_Pairs">+
+                </button>
             </div>
             
             <div class="form-control newBot__settings-control">
@@ -124,7 +148,8 @@ export default {
                     state: '0',
                     pair: {
                         from: '',
-                        to: ''
+                        to: '',
+                        requested: []
                     },
                     title: '',
                     botSettings: {
@@ -175,6 +200,9 @@ export default {
             return Object.keys(this.autoItem)
                 .find(field => this.autoItem[field] === 'default')
         },
+        isFormValid_Pairs() {
+            return this.bot.pair.from === 'default' || this.bot.pair.from === ''
+        },
         filteredPairs() {
             return this.$store.state.pairs[this.bot.pair.to]
         }
@@ -182,9 +210,16 @@ export default {
     watch: {
         'bot.pair.to'() {
             this.bot.pair.from = ''
+            this.bot.pair.requested = [] 
         }
     },
     methods: {
+        isPairChange() {
+            console.log(this.bot.pair)
+            // console.log(this.bot)
+            // this.bot.pair.requested = []
+            // console.log(this.bot)
+        },
         addItem() {
             this.bot.botSettings.tradingSignals.push(this.autoItem)
             this.autoItem = {
@@ -192,6 +227,14 @@ export default {
                 timeframe: 'default',
                 checkRating: 'default'
             }
+        },
+        addPair() {
+            this.bot.pair.requested.push(this.bot.pair.from)
+            this.bot.pair.from = 'default'
+            console.log(this.bot.pair)
+        },
+        onDeletePair(i) {
+            this.bot.pair.requested.splice(i, 1)
         },
         onDeleteItem(i) {
             this.bot.botSettings.tradingSignals.splice(i, 1)
@@ -217,6 +260,16 @@ export default {
 </script>
 
 <style scoped>
+.botPairsList {
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: stretch;
+    flex-wrap: wrap;
+    width: 100%;
+    border: 1px solid #e3e3e3;
+    padding: 1rem;
+}
+
 .newBot__settings {
     display: flex;
     align-items: stretch;
@@ -274,5 +327,25 @@ export default {
 
 .disabled {
     opacity: .5;
+}
+
+.button_pair {
+    display: inline-flex;
+}
+
+.pair-item {
+    margin-left: 0.5rem;
+}
+
+.pairs-list__delete-button {
+    margin-left: 0.5rem;
+    margin-right: 1rem;
+    color: red !important; 
+    background-color: whitesmoke;
+    border: none;
+}
+
+.pair_btn {
+    margin-left: 2rem; 
 }
 </style>

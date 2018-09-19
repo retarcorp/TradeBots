@@ -6,6 +6,7 @@ const Symbols = require('./Symbols')
 module.exports = class BotSettings {
 	constructor({
 		tradingSignals = [],//new TraidingSignals(),
+		curTradingSignals = [],
 		initialOrder = null, //volumeLimit.VALUE,
 		dailyVolumeBTC = null,
 		safeOrder = null, //new SafeOrder(initialOrder, 1),
@@ -22,6 +23,7 @@ module.exports = class BotSettings {
 		decimalQty = 0
 	}) {
 		this.tradingSignals = tradingSignals.map(elem => new TradingSignals(elem))
+		this.curTradingSignals = curTradingSignals
 		this.initialOrder = initialOrder
 		if(safeOrder) 
 			this.safeOrder = new SafeOrder(safeOrder.size, safeOrder.amount)

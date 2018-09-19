@@ -183,12 +183,12 @@ const store = () =>
             if (res.status === "ok") {
               commit("setBotsList", res.data);
               commit('setSpiner', false);
-              if(res.data.find(bot => bot.status === true)) {
+              // if(res.data.find(bot => bot.status === true)) {
                 // console.log('im here')
                 setTimeout(() => {
                   dispatch('setBotsList')
                 }, 5000);
-              }
+              // }
             } else if(res.status === 'info') {
               commit('setMessage', res.message);
               commit('setStatus', 'info');
