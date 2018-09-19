@@ -202,7 +202,7 @@ let Users = {
 					data = data[0]
 
 					const index = this.Bots.findIndex(bot => bot.botID === botData.botID)
-
+					console.log(botData)
 					this.Bots[index].changeStatus(botData.status, data)
 					.then( d => callback(d) )
 

@@ -102,7 +102,8 @@ module.exports = class Bot {
 
 	checkForActivate(nextStatus) {
 		let bot_status = CONSTANTS.BOT_STATUS
-		return (this.status === bot_status.INACTIVE && nextStatus === bot_status.ACTIVE && this.currentOrder === null)
+		console.log('status = ' + this.status, bot_status.INACTIVE, 'nextStatus = ' + nextStatus, bot_status.ACTIVE, this.currentOrder.orderId)
+		return (this.status === bot_status.INACTIVE && nextStatus === bot_status.ACTIVE && !this.currentOrder.orderId)
 	}
 
 	checkForDeactivate(nextStatus) {
@@ -125,6 +126,7 @@ module.exports = class Bot {
 	async changeStatus(nextStatus, user) {
 		let message = '',
 			status = ''
+		console.log(this.checkForActivate(nextStatus))
 		if(this.checkForActivate(nextStatus)) {
 			this.status = nextStatus
 			console.log('activate bot')
@@ -673,7 +675,7 @@ module.exports = class Bot {
 				}
 				else if(this.status === CONSTANTS.BOT_STATUS.INACTIVE) {
 					// console.warn('___бот выключен___')
-					if(this.currentOrder !== null) {
+					if(this.currentOrder.orderId) {
 						console.log('------ wait for disabling bot')
 						// console.warn('-> ждем завершение цикла')
 						setTimeout(() => this.tradeAuto(user), CONSTANTS.TIMEOUT)
@@ -787,7 +789,7 @@ module.exports = class Bot {
 
 	async tradeManual(user) {
 		console.log('----------- tradeManual ------------')
-		if(this.currentOrder) {
+		if(this.currentOrder.orderId) {
 			this.currentOrder = await this.getOrder(this.currentOrder.orderId)
 			let currentOrderStatus = this.currentOrder.status
 			
@@ -829,7 +831,7 @@ module.exports = class Bot {
 				}
 				else if(this.status === CONSTANTS.BOT_STATUS.INACTIVE) {
 					// console.warn('___бот выключен___')
-					if(this.currentOrder !== null) {
+					if(this.currentOrder.orderId) {
 						console.log('------ wait for disabling bot')
 						// console.warn('-> ждем завершение цикла')
 						setTimeout(() => this.tradeManual(user), CONSTANTS.TIMEOUT)
