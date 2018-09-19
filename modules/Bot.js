@@ -471,11 +471,13 @@ module.exports = class Bot {
 			let price = await this.getLastPrice(),
 				quantity = this.setQuantity(price), 
 				newBuyOrder = await this.newBuyOrder(price, CONSTANTS.ORDER_TYPE.LIMIT, quantity)
-			if(newBuyOrder !== CONSTANTS.DISABLE_FLAG) await this.syncUpdateBot(user)
+			// if(newBuyOrder !== CONSTANTS.DISABLE_FLAG) await this.syncUpdateBot(user)
 			orderId = newBuyOrder.orderId
 		}
 		
 		order = await this.getOrder(orderId) 
+		this.orders.push(order)
+		await this.syncUpdateBot(user)
 		this.bot_log('первый закупочный - ' + order.price + ', ' + order.origQty)
 		
 		while(!(
