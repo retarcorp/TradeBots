@@ -32,7 +32,7 @@
             <div class="form-control newBot__settings-control"> Список пар: </div>
             <div class="newBot__list botPairsList">
                 <div
-                    v-for="(item) in bot.pair.requested"
+                    v-for="(item, i) in bot.pair.requested"
                     :key="item"
                     :item="item"
                     class="pair-item"
