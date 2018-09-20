@@ -87,6 +87,10 @@
                         <p class="settings__item">Тейк профит:  
                             <span>{{ bot.botSettings.takeProfit }}%</span>
                         </p>
+                        <p class="settings__item"> Список пар: </p>
+                        <div class="symbols-list">
+                            <div v-for="symbol in bot.pair.requested" :key="symbol">{{ symbol }}</div>
+                        </div>
                         <p class="settings__item">Условия для начала сделки:</p>
                         <div class="table_container">
                             <table class="table">
@@ -386,6 +390,19 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
 /*    */
 .cur_rating {
     background-color: #f1f1f1;
+}
+
+.symbols-list {
+    margin-bottom: 1rem;
+    width: 100%;
+    display: flex;
+    border: 1px solid #efefef;
+    padding: 1rem;
+}
+
+.symbols-list > div {
+    margin-right: 0.5rem;
+    margin-left: 0.5rem;
 }
 
 .table_container {
