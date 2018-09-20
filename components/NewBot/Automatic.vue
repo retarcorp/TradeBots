@@ -29,7 +29,7 @@
                         >{{ pair }}</option>
                 </select>
             </div>
-            
+            <div class="form-control newBot__settings-control"> Список пар: </div>
             <div class="newBot__list botPairsList">
                 <div
                     v-for="(item) in bot.pair.requested"

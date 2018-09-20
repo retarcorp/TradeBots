@@ -87,18 +87,27 @@
                         <p class="settings__item">Тейк профит:  
                             <span>{{ bot.botSettings.takeProfit }}%</span>
                         </p>
-                        <table class="table">
-                            <thead>
-                                <p>Условия для начала сделки:</p>
-                            </thead>
-                            <tbody>
-                                <tr class="table__tr" v-for="(signal,index) in bot.botSettings.tradingSignals" :key="signal.id">
-                                    <td class="table__td">{{ index + 1 }}. {{ signal.signal }}</td>
-                                    <td class="table__td">{{ signal.timeframe }}</td>
-                                    <td class="table__td">{{ signal.checkRating }}</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                        <p class="settings__item">Условия для начала сделки:</p>
+                        <div class="table_container">
+                            <table class="table">
+                                <tbody v-if="bot.botSettings.curTradingSignals.length === 0" class="overflow">
+                                    <tr class="table__tr" v-for="(signal,index) in bot.botSettings.tradingSignals" :key="signal.id">
+                                        <td class="table__td">{{ index + 1 }}. {{ signal.signal }}</td>
+                                        <td class="table__td">{{ signal.timeframe }}</td>
+                                        <td class="table__td">{{ signal.checkRating }}</td>
+                                    </tr>
+                                </tbody>
+                                <tbody v-else class="overflow">
+                                    <tr class="table__tr" v-for="(signal,index) in bot.botSettings.curTradingSignals" :key="signal.id">
+                                        <td class="table__td">{{ index + 1 }}. {{ signal.signal }}</td>
+                                        <td class="table__td">{{ signal.symbol }}</td>
+                                        <td class="table__td">{{ signal.timeframe }}</td>
+                                        <td class="table__td">{{ signal.checkRating }}</td>
+                                        <td class="table__td cur_rating">{{ signal.rating }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </template>
 
                 </div>
@@ -375,6 +384,18 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
 
 
 /*    */
+.cur_rating {
+    background-color: #f1f1f1;
+}
+
+.table_container {
+    margin-bottom: 1rem;
+    width: 100%;
+    min-height: 100px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
 .log {
     word-wrap: break-word;
     padding: 1rem;

@@ -193,7 +193,7 @@ module.exports = class Bot {
 	}
 
 	setQuantity(price = 0, quantity = 0) {
-		this.botSettings.quantity = price ? this.toDecimal(Number(this.botSettings.currentOrder) * 1.1 / price) : Number(quantity)
+		this.botSettings.quantity = price ? this.toDecimal(Number(this.botSettings.currentOrder)/ price) : Number(quantity)
 		// console.log(price, this.botSettings.currentOrder, this.botSettings.quantity, price * this.botSettings.quantity)
 		// console.log("SET КОЛИЧЕСТВО _________ " + this.botSettings.quantity)
 		return Number(this.botSettings.quantity)
@@ -237,8 +237,9 @@ module.exports = class Bot {
 
 	getDecimal(price = 0) {
 		price = price ? price : this.botSettings.decimalQty
-		let ret = 0
-		if(this.countDecimalNumber(price)) ret = String(price).length - 2
+		let ret = this.countDecimalNumber(price)
+
+		// if(this.countDecimalNumber(price)) ret = String(price).length - 2
 		return ret
 	}
 
@@ -303,7 +304,7 @@ module.exports = class Bot {
 	}
 
 	async newBuyOrder(price = 0, type = CONSTANTS.ORDER_TYPE.LIMIT, quantity = this.getQuantity(price), prevError = {}) {
-		// console.log(`new BUY order (${price}) ${quantity}...`)
+		console.log(`new BUY order (${price}) ${quantity}...`)
 		console.log('---! newBuyOrder')
 		
 		let pair = this.getPair(),
@@ -467,6 +468,8 @@ module.exports = class Bot {
 		console.log('--- firstBuyOrder')
 		this.bot_log('первая закупка монет')
 		let order = {}
+		
+		console.log(this.orders.length)
 		if(!orderId) {
 			let price = await this.getLastPrice(),
 				quantity = this.setQuantity(price), 
@@ -475,11 +478,13 @@ module.exports = class Bot {
 			orderId = newBuyOrder.orderId
 		}
 		
+		console.log(this.orders.length)
 		order = await this.getOrder(orderId) 
 		this.orders.push(order)
 		await this.syncUpdateBot(user)
 		this.bot_log('первый закупочный - ' + order.price + ', ' + order.origQty)
 		
+		console.log(this.orders.length)
 		while(!(
 			this.checkFilling(order.status) ||
 			this.checkCanceling(order.status) || 
@@ -491,7 +496,7 @@ module.exports = class Bot {
 			const ind = this.orders.findIndex(elem => elem.orderId === order.orderId)
 			if(ind === -1) this.orders.push(new Order(order))
 			else this.orders[ind] = new Order(order)
-
+			console.log(this.orders.length)
 			await this.syncUpdateBot(user)
 
 			sleep(CONSTANTS.ORDER_TIMEOUT)
@@ -680,7 +685,22 @@ module.exports = class Bot {
 					if(this.currentOrder.orderId) {
 						console.log('------ wait for disabling bot')
 						// console.warn('-> ждем завершение цикла')
-						setTimeout(() => this.tradeAuto(user), CONSTANTS.TIMEOUT)
+						const activeF = CONSTANTS.BOT_FREEZE_STATUS.ACTIVE,
+						inactiveF = CONSTANTS.BOT_FREEZE_STATUS.INACTIVE
+						if(this.freeze === activeF && this.preFreeze === inactiveF) {
+							// если сейчас бот заморожен, а раньше разморожен -> заморозить
+							await this.freezeBot(user)
+							setTimeout(() => this.tradeAuto(user), CONSTANTS.TIMEOUT)
+						}
+						else if(this.freeze === inactiveF && this.preFreeze === activeF) {
+							// если сейчас бот разморожен, а раньше заморожен -> разморозить
+							// console.log('-> разморозить')
+							await this.unfreezeBot(user)
+							setTimeout(() => this.tradeAuto(user), CONSTANTS.TIMEOUT)
+						}
+						else {
+							setTimeout(() => this.tradeAuto(user), CONSTANTS.TIMEOUT)
+						}
 					}
 					else {
 						console.log('----- bot is disabled')
@@ -729,6 +749,7 @@ module.exports = class Bot {
 			await Mongo.syncDelete({ id: signal.id }, CONSTANTS.TRADING_SIGNALS_COLLECTION)
 			// await Mongo.syncDelete({ id: signal.id }, CONSTANTS.TRADING_SIGNALS_COLLECTION)
 		}
+		this.botSettings.curTradingSignals = []
 		console.log('] clearTradingSignals')
 	}
 
@@ -836,7 +857,22 @@ module.exports = class Bot {
 					if(this.currentOrder.orderId) {
 						console.log('------ wait for disabling bot')
 						// console.warn('-> ждем завершение цикла')
-						setTimeout(() => this.tradeManual(user), CONSTANTS.TIMEOUT)
+						const activeF = CONSTANTS.BOT_FREEZE_STATUS.ACTIVE,
+						inactiveF = CONSTANTS.BOT_FREEZE_STATUS.INACTIVE
+						if(this.freeze === activeF && this.preFreeze === inactiveF) {
+							// если сейчас бот заморожен, а раньше разморожен -> заморозить
+							await this.freezeBot(user)
+							setTimeout(() => this.tradeManual(user), CONSTANTS.TIMEOUT)
+						}
+						else if(this.freeze === inactiveF && this.preFreeze === activeF) {
+							// если сейчас бот разморожен, а раньше заморожен -> разморозить
+							// console.log('-> разморозить')
+							await this.unfreezeBot(user)
+							setTimeout(() => this.tradeManual(user), CONSTANTS.TIMEOUT)
+						}
+						else {
+							setTimeout(() => this.tradeManual(user), CONSTANTS.TIMEOUT)
+						}
 					}
 					else {
 						console.log('----- bot is disabled')
