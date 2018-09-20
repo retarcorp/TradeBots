@@ -94,14 +94,14 @@
                         <p class="settings__item">Условия для начала сделки:</p>
                         <div class="table_container">
                             <table class="table">
-                                <tbody v-if="bot.botSettings.curTradingSignals.length === 0" class="overflow">
+                                <tbody v-if="bot.botSettings.curTradingSignals.length === 0">
                                     <tr class="table__tr" v-for="(signal,index) in bot.botSettings.tradingSignals" :key="signal.id">
                                         <td class="table__td">{{ index + 1 }}. {{ signal.signal }}</td>
                                         <td class="table__td">{{ signal.timeframe }}</td>
                                         <td class="table__td">{{ signal.checkRating }}</td>
                                     </tr>
                                 </tbody>
-                                <tbody v-else class="overflow">
+                                <tbody v-else>
                                     <tr class="table__tr" v-for="(signal,index) in bot.botSettings.curTradingSignals" :key="signal.id">
                                         <td class="table__td">{{ index + 1 }}. {{ signal.signal }}</td>
                                         <td class="table__td">{{ signal.symbol }}</td>
