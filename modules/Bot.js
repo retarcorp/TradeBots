@@ -903,7 +903,7 @@ module.exports = class Bot {
 						// this.botSettings.quantityOfUsedSafeOrders --
 						// console.log('найден заюзаный страховочный, пересчет')
 						await this.cancelOrder(this.currentOrder.orderId)
-						this.recountInitialOrder()
+						this.recountInitialOrder(order)
 						this.recountQuantity(order.origQty)
 						let newProfitPrice = this.recountProfitPrice(order)
 						let newSellOrder = await this.newSellOrder(newProfitPrice, CONSTANTS.ORDER_TYPE.LIMIT, this.getQuantity())
@@ -948,15 +948,16 @@ module.exports = class Bot {
 				await this.cancelAllOrders(user)
 				// await this.cancelOrder(this.currentOrder.orderId)
 				// await this.newSellOrder(price, CONSTANTS.ORDER_TYPE.MARKET)
-				await this.disableBot('Все распродано по рынку, бот выключен')
+				await this.disableBot('Все распродано по рынку, бот выключен', CONSTANTS.CONTINUE_FLAG)
 			}
 		}
-		sleep(CONSTANTS.TIMEOUT)
 		await this.syncUpdateBot(user)
+		sleep(CONSTANTS.TIMEOUT)
 	}
 
-	recountInitialOrder() {
-		this.botSettings.currentOrder = String(Number(this.botSettings.currentOrder) + Number(this.botSettings.safeOrder.size))
+	recountInitialOrder(order) {
+		let size = order ? Number(order.cummulativeQuoteQty) : Number(this.botSettings.safeOrder.size);
+		this.botSettings.currentOrder = String(Number(this.botSettings.currentOrder) + size);
 	}
 
 	recountProfitPrice(nextOrder) {
@@ -1149,8 +1150,10 @@ module.exports = class Bot {
 			await this.cancelOrders(this.safeOrders)
 			await this.cancelOrder(this.currentOrder.orderId)
 			let lastPrice = await this.getLastPrice(),
-				qty = this.getQuantity(),
-				newOrder = await this.newSellOrder(lastPrice, CONSTANTS.ORDER_TYPE.MARKET, qty)
+				qty = this.getQuantity();
+				console.log('8****************************************************')
+				console.log(qty)
+			let newOrder = await this.newSellOrder(lastPrice, CONSTANTS.ORDER_TYPE.MARKET, qty)
 			
 			if(newOrder !== CONSTANTS.DISABLE_FLAG) await this.syncUpdateBot(user)
 			this.orders.push(newOrder)
