@@ -11,6 +11,7 @@
                     v-model="bot.pair.to" 
                     id="main__pair" 
                     type="text" 
+                    @change="setMinNotional()"
                     class="input settings__input">
                     <option value="ETH">ETH</option>
                     <option value="BNB">BNB</option>
@@ -30,37 +31,50 @@
             </div>
             <div class="form-control newBot__settings-control">
                 <label class="label" for="start__order">Начальный ордер:</label>
-                <input @blur="bot.botSettings.safeOrder.size = bot.botSettings.initialOrder" v-model="bot.botSettings.initialOrder" id="start__order" type="number" class="input settings__input">
+                <input @change="changeSafeOrderSize(); checkValue('initialOrder')" 
+                        v-model="bot.botSettings.initialOrder" 
+                        :step="getStep()" 
+                        :min="minNotional" 
+                        id="start__order" 
+                        type="number" 
+                        class="input settings__input">
             </div>
             <div class="form-control newBot__settings-control">
                 <label class="label" for="save__order">Страховочный ордер:</label>
-                <input v-model="bot.botSettings.safeOrder.size" id="save__order" type="number" class="input settings__input">
+                <input v-model="bot.botSettings.safeOrder.size" 
+                        @change="checkValue('safeOrderSize'); checkSafeOrderSize()"
+                        :step="getStep()" 
+                        :min="minNotional" 
+                        id="save__order" 
+                        type="number" 
+                        class="input settings__input">
             </div>
             <div class="form-control newBot__settings-control">
                 <label class="label" for="count__save-order">Кол-во страховочных ордеров:</label>
-                <input @blur="checkStopLoss(); checkMaxOrders();" v-model="bot.botSettings.safeOrder.amount" id="count__save-order" type="number" class="input settings__input">
+                <input :min="0" :step="1" @change="checkValue('safeOrderAmount'); checkStopLoss(); checkMaxOrders();" v-model="bot.botSettings.safeOrder.amount" id="count__save-order" type="number" class="input settings__input">
             </div>
             <div class="form-control newBot__settings-control">
                 <label class="label" for="count__bots">Макс открытых СО:</label>
-                <input @blur="checkMaxOrders(true)" v-model="bot.botSettings.maxOpenSafetyOrders" id="count__max-save-order" type="number" class="input settings__input">
+                <input :min="0" :max="bot.botSettings.safeOrder.amount" :step="1" @change="checkValue('maxOrders'); checkMaxOrders(true)" v-model="bot.botSettings.maxOpenSafetyOrders" id="count__max-save-order" type="number" class="input settings__input">
             </div>
             <div class="form-control newBot__settings-control" style="margin-top: 9px;">
                 <label class="label label__double-row" for="deviation">Отклонение от начального ордера %</label>
-                <input @blur="checkStopLoss" v-model="bot.botSettings.deviation" id="deviation" type="number" step='0.01' class="input settings__input">
+                <input @change="checkValue('deviation'); checkStopLoss()" v-model="bot.botSettings.deviation" id="deviation" type="number" step='0.01' class="input settings__input">
             </div>
             <div class="form-control newBot__settings-control">
                 <label class="label" for="stop__loss">Стоп лосс %</label>
                 <input 
                     v-model="bot.botSettings.stopLoss" 
-                    @blur="checkStopLoss"
+                    @change="checkValue('stopLoss'); checkStopLoss()"
                     id="stop__loss" 
                     type="number" 
+                    min="0"
                     step='0.01'
                     class="input settings__input">
             </div>
             <div class="form-control newBot__settings-control">
                 <label class="label" for="take__profit">Тейк профит %</label>
-                <input v-model="bot.botSettings.takeProfit" id="take__profit" type="number" step='0.01' class="input settings__input">
+                <input v-model="bot.botSettings.takeProfit" @change="checkValue('takeProfit')" id="take__profit" type="number" min="0" step='0.01' class="input settings__input">
             </div>
             <div class="form-control newBot__settings-control">
                 <label class="label">Мартингейл</label>
@@ -111,6 +125,7 @@
     export default {
         name: 'bot-manual',
         props: {
+            minNotional: 0,
             mode: String,
             bot: {
                 required: false,
@@ -147,9 +162,10 @@
                 return this.bot.title.length !== 0 &&
                         this.bot.pair.from !== '' &&
                         this.bot.pair.to !== '' &&
-                        this.bot.botSettings.initialOrder >= 0.001 &&
-                        this.bot.botSettings.stopLoss != 0 &&
-                        this.bot.botSettings.takeProfit != 0
+                        this.bot.botSettings.initialOrder > 0 &&
+                        this.bot.botSettings.stopLoss >= 0 &&
+                        this.bot.botSettings.takeProfit > 0
+
             },
             filteredPairs() {
                 return this.$store.state.pairs[this.bot.pair.to]
@@ -161,22 +177,70 @@
             }
         },
         methods: {
+            checkValue(state) {
+                let bs = this.bot.botSettings;
+                const takeProfit = 'takeProfit',
+                    initialOrder = 'initialOrder',
+                    stopLoss = 'stopLoss',
+                    safeOrderSize = 'safeOrderSize',
+                    safeOrderAmount = 'safeOrderAmount',
+                    deviation = 'deviation',
+                    maxOrders = 'maxOrders';
+
+                switch(state) {
+                    case takeProfit: bs.takeProfit = bs.takeProfit < 0 ? 0 : bs.takeProfit; break;
+                    case initialOrder: bs.initialOrder = bs.initialOrder < 0 ? 0 : bs.initialOrder; break;
+                    case stopLoss: bs.stopLoss = bs.stopLoss < 0 ? 0 : bs.stopLoss; break;
+                    case safeOrderSize: bs.safeOrder.size = bs.safeOrder.size < 0 ? 0 : bs.safeOrder.size; break;
+                    case safeOrderAmount: bs.safeOrder.amount = bs.safeOrder.amount < 0 ? 0 : bs.safeOrder.amount; break;
+                    case deviation: bs.deviation = bs.deviation < 0 ? 0 : bs.deviation; break;
+                    case maxOrders: bs.maxOpenSafetyOrders = bs.maxOpenSafetyOrders < 0 ? 0 : bs.maxOpenSafetyOrders; break;
+                }
+            },
+            checkSafeOrderSize() {
+                this.bot.botSettings.safeOrder.size = this.bot.botSettings.safeOrder.size <= this.minNotional ? this.minNotional : this.bot.botSettings.safeOrder.size;
+            },
+            changeSafeOrderSize() {
+                this.bot.botSettings.initialOrder = this.bot.botSettings.initialOrder <= this.minNotional ? this.minNotional : this.bot.botSettings.initialOrder;
+                this.bot.botSettings.safeOrder.size = (this.bot.botSettings.safeOrder.size <= 0 ) ? this.bot.botSettings.initialOrder : this.bot.botSettings.safeOrder.size
+            },
+            getStep() {
+                if(Math.floor(this.minNotional) >= 1) return 1;
+                else return this.minNotional;
+            },
+            setMinNotional() {
+                if(this.bot.pair.to !== '') {
+                    let symbol = this.bot.pair.to;
+                    this.minNotional = this.$store.getters.getMinNotional(symbol);
+                }
+                else {
+                    this.minNotional = 0;
+                }
+                this.bot.botSettings.initialOrder = this.minNotional
+                this.bot.botSettings.safeOrder.size = this.minNotional
+            },
             checkMaxOrders(flag) {
-                let bs = this.bot.botSettings,
-                    temp = flag ? bs.maxOpenSafetyOrders : bs.safeOrder.amount
-                if(temp >= bs.safeOrder.amount) {
-                    if(bs.safeOrder.amount >= 3 && !flag) {
-                        bs.maxOpenSafetyOrders = 3
+                let bs = this.bot.botSettings;
+                if(!flag) {
+                    if(Number(bs.safeOrder.amount) !== 0) {
+                        bs.maxOpenSafetyOrders = (bs.safeOrder.amount >= 3) ? 3 : 1;
                     }
-                    else if(temp > bs.safeOrder.amount) {
-                        bs.maxOpenSafetyOrders = 3
+                    else {
+                        bs.maxOpenSafetyOrders = 0;
+                    }
+                    
+                }
+                else {
+                    if(Number(bs.safeOrder.amount) < Number(bs.maxOpenSafetyOrders)) {
+                        bs.maxOpenSafetyOrders = bs.safeOrder.amount;
                     }
                 }
             },
             checkStopLoss() {
                 if(this.bot.botSettings.stopLoss < (this.bot.botSettings.deviation * this.bot.botSettings.safeOrder.amount)) {
-                    this.bot.botSettings.stopLoss = (this.bot.botSettings.deviation * this.bot.botSettings.safeOrder.amount).toFixed(2)
+                    this.bot.botSettings.stopLoss = (this.bot.botSettings.deviation * this.bot.botSettings.safeOrder.amount * 1.1).toFixed(2)
                 }
+                if(this.bot.botSettings.stopLoss < 0) this.bot.botSettings.stopLoss = 0;
             },
             onAddManualBot() {
                 if(this.bot.botID) {

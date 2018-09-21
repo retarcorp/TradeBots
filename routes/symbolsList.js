@@ -22,22 +22,22 @@ router.get('/api/symbol/list', (req, res, next) => {
 	}
 })
 
-router.get('/api/symbol/getLotSize:symbol', (req, res, next) => {
-	let symbol = req.params.symbol.slice(1, req.params.symbol.length)
-	Symbols.getLotSize(symbol).then(data => {
+router.get('/api/symbol/getLotSizes', (req, res, next) => {
+	// let symbol = req.params.symbol.slice(1, req.params.symbol.length)
+	Symbols.getLotSizes().then(data => {
 		res.send({
 			status: 'ok',
-			lotSize: data
+			lotSizes: data
 		})
 	})
 })
 
-router.get('/api/symbol/getMinNotional:symbol', (req, res, next) => {
-	let symbol = req.params.symbol.slice(1, req.params.symbol.length)
-	Symbols.getMinNotional(symbol).then(data => {
+router.get('/api/symbol/getMinNotionals', (req, res, next) => {
+	// let symbol = req.params.symbol.slice(1, req.params.symbol.length)
+	Symbols.getMinNotionals().then(data => {
 		res.send({
 			status: 'ok',
-			minNotional: data
+			minNotionals: data
 		})
 	})
 })

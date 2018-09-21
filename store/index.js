@@ -6,6 +6,7 @@ Vue.use(Vuex)
 const store = () =>
   new Vuex.Store({
     state: {
+      income: {},
       isAuthorized: false,
       botsList: [],
       isActive: false,
@@ -15,10 +16,18 @@ const store = () =>
       statisticsList: [],
       clientAnswer: false,
       pairs: {},
-      minNotional: 0.001,
-      lotSize: 0.01
+      minNotionals: {
+        USDT: 10,
+        BTC: 0.001,
+        ETH: 0.01,
+        BNB: 1
+      },
+      lotSize: {}
     },
     getters: {
+      getIncome(state) {
+        return state.income;
+      },
       getSpinerStatus(state) {
         return state.isActive
       },
@@ -44,6 +53,11 @@ const store = () =>
       },
       getClientAnswer(state) {
         return state.clientAnswer;
+      },
+      getMinNotional(state) {
+        return symbol => {
+          return state.minNotionals[symbol]
+        }
       }
     },
     mutations: {
@@ -79,6 +93,9 @@ const store = () =>
       setMessage(state, payload) {
         state.message = payload;
       },
+      setIncome(state, payload) {
+        state.income = payload;
+      },
       setStatus(state, payload) {
         state.status = payload;
         if( payload === 'ok' || payload === 'info') {
@@ -105,33 +122,33 @@ const store = () =>
       setSymbolsList(state, payload) {
         state.pairs = payload
       },
-      setLotSize(state, payload) {
-        state.lotSize = payload
+      setLotSizes(state, payload) {
+        state.lotSizes = payload
       },
-      setMinNotional(state, payload) {
-        state.minNotional = payload
+      setMinNotionals(state, payload) {
+        state.minNotionals = payload
       }
     },
     actions: {
-      getMinNotional({ commit }, payload) {
+      getMinNotionals({ commit }, payload) {
         console.log(payload)
         this.$axios
-        .$get(`/api/symbol/getLotSize:${payload}`)
+        .$get(`/api/symbol/getMinNotionals`)
         .then(res => {
           if(res.status === 'ok') {
-            commit('setMinNotional', res.minNotional)
+            commit('setMinNotionals', res.minNotionals)
           }
         })
         .catch(err => {
           console.log(err)
         })
       },
-      getLotSize({ commit }, payload) {
+      getLotSizes({ commit }, payload) {
         this.$axios
-          .$get(`/api/symbol/getLotSize:${payload}`)
+          .$get(`/api/symbol/getLotSizes`)
           .then(res => {
             if(res.status === 'ok') {
-              commit('setLotSize', res.lotSize)
+              commit('setLotSizes', res.lotSizes)
             }
           })
           .catch(err => {

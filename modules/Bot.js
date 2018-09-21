@@ -886,7 +886,7 @@ module.exports = class Bot {
 	}
 
 	async isProcess(user) {
-		console.log('---- in PROCESS')
+		console.log('---- in PROCESS' + this.title)
 		this.bot_log('в процессе')
 		let orders = this.safeOrders || [],
 			length = orders.length

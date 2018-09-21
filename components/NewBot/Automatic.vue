@@ -11,6 +11,7 @@
                     v-model="bot.pair.to" 
                     id="main__pair" 
                     type="text" 
+                    @change="setMinNotional()"
                     class="input settings__input">
                     <option value="ETH">ETH</option>
                     <option value="BNB">BNB</option>
@@ -55,24 +56,26 @@
             
             <div class="form-control newBot__settings-control">
                 <label class="label">Дневной объём (BTC):</label>
-                <input v-model="bot.botSettings.dailyVolumeBTC" type="number" class="input">
+                <input v-model="bot.botSettings.dailyVolumeBTC" min="0" @change="checkValue('dailyVolumeBTC')" type="number" class="input">
             </div>
             <div class="form-control newBot__settings-control">
                 <label class="label" for="start__order">Начальный ордер:</label>
-                <input v-model="bot.botSettings.initialOrder" id="start__order" type="number" class="input settings__input">
+                <input v-model="bot.botSettings.initialOrder" @change="checkValue('initialOrder'); checkInitialOrder()" :min="minNotional" :step="getStep()" id="start__order" type="number" class="input settings__input">
             </div>
             <div class="form-control newBot__settings-control">
                 <label class="label" for="stop__loss">Стоп лосс %</label>
                 <input
+                    @change="checkValue('stopLoss')"
                     v-model="bot.botSettings.stopLoss"
                     id="stop__loss"
                     type="number"
                     step='0.01'
+                    min="0"
                     class="input settings__input">
             </div>
             <div class="form-control newBot__settings-control">
                 <label class="label" for="take__profit">Тейк профит %</label>
-                <input v-model="bot.botSettings.takeProfit" id="take__profit" type="number" step='0.01' class="input settings__input">
+                <input v-model="bot.botSettings.takeProfit" @change="checkValue('takeProfit')" min="0" id="take__profit" type="number" step='0.01' class="input settings__input">
             </div>
         </div>
         <div class="newBot__conditions">
@@ -125,9 +128,9 @@
         <div class="text-right">
             <button
                 @click.prevent="addAutomaticBot"
-                :disabled="bot.botSettings.tradingSignals.length === 0"
+                :disabled="!isAllFormValid"
                 class="button button--success"
-                :class="{'button--disabled': bot.botSettings.tradingSignals.length === 0}"
+                :class="{'button--disabled': !isAllFormValid}"
                 >{{ (bot && bot.botID) ? 'Сохранить' : 'Добавить' }}</button>
         </div>
     </div>
@@ -141,6 +144,7 @@ export default {
         AutomaticItem
     },
     props: {
+        minNotional: 0,
         bot: {
             required: false,
             default() {
@@ -154,7 +158,7 @@ export default {
                     title: '',
                     botSettings: {
                         initialOrder: 0,
-                        dailyVolumeBTC: '',
+                        dailyVolumeBTC: 0,
                         stopLoss: 0,
                         takeProfit: 0,
                         tradingSignals: []
@@ -196,6 +200,16 @@ export default {
         }
     },
     computed: {
+        isAllFormValid() {
+            return this.bot.pair.requested.length !== 0 &&
+                this.bot.pair.to !== '' &&
+                this.bot.title.length !== 0 &&
+                this.bot.botSettings.initialOrder > 0 &&
+                this.bot.botSettings.stopLoss >= 0 &&
+                this.bot.botSettings.takeProfit > 0 &&
+                this.bot.botSettings.tradingSignals.length > 0 &&
+                this.bot.botSettings.dailyVolumeBTC !== ''
+        },
         isFormValid() {
             return Object.keys(this.autoItem)
                 .find(field => this.autoItem[field] === 'default')
@@ -214,11 +228,35 @@ export default {
         }
     },
     methods: {
-        isPairChange() {
-            console.log(this.bot.pair)
-            // console.log(this.bot)
-            // this.bot.pair.requested = []
-            // console.log(this.bot)
+        checkValue(state) {
+            let bs = this.bot.botSettings;
+            const takeProfit = 'takeProfit',
+                initialOrder = 'initialOrder',
+                stopLoss = 'stopLoss',
+                dailyVolumeBTC = 'dailyVolumeBTC';
+            switch(state) {
+                case takeProfit: bs.takeProfit = bs.takeProfit < 0 ? 0 : bs.takeProfit; break;
+                case initialOrder: bs.initialOrder = bs.initialOrder < 0 ? 0 : bs.initialOrder; break;
+                case stopLoss: bs.stopLoss = bs.stopLoss < 0 ? 0 : bs.stopLoss; break;
+                case dailyVolumeBTC: bs.dailyVolumeBTC = bs.dailyVolumeBTC < 0 ? 0 : bs.dailyVolumeBTC; break;
+            }
+        },
+        checkInitialOrder() {
+            this.bot.botSettings.initialOrder = this.bot.botSettings.initialOrder <= this.minNotional ? this.minNotional : this.bot.botSettings.initialOrder;
+        },
+        getStep() {
+            if(Math.floor(this.minNotional) >= 1) return 1;
+            else return this.minNotional;
+        },
+        setMinNotional() {
+            if(this.bot.pair.to !== '') {
+                let symbol = this.bot.pair.to;
+                this.minNotional = this.$store.getters.getMinNotional(symbol);
+            }
+            else {
+                this.minNotional = 0;
+            }
+            this.bot.botSettings.initialOrder = this.minNotional
         },
         addItem() {
             this.bot.botSettings.tradingSignals.push(this.autoItem)

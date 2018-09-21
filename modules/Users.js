@@ -317,6 +317,116 @@ let Users = {
 
 	}
 
+	,Income: {
+		get(user, callback) {
+			Mongo.select(user, 'users', data => {
+				data = data[0];
+				const ordersList = data.ordersList;
+
+				let Income = {
+					dayIncome: this.coutDayIncome(data.ordersList),
+					allIncome: this.countAllIncome(data.ordersList)
+				};
+
+				const res = {
+					status: 'ok',
+					data: {
+						income: Income
+					}
+				};
+
+				if(callback) callback(res)
+			});
+		},
+
+		countAllIncome(ordersList = {}) {
+			let income = {	
+					BTC: 0,
+					USDT: 0,
+					BNB: 0,
+					ETH: 0
+				};
+			for (bot in ordersList) {
+				let orders = ordersList[bot],
+					botIncome = {
+						BTC: 0,
+						USDT: 0,
+						BNB: 0,
+						ETH: 0
+					};
+
+				orders.forEach(order => {
+					if(order.status === CONSTANTS.ORDER_STATUS.FILLED) {
+						botIncome = this.setSymbolIncome(botIncome, order);
+					}
+				});
+
+				for (symbol in income) {
+					income[symbol] += botIncome[symbol];
+				}
+			}
+			return income;
+		},
+
+		coutDayIncome(ordersList = {}) {
+			const oneDay = 86400000;
+			let income = {
+					BTC: 0,
+					USDT: 0,
+					BNB: 0,
+					ETH: 0
+				},
+				curDay = Date.now(),
+				prevDay = curDay - oneDay; 
+
+			for (bot in ordersList) {
+				let orders = ordersList[bot],
+					botIncome = {
+						BTC: 0,
+						USDT: 0,
+						BNB: 0,
+						ETH: 0
+					};
+				orders.forEach(order => {
+					if(order.time - prevDay <= oneDay) {
+						botIncome = this.setSymbolIncome(botIncome, order);
+					}
+				});
+
+				for (symbol in income) {
+					income[symbol] += botIncome[symbol];
+				}
+			}
+
+			return income;
+		},
+
+		setSymbolIncome(income = {}, order = {}) {
+			const symbols = ['BTC', 'BNB', 'ETH', 'USDT'],
+				l = symbols.length;
+
+			let curSymbol = '';
+
+			for(let i = 0; i < l; i++) {
+				let pos = order.symbol.indexOf(symbols[i]);
+
+				if(pos > 1) {
+					curSymbol = symbols[i];
+					break;
+				}
+			}
+			
+			if(order.side === CONSTANTS.ORDER_SIDE.BUY) {
+				income[curSymbol] -= Number(order.cummulativeQuoteQty);
+			}
+			else if(order.side === CONSTANTS.ORDER_SIDE.SELL) {
+				income[curSymbol]  += Number(order.cummulativeQuoteQty);
+			}
+
+			return income
+		}
+	}
+
 	,async sendClientStatistics(userData) {
 		let statistics = [],
 			ordersList = userData.ordersList 
