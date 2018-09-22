@@ -516,43 +516,50 @@ module.exports = class Bot {
 		this.bot_log('начало торговли автобота (' + message + ')')
 		if(!message) await this.pushTradingSignals()
 		let signal = await this.checkSignals(user)
-		this.pair.from = this.findFromSymbol(signal.symbol)
-		let volumeBTCFlag = await this.checkVolumeBTC()
-		console.log('volumeBTCFlag = ' + volumeBTCFlag)
-		if(volumeBTCFlag) {
-			if(this.pair.from) {
-				this.bot_log('торговая пара найдена, начало торговли...')
-				this.botSettings.decimalQty = await Symbols.getLotSize(this.getPair())
-				console.log('signal = ' + signal)
-				//создать новый ордер по сигналам
-				let newBuyOrder = await this.firstBuyOrder(user)
-				if(newBuyOrder.orderId) {
-					let qty = this.setQuantity(null, Number(newBuyOrder.origQty))
-					// this.orders.push(newBuyOrder)
-					let price = Number(newBuyOrder.price)
+		if(this.status === CONSTANTS.BOT_STATUS.ACTIVE) {
+			this.pair.from = this.findFromSymbol(signal.symbol)
+			let volumeBTCFlag = await this.checkVolumeBTC()
+			console.log('volumeBTCFlag = ' + volumeBTCFlag)
+			if(volumeBTCFlag) {
+				if(this.pair.from) {
+					this.bot_log('торговая пара найдена, начало торговли...')
+					this.botSettings.decimalQty = await Symbols.getLotSize(this.getPair())
+					console.log('signal = ' + signal)
+					//создать новый ордер по сигналам
+					let newBuyOrder = await this.firstBuyOrder(user)
+					if(newBuyOrder.orderId) {
+						let qty = this.setQuantity(null, Number(newBuyOrder.origQty))
+						// this.orders.push(newBuyOrder)
+						let price = Number(newBuyOrder.price)
 
-					this.botSettings.firstBuyPrice = price
-					let profitPrice = this.getProfitPrice(price)
-					let newSellOrder = await this.newSellOrder(profitPrice, CONSTANTS.ORDER_TYPE.LIMIT, qty)
-					this.bot_log('новый ордер на продажу - ' + newSellOrder.price + ', ' + newSellOrder.origQty)
-					if(newSellOrder !== CONSTANTS.DISABLE_FLAG) await this.syncUpdateBot(user)
-					this.currentOrder = newSellOrder
-					this.orders.push(newSellOrder)
+						this.botSettings.firstBuyPrice = price
+						let profitPrice = this.getProfitPrice(price)
+						let newSellOrder = await this.newSellOrder(profitPrice, CONSTANTS.ORDER_TYPE.LIMIT, qty)
+						this.bot_log('новый ордер на продажу - ' + newSellOrder.price + ', ' + newSellOrder.origQty)
+						if(newSellOrder !== CONSTANTS.DISABLE_FLAG) await this.syncUpdateBot(user)
+						this.currentOrder = newSellOrder
+						this.orders.push(newSellOrder)
 
-					this.tradeAuto(user)
-					.catch(err => {
-						this.bot_log(err)
-						console.log(err)
-					})
-				}
-				else {
-					await this.disableBot('начальный ордер не купился', CONSTANTS.CONTINUE_FLAG)
-					await this.syncUpdateBot(user) 
-					if(this.status === CONSTANTS.BOT_STATUS.ACTIVE) this.startTradeAuto(user)
+						this.tradeAuto(user)
+						.catch(err => {
+							this.bot_log(err)
+							console.log(err)
+						})
+					}
+					else {
+						await this.disableBot('начальный ордер не купился', CONSTANTS.CONTINUE_FLAG)
+						await this.syncUpdateBot(user) 
+						if(this.status === CONSTANTS.BOT_STATUS.ACTIVE) this.startTradeAuto(user)
+					}
 				}
 			}
+			else await this.startTradeAuto(user, 'условия не сошлись, начинаю поиск пар заново')
 		}
-		else await this.startTradeAuto(user, 'условия не сошлись, начинаю поиск пар заново')
+		else {
+			await this.clearTradingSignals();
+			await this.disableBot('выключили во время поиска пар');
+			await this.syncUpdateBot(user);
+		}
 	}
 
 	async checkVolumeBTC() {
@@ -566,7 +573,7 @@ module.exports = class Bot {
 		else return await this.checkVolumeBTC()
 	}
 
-	findFromSymbol(symbol) {
+	findFromSymbol(symbol = '') {
 		let ret = false
 
 		this.pair.requested.forEach(elem => {
@@ -591,9 +598,10 @@ module.exports = class Bot {
 			signals.forEach(signal => {
 				this.isCurrentSignal(signal)
 			})
-			
+			await this.syncUpdateBot(user)
 			// this.botSettings.curTradingSignals.forEach(signal => {
 			for(let i = 0; i < this.botSettings.curTradingSignals.length; i++) {
+				let signal = this.botSettings.curTradingSignals[i];
 				if(this.isEqualSignals(signal)) {
 					ret = {
 						flag: true,
@@ -612,15 +620,20 @@ module.exports = class Bot {
 	}
 
 	isCurrentSignal(signal) {
+		console.log('-------------------')
 		// console.log('---- isCurrentSignal')
 		let ret = false,
 			// l = this.botSettings.tradingSignals.length,
 			symbol = this.getPair(),
 			ind = this.botSettings.curTradingSignals.findIndex(elem => elem.id === signal.id)
+			console.log(this.botSettings.curTradingSignals[ind].id)
+			console.log(signal.id)
 		if(ind !== -1) {
 			this.botSettings.curTradingSignals[ind].rating = signal.rating
+			console.log(this.botSettings.curTradingSignals[ind])
 			ret = true
 		}
+		console.log('-------------------')
 		return ret
 
 		// for(let i = 0; i < l; i++) {
@@ -754,6 +767,7 @@ module.exports = class Bot {
 			// await Mongo.syncDelete({ id: signal.id }, CONSTANTS.TRADING_SIGNALS_COLLECTION)
 		}
 		this.botSettings.curTradingSignals = []
+		this.pair.from = '';
 		console.log('] clearTradingSignals')
 	}
 
