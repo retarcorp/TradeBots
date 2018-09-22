@@ -592,13 +592,17 @@ module.exports = class Bot {
 				this.isCurrentSignal(signal)
 			})
 			
-			this.botSettings.curTradingSignals.forEach(signal => {
-				if(this.isEqualSignals(signal))
+			// this.botSettings.curTradingSignals.forEach(signal => {
+			for(let i = 0; i < this.botSettings.curTradingSignals.length; i++) {
+				if(this.isEqualSignals(signal)) {
 					ret = {
 						flag: true,
 						signal: signal
 					}
-			})
+					break;
+				}
+			}
+			// })
 		}
 		return ret.signal
 	}
