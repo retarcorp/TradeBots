@@ -630,11 +630,8 @@ module.exports = class Bot {
 			// l = this.botSettings.tradingSignals.length,
 			symbol = this.getPair(),
 			ind = this.botSettings.curTradingSignals.findIndex(elem => elem.id === signal.id)
-			console.log(this.botSettings.curTradingSignals[ind].id)
-			console.log(signal.id)
 		if(ind !== -1) {
 			this.botSettings.curTradingSignals[ind].rating = signal.rating
-			console.log(this.botSettings.curTradingSignals[ind])
 			ret = true
 		}
 		console.log('-------------------')
