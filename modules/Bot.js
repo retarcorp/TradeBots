@@ -516,8 +516,13 @@ module.exports = class Bot {
 		this.bot_log('начало торговли автобота (' + message + ')')
 		if(!message) await this.pushTradingSignals()
 		let signal = await this.checkSignals(user)
+		console.log('найдены подходящие условия для пары - ' + signal.symbol);
+		this.bot_log('найдены подходящие условия для пары - ' + signal.symbol);
+		await this.syncUpdateBot(user);
 		if(this.status === CONSTANTS.BOT_STATUS.ACTIVE) {
 			this.pair.from = this.findFromSymbol(signal.symbol)
+			console.log(this.pair.from)
+			console.log(this.getPair())
 			let volumeBTCFlag = await this.checkVolumeBTC()
 			console.log('volumeBTCFlag = ' + volumeBTCFlag)
 			if(volumeBTCFlag) {
@@ -575,11 +580,10 @@ module.exports = class Bot {
 
 	findFromSymbol(symbol = '') {
 		let ret = false
-
 		this.pair.requested.forEach(elem => {
-			if(symbol.indexOf(elem)) ret = elem
+			console.log(elem, symbol)
+			if(symbol.indexOf(elem) >= 0) ret = elem
 		})
-
 		return ret
 	}
 
@@ -1146,7 +1150,7 @@ module.exports = class Bot {
 		console.log('[----- disableBot ' + message)
 		this.bot_log(`выключение бота, причина (${message})`)
 		// console.log(`disableBot start...(${message})`)
-		await this.cancelOrders(this.safeOrders)
+		if(this.pair.from) await this.cancelOrders(this.safeOrders)
 		this.safeOrders = []
 		this.currentOrder = {}
 		this.botSettings.quantityOfUsedSafeOrders = 0
@@ -1154,7 +1158,7 @@ module.exports = class Bot {
 		this.botSettings.currentOrder = this.botSettings.initialOrder
 		// this.botSettings.quantity = 0
 		this.botSettings.firstBuyPrice = 0
-		this.orders = await this.updateOrders(this.orders)
+		if(this.pair.from) this.orders = await this.updateOrders(this.orders)
 		if(!isContinue) this.status = CONSTANTS.BOT_STATUS.INACTIVE
 		console.log(']----- disableBot ')
 		// console.log('disableBot end')
