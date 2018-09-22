@@ -2,16 +2,14 @@
     <section class="container">
         <div class="bots__order incomes">
             <div class="incomes__title title--medium">Доход за Сегодня</div>
-            <div v-for="symbol in income.dayIncome" :key="symbol">
-                <p>Пара: {{symbol}}</p>
-                <p> {{income.dayIncome[symbol]}}</p>
+            <div class="income-list" v-for="symbol in income.dayIncome" :key="symbol.name">
+                <p>Пара: {{ income.allIncome[symbol.name].name }}: {{income.dayIncome[symbol.name].value}}</p>
             </div>
         </div>
         <div class="bots__order incomes__common">
             <div class="incomes__title title--medium">Доход за все время</div>
-            <div v-for="symbol in income.allIncome" :key="symbol">
-                <p>Пара: {{symbol}}</p>
-                <p> {{income.allIncome[symbol]}}</p>
+            <div class="income-list" v-for="symbol in income.allIncome" :key="symbol.name">
+                <p>Пара: {{ income.allIncome[symbol.name].name }}: {{ income.allIncome[symbol.name].value }}</p>
             </div>
         </div>
     </section>
@@ -53,6 +51,8 @@ export default {
 </script>
 
 <style scoped>
-
+.income-list {
+    width: 100%;
+}
 </style>
 

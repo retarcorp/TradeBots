@@ -340,19 +340,43 @@ let Users = {
 		},
 
 		countAllIncome(ordersList = {}) {
-			let income = {	
-					BTC: 0,
-					USDT: 0,
-					BNB: 0,
-					ETH: 0
+			let income = {
+					BTC: {
+						value: 0,
+						name: 'BTC'
+					},
+					USDT: {
+						value: 0,
+						name: 'USDT'
+					},
+					BNB: {
+						value: 0,
+						name: 'BNB'
+					},
+					ETH: {
+						value: 0,
+						name: 'ETH'
+					}
 				};
 			for (bot in ordersList) {
 				let orders = ordersList[bot],
 					botIncome = {
-						BTC: 0,
-						USDT: 0,
-						BNB: 0,
-						ETH: 0
+						BTC: {
+							value: 0,
+							name: 'BTC'
+						},
+						USDT: {
+							value: 0,
+							name: 'USDT'
+						},
+						BNB: {
+							value: 0,
+							name: 'BNB'
+						},
+						ETH: {
+							value: 0,
+							name: 'ETH'
+						}
 					};
 
 				orders.forEach(order => {
@@ -362,7 +386,7 @@ let Users = {
 				});
 
 				for (symbol in income) {
-					income[symbol] += botIncome[symbol];
+					income[symbol].value += botIncome[symbol].value;
 				}
 			}
 			return income;
@@ -371,10 +395,22 @@ let Users = {
 		coutDayIncome(ordersList = {}) {
 			const oneDay = 86400000;
 			let income = {
-					BTC: 0,
-					USDT: 0,
-					BNB: 0,
-					ETH: 0
+					BTC: {
+						value: 0,
+						name: 'BTC'
+					},
+					USDT: {
+						value: 0,
+						name: 'USDT'
+					},
+					BNB: {
+						value: 0,
+						name: 'BNB'
+					},
+					ETH: {
+						value: 0,
+						name: 'ETH'
+					}
 				},
 				curDay = Date.now(),
 				prevDay = curDay - oneDay; 
@@ -382,10 +418,22 @@ let Users = {
 			for (bot in ordersList) {
 				let orders = ordersList[bot],
 					botIncome = {
-						BTC: 0,
-						USDT: 0,
-						BNB: 0,
-						ETH: 0
+						BTC: {
+							value: 0,
+							name: 'BTC'
+						},
+						USDT: {
+							value: 0,
+							name: 'USDT'
+						},
+						BNB: {
+							value: 0,
+							name: 'BNB'
+						},
+						ETH: {
+							value: 0,
+							name: 'ETH'
+						}
 					};
 				orders.forEach(order => {
 					if(order.time - prevDay <= oneDay) {
@@ -394,7 +442,7 @@ let Users = {
 				});
 
 				for (symbol in income) {
-					income[symbol] += botIncome[symbol];
+					income[symbol].value += botIncome[symbol].value;
 				}
 			}
 
@@ -417,10 +465,10 @@ let Users = {
 			}
 			
 			if(order.side === CONSTANTS.ORDER_SIDE.BUY) {
-				income[curSymbol] -= Number(order.cummulativeQuoteQty);
+				income[curSymbol].value -= Number(order.cummulativeQuoteQty);
 			}
 			else if(order.side === CONSTANTS.ORDER_SIDE.SELL) {
-				income[curSymbol]  += Number(order.cummulativeQuoteQty);
+				income[curSymbol].value  += Number(order.cummulativeQuoteQty);
 			}
 
 			return income
