@@ -1206,7 +1206,7 @@ module.exports = class Bot {
 				return bot.botID === tempBot.botID
 			})
 			data.bots[index] = tempBot
-			Mongo.update({name: data.name}, data, 'users', () => console.log('update bot end'))
+			Mongo.update(user, {bots: data.bots}, 'users', () => console.log('update bot end'))
 		})
 	}
 
@@ -1226,7 +1226,8 @@ module.exports = class Bot {
 			return bot.botID === tempBot.botID
 		})
 		data.bots[index] = tempBot
-		await Mongo.syncUpdate({botID: data.botID}, data, 'users')
+		await Mongo.syncUpdate(user, {botID: data.botID}, 'users');
+		// await Mongo.syncUpdate({botID: data.botID}, data, 'users')
 		console.log('] sync upd ')
 		// console.log('sync update bot end')
 	}

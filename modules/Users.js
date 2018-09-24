@@ -71,7 +71,7 @@ let Users = {
 				data.binanceAPI = new Binance(binanceData);
 			}
 			else data.binanceAPI = {};
-			Mongo.update({name: data.name}, data, 'users', (data) => {
+			Mongo.update(user, {binanceAPI: data.binanceAPI}, 'users', (data) => {
 				callback({
 					status: 'ok',
 					data: data.binanceAPI
@@ -157,7 +157,7 @@ let Users = {
 					const index = this.Bots.findIndex(bot => bot.botID === botData)
 					this.Bots.splice(index, 1)
 				}
-				Mongo.update({name: data.name}, data, 'users', (data) => {
+				Mongo.update(user, {bots: data.bots}, 'users', (data) => {
 					if(typeof botData === 'object') {
 						callback({
 							status: 'ok',
@@ -186,7 +186,7 @@ let Users = {
 				const newIndex = this.Bots.findIndex(bot => bot.botID === tempBot.botID)
 				this.Bots[newIndex] = tempBot
 
-				Mongo.update({name: data.name}, data, 'users', (data) => {
+				Mongo.update(user, {bots: data.bots}, 'users', (data) => {
 					if(callback)
 						callback({
 							status: 'ok',
