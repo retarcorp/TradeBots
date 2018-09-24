@@ -1226,7 +1226,7 @@ module.exports = class Bot {
 			return bot.botID === tempBot.botID
 		})
 		data.bots[index] = tempBot
-		await Mongo.syncUpdate(user, {botID: data.botID}, 'users');
+		await Mongo.syncUpdate(user, {'bots.botID': data.botID}, 'users');
 		// await Mongo.syncUpdate({botID: data.botID}, data, 'users')
 		console.log('] sync upd ')
 		// console.log('sync update bot end')
