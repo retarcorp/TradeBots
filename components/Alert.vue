@@ -1,7 +1,7 @@
 <template>
     <div class='alertInfo'>
         <div v-if="getStatus === 'ok'" class='alertInfo__text alertInfo__text--success'>
-            <p>Выполнено успешно!</p>
+            <p>{{getMessage||'Выполнено успешно!'}}</p>
         </div>
         <div v-else-if="getStatus === 'error'" class='alertInfo__text alertInfo__text--error'>
             <p>{{getMessage||'system error'}}</p>

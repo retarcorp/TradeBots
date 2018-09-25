@@ -54,10 +54,10 @@
                 </button>
             </div>
             
-            <div class="form-control newBot__settings-control">
+            <!-- <div class="form-control newBot__settings-control">
                 <label class="label">Дневной объём (BTC):</label>
                 <input v-model="bot.botSettings.dailyVolumeBTC" min="0" @change="checkValue('dailyVolumeBTC')" type="number" class="input">
-            </div>
+            </div> -->
             <div class="form-control newBot__settings-control">
                 <label class="label" for="start__order">Начальный ордер:</label>
                 <input v-model="bot.botSettings.initialOrder" @change="checkValue('initialOrder'); checkInitialOrder()" :min="minNotional" :step="getStep()" id="start__order" type="number" class="input settings__input">
@@ -158,7 +158,7 @@ export default {
                     title: '',
                     botSettings: {
                         initialOrder: 0,
-                        dailyVolumeBTC: 0,
+                        // dailyVolumeBTC: 0,
                         stopLoss: 0,
                         takeProfit: 0,
                         tradingSignals: []
@@ -207,8 +207,8 @@ export default {
                 this.bot.botSettings.initialOrder > 0 &&
                 this.bot.botSettings.stopLoss >= 0 &&
                 this.bot.botSettings.takeProfit > 0 &&
-                this.bot.botSettings.tradingSignals.length > 0 &&
-                this.bot.botSettings.dailyVolumeBTC !== ''
+                this.bot.botSettings.tradingSignals.length > 0 
+                // this.bot.botSettings.dailyVolumeBTC !== ''
         },
         isFormValid() {
             return Object.keys(this.autoItem)
@@ -232,13 +232,13 @@ export default {
             let bs = this.bot.botSettings;
             const takeProfit = 'takeProfit',
                 initialOrder = 'initialOrder',
-                stopLoss = 'stopLoss',
-                dailyVolumeBTC = 'dailyVolumeBTC';
+                stopLoss = 'stopLoss';
+                // dailyVolumeBTC = 'dailyVolumeBTC';
             switch(state) {
                 case takeProfit: bs.takeProfit = bs.takeProfit < 0 ? 0 : bs.takeProfit; break;
                 case initialOrder: bs.initialOrder = bs.initialOrder < 0 ? 0 : bs.initialOrder; break;
                 case stopLoss: bs.stopLoss = bs.stopLoss < 0 ? 0 : bs.stopLoss; break;
-                case dailyVolumeBTC: bs.dailyVolumeBTC = bs.dailyVolumeBTC < 0 ? 0 : bs.dailyVolumeBTC; break;
+                // case dailyVolumeBTC: bs.dailyVolumeBTC = bs.dailyVolumeBTC < 0 ? 0 : bs.dailyVolumeBTC; break;
             }
         },
         checkInitialOrder() {
@@ -269,7 +269,6 @@ export default {
         addPair() {
             this.bot.pair.requested.push(this.bot.pair.from)
             this.bot.pair.from = 'default'
-            console.log(this.bot.pair)
         },
         onDeletePair(i) {
             this.bot.pair.requested.splice(i, 1)
@@ -287,6 +286,7 @@ export default {
             //     }
             // }
             let path = '';
+            this.$store.commit('setСonfigurationProcess', false);
             (this.bot && this.bot.botID) ? (path = 'updateBot') : (path = 'addBot');
             this.$store.dispatch(path, this.bot)
                 .then(() => {

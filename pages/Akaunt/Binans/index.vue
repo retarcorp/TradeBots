@@ -36,63 +36,34 @@
     export default {
         data() {
             return {
-                binance: {
-                    name: '',
-                    key: '',
-                    secret: ''
-                },
+                // binance: {
+                //     name: '',
+                //     key: '',
+                //     secret: ''
+                // },
                 isSaved: true
+            }
+        },
+        computed: {
+            binance() {
+                return this.$store.getters.getBinanceAPI;
             }
         },
         methods: {
             onSettingsSave() {
-                this.$store.commit('setSpiner', true)
-                this.$axios
-                    .$post('/account/api', this.binance)
-                    .then(res => {
-                        if(res.status === 'ok') {
-                            this.isSaved = true;
-                            this.$store.commit('setSpiner', false)
-                        } else {
-                            this.isSaved = false;
-                            this.$store.commit('setSpiner', false)
-                        }
-                    })
-                    .catch(e => {
-                        this.$store.commit('setSpiner', false)
-                    })
+                this.$store.commit('setSpiner', true);
+                this.$store.dispatch('setBinanceAPI', this.binance);
             },
             onSettingsDelete() {
                 this.isActive = true;
-                this.$axios
-                    .$delete('/account/api')
-                    .then(res => {
-                        if(res.status === 'ok') {
-                            this.binance = {
-                                name: '',
-                                key: '',
-                                secret: ''
-                            }
-                            this.isSaved = true;
-                            this.isActive = false;
-                        } else {
-                            console.log(e)
-                        }
-                    })
-                    .catch(e => console.log(e))
+                this.$store.dispatch('deleteBinanceAPI')
+                this.binance = {}
+                this.isSaved = true;
+                this.isActive = false;
             }
         },
         created() {
-            this.$axios
-                .$get('/account/api')
-                .then(res => {
-                    if(res.status === 'ok') {
-                        this.binance = res.data;
-                    } else {
-                        console.log(e);
-                    }
-                })
-                .catch(e => console.log(e))
+            // this.$store.dispatch('firstGetBinanceAPI');
         }
     }
 </script>

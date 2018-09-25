@@ -1,5 +1,4 @@
 let express = require('express');
-let Mongo = require('../modules/Mongo');
 let Users = require('../modules/Users');
 var router = express.Router();
 

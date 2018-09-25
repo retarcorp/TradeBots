@@ -3,21 +3,22 @@
         <div class="row">
             <div class="col-12 col-md-6 col-lg-4 border-right">
                 <div class="account__menu">
-                    <div class="account__menu-item">
+                    <!-- <div class="account__menu-item">
                         Баланс: 0.124 BTC
                         <nuxt-link to="/Akaunt/Balans" class="account__menu-link">Пополнить</nuxt-link>
-                    </div>
+                    </div> -->
                 
                 
-                    <div class="account__menu-item">
+                    <!-- <div class="account__menu-item">
                         Тариф: Оптимум
                         <nuxt-link to="/Akaunt/Triph" class="account__menu-link">Изменить</nuxt-link>
-                    </div>
+                    </div> -->
                 
                     <div class="account__menu-item">
-                        Аккаунт Binance: не задано
-                        <nuxt-link to="/Akaunt/Binans" class="account__menu-link">Задать</nuxt-link>
+                        Аккаунт Binance: {{ getBinance ? 'задано' : 'не задано' }} 
+                        <nuxt-link to="/Akaunt/Binans" class="account__menu-link">{{ getBinance ? 'Изменить' : 'Задать' }}</nuxt-link>
                     </div>
+
                 </div>
                 <nuxt-link to="/Akaunt/Nastroyki" tag="button" class="button button--primary account__button">Изменить пароль</nuxt-link>
             </div>
@@ -27,6 +28,25 @@
         </div>
     </div>
 </template>
+
+<script>
+export default {
+    data() {
+        return {
+            
+        }
+    },
+    computed: {
+        getBinance() {
+            return this.$store.getters.getBinanceAPIStatus;
+        }
+    },
+    created() {
+        // this.$store.dispatch('firstGetBinanceAPI');
+    }
+}
+</script>
+
 
 <style>
 .account__menu-item {

@@ -63,6 +63,46 @@ let Users = {
 		});
 	}
 
+	,setNewPassword(user, newPasswordData, callback) {
+		Mongo.select(user, 'users', data => {
+			data = data[0];
+			let salt = data.salt,
+				curPass = md5(salt + newPasswordData.currentPass + salt)
+				newPass = md5(salt + newPasswordData.newPass + salt);
+
+			if(curPass === data.password && 
+				newPasswordData.newPass === newPasswordData.confirmedNewPass &&
+				newPass !== data.password
+			) {
+				Mongo.update(user, { password: newPass }, 'users', res => {
+					if(callback) callback({
+						status: 'ok',
+						message: 'Пароль успешно изменен!'
+					})
+				})
+			}
+			else {
+				if(callback) callback({
+					status: 'error',
+					message: newPass === data.password ? 'Новый пароль не должен быть таким-же как раньше!' : 'Данные введены неверно!'
+				})
+			}
+		})
+	}
+
+	,getEmail(user, callback) {
+		Mongo.select(user, 'users', data => {
+			data = data[0];
+			let res = data.name ? data.name : '';
+			if(callback) callback({
+				status: 'ok',
+				data: {
+					email: res
+				}
+			})
+		})
+	}
+
 	,setBinance(user, binanceData, callback) {
 		Mongo.select(user, 'users', (data) => {
 			data = data[0];
@@ -146,6 +186,22 @@ let Users = {
 					tempBot = new Bot(botData);
 					data.bots.push(tempBot);
 					this.Bots.push(tempBot)
+					Mongo.update(user, {bots: data.bots}, 'users', (data) => {
+						if(typeof botData === 'object') {
+							callback({
+								status: 'ok',
+								data: tempBot
+							});
+						}
+						else {
+							callback({
+								status: 'ok',
+								data: {
+									botID: botData
+								}
+							});
+						}
+					});
 				}
 				else {
 					let tempBots = [];
@@ -155,24 +211,31 @@ let Users = {
 					data.bots = tempBots;
 
 					const index = this.Bots.findIndex(bot => bot.botID === botData)
-					this.Bots.splice(index, 1)
+					this.Bots[index].cancelAllOrders(user)
+						.then(res => {
+							this.Bots[index].disableBot()
+								.then(res => {
+									this.Bots.splice(index, 1);
+									Mongo.update(user, {bots: data.bots}, 'users', (data) => {
+										if(typeof botData === 'object') {
+											callback({
+												status: 'ok',
+												data: tempBot
+											});
+										}
+										else {
+											callback({
+												status: 'ok',
+												data: {
+													botID: botData
+												}
+											});
+										}
+									});
+								})
+						})
 				}
-				Mongo.update(user, {bots: data.bots}, 'users', (data) => {
-					if(typeof botData === 'object') {
-						callback({
-							status: 'ok',
-							data: tempBot
-						});
-					}
-					else {
-						callback({
-							status: 'ok',
-							data: {
-								botID: botData
-							}
-						});
-					}
-				});
+				
 			});
 		}
 
@@ -202,7 +265,7 @@ let Users = {
 					data = data[0]
 
 					const index = this.Bots.findIndex(bot => bot.botID === botData.botID)
-					console.log(botData)
+					// console.log(botData)
 					this.Bots[index].changeStatus(botData.status, data)
 					.then( d => callback(d) )
 
@@ -290,8 +353,6 @@ let Users = {
 
 		,freezeBot(user, reqData, callback) {
 			try {
-				console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~') 
-				console.log(this.Bots)
 				Mongo.select(user, 'users', (data) => {
 					data = data[0]
 					// const index = data.bots.findIndex(bot => bot.botID === reqData.botID)
@@ -548,7 +609,7 @@ let Users = {
 			res.cookie('user', user1);
 		}
 
-		if (callback) callback();
+		if (callback) callback({ name: user.name }); 
 	}
 
 	,closeSession(req, res, callback) {

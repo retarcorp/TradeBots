@@ -1,16 +1,16 @@
 <template>
     <div>
-        <div v-if="getStatus === 'confirm' || getStatus === 'confirmCurrent'" class='confirm-block' @click="checkWindow">
+        <div v-if="getStatus === 'confirm' || getStatus === 'confirmCurrent' || getStatus === 'deleteBot'" class='confirm-block' @click="checkWindow">
             <div class='confirm-block__content'>
-                <p>Точно выполнить данную операцию?</p>
+                <p>{{ statusAlert[getStatus] }}</p>
                 <div class='confirm-block__buttons-box'>
                     <button
                         class='button button--success'
-                        @click='onConfirm'>Oк
+                        @click='onConfirm'>Да
                     </button>
                     <button
                         class='button'
-                        @click='onCancel'>Отмена
+                        @click='onCancel'>Нет
                     </button>
                 </div>
             </div>
@@ -75,9 +75,9 @@
                     </template>
 
                     <template v-else>
-                        <p class="settings__item">Дневной объем(BTC): 
+                        <!-- <p class="settings__item">Дневной объем(BTC): 
                             <span>{{ bot.botSettings.dailyVolumeBTC }}</span>
-                        </p>
+                        </p> -->
                         <p class="settings__item">Начальный ордер: 
                             <span>{{ bot.botSettings.initialOrder }}</span>
                         </p>
@@ -218,7 +218,12 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
                 currentComponent: null,
                 isChanging: false,
                 tmpOrd: null,
-                tmpBotId: null
+                tmpBotId: null,
+                statusAlert: {
+                    confirm: 'Вы точно хотите отменить все ордера и продать все монеты по рыночной цене?',
+                    confirmCurrent: 'Вы точно хотите отменить ордер?',
+                    deleteBot: 'Вы точно хотите отменить все ордера, продать все монеты по рыночной цене и удалить бота?'
+                }
             }
         },
         filters: {
@@ -286,7 +291,7 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
             },
             checkStatus(res) {
                 if(res.status === 'ok') {
-                    this.$store.dispatch('setBotsList');
+                    // this.$store.dispatch('setBotsList');
                 }
                 else if(res.status === 'info') {
                     this.$store.commit('setMessage', res.message);
@@ -304,6 +309,9 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
                 } else if( this.getStatus === 'confirmCurrent' ) {
                     this.$store.commit('setClientAnswer', 'acceptCurrent');
                     this.refuseOrder();
+                } else if( this.getStatus === 'deleteBot') {
+                    this.$store.commit('setClientAnswer', 'acceptDeleteBot');
+                    this.onDeleteBot();
                 }
                 this.onCancel();
                 this.$store.commit('clearAnswer');
@@ -323,6 +331,12 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
                             this.$store.commit('setSpiner', false)
                             this.checkStatus(res);
                         })
+                }
+            },
+            onDeleteBot() {
+                this.$store.commit('setStatus', 'deleteBot');
+                if(this.clientAnswer === 'acceptDeleteBot') {
+                    this.$store.dispatch('deleteBot', this.bot.botID)
                 }
             },
             refuseCurrentOrder(ordId, botId) {
@@ -352,10 +366,10 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
                     })
                     .then( (res) => this.$store.commit('setBotFreeze', res.data.freeze))
             },
-            onDeleteBot() {
-                this.$store.dispatch('deleteBot', this.bot.botID)
-            },
             onChangeSettings() {
+                // this.$store.isСonfigurationProcess = true;
+                this.$store.commit('setСonfigurationProcess', true);
+
                 this.isChanging = true;
                 this.bot.state === '1'
                     ? this.currentComponent = "SettingsManual"

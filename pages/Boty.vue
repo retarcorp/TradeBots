@@ -48,16 +48,19 @@ export default {
             search: ''
         }
     },
+    watch: {
+        '$route'() {
+            this.$store.commit('setСonfigurationProcess', false);
+        }
+    },
     methods: {
         onAddNewBot() {
-            this.$router.push('/Boty/Novy')
-           
+            if(this.$store.getters.getBinanceAPIStatus) this.$router.push('/Boty/Novy')
         }
     },
     created() {
         this.$store.dispatch('setBotsList')
         this.$store.dispatch('getSymbolsList')
-        // this.$store.dispatch('getMinNotionals')
     }
 }
 </script>

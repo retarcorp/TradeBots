@@ -39,6 +39,7 @@
                     if(res.status === 'ok') {
                         this.$store.dispatch('setAuthorizedStatus', true)
                         this.$store.commit('setSpiner', false)
+                        this.$store.commit('setEmail', res.data.email);
                         this.$router.push('/Boty')
                     } else {
                         this.$store.commit('setSpiner', false);

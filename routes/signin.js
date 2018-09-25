@@ -24,7 +24,7 @@ router.post('/signin', (req, res, next) => {
 		if (data.length) {
 			if (Users.checkCredentials(data[0], user)) {
 				Users.createSession(req, res, next, data[0], (data) => {
-					res.send({status: 'ok'});
+					res.send({status: 'ok', data: { email: data.name }});
 				});
 			} else {
 				res.send({status: 'error', message: 'Error: Check your login or password!'});

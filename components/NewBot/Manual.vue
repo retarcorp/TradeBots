@@ -125,7 +125,6 @@
     export default {
         name: 'bot-manual',
         props: {
-            minNotional: 0,
             mode: String,
             bot: {
                 required: false,
@@ -155,6 +154,11 @@
 
                     }
                 }
+            }
+        },
+        data() {
+            return {
+                minNotional: 0
             }
         },
         computed: {
@@ -205,10 +209,11 @@
                 this.bot.botSettings.safeOrder.size = (this.bot.botSettings.safeOrder.size <= 0 ) ? this.bot.botSettings.initialOrder : this.bot.botSettings.safeOrder.size
             },
             getStep() {
-                if(Math.floor(this.minNotional) >= 1) return 1;
-                else return this.minNotional;
+                console.log(this.minNotional)
+                return (Math.floor(this.minNotional) >= 1) ? 1 : this.minNotional;
             },
             setMinNotional() {
+                console.log('1--' + this.minNotional)
                 if(this.bot.pair.to !== '') {
                     let symbol = this.bot.pair.to;
                     this.minNotional = this.$store.getters.getMinNotional(symbol);
@@ -216,6 +221,7 @@
                 else {
                     this.minNotional = 0;
                 }
+                console.log('___ ' + this.minNotional)
                 this.bot.botSettings.initialOrder = this.minNotional
                 this.bot.botSettings.safeOrder.size = this.minNotional
             },
@@ -243,6 +249,7 @@
                 if(this.bot.botSettings.stopLoss < 0) this.bot.botSettings.stopLoss = 0;
             },
             onAddManualBot() {
+                this.$store.commit('setСonfigurationProcess', false);
                 if(this.bot.botID) {
                     this.$store.dispatch('updateBot', this.bot)
                         .then(() => {

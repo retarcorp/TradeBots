@@ -49,7 +49,7 @@ module.exports = class Bot {
 		if(user) this.setClient(user)
 	}
 
-	bot_log(message = '') {
+	_log(message = '') {
 		let date = new Date,
 			nextMessage = ''
 		date = date.getHours() + ':' + date.getMinutes() + ':' + date.getSeconds() 
@@ -83,20 +83,26 @@ module.exports = class Bot {
 		let key = '',
 			secret = '',
 			ret = true
-		try {
-			key = Crypto.decipher(user.binanceAPI.key,  Crypto.getKey(user.regDate, user.name))
-			secret = Crypto.decipher(user.binanceAPI.secret,  Crypto.getKey(user.regDate, user.name))
+		if(user.binanceAPI.name !== '') {
+			try {
+				key = Crypto.decipher(user.binanceAPI.key,  Crypto.getKey(user.regDate, user.name))
+				secret = Crypto.decipher(user.binanceAPI.secret,  Crypto.getKey(user.regDate, user.name))
+			}
+			catch(err) {
+				console.log('ошибка с определением ключей бинанса');
+				this._log('ошибка с определением бинанс ключей!');
+				key = '';
+				secret = '';
+				ret = false;
+			}
+			this.Client = binanceAPI({
+				apiKey: key,
+				apiSecret: secret
+			})
 		}
-		catch(err) {
-			console.log(err)
-			key = ''
-			secret = ''
-			ret = false
+		else {
+			this._log('ошибка с определением бинанс ключей!');
 		}
-		this.Client = binanceAPI({
-			apiKey: key,
-			apiSecret: secret
-		})
 		return ret
 	}
 
@@ -112,7 +118,7 @@ module.exports = class Bot {
 	}
 
 	continueTrade(user) {
-		console.log('****************continueTrade****************')
+		console.log('****************continueTrade****************  ' + this.title)
 		if(this.setClient(user)) {
 			if(this.state === CONSTANTS.BOT_STATE.MANUAL) {
 				this.tradeManual(user)
@@ -134,22 +140,22 @@ module.exports = class Bot {
 				this.botSettings.decimalQty = await Symbols.getLotSize(this.getPair())
 				status = 'ok'	
 				message = 'Бот запущен (РУЧНОЙ)'
-				this.bot_log('__________________________')
-				this.bot_log(message)
+				this._log('__________________________')
+				this._log(message)
 				await this.syncUpdateBot(user)
 				this.startManual(user)
 			}
 			else if(this.state === CONSTANTS.BOT_STATE.AUTO) {
 				status = 'ok'	
 				message = 'Бот запущен (АВТО)'
-				this.bot_log(message)
+				this._log(message)
 				await this.syncUpdateBot(user)
 				this.startAuto(user)
 			}
 			else {
 				status = 'error'	
 				message = "Ошибка (НЕИЗВЕСТНЫЙ ТИП БОТА)"
-				this.bot_log(message)
+				this._log(message)
 				this.status = CONSTANTS.BOT_STATUS.INACTIVE
 			}
 		}
@@ -157,7 +163,7 @@ module.exports = class Bot {
 			this.status = nextStatus
 			status = 'info'
 			message = "Бот перестанет работать после завершения текущего цикла"
-			this.bot_log(message)
+			this._log(message)
 			console.log('deactivate bot') 
 			await this.syncUpdateBot(user)
 		}
@@ -165,7 +171,7 @@ module.exports = class Bot {
 			this.status = CONSTANTS.BOT_STATUS.INACTIVE
 			status = 'error'
 			message = "Ошибка (Возможно вы пытаетесь включить бота, который не завершил свой последний цикл)"
-			this.bot_log(message)
+			this._log(message)
 			await this.syncUpdateBot(user)
 		}
 		return {
@@ -322,13 +328,13 @@ module.exports = class Bot {
 			// console.log(quantity)
 			let newBuyOrder = await this.Client.order(newOrderParams)
 
-			this.bot_log('попытка создать ордер - ' + newBuyOrder.price + ', ' + newBuyOrder.origQty)
+			this._log('попытка создать ордер - ' + newBuyOrder.price + ', ' + newBuyOrder.origQty)
 			// if(type === CONSTANTS.ORDER_TYPE.MARKET) console.log(`market price is ${newBuyOrder.fills[0].price}`)
 			// if(price) this.recountQuantity(newBuyOrder.origQty)
 			return new Order(newBuyOrder)
 		}
 		catch(error) {
-			this.bot_log(this.errorCode(error))
+			this._log(this.errorCode(error))
 			if(quantity > 0) {
 				let step = this.botSettings.decimalQty
 				if(
@@ -364,11 +370,11 @@ module.exports = class Bot {
 			let newSellOrder = await this.Client.order(newOrderParams)
 			// if(type === CONSTANTS.ORDER_TYPE.MARKET) console.log(`market price is ${newSellOrder.fills[0].price}`)
 			this.recountQuantity(newSellOrder.origQty, 1)
-			this.bot_log('попытка создать ордер - ' + newSellOrder.price + ', ' + newSellOrder.origQty)
+			this._log('попытка создать ордер - ' + newSellOrder.price + ', ' + newSellOrder.origQty)
 			return new Order(newSellOrder)
 		}
 		catch(error) {
-			this.bot_log(this.errorCode(error))
+			this._log(this.errorCode(error))
 			// console.log(this.errorCode(error))
 			if(quantity > 0) {
 				let step = this.botSettings.decimalQty
@@ -388,7 +394,7 @@ module.exports = class Bot {
 
 	async createSafeOrders(price = 0, quantity = 0) {
 		console.log('--- createSafeOrders')
-		this.bot_log('создание страховочных ордеров')
+		this._log('создание страховочных ордеров')
 		price = Number(price)
 		let amount = this.getMaxOpenedAmount(),
 			safeOrders = [],
@@ -412,7 +418,7 @@ module.exports = class Bot {
 	
 	async createSafeOrder(price = 0, quantity = 0) {
 		console.log('---! createSafeOrder')
-		this.bot_log('новый страховочный ордер')
+		this._log('новый страховочный ордер')
 		price = Number(price)
 		// console.log(`create safe order`)
 		let maxOpenSO = this.getMaxOpenedAmount(),
@@ -441,7 +447,7 @@ module.exports = class Bot {
 			}
 			catch(error) {
 				
-				this.bot_log(error)
+				this._log(error)
 				// console.log(error)
 			}
 			// console.log(`create safe order end (price ${newPrice})`)
@@ -466,7 +472,7 @@ module.exports = class Bot {
 
 	async firstBuyOrder(user = {}, orderId = 0) {
 		console.log('--- firstBuyOrder')
-		this.bot_log('первая закупка монет')
+		this._log('первая закупка монет')
 		let order = {}
 		
 		console.log(this.orders.length)
@@ -482,7 +488,7 @@ module.exports = class Bot {
 		order = await this.getOrder(orderId) 
 		this.orders.push(order)
 		await this.syncUpdateBot(user)
-		this.bot_log('первый закупочный - ' + order.price + ', ' + order.origQty)
+		this._log('первый закупочный - ' + order.price + ', ' + order.origQty)
 		
 		console.log(this.orders.length)
 		while(!(
@@ -513,21 +519,21 @@ module.exports = class Bot {
 
 	async startTradeAuto(user, message = '') {
 		console.log('-- startTradeAuto', message)
-		this.bot_log('начало торговли автобота (' + message + ')')
+		this._log('начало торговли автобота (' + message + ')')
 		if(!message) await this.pushTradingSignals()
 		let signal = await this.checkSignals(user)
 		console.log('найдены подходящие условия для пары - ' + signal.symbol);
-		this.bot_log('найдены подходящие условия для пары - ' + signal.symbol);
+		this._log('найдены подходящие условия для пары - ' + signal.symbol);
 		await this.syncUpdateBot(user);
 		if(this.status === CONSTANTS.BOT_STATUS.ACTIVE) {
 			this.pair.from = this.findFromSymbol(signal.symbol)
 			console.log(this.pair.from)
 			console.log(this.getPair())
-			let volumeBTCFlag = await this.checkVolumeBTC()
-			console.log('volumeBTCFlag = ' + volumeBTCFlag)
-			if(volumeBTCFlag) {
+			// let volumeBTCFlag = await this.checkVolumeBTC()
+			// console.log('volumeBTCFlag = ' + volumeBTCFlag)
+			// if(volumeBTCFlag) {
 				if(this.pair.from) {
-					this.bot_log('торговая пара найдена, начало торговли...')
+					this._log('торговая пара найдена, начало торговли...')
 					this.botSettings.decimalQty = await Symbols.getLotSize(this.getPair())
 					console.log('signal = ' + signal)
 					//создать новый ордер по сигналам
@@ -540,14 +546,14 @@ module.exports = class Bot {
 						this.botSettings.firstBuyPrice = price
 						let profitPrice = this.getProfitPrice(price)
 						let newSellOrder = await this.newSellOrder(profitPrice, CONSTANTS.ORDER_TYPE.LIMIT, qty)
-						this.bot_log('новый ордер на продажу - ' + newSellOrder.price + ', ' + newSellOrder.origQty)
+						this._log('новый ордер на продажу - ' + newSellOrder.price + ', ' + newSellOrder.origQty)
 						if(newSellOrder !== CONSTANTS.DISABLE_FLAG) await this.syncUpdateBot(user)
 						this.currentOrder = newSellOrder
 						this.orders.push(newSellOrder)
 
 						this.tradeAuto(user)
 						.catch(err => {
-							this.bot_log(err)
+							this._log(err)
 							console.log(err)
 						})
 					}
@@ -557,8 +563,8 @@ module.exports = class Bot {
 						if(this.status === CONSTANTS.BOT_STATUS.ACTIVE) this.startTradeAuto(user)
 					}
 				}
-			}
-			else await this.startTradeAuto(user, 'условия не сошлись, начинаю поиск пар заново')
+			// }
+			// else await this.startTradeAuto(user, 'условия не сошлись, начинаю поиск пар заново')
 		}
 		else {
 			await this.clearTradingSignals();
@@ -568,7 +574,7 @@ module.exports = class Bot {
 	}
 
 	async checkVolumeBTC() {
-		this.bot_log('проверка текущего объема BTC')
+		this._log('проверка текущего объема BTC')
 		let pair = this.getPair(),
 			currentBTCvolume = this.getBTCVolume(),
 			BTCvolume = await this.Client.dailyStats({ symbol: pair })
@@ -595,7 +601,7 @@ module.exports = class Bot {
 		
 		while(!ret.flag && this.status !== CONSTANTS.BOT_STATUS.INACTIVE) {
 			await sleep(CONSTANTS.ORDER_TIMEOUT)
-			this.bot_log('проверка сигналов...')
+			this._log('проверка сигналов...')
 			await this.syncUpdateBot(user)
 			let signals = await Mongo.syncSelect({}, CONSTANTS.TRADING_SIGNALS_COLLECTION)
 			console.log('lol')
@@ -636,21 +642,6 @@ module.exports = class Bot {
 		}
 		console.log('-------------------')
 		return ret
-
-		// for(let i = 0; i < l; i++) {
-		// 	let curSignal = this.botSettings.tradingSignals[i]
-		// 	if(
-		// 		curSignal.id === signal.id
-		// 		// symbol === signal.symbol &&
-		// 		// curSignal.timeframe === signal.timeframe &&
-		// 		// curSignal.checkRating === signal.checkRating
-		// 		) {
-		// 			this.botSettings.tradingSignals[i].rating = signal.rating
-		// 			ret =  true
-		// 			break
-		// 		}
-		// }
-		// return ret
 	}
 
 	async tradeAuto(user) {
@@ -692,7 +683,7 @@ module.exports = class Bot {
 						setTimeout(() => this.tradeAuto(user), CONSTANTS.TIMEOUT)
 					}
 					else {
-						console.warn('----- general tradeManual')
+						console.warn('----- general tradeAuto')
 						// если пред и текущие значения равны -> продолжать цикл
 						// console.log('-> продолжать цикл')
 						setTimeout(() => this.tradeAuto(user), CONSTANTS.TIMEOUT)
@@ -729,12 +720,13 @@ module.exports = class Bot {
 				}
 			}
 		}
+		else if(this.status === CONSTANTS.BOT_STATUS.ACTIVE) this.startTradeAuto(user);
 		await this.syncUpdateBot(user)
 	}
 
 	async pushTradingSignals() {
 		console.log('---- pushTradingSignals')
-		this.bot_log('создание сигналов трайдинг вью')
+		this._log('создание сигналов трайдинг вью')
 		let signals = this.botSettings.tradingSignals,
 			l = signals.length,
 			pairs = this.pair.requested,
@@ -811,21 +803,21 @@ module.exports = class Bot {
 	isError1021(error = new Error('default err')) { //Timestamp for this request is outside of the recvWindow 	
 		let code = this.errorCode(error)
 		console.log(code)
-		this.bot_log('ошибка code:' + code + ', Timestamp for this request is outside of the recvWindow')
+		this._log('ошибка code:' + code + ', Timestamp for this request is outside of the recvWindow')
 		return code === -1021
 	}
 
 	isError1013(error = new Error('default err')) { //MIN_NOTATIAN
 		let code = this.errorCode(error)
 		console.log(code)
-		this.bot_log('ошибка code:' + code + ', MIN_NOTATIAN')
+		this._log('ошибка code:' + code + ', MIN_NOTATIAN')
 		return code === -1013
 	}
 
 	isError2010(error = new Error('default err')) { // insufficient balance
 		let code = this.errorCode(error)
 		console.log(code)
-		this.bot_log('ошибка code:' + code + ', insufficient balance')
+		this._log('ошибка code:' + code + ', insufficient balance')
 		return code === -2010
 	}
 
@@ -906,7 +898,7 @@ module.exports = class Bot {
 
 	async isProcess(user) {
 		console.log('---- in PROCESS' + this.title)
-		this.bot_log('в процессе')
+		this._log('в процессе')
 		let orders = this.safeOrders || [],
 			length = orders.length
 		if(length) {
@@ -967,7 +959,8 @@ module.exports = class Bot {
 				await this.cancelAllOrders(user)
 				// await this.cancelOrder(this.currentOrder.orderId)
 				// await this.newSellOrder(price, CONSTANTS.ORDER_TYPE.MARKET)
-				await this.disableBot('Все распродано по рынку, бот выключен', CONSTANTS.CONTINUE_FLAG)
+				await this.disableBot('Все распродано по рынку, бот выключен', CONSTANTS.CONTINUE_FLAG);
+				(this.state === CONSTANTS.BOT_STATE.AUTO) && await this.clearTradingSignals();
 			}
 		}
 		await this.syncUpdateBot(user)
@@ -1020,7 +1013,7 @@ module.exports = class Bot {
 		}
 		catch(error) {
 			// console.log(orderId)
-			this.bot_log(error)
+			this._log(error)
 			if(this.isError1021(error)) order = await this.getOrder(orderId)
 		}
 		return new Order(order)
@@ -1053,7 +1046,7 @@ module.exports = class Bot {
 				status = 'error'
 				message = `ошибка при завершении ордера ${cancelOrder.orderId}`
 			}
-			this.bot_log('закрытие ордера - ' + message)
+			this._log('закрытие ордера - ' + message)
 			return {
 				status: status,
 				message: message,
@@ -1061,7 +1054,7 @@ module.exports = class Bot {
 			}
 		}
 		catch(error) {
-			this.bot_log('закрытие ордера - ' + error)
+			this._log('закрытие ордера - ' + error)
 			// console.log(this.errorCode(error))
 			return {
 				status: 'error',
@@ -1145,7 +1138,7 @@ module.exports = class Bot {
 
 	async disableBot(message, isContinue = false) {
 		console.log('[----- disableBot ' + message)
-		this.bot_log(`выключение бота, причина (${message})`)
+		this._log(`выключение бота, причина (${message})`)
 		// console.log(`disableBot start...(${message})`)
 		if(this.pair.from) await this.cancelOrders(this.safeOrders)
 		this.safeOrders = []
@@ -1164,7 +1157,7 @@ module.exports = class Bot {
 
 	async cancelAllOrders(user) {
 		console.log('----- cancel all orders and sell it')
-		this.bot_log('завершение всех ордеров и продажа по рынку')
+		this._log('завершение всех ордеров и продажа по рынку')
 		try{
 			await this.cancelOrders(this.safeOrders)
 			await this.cancelOrder(this.currentOrder.orderId)
@@ -1188,7 +1181,7 @@ module.exports = class Bot {
 		catch(error) {
 			console.log(error)
 			// console.log(this.errorCode(error))
-			this.bot_log(error)
+			this._log(error)
 			return {
 				status: 'error',
 				message: `Ошибка при "отменить и продать все"(код ошибки ${this.errorCode(error)}) :: ${error}`
@@ -1268,7 +1261,7 @@ module.exports = class Bot {
 
 	async unfreezeBot(user) {
 		// console.log('UNFREEZE BOT')
-		this.bot_log('разморозка бота начата')
+		this._log('разморозка бота начата')
 		console.warn('------ unfreezeing bot')
 		this.preFreeze = CONSTANTS.BOT_FREEZE_STATUS.INACTIVE
 
@@ -1280,7 +1273,7 @@ module.exports = class Bot {
 		this.orders.push(...this.safeOrders)
 		this.orders.push(this.currentOrder)
 		await this.syncUpdateBot(user)
-		this.bot_log('заморозка бота завершена')
+		this._log('заморозка бота завершена')
 		//разморозить
 		// return {
 		// 	status: 'ok',
@@ -1296,7 +1289,7 @@ module.exports = class Bot {
 
 	async freezeBot(user) {
 		console.warn('------ freezeing bot')
-		this.bot_log('заморозка бота...')
+		this._log('заморозка бота...')
 		// console.log('FREEZE BOT//////////////////////////////////////////')
 		this.preFreeze = CONSTANTS.BOT_FREEZE_STATUS.ACTIVE
 
@@ -1313,7 +1306,7 @@ module.exports = class Bot {
 		await this.cancelOrders(this.safeOrders)
 		await this.cancelOrder(this.currentOrder.orderId)
 		await this.syncUpdateBot(user)
-		this.bot_log('бот заморожен')
+		this._log('бот заморожен')
 		//заморозить
 		// return {
 		// 	status: 'ok',
@@ -1358,7 +1351,7 @@ module.exports = class Bot {
 		// console.log('_//////////////////////////////////////////_')
 		await this.syncUpdateBot(user, 'ОБНОВЛЕние ФРЕЕЕЕЗЕЕЕ БООТ')
 		console.log(']------- changeFreeze')
-		this.bot_log('изменение состояния заморозки бота - ' + res.message)
+		this._log('изменение состояния заморозки бота - ' + res.message)
 		return res
 	}
 }

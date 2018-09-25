@@ -11,6 +11,7 @@
                             <nuxt-link to="/Akaunt" class="nav__link">Аккаунт</nuxt-link>
                         </div>
                         <div class="nav__right">
+                            <p class="nav__link nav__accaunt" :class="{'varning_red': !binanceStatus}">{{ email }}{{ !binanceStatus ? ' (ключи бинанс не заданы!)' : '' }}</p>
                             <button 
                                 v-if="isAuth" 
                                 @click.prevent="onSignOut" 
@@ -31,8 +32,14 @@
     export default {
         computed: {
             isAuth() {
-                return this.$store.getters.getAuthorizedStatus
-            }
+                return this.$store.getters.getAuthorizedStatus;
+            },
+            email() {
+                return this.$store.getters.getEmail;
+            },
+            binanceStatus() {
+                return this.$store.getters.getBinanceAPIStatus;
+            }       
         },
         methods: {
             onSignIn() {
@@ -46,6 +53,7 @@
                             this.$router.push('/Registratsia')
                             this.$store.commit('setSpiner', false);
                             this.$store.dispatch('setAuthorizedStatus', false)
+                            this.$store.commit('setEmail', '');
                         } else {
                             alert(res.message)
                             this.$store.commit('setSpiner', false);
@@ -53,6 +61,11 @@
                     })
                     .catch(e => console.log(e))
             }
+        },
+        created() {
+            this.$store.dispatch('setEmail');
+            this.$store.dispatch('firstGetBinanceAPI');
+            // this.$store.dispatch('checkBinance');
         }
     }
 </script>
@@ -110,6 +123,16 @@
 }
 
 .nav__right {
+    display: flex;
     margin-left: auto
+}
+
+.nav__accaunt {
+    cursor: default;
+    color: darkslateblue;
+}
+
+.varning_red {
+    color: red !important;
 }
 </style>
