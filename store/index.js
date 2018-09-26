@@ -10,6 +10,7 @@ const store = () =>
 		income: {},
 		isСonfigurationProcess: false,
 		isAuthorized: false,
+		isAuthorizedAdmin: false,
 		botsList: [],
 		isActive: false,
 		status: '',
@@ -26,9 +27,18 @@ const store = () =>
 		},
 		lotSize: {},
 		binanceAPIStatus: false,
-		binanceAPI: {}
+		binanceAPI: {},
+		users: []
 	},
 	getters: {
+		getUser(state, payload) {
+			return (index) => {
+				return index >= 0 ? state.users[index] : {};
+			}
+		},
+		getUsers(state) {
+			return state.users;
+		},
 		getEmail(state) {
 			return state.email;	
 		},
@@ -37,6 +47,9 @@ const store = () =>
 		},
 		getSpinerStatus(state) {
 			return state.isActive
+		},
+		getAdminAuthorizedStatus(state) {
+			return state.isAuthorizedAdmin;
 		},
 		getAuthorizedStatus(state) {
 			return state.isAuthorized;
@@ -74,6 +87,9 @@ const store = () =>
 		}
 	},
 	mutations: {
+		setAuthorizedAdmin(state, payload) {
+			state.isAuthorizedAdmin = payload;
+		},
 		setEmail(state, payload) {
 			state.email = payload;
 		},
@@ -162,9 +178,67 @@ const store = () =>
 		},
 		deleteBinanceAPI(state) {
 			state.binanceAPI = {};
+		},
+		setUsers(state, payload) {
+			payload = payload.filter(elem => !elem.admin);
+			state.users = payload;
+		},
+		deleteUser(state, payload) {
+			state.users.splice(payload, 1);
 		}
 	},
 	actions: {
+		deleteUser({ commit, getters }, payload) {
+			let user = getters.getUser(payload);
+			this.$axios
+				.$post('/api/admin/deleteUser', user)
+				.then(res => {
+					if(res.status === 'ok') commit('deleteUser', payload);
+					commit('setStatus', res.status);
+					commit('setMessage', res.message);
+				})
+		},
+		setUsers({ commit }, payload) {
+			this.$axios
+				.$get('/api/admin/getUsersList')
+				.then(res => {
+					if(res.status === 'ok') {
+						commit('setUsers', res.data.usersList);
+					}
+					else {
+						console.log(res)
+					}
+				})
+				.catch(e => console.log(e));
+		},
+		adminSignout({ commit, dispatch }, payload) {
+			this.$axios.$get('/api/admin/signout')
+				.then(res => {
+					if(res.status === 'ok') {
+						this.$router.push('/admin/signin');
+						commit('setSpiner', false);
+						dispatch('setAuthorizedAdmin', false);
+					} else {
+						// alert(res.message)
+						commit('setSpiner', false);
+					}
+				})
+				.catch(e => console.log(e))
+		},
+		adminSignin({ commit }, payload) {
+			this.$axios
+				.$post('/api/admin/signin', payload)
+				.then(res => {
+					if(res.status === 'ok') {
+						this.$router.push('/admin')
+					} else {
+						commit('setStatus', res.status);
+						commit('setMessage', res.message);
+						console.log(res.message);
+					}
+				})
+				.catch(e => console.log(e))
+		},
 		setNewPassword({ commit }, payload) {
 			this.$axios
 				.post('/api/account/setNewPassword', payload)

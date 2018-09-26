@@ -8,12 +8,64 @@ let binanceAPI = require('binance-api-node').default
 
 let Users = {
 
-	adminLogin(admin, callback) {
-		this.find(admin, 'admin', callback);
+	adminLogin(admin, adminData, callback) {
 	}
 
 	,find(user, collection, callback) {
 		Mongo.select({ name: user.name }, collection, callback);
+	}
+
+	,deleteUser(admin, userData, callback) {
+		Mongo.select(admin, 'users', data => {
+			if(data.length) {
+				console.log(userData)
+				Mongo.delete({name: userData.name}, 'users', data => {
+					if(callback) callback({
+						status: 'ok',
+						data: data,
+						message: `Пользователь ${userData.name} успешно удален!` 
+					})
+				})
+			} else {
+				if(callback) callback({
+					status: 'info',
+					message: 'Недостаточно прав для выполнения операции.'
+				});
+			}
+		})
+	}
+
+	,getUsersList(admin, callback) {
+		Mongo.select(admin, 'users', data => {
+			if(data.length) {
+				Mongo.select({}, 'users', data => {
+					data = data.filter(elem  => !elem.admin)
+					data = data.map(({
+						name,
+						regDate,
+						bots
+					}) => {
+						return {
+							name: name,
+							regDate: regDate,
+							botsCount: bots.length
+						}
+					})
+					if(callback) callback({
+						status: 'ok',
+						data: {
+							usersList: data
+						}
+					});
+				});
+
+			} else {
+				if(callback) callback({
+					status: 'info',
+					message: 'Недостаточно прав для получения данных.'
+				});
+			}
+		})
 	}
 
 	,create(user, collection, callback) {
@@ -595,21 +647,36 @@ let Users = {
 	}
 
 	,createSession(req, res, next, user, callback) {
-		//console.log(req.session)
-
 	    let session = req.session;
 		let user1 = {
-			name: user.name,
-			admin: user.admin
+			name: user.name
+			// ,
+			// admin: user.admin
 		};
 		session.logged = true;
 		session.user = session.user || user1;
-		// console.log(user1, session)
+
 		if (!req.cookies.user){
 			res.cookie('user', user1);
 		}
 
 		if (callback) callback({ name: user.name }); 
+	}
+
+	,createAdminSession(req, res, next, admin, callback) {
+	    let session = req.session;
+		let admin1 = {
+			name: admin.name,
+			admin: admin.admin
+		};
+		session.logged = true;
+		session.admin = session.admin || admin1;
+
+		if (!req.cookies.admin){
+			res.cookie('admin', admin1);
+		}
+
+		if (callback) callback({ name: admin.name }); 
 	}
 
 	,closeSession(req, res, callback) {

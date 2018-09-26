@@ -61,6 +61,7 @@ export default {
     created() {
         this.$store.dispatch('setBotsList')
         this.$store.dispatch('getSymbolsList')
+        this.$store.dispatch('firstGetBinanceAPI');
     }
 }
 </script>

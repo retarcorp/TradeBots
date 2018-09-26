@@ -11,15 +11,15 @@
                             <nuxt-link to="/Akaunt" class="nav__link">Аккаунт</nuxt-link>
                         </div>
                         <div class="nav__right">
-                            <p class="nav__link nav__accaunt" :class="{'varning_red': !binanceStatus}">{{ email }}{{ !binanceStatus ? ' (ключи бинанс не заданы!)' : '' }}</p>
+                            <p v-if="isAuth" class="nav__link nav__accaunt" :class="{'varning_red': !binanceStatus}">{{ email }}{{ !binanceStatus ? ' (ключи бинанс не заданы!)' : '' }}</p>
                             <button 
                                 v-if="isAuth" 
                                 @click.prevent="onSignOut" 
                                 class="nav__link btn__signout">Выйти</button>
-                            <button 
+                            <!-- <button 
                                 v-else
                                 @click.prevent="onSignIn"
-                                class="nav__link btn__signout">Войти</button>
+                                class="nav__link btn__signout">Войти</button> -->
                         </div>
                     </nav>
                 </div>

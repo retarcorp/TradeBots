@@ -7,7 +7,17 @@
                         <div  class="nav__left">
                             <h1 class="title--big header-admin__title">Панель управления</h1>
                             <nuxt-link exact to="/admin/" class="nav__link">Пользователи</nuxt-link>
-                            <nuxt-link exact to="/admin/rates" class="nav__link">Тарифы</nuxt-link>
+                            <!-- <nuxt-link exact to="/admin/rates" class="nav__link">Тарифы</nuxt-link> -->
+                        </div>
+                        <div class="nav__right">
+                            <button 
+                                v-if="isAuth" 
+                                @click.prevent="onSignOut" 
+                                class="nav__link btn__signout">Выйти</button>
+                            <!-- <button 
+                                v-else
+                                @click.prevent="onSignIn"
+                                class="nav__link btn__signout">Войти</button> -->
                         </div>
                     </nav>
                 </div>
@@ -18,6 +28,20 @@
 
 <script>
     export default {
+        computed: {
+            isAuth() {
+                return this.$store.getters.getAdminAuthorizedStatus;
+            }
+        },
+        methods: {
+            onSignIn() {
+                this.$router.push('/Vhod')
+            },
+            onSignOut() {
+                this.$store.commit('setSpiner', true);
+                this.$store.dispatch('adminSignout');
+            }
+        }
     }
 </script>
 
