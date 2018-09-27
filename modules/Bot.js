@@ -1,16 +1,16 @@
-let BotSettings = require('./BotSettings')
-let Order = require('./Order')
-let Pair = require('./Pair')
-const Crypto = require('../modules/Crypto')
-const Symbols = require('./Symbols')
-let binanceAPI = require('binance-api-node').default
-const WSS = require('./WSS')
-const TradingSignals = require('../modules/TradingSignals')
-let Mongo = require('./Mongo')
-let sleep = require('system-sleep')
-const md5 = require('md5')
+let BotSettings = require('./BotSettings');
+let Order = require('./Order');
+let Pair = require('./Pair');
+const Crypto = require('../modules/Crypto');
+const Symbols = require('./Symbols');
+let binanceAPI = require('binance-api-node').default;
+const WSS = require('./WSS');
+const TradingSignals = require('../modules/TradingSignals');
+let Mongo = require('./Mongo');
+let sleep = require('system-sleep');
+const md5 = require('md5');
 
-const CONSTANTS = require('../constants')
+const CONSTANTS = require('../constants');
 
 module.exports = class Bot {
 	constructor({
@@ -30,23 +30,25 @@ module.exports = class Bot {
 		},
 		botSettings = {},
 		balance = 0,
-		log = []
+		log = [],
+		PROCESSES = []
 	}, user) {
-		this.title = title
-		this.state = state
-		this.status = status
-		this.freeze = freeze
-		this.preFreeze = preFreeze
-		this.pair = new Pair(pair.from, pair.to, pair.requested)
-		this.orders = orders
-		this.currentOrder = currentOrder
-		this.safeOrders = safeOrders
-		this.freezeOrders = freezeOrders
-		this.botSettings = new BotSettings(botSettings)
-		this.botID = botID
-		this.balance = balance
-		this.log = log
-		if(user) this.setClient(user)
+		this.title = title;
+		this.state = state;
+		this.status = status;
+		this.freeze = freeze;
+		this.preFreeze = preFreeze;
+		this.pair = new Pair(pair.from, pair.to, pair.requested);
+		this.orders = orders;
+		this.currentOrder = currentOrder;
+		this.safeOrders = safeOrders;
+		this.freezeOrders = freezeOrders;
+		this.botSettings = new BotSettings(botSettings);
+		this.botID = botID;
+		this.balance = balance;
+		this.log = log;
+		this.PROCESSES = PROCESSES;
+		if(user) this.setClient(user);
 	}
 
 	_log(message = '') {
@@ -55,13 +57,8 @@ module.exports = class Bot {
 		date = date.getHours() + ':' + date.getMinutes() + ':' + date.getSeconds() 
 		nextMessage = `${date}|  ${message}`
 		
-		// if(this.log.length) {
-			// 	else this.log[0] = this.changeDots(this.log[0])
-			// } else {
-				// message = this.changeDots(message)
 		if(this.log.length && this.log[0].indexOf(message) >= 0) this.log[0] = nextMessage
 		else this.log.unshift(nextMessage) 
-		// }
 	}
 
 	changeDots(line) {
@@ -200,8 +197,6 @@ module.exports = class Bot {
 
 	setQuantity(price = 0, quantity = 0) {
 		this.botSettings.quantity = price ? this.toDecimal(Number(this.botSettings.currentOrder)/ price) : Number(quantity)
-		// console.log(price, this.botSettings.currentOrder, this.botSettings.quantity, price * this.botSettings.quantity)
-		// console.log("SET КОЛИЧЕСТВО _________ " + this.botSettings.quantity)
 		return Number(this.botSettings.quantity)
 	}
 
@@ -215,7 +210,6 @@ module.exports = class Bot {
 
 	getQuantity(price = 0, safeFlag = 0) {
 		price = Number(price)
-		// console.log("GET КОЛИЧЕСТВО _________ " + this.botSettings.quantity)
 		if(!safeFlag)
 			return price ? this.toDecimal(Number(this.botSettings.currentOrder) / price) : Number(this.botSettings.quantity)
 		else 
@@ -224,12 +218,10 @@ module.exports = class Bot {
 	
 	recountQuantity(quantity = 0, side = 0) {
 		quantity = Number(quantity)
-		// console.log(`recount _ ${quantity} _ ${side}`)
 		let current = Number(this.botSettings.quantity)
 		current += Math.pow(-1, side) * quantity
 		current = this.toDecimal(current)
 		this.botSettings.quantity = current
-		// console.log("RECOUNT КОЛИЧЕСТВО _________ " + this.botSettings.quantity)
 		return current
 	}
 	
@@ -244,8 +236,6 @@ module.exports = class Bot {
 	getDecimal(price = 0) {
 		price = price ? price : this.botSettings.decimalQty
 		let ret = this.countDecimalNumber(price)
-
-		// if(this.countDecimalNumber(price)) ret = String(price).length - 2
 		return ret
 	}
 
@@ -298,13 +288,11 @@ module.exports = class Bot {
 	}
 
 	toDecimal(value = 0, decimal = this.getDecimal()) {
-		// console.log(decimal)
 		return Number(Number(value).toFixed(decimal))
 	}
 
 	async getLastPrice() {
 		let pair = this.getPair(),
-			// price = await this.Client.allBookTickers()
 			price = await this.Client.prices()
 		return Number(price[pair])
 	}
@@ -325,12 +313,9 @@ module.exports = class Bot {
 			newOrderParams.type = type
 
 		try{
-			// console.log(quantity)
 			let newBuyOrder = await this.Client.order(newOrderParams)
 
 			this._log('попытка создать ордер - ' + newBuyOrder.price + ', ' + newBuyOrder.origQty)
-			// if(type === CONSTANTS.ORDER_TYPE.MARKET) console.log(`market price is ${newBuyOrder.fills[0].price}`)
-			// if(price) this.recountQuantity(newBuyOrder.origQty)
 			return new Order(newBuyOrder)
 		}
 		catch(error) {
@@ -344,7 +329,6 @@ module.exports = class Bot {
 				else if(this.isError1013(error)) quantity += step
 				else if(this.isError2010(error)) quantity -= step
 				
-				// console.log(this.toDecimal(quantity, 2))
 				let order = await this.newBuyOrder(price, type, this.toDecimal(quantity), error)
 				return order
 			}
@@ -368,14 +352,12 @@ module.exports = class Bot {
 
 		try{
 			let newSellOrder = await this.Client.order(newOrderParams)
-			// if(type === CONSTANTS.ORDER_TYPE.MARKET) console.log(`market price is ${newSellOrder.fills[0].price}`)
 			this.recountQuantity(newSellOrder.origQty, 1)
 			this._log('попытка создать ордер - ' + newSellOrder.price + ', ' + newSellOrder.origQty)
 			return new Order(newSellOrder)
 		}
 		catch(error) {
 			this._log(this.errorCode(error))
-			// console.log(this.errorCode(error))
 			if(quantity > 0) {
 				let step = this.botSettings.decimalQty
 				if(
@@ -400,7 +382,6 @@ module.exports = class Bot {
 			safeOrders = [],
 			curPrice = price,
 			curQty = quantity
-		// console.log(`create safe orders (amount - ${amount})`)
 		for(let i = 0; i < amount; i++) {
 			let newOrder = {}
 			if(!this.getMartingaleActive())
@@ -409,7 +390,6 @@ module.exports = class Bot {
 				newOrder = await this.createSafeOrder(curPrice, curQty)
 			curPrice = newOrder.price
 			curQty = newOrder.origQty
-			// console.log(newOrder)
 			if(newOrder.orderId)
 				safeOrders.push(newOrder)
 		}
@@ -420,7 +400,6 @@ module.exports = class Bot {
 		console.log('---! createSafeOrder')
 		this._log('новый страховочный ордер')
 		price = Number(price)
-		// console.log(`create safe order`)
 		let maxOpenSO = this.getMaxOpenedAmount(),
 			currentQtyUsedSO = this.getQtyOfUsedSafeOrders(),
 			currentQtyActiveSO = this.getQtyOfActiveSafeOrders(),
@@ -429,9 +408,7 @@ module.exports = class Bot {
 			lastSafeOrder = this.lastSafeOrder() || {},
 			decimal = this.getDecimal(price || Number(lastSafeOrder.price)),
 			newOrder = {}
-		// console.log(maxOpenSO, currentQtyActiveSO, maxAmountSO, currentQtyUsedSO)
 		if(maxOpenSO > currentQtyActiveSO && maxAmountSO > currentQtyUsedSO) {
-			// console.log('??')
 			this.botSettings.quantityOfUsedSafeOrders ++
 			this.botSettings.quantityOfActiveSafeOrders ++
 			let lastSafeOrderPrice = Number(lastSafeOrder.price) || price,
@@ -442,15 +419,11 @@ module.exports = class Bot {
 			else qty = this.getQuantity(newPrice, 1)
 
 			try {
-				// console.log(newPrice)
 				newOrder = await this.newBuyOrder(newPrice, CONSTANTS.ORDER_TYPE.LIMIT, qty)
 			}
 			catch(error) {
-				
 				this._log(error)
-				// console.log(error)
 			}
-			// console.log(`create safe order end (price ${newPrice})`)
 		}	
 		return newOrder
 	}
@@ -480,7 +453,6 @@ module.exports = class Bot {
 			let price = await this.getLastPrice(),
 				quantity = this.setQuantity(price), 
 				newBuyOrder = await this.newBuyOrder(price, CONSTANTS.ORDER_TYPE.LIMIT, quantity)
-			// if(newBuyOrder !== CONSTANTS.DISABLE_FLAG) await this.syncUpdateBot(user)
 			orderId = newBuyOrder.orderId
 		}
 		
@@ -529,18 +501,13 @@ module.exports = class Bot {
 			this.pair.from = this.findFromSymbol(signal.symbol)
 			console.log(this.pair.from)
 			console.log(this.getPair())
-			// let volumeBTCFlag = await this.checkVolumeBTC()
-			// console.log('volumeBTCFlag = ' + volumeBTCFlag)
-			// if(volumeBTCFlag) {
 				if(this.pair.from) {
 					this._log('торговая пара найдена, начало торговли...')
 					this.botSettings.decimalQty = await Symbols.getLotSize(this.getPair())
 					console.log('signal = ' + signal)
-					//создать новый ордер по сигналам
 					let newBuyOrder = await this.firstBuyOrder(user)
 					if(newBuyOrder.orderId) {
 						let qty = this.setQuantity(null, Number(newBuyOrder.origQty))
-						// this.orders.push(newBuyOrder)
 						let price = Number(newBuyOrder.price)
 
 						this.botSettings.firstBuyPrice = price
@@ -563,8 +530,6 @@ module.exports = class Bot {
 						if(this.status === CONSTANTS.BOT_STATUS.ACTIVE) this.startTradeAuto(user)
 					}
 				}
-			// }
-			// else await this.startTradeAuto(user, 'условия не сошлись, начинаю поиск пар заново')
 		}
 		else {
 			await this.clearTradingSignals();
@@ -609,7 +574,6 @@ module.exports = class Bot {
 				this.isCurrentSignal(signal)
 			})
 			await this.syncUpdateBot(user)
-			// this.botSettings.curTradingSignals.forEach(signal => {
 			for(let i = 0; i < this.botSettings.curTradingSignals.length; i++) {
 				let signal = this.botSettings.curTradingSignals[i];
 				if(this.isEqualSignals(signal)) {
@@ -620,7 +584,6 @@ module.exports = class Bot {
 					break;
 				}
 			}
-			// })
 		}
 		return ret.signal
 	}
@@ -631,9 +594,7 @@ module.exports = class Bot {
 
 	isCurrentSignal(signal) {
 		console.log('-------------------')
-		// console.log('---- isCurrentSignal')
 		let ret = false,
-			// l = this.botSettings.tradingSignals.length,
 			symbol = this.getPair(),
 			ind = this.botSettings.curTradingSignals.findIndex(elem => elem.id === signal.id)
 		if(ind !== -1) {
@@ -672,38 +633,28 @@ module.exports = class Bot {
 					const activeF = CONSTANTS.BOT_FREEZE_STATUS.ACTIVE,
 						inactiveF = CONSTANTS.BOT_FREEZE_STATUS.INACTIVE
 					if(this.freeze === activeF && this.preFreeze === inactiveF) {
-						// если сейчас бот заморожен, а раньше разморожен -> заморозить
 						await this.freezeBot(user)
 						setTimeout(() => this.tradeAuto(user), CONSTANTS.TIMEOUT)
 					}
 					else if(this.freeze === inactiveF && this.preFreeze === activeF) {
-						// если сейчас бот разморожен, а раньше заморожен -> разморозить
-						// console.log('-> разморозить')
 						await this.unfreezeBot(user)
 						setTimeout(() => this.tradeAuto(user), CONSTANTS.TIMEOUT)
 					}
 					else {
 						console.warn('----- general tradeAuto')
-						// если пред и текущие значения равны -> продолжать цикл
-						// console.log('-> продолжать цикл')
 						setTimeout(() => this.tradeAuto(user), CONSTANTS.TIMEOUT)
 					}
 				}
 				else if(this.status === CONSTANTS.BOT_STATUS.INACTIVE) {
-					// console.warn('___бот выключен___')
 					if(this.currentOrder.orderId) {
 						console.log('------ wait for disabling bot')
-						// console.warn('-> ждем завершение цикла')
 						const activeF = CONSTANTS.BOT_FREEZE_STATUS.ACTIVE,
 						inactiveF = CONSTANTS.BOT_FREEZE_STATUS.INACTIVE
 						if(this.freeze === activeF && this.preFreeze === inactiveF) {
-							// если сейчас бот заморожен, а раньше разморожен -> заморозить
 							await this.freezeBot(user)
 							setTimeout(() => this.tradeAuto(user), CONSTANTS.TIMEOUT)
 						}
 						else if(this.freeze === inactiveF && this.preFreeze === activeF) {
-							// если сейчас бот разморожен, а раньше заморожен -> разморозить
-							// console.log('-> разморозить')
 							await this.unfreezeBot(user)
 							setTimeout(() => this.tradeAuto(user), CONSTANTS.TIMEOUT)
 						}
@@ -713,7 +664,6 @@ module.exports = class Bot {
 					}
 					else {
 						console.log('----- bot is disabled')
-						// console.warn('-> цикл завершен')
 						await this.clearTradingSignals()
 						await this.disableBot('нажали выкл -> бот завершил работу -> выключаем бота')
 					}
@@ -757,7 +707,6 @@ module.exports = class Bot {
 			console.log(signal)
 			console.log(`clear ${i+1} signal (${signal.id})`)
 			await Mongo.syncDelete({ id: signal.id }, CONSTANTS.TRADING_SIGNALS_COLLECTION)
-			// await Mongo.syncDelete({ id: signal.id }, CONSTANTS.TRADING_SIGNALS_COLLECTION)
 		}
 		this.botSettings.curTradingSignals = []
 		this.pair.from = '';
@@ -769,7 +718,6 @@ module.exports = class Bot {
 		let newBuyOrder = await this.firstBuyOrder(user)
 		if(newBuyOrder.orderId) {
 			let qty = this.setQuantity(null, Number(newBuyOrder.origQty))
-			// this.orders.push(newBuyOrder)
 			let price = Number(newBuyOrder.price)
 
 			this.botSettings.firstBuyPrice = price
@@ -846,38 +794,28 @@ module.exports = class Bot {
 					const activeF = CONSTANTS.BOT_FREEZE_STATUS.ACTIVE,
 						inactiveF = CONSTANTS.BOT_FREEZE_STATUS.INACTIVE
 					if(this.freeze === activeF && this.preFreeze === inactiveF) {
-						// если сейчас бот заморожен, а раньше разморожен -> заморозить
 						await this.freezeBot(user)
 						setTimeout(() => this.tradeManual(user), CONSTANTS.TIMEOUT)
 					}
 					else if(this.freeze === inactiveF && this.preFreeze === activeF) {
-						// если сейчас бот разморожен, а раньше заморожен -> разморозить
-						// console.log('-> разморозить')
 						await this.unfreezeBot(user)
 						setTimeout(() => this.tradeManual(user), CONSTANTS.TIMEOUT)
 					}
 					else {
 						console.warn('----- general tradeManual')
-						// если пред и текущие значения равны -> продолжать цикл
-						// console.log('-> продолжать цикл')
 						setTimeout(() => this.tradeManual(user), CONSTANTS.TIMEOUT)
 					}
 				}
 				else if(this.status === CONSTANTS.BOT_STATUS.INACTIVE) {
-					// console.warn('___бот выключен___')
 					if(this.currentOrder.orderId) {
 						console.log('------ wait for disabling bot')
-						// console.warn('-> ждем завершение цикла')
 						const activeF = CONSTANTS.BOT_FREEZE_STATUS.ACTIVE,
 						inactiveF = CONSTANTS.BOT_FREEZE_STATUS.INACTIVE
 						if(this.freeze === activeF && this.preFreeze === inactiveF) {
-							// если сейчас бот заморожен, а раньше разморожен -> заморозить
 							await this.freezeBot(user)
 							setTimeout(() => this.tradeManual(user), CONSTANTS.TIMEOUT)
 						}
 						else if(this.freeze === inactiveF && this.preFreeze === activeF) {
-							// если сейчас бот разморожен, а раньше заморожен -> разморозить
-							// console.log('-> разморозить')
 							await this.unfreezeBot(user)
 							setTimeout(() => this.tradeManual(user), CONSTANTS.TIMEOUT)
 						}
@@ -887,7 +825,6 @@ module.exports = class Bot {
 					}
 					else {
 						console.log('----- bot is disabled')
-						// console.warn('-> цикл завершен')
 						await this.disableBot('нажали выкл -> бот завершил работу -> выключаем бота')
 					}
 				}
@@ -904,15 +841,11 @@ module.exports = class Bot {
 		if(length) {
 			console.log('----- checked safeorders')
 			let nextSafeOrders = []
-			// console.log(`stopPrice - ${this.getStopPrice()}`)
-			// console.log('проверяем страховочные ордера')
 			for(let i = 0; i < length; i++) {
 				try {
 					let order = await this.getOrder(orders[i].orderId)
 					this.botSettings.quantityOfActiveSafeOrders -- 
 					if(this.checkFilling(order.status)) {
-						// this.botSettings.quantityOfUsedSafeOrders --
-						// console.log('найден заюзаный страховочный, пересчет')
 						await this.cancelOrder(this.currentOrder.orderId)
 						this.recountInitialOrder(order)
 						this.recountQuantity(order.origQty)
@@ -928,7 +861,6 @@ module.exports = class Bot {
 						}
 					}
 					else if(this.checkCanceling(order.status)) {
-						// console.log('найдет отмененный страховочный ордер')
 						let newSafeOrder = await this.createSafeOrder(null)
 						if(newSafeOrder.orderId) {
 							this.orders.push(newSafeOrder)
@@ -940,25 +872,19 @@ module.exports = class Bot {
 					}
 				}
 				catch(error) {
-					// console.log('error in find safe orders')
-					// console.log(error)
 				}
 			}
 			this.safeOrders = nextSafeOrders
 		}
 		else {
 			console.log('----- checked stoploss')
-			// console.log('страховочных нету, чекаем стоплосс...')
 			let price = await this.getLastPrice(),
 				stopPrice = this.getStopPrice()
 			console.log(`price - ${price}`)
 			console.log(`stopPrice - ${stopPrice}`)
 			if(stopPrice > price) {
 				console.log('------ stoploss is braked')
-				// console.log('стоплосс пройден')
 				await this.cancelAllOrders(user)
-				// await this.cancelOrder(this.currentOrder.orderId)
-				// await this.newSellOrder(price, CONSTANTS.ORDER_TYPE.MARKET)
 				await this.disableBot('Все распродано по рынку, бот выключен', CONSTANTS.CONTINUE_FLAG);
 				(this.state === CONSTANTS.BOT_STATE.AUTO) && await this.clearTradingSignals();
 			}
@@ -978,7 +904,6 @@ module.exports = class Bot {
 			decimal = this.getDecimal(prevProfitPrice),
 			averagePrice = (prevProfitPrice + nextProfitPrice) / 2,
 			newProfitPrice = this.toDecimal(averagePrice, decimal)
-			// console.log(`new profit price = 0.5*(${prevProfitPrice} + ${nextProfitPrice}) = ${newProfitPrice}`)
 		return newProfitPrice
 	}
 
@@ -1012,7 +937,6 @@ module.exports = class Bot {
 			})
 		}
 		catch(error) {
-			// console.log(orderId)
 			this._log(error)
 			if(this.isError1021(error)) order = await this.getOrder(orderId)
 		}
@@ -1023,7 +947,6 @@ module.exports = class Bot {
 		orderId = Number(orderId)
 		try {
 			let pair = this.getPair()
-			// console.log(`close order(${orderId})`)
 			let order = await this.getOrder(orderId),
 				side = order.side,
 				qty = order.origQty,
@@ -1034,7 +957,6 @@ module.exports = class Bot {
 					symbol: pair,
 					orderId: orderId
 				})
-				// console.log(cancelOrder, side)
 				if(this.isOrderSell(side)) {
 					this.recountQuantity(qty)
 				}
@@ -1042,7 +964,6 @@ module.exports = class Bot {
 				message = `ордер ${cancelOrder.orderId} завершен`
 			}
 			catch(error) {
-				// console.log(this.errorCode(error))
 				status = 'error'
 				message = `ошибка при завершении ордера ${cancelOrder.orderId}`
 			}
@@ -1055,7 +976,6 @@ module.exports = class Bot {
 		}
 		catch(error) {
 			this._log('закрытие ордера - ' + error)
-			// console.log(this.errorCode(error))
 			return {
 				status: 'error',
 				message: error,
@@ -1074,7 +994,6 @@ module.exports = class Bot {
 
 	async updateOrders(orders) {
 		console.log('------- updateOrders')
-		// console.log('круг почета')
 		let pair = this.getPair(),
 			nextOrders = []
 		for(let i = 0; i < orders.length; i++) {
@@ -1093,15 +1012,12 @@ module.exports = class Bot {
 				}
 			}
 			catch(error) {
-				// console.error(error)
 			}
 		}
-		// console.log('конец почета')
 		return nextOrders
 	}
 
 	async createOrders(orders = []/*, type = 'safe'*/) {
-		// console.log('создаю ордера...')
 		const length = orders.length
 		let newOrders = []
 
@@ -1115,7 +1031,6 @@ module.exports = class Bot {
 	}
 
 	async createOrder(order = {}) {
-		// console.log('создаю ордер...')
 		let { side, price, type, origQty } = order,
 			newOrder = {}
 
@@ -1124,34 +1039,28 @@ module.exports = class Bot {
 		else if(side === CONSTANTS.ORDER_SIDE.SELL) 
 			newOrder = await this.newSellOrder(price, type, origQty)
 
-		// console.log('создал ордер.')
 		return newOrder
 	}
 
 	async cancelOrders(orders) {
-		// console.log('закрываю ордера...')
 		for(let i = 0; i < orders.length; i++) {
 			await this.cancelOrder(orders[i].orderId)
 		}
-		// console.log('закрыл')
 	}
 
 	async disableBot(message, isContinue = false) {
 		console.log('[----- disableBot ' + message)
 		this._log(`выключение бота, причина (${message})`)
-		// console.log(`disableBot start...(${message})`)
 		if(this.pair.from) await this.cancelOrders(this.safeOrders)
 		this.safeOrders = []
 		this.currentOrder = {}
 		this.botSettings.quantityOfUsedSafeOrders = 0
 		this.botSettings.quantityOfActiveSafeOrders = 0
 		this.botSettings.currentOrder = this.botSettings.initialOrder
-		// this.botSettings.quantity = 0
 		this.botSettings.firstBuyPrice = 0
 		if(this.pair.from) this.orders = await this.updateOrders(this.orders)
 		if(!isContinue) this.status = CONSTANTS.BOT_STATUS.INACTIVE
 		console.log(']----- disableBot ')
-		// console.log('disableBot end')
 		return 'disable'
 	}
 
@@ -1171,8 +1080,6 @@ module.exports = class Bot {
 			this.orders.push(newOrder)
 			this.orders = await this.updateOrders(this.orders)
 			await this.syncUpdateBot(user)
-			// await this.disableBot('ОТМЕНИТЬ И ПРОДАТЬ')
-			// console.log('cancel end____')
 			return {
 				status: 'info',
 				message: 'Все ордера отменены и монеты распроданы по рынку'
@@ -1180,7 +1087,6 @@ module.exports = class Bot {
 		}
 		catch(error) {
 			console.log(error)
-			// console.log(this.errorCode(error))
 			this._log(error)
 			return {
 				status: 'error',
@@ -1190,7 +1096,6 @@ module.exports = class Bot {
 	}
 
 	updateBot(user) {
-		// console.log('update bot...')
 		user = { name: user.name }
 		Mongo.select(user, 'users', (data) => {
 			data = data[0]
@@ -1205,11 +1110,6 @@ module.exports = class Bot {
 
 	async syncUpdateBot(user, message) {
 		console.log('[ sync upd ')
-		// message && console.log(message)
-		// console.log('sync update bot...')
-		// console.log(this.status)
-		// console.log(this.freeze)
-		// console.log(this.preFreeze)
 		await this.syncUpdateUserOrdersList(user)
 		user = { name: user.name }
 		let data = await Mongo.syncSelect(user, 'users')
@@ -1220,9 +1120,7 @@ module.exports = class Bot {
 		})
 		data.bots[index] = tempBot
 		await Mongo.syncUpdate(user, {bots: data.bots}, 'users');
-		// await Mongo.syncUpdate({botID: data.botID}, data, 'users')
 		console.log('] sync upd ')
-		// console.log('sync update bot end')
 	}
 
 	async syncUpdateUserOrdersList(user) {
@@ -1242,25 +1140,21 @@ module.exports = class Bot {
 
 	async updateBotParams(user) {
 		console.log('[---- updateBotParams')
-		// console.log('update bot params...')
 		user = { name: user.name }
 		let data = await Mongo.syncSelect(user, 'users')
 		data = data[0]
 		const index = data.bots.findIndex(bot => {
 			return bot.botID === this.botID
 		})
-		// console.log(`UPDATE BOT PARAMS BEFORE ${this.status} ${this.freeze}`)
 		let bot = data.bots[index]
 		this.status = bot.status
 		this.freeze = bot.freeze
 		this.preFreeze = bot.preFreeze
 		
 		console.log(']---- updateBotParams')
-		// console.log(`UPDATE BOT PARAMS AFTER ${this.status} ${this.freeze}`)
 	}
 
 	async unfreezeBot(user) {
-		// console.log('UNFREEZE BOT')
 		this._log('разморозка бота начата')
 		console.warn('------ unfreezeing bot')
 		this.preFreeze = CONSTANTS.BOT_FREEZE_STATUS.INACTIVE
@@ -1274,12 +1168,6 @@ module.exports = class Bot {
 		this.orders.push(this.currentOrder)
 		await this.syncUpdateBot(user)
 		this._log('заморозка бота завершена')
-		//разморозить
-		// return {
-		// 	status: 'ok',
-		// 	message: 'бот успешно разморожен',
-		// 	data: { freeze: this.freeze }
-		// }
 	}
 
 	cloneDeep(obj) { // полное клонирование объекта
@@ -1290,10 +1178,8 @@ module.exports = class Bot {
 	async freezeBot(user) {
 		console.warn('------ freezeing bot')
 		this._log('заморозка бота...')
-		// console.log('FREEZE BOT//////////////////////////////////////////')
 		this.preFreeze = CONSTANTS.BOT_FREEZE_STATUS.ACTIVE
 
-		// console.log(this.currentOrder)
 		let freezeSO = [],
 			freezeCO = this.cloneDeep(this.currentOrder)
 		this.safeOrders.forEach(order => {
@@ -1307,12 +1193,6 @@ module.exports = class Bot {
 		await this.cancelOrder(this.currentOrder.orderId)
 		await this.syncUpdateBot(user)
 		this._log('бот заморожен')
-		//заморозить
-		// return {
-		// 	status: 'ok',
-		// 	message: 'бот успешно заморожен',
-		// 	data: { freeze: this.freeze }
-		// }
 	}
 
 	async changeFreeze(nextFreeze, user) {
@@ -1323,10 +1203,7 @@ module.exports = class Bot {
 			status: 'error',
 			message: 'Получены неверные данные.'
 		}
-		// console.log('__')
-		// console.log(this.freeze, this.preFreeze)
 		if(nextFreeze === inactive) {
-			// console.log('inactive')
 			console.log('------- inactive')
 			this.preFreeze = this.freeze
 			this.freeze = inactive
@@ -1337,7 +1214,6 @@ module.exports = class Bot {
 			}
 		}
 		else if(nextFreeze === active) {
-			// console.log('active')
 			console.log('------- active')
 			this.preFreeze = this.freeze
 			this.freeze = active
@@ -1347,31 +1223,9 @@ module.exports = class Bot {
 				message: 'Бот будет заморожен.'
 			}
 		}
-		// console.log(this.freeze, this.preFreeze)
-		// console.log('_//////////////////////////////////////////_')
 		await this.syncUpdateBot(user, 'ОБНОВЛЕние ФРЕЕЕЕЗЕЕЕ БООТ')
 		console.log(']------- changeFreeze')
 		this._log('изменение состояния заморозки бота - ' + res.message)
 		return res
 	}
 }
-
-
-/*
- symbol: 'ETHBTC',
-  orderId: 196648474,
-  clientOrderId: 'MRh2w8ynxSoqvMMVDSO44E',
-  price: '0.04220000',
-  origQty: '0.03000000',
-  executedQty: '0.00000000',
-  cummulativeQuoteQty: '0.00000000',
-  status: 'NEW',
-  timeInForce: 'GTC',
-  type: 'TAKE_PROFIT_LIMIT',
-  side: 'SELL',
-  stopPrice: '0.04220000',
-  icebergQty: '0.00000000',
-  time: 1535100548933,
-  updateTime: 1535100548933,
-  isWorking: false }
-*/
