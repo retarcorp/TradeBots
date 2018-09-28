@@ -99,6 +99,8 @@ const CONSTANTS = {
 		MAX_NUM_ALGO_ORDERS: 'MAX_NUM_ALGO_ORDERS'
 	},
 
+	PRC: 'PRC-',
+
 	DISABLE_FLAG: 'disable',
 
 	CONTINUE_FLAG: true,

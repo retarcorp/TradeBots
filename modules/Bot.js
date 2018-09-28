@@ -10,6 +10,8 @@ let Mongo = require('./Mongo');
 let sleep = require('system-sleep');
 const md5 = require('md5');
 
+const Process = require('./Process');
+
 const CONSTANTS = require('../constants');
 
 module.exports = class Bot {
@@ -26,13 +28,12 @@ module.exports = class Bot {
 		safeOrders = [],
 		freezeOrders = {
 			safe: [],
-			current: null,
+			current: {},
 		},
 		botSettings = {},
-		balance = 0,
 		log = [],
-		PROCESSES = []
-	}, user) {
+		PROCESSES = {}
+	} = {}, user = {}) {
 		this.title = title;
 		this.state = state;
 		this.status = status;
@@ -45,10 +46,10 @@ module.exports = class Bot {
 		this.freezeOrders = freezeOrders;
 		this.botSettings = new BotSettings(botSettings);
 		this.botID = botID;
-		this.balance = balance;
 		this.log = log;
 		this.PROCESSES = PROCESSES;
 		if(user) this.setClient(user);
+		this.user = user;
 	}
 
 	_log(message = '') {
@@ -59,6 +60,17 @@ module.exports = class Bot {
 		
 		if(this.log.length && this.log[0].indexOf(message) >= 0) this.log[0] = nextMessage
 		else this.log.unshift(nextMessage) 
+	}
+
+	createNewProcess() {
+		// TODO
+		// значит, нужно сделать класс процесса, который будет иметь
+		// все минимальные данные полей, которые нужны для его работы
+		// (пара, минимальный оред, страховочные оредра, мартингейл, 
+		// ...
+		// )
+		// и в этом объекте процесса будет происходить все, что есть 
+		// сейчас в одном боте
 	}
 
 	changeDots(line) {
