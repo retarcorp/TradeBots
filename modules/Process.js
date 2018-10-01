@@ -42,6 +42,10 @@ module.exports = class Process {
 		this.botID = botID;
 	}
 
+	deactivateProcess() {
+		this.status = CONSTANTS.BOT_STATUS.INACTIVE;
+	}
+
 	async startTrade(user) {
 		await this._log('Начало нового цикла торговли.');
 		this.setClient(user);
@@ -717,7 +721,7 @@ module.exports = class Process {
 	}
 
 	getChangeKey(field = '') {
-		return field ? `PROCESSES.${this._id}.${field}` : `PROCESSES.${this._id}`;
+		return field ? `processes.${this._id}.${field}` : `processes.${this._id}`;
 	}
 
 	getChangeObject(field = '', data = null) {
@@ -768,10 +772,11 @@ module.exports = class Process {
 
 	async updateProcessOrdersList(user = this.user) {
 		console.log('[ updateProcessOrdersList');
+		console.log(user);
 		let data = await Mongo.syncSelect(user, 'users');
 		data = data[0];
 
-		let ordersList = data.PROCESSES[this._id].ordersList;
+		let ordersList = data.processes[this._id].ordersList;
 		!ordersList && (ordersList = {});
 
 		let _id = `${this._id}${this.botID}-${this._id}`;

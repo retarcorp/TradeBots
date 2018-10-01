@@ -48,7 +48,7 @@ module.exports = class Bot {
 		this.botID = botID;
 		this.log = log;
 		this.processes = processes;
-		if(user) this.setClient(user);
+		if(user.name) this.setClient(user);
 		this.user = user;
 	}
 
@@ -89,6 +89,7 @@ module.exports = class Bot {
 	}
 
 	setClient(user) {
+		console.log(user);
 		let key = '',
 			secret = '',
 			ret = true
@@ -161,42 +162,48 @@ module.exports = class Bot {
 				await this.syncUpdateBot(user);
 				this.startManual(user);
 			}
+			if(this.isAuto()) {
 
+			}
+			else {
 
-
-
+			}
+			// if(this.state === CONSTANTS.BOT_STATE.MANUAL) {
+			// 	this.botSettings.decimalQty = await Symbols.getLotSize(this.getPair())
+			// 	status = 'ok'	
+			// 	message = 'Бот запущен (РУЧНОЙ)'
+			// 	this._log('__________________________')
+			// 	this._log(message)
+			// 	await this.syncUpdateBot(user)
+			// 	this.startManual(user)
+			// }
+			// else if(this.state === CONSTANTS.BOT_STATE.AUTO) {
+			// 	status = 'ok'	
+			// 	message = 'Бот запущен (АВТО)'
+			// 	this._log(message)
+			// 	await this.syncUpdateBot(user)
+			// 	this.startAuto(user)
+			// }
+			// else {
+			// 	status = 'error'	
+			// 	message = "Ошибка (НЕИЗВЕСТНЫЙ ТИП БОТА)"
+			// 	this._log(message)
+			// 	this.status = CONSTANTS.BOT_STATUS.INACTIVE
+			// }
+		}
+		else if(this.checkForDeactivate(nextStatus)) {
+			let l = this.processes.length;
+			this.status = nextStatus;
+			for(let i = 0; i < l; i++) {
+				this.processes[i].deactivateProcess();
+			}	
+			status = 'info';
+			message = "Бот перестанет работать после завершения текущего цикла";
 
 
 			
-			if(this.state === CONSTANTS.BOT_STATE.MANUAL) {
-				this.botSettings.decimalQty = await Symbols.getLotSize(this.getPair())
-				status = 'ok'	
-				message = 'Бот запущен (РУЧНОЙ)'
-				this._log('__________________________')
-				this._log(message)
-				await this.syncUpdateBot(user)
-				this.startManual(user)
-			}
-			else if(this.state === CONSTANTS.BOT_STATE.AUTO) {
-				status = 'ok'	
-				message = 'Бот запущен (АВТО)'
-				this._log(message)
-				await this.syncUpdateBot(user)
-				this.startAuto(user)
-			}
-			else {
-				status = 'error'	
-				message = "Ошибка (НЕИЗВЕСТНЫЙ ТИП БОТА)"
-				this._log(message)
-				this.status = CONSTANTS.BOT_STATUS.INACTIVE
-			}
-		}
-		else if(this.checkForDeactivate(nextStatus)) {
-			this.status = nextStatus
-			status = 'info'
-			message = "Бот перестанет работать после завершения текущего цикла"
-			this._log(message)
-			console.log('deactivate bot') 
+			// this._log(message)
+			// console.log('deactivate bot') 
 			await this.syncUpdateBot(user)
 		}
 		else {
@@ -214,21 +221,29 @@ module.exports = class Bot {
 	}
 
 	startManual(user) {
-		this.setClient(user)
-		this.currentOrder = {}
-		if(this.processes.length === 0) {
-			resObj = {
-				symbol: this.getPair()
-			}
-			this.processes.push(new Process());
-			this.processes[0].startTrade(user);
+		console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+		this.setClient(user);
+		console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+		this.currentOrder = {};
+		console.log('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAaa', this.processes)
+		if(Object.keys(this.processes).length === 0) {
+			console.log('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAaa')
+			let resObj = {
+				symbol: this.getPair(),
+				botSettings: this.botSettings,
+				botID: this.botID,
+				user: this.user
+			},
+				newProcess = new Process(resObj);
+
+			this.processes[newProcess._id] = newProcess;
+			this.processes[newProcess._id].startTrade(user)
+				.catch(err => console.log(err));
 		}
 
-
-
-		console.log('- manual')
-		this.startTradeManual(user)
-		.catch((err) => console.log(err))
+		// console.log('- manual')
+		// this.startTradeManual(user)
+		// .catch((err) => console.log(err))
 		
 	}
 

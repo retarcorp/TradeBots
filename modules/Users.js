@@ -203,7 +203,7 @@ let Users = {
 					user.bots.forEach(bot => {
 						bot = new Bot(bot)
 						this.Bots.push(bot)
-						bot.continueTrade(user)
+						// bot.continueTrade(user)
 					})
 				})
 			})
@@ -234,6 +234,7 @@ let Users = {
 		}
 
 		,setBot(user, botData, callback) {
+			console.log(user);
 			Mongo.select(user, 'users', (data) => {
 				data = data[0];
 				let tempBot;
