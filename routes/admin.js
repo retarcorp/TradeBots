@@ -33,11 +33,23 @@ router.post('/api/admin/signin', (req, res, next) => {
 router.get('/api/admin/getUsersList', (req, res, next) => {
 	let admin = {name: req.cookies.admin.name};
 	Users.getUsersList(admin, data => res.json(data));
-})
+});
 
 router.post('/api/admin/deleteUser', (req, res, next) => {
 	let admin = {name: req.cookies.admin.name};
 	Users.deleteUser(admin, req.body, data => res.json(data));
-})
+});
+
+router.post('/api/admin/changeUserData', (req, res, next) => {
+	res.json({
+		status: 'ok'
+	});
+});
+
+router.post('/api/admin/signinAsUser', (req, res, next) => {
+	res.json({
+		status: 'ok'
+	});
+});
 
 module.exports = router;
