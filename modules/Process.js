@@ -37,7 +37,7 @@ module.exports = class Process {
 		this.freezeOrders = freezeOrders;
 		this.botSettings = botSettings;
 		this.log = log;
-		if(user) this.setClient(user);
+		if(user.name) this.setClient(user);
 		this.user = user;
 		this.botID = botID;
 	}
@@ -720,17 +720,29 @@ module.exports = class Process {
 		return this.symbol;
 	}
 
-	getChangeKey(field = '') {
-		return field ? `processes.${this._id}.${field}` : `processes.${this._id}`;
+	getChangeKey(field = '', botInd = null) {
+		return field ? `bots.processes.${this._id}.${field}` : `bots.processes.${this._id}`;
 	}
 
-	getChangeObject(field = '', data = null) {
-		let key = this.getChangeKey(field),
+	getChangeObject(field = '', data = null, botInd = null) {
+		let key = this.getChangeKey(field, botInd),
 			obj = {};
 		
 		obj[key] = data;
 
 		return obj;
+	}
+
+	async getBotIndex(user = this.user, userData = null) {
+		if(!userData) {
+			user = { name: user.name };
+			userData = await Mongo.syncSelect(user, 'users');
+			userData = userData[0];
+		}
+
+		const botInd = userData.bots.findIndex(bot => bot.botID === this.botID);
+
+		return botInd;
 	}
 	//:: GETTERS FUNC END
 
@@ -740,7 +752,8 @@ module.exports = class Process {
 	//:: UPDATE FUNC
 	async updateLog(user = this.user) {
 		try {
-			let change = this.getChangeObject('log', this.log);
+			const botInd = await this.getBotIndex(user);
+			let change = this.getChangeObject('log', this.log, botInd);
 			await Mongo.syncUpdate(user, change, 'users');
 		} catch(err) {
 			console.log(err);
@@ -750,8 +763,8 @@ module.exports = class Process {
 	async updateProcess(user = this.user, message = '') {
 		console.log('[ updateProcess', message);
 		await this.updateProcessOrdersList(user);
-
-		let change = this.getChangeObject('', this);
+		const botInd = await this.getBotIndex(user);
+		let change = this.getChangeObject('', this, botInd);
 		await Mongo.syncUpdate(user, change, 'users');
 		console.log('] updateProcess');
 	}
@@ -772,18 +785,20 @@ module.exports = class Process {
 
 	async updateProcessOrdersList(user = this.user) {
 		console.log('[ updateProcessOrdersList');
-		console.log(user);
+		user = { name: user.name };
 		let data = await Mongo.syncSelect(user, 'users');
+		console.log(data)
 		data = data[0];
-
-		let ordersList = data.processes[this._id].ordersList;
+		const botInd = await this.getBotIndex(user, data);
+		// const botInd = data.bots.findIndex(bot => bot.botID === this.botID);
+		let ordersList = data.bots[botInd].processes[this._id].ordersList;
 		!ordersList && (ordersList = {});
 
 		let _id = `${this._id}${this.botID}-${this._id}`;
 		!ordersList[_id] && (ordersList[_id] = []);
 		ordersList[_id] = this.orders;
 
-		let change = this.getChangeObject('ordersList', ordersList);
+		let change = this.getChangeObject('ordersList', ordersList, botInd);
 		await Mongo.syncUpdate(user, change, 'users');
 		console.log('] updateProcessOrdersList')
 	}

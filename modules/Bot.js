@@ -220,10 +220,7 @@ module.exports = class Bot {
 		}
 	}
 
-	startManual(user) {
-		console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
-		this.setClient(user);
-		console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+	async startManual(user) {
 		this.currentOrder = {};
 		console.log('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAaa', this.processes)
 		if(Object.keys(this.processes).length === 0) {
@@ -237,6 +234,7 @@ module.exports = class Bot {
 				newProcess = new Process(resObj);
 
 			this.processes[newProcess._id] = newProcess;
+			await this.syncUpdateBot(user);
 			this.processes[newProcess._id].startTrade(user)
 				.catch(err => console.log(err));
 		}
