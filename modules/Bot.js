@@ -138,13 +138,36 @@ module.exports = class Bot {
 		}
 	}
 
-	async changeStatus(nextStatus, user) {
+	isManual() {
+		return this.state === CONSTANTS.BOT_STATE.MANUAL;
+	}
+
+	isAuto() {
+		return this.state === CONSTANTS.BOT_STATE.AUTO;
+	}
+
+	async changeStatus(nextStatus, user = this.user) {
 		let message = '',
-			status = ''
-		console.log(this.checkForActivate(nextStatus))
+			status = '';
+			
 		if(this.checkForActivate(nextStatus)) {
-			this.status = nextStatus
-			console.log('activate bot')
+			this.status = nextStatus;
+			console.log('activate bot');
+
+			if(this.isManual()) {
+				this.botSettings.decimalQty = await Symbols.getLotSize(this.getPair());
+				status = 'ok';
+				message = 'Бот запущен (РУЧНОЙ)';
+				await this.syncUpdateBot(user);
+				this.startManual(user);
+			}
+
+
+
+
+
+
+			
 			if(this.state === CONSTANTS.BOT_STATE.MANUAL) {
 				this.botSettings.decimalQty = await Symbols.getLotSize(this.getPair())
 				status = 'ok'	
@@ -191,9 +214,19 @@ module.exports = class Bot {
 	}
 
 	startManual(user) {
-		console.log('- manual')
 		this.setClient(user)
 		this.currentOrder = {}
+		if(this.processes.length === 0) {
+			resObj = {
+				symbol: this.getPair()
+			}
+			this.processes.push(new Process());
+			this.processes[0].startTrade(user);
+		}
+
+
+
+		console.log('- manual')
 		this.startTradeManual(user)
 		.catch((err) => console.log(err))
 		
@@ -946,7 +979,7 @@ module.exports = class Bot {
 			order = await this.Client.getOrder({
 				symbol: pair,
 				orderId: orderId
-			})
+			});
 		}
 		catch(error) {
 			this._log(error)

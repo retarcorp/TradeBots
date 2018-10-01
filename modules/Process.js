@@ -45,6 +45,7 @@ module.exports = class Process {
 	async startTrade(user) {
 		await this._log('Начало нового цикла торговли.');
 		this.setClient(user);
+		
 		this.currentOrder = {};
 
 		let newBuyOrder = await this.firstBuyOrder(user);
