@@ -73,16 +73,20 @@ let Users = {
 			name = user.name,
 			password = md5(salt + user.password + salt),
 			admin = (user.admin) ? true : false,
-			regDate = Date.now();
+			regDate = Date.now(),
+			month = 2592000000,
+			expirationDate = regDate + month;
 
 			User = {
 				name: name
 				,regDate: regDate
+				,expirationDate: expirationDate
 				,password: password
 				,salt: salt
 				,admin: admin
 				,ordersList: {}
 				,bots: []
+				,maxBotAmount: 0
 				,binanceAPI: {
 					name: null,
 					key: null,

@@ -32,7 +32,7 @@ module.exports = class Bot {
 		},
 		botSettings = {},
 		log = [],
-		PROCESSES = {}
+		processes = {}
 	} = {}, user = {}) {
 		this.title = title;
 		this.state = state;
@@ -47,7 +47,7 @@ module.exports = class Bot {
 		this.botSettings = new BotSettings(botSettings);
 		this.botID = botID;
 		this.log = log;
-		this.PROCESSES = PROCESSES;
+		this.processes = processes;
 		if(user) this.setClient(user);
 		this.user = user;
 	}
