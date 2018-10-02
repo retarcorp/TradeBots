@@ -4,11 +4,11 @@ const md5 = require('md5')
 module.exports = class TradingSignals {
 	constructor(
 		{
-		symbol = '',
-		signal = 'Tradingview',
-		timeframe = TIMEFRAME.M1,
-		checkRating = TRANSACTION_TERMS.BUY
-	}, id = md5(symbol + timeframe + checkRating + signal + (Math.random() * (new Date).getMilliseconds())/Math.random())
+			symbol = '',
+			signal = 'Tradingview',
+			timeframe = TIMEFRAME.M1,
+			checkRating = TRANSACTION_TERMS.BUY
+		}, id = md5(symbol + timeframe + checkRating + signal + (Math.random() * (new Date).getMilliseconds())/Math.random())
 	) {
 		this.signal = signal
 		this.symbol = symbol

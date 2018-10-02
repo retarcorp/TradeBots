@@ -201,9 +201,9 @@ let Users = {
 			Mongo.select({}, 'users', (users) => {
 				users.forEach(user => {
 					user.bots.forEach(bot => {
-						bot = new Bot(bot)
-						this.Bots.push(bot)
-						// bot.continueTrade(user)
+						bot = new Bot(bot);
+						this.Bots.push(bot);
+						bot.continueTrade(user);
 					})
 				})
 			})

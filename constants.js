@@ -101,6 +101,8 @@ const CONSTANTS = {
 
 	PRC: 'PRC-',
 
+	BT: 'BOT-',
+
 	DISABLE_FLAG: 'disable',
 
 	CONTINUE_FLAG: true,
@@ -108,6 +110,8 @@ const CONSTANTS = {
 	TIMEOUT: 500,
 
 	ORDER_TIMEOUT: 1000,
+
+	AUTO_BOT_SLEEP: 5000,
 
 	TRADING_SIGNALS_COLLECTION: 'tradingSignals',
 

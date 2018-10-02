@@ -8,7 +8,7 @@ const signup = require('./signup');
 const statistics = require('./statistics');
 const symbolsList = require('./symbolsList');
 const income = require('./income');
-// const Mongo = require('../modules/Mongo');
+const Mongo = require('../modules/Mongo');
 // const uniqid = require('uniqid');
 
 router.use(account);
@@ -21,6 +21,9 @@ router.use(symbolsList);
 router.use(income);
 
 router.get('/test', (req, res, next) => {
+	// let user = {name: req.cookies.user.name};
+
+	// Mongo.update(user, {'bots.0': -1}, 'users', d => res.json(d));
 	// let change = {},
 	// 	l = `binanceAPI.na${'m'}e`
 	// change[l] = 'asdasd';

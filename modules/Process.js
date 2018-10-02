@@ -12,6 +12,7 @@ module.exports = class Process {
 		_id = uniqid(PRC),
 		symbol = '',
 		status = CONSTANTS.BOT_STATUS.INACTIVE,
+		state = CONSTANTS.BOT_STATE.MANUAL,
 		freeze = CONSTANTS.BOT_FREEZE_STATUS.INACTIVE,
 		preFreeze = freeze,
 		currentOrder = {},
@@ -26,20 +27,30 @@ module.exports = class Process {
 		user = {},
 		botID = String(Date.now())
 	} = {}) {
-		this._id = _id;
-		this.symbol = symbol;
-		this.status = status;
-		this.freeze = freeze;
-		this.preFreeze = preFreeze;
-		this.currentOrder = currentOrder;
-		this.orders = orders;
-		this.safeOrders = safeOrders;
-		this.freezeOrders = freezeOrders;
-		this.botSettings = botSettings;
-		this.log = log;
+		this._id = this.JSONclone(_id);
+		this.symbol = this.JSONclone(symbol);
+		this.state = this.JSONclone(state);
+		this.status = this.JSONclone(status);
+		this.freeze = this.JSONclone(freeze);
+		this.preFreeze = this.JSONclone(preFreeze);
+		this.currentOrder = this.JSONclone(currentOrder);
+		this.orders = this.JSONclone(orders);
+		this.safeOrders = this.JSONclone(safeOrders);
+		this.freezeOrders = this.JSONclone(freezeOrders);
+		this.botSettings = this.JSONclone(botSettings);
+		this.log = this.JSONclone(log);
 		if(user.name) this.setClient(user);
 		this.user = user;
-		this.botID = botID;
+		this.botID = this.JSONclone(botID);
+	}
+
+	JSONclone(object) {
+		return JSON.parse(JSON.stringify(object));
+	}
+
+	changeFreeze(fre = this.freeze, preFre = this.preFreeze) {
+		this.freeze = fre;
+		this.preFreeze = preFre;
 	}
 
 	deactivateProcess() {
@@ -49,7 +60,6 @@ module.exports = class Process {
 	async startTrade(user) {
 		await this._log('Начало нового цикла торговли.');
 		this.setClient(user);
-		
 		this.currentOrder = {};
 
 		let newBuyOrder = await this.firstBuyOrder(user);
@@ -76,7 +86,7 @@ module.exports = class Process {
 		else {
 			await this.disableProcess('Неуспешная покупка начального ордера.', CONSTANTS.CONTINUE_FLAG)
 			await this.updateProcess(user) 
-			if(this.status === CONSTANTS.BOT_STATUS.ACTIVE) this.startTradeManual(user)
+			if(this.status === CONSTANTS.BOT_STATUS.ACTIVE) this.startTrade(user)
 		}
 	}
 
@@ -97,12 +107,12 @@ module.exports = class Process {
 			if(this.checkFilling(currentOrderStatus) && !Number(this.freeze) && !Number(this.preFreeze)) {
 				await this.disableProcess('Процесс удачно завершён.', CONSTANTS.CONTINUE_FLAG);
 				await this.updateProcess(user);
-				if(this.status === CONSTANTS.BOT_STATUS.ACTIVE) this.startTrade(user);
+				if(this.status === CONSTANTS.BOT_STATUS.ACTIVE && this.isManual()) this.startTrade(user);
 			}
 			else if(this.checkFailing(currentOrderStatus) && !Number(this.freeze) && !Number(this.preFreeze)) {
 				await this.disableProcess('Процесс завершен, причина - выключение бота или ошибка.', CONSTANTS.CONTINUE_FLAG);
 				await this.updateProcess(user);
-				if(this.status === CONSTANTS.BOT_STATUS.ACTIVE) this.startTrade(user);
+				if(this.status === CONSTANTS.BOT_STATUS.ACTIVE && this.isManual()) this.startTrade(user);
 			}
 			else {
 				if(this.freeze === CONSTANTS.BOT_FREEZE_STATUS.INACTIVE) {
@@ -132,8 +142,8 @@ module.exports = class Process {
 	}
 
 	async process(user = this.user) {
-		console.log('---- in PROCESS' + this.title);
-		await this._log('Проверка состояния ордеров...');
+		console.log('---- in PROCESS ' + this._id);
+		// await this._log('Проверка состояния ордеров...');
 		let orders = this.safeOrders || [],
 			length = orders.length;
 		if(length) {
@@ -373,6 +383,7 @@ module.exports = class Process {
 	
 	
 	async _log(message = '') {
+		console.log('_log');
 		let date = this.getDate(),
 			nextMessage = {};
 		nextMessage = `${date}|  ${message}`;
@@ -580,11 +591,12 @@ module.exports = class Process {
 	}
 	
 	//:: SETTERS FUNC 
-	async setClient(user) {
+	async setClient(user = this.user) {
 		let key = '',
 			secret = '',
-			ret = true
-		if(user.binanceAPI.name !== '') {
+			ret = true;
+		
+		if(user.binanceAPI.name) {
 			try {
 				key = Crypto.decipher(user.binanceAPI.key,  Crypto.getKey(user.regDate, user.name))
 				secret = Crypto.decipher(user.binanceAPI.secret,  Crypto.getKey(user.regDate, user.name))
@@ -616,6 +628,18 @@ module.exports = class Process {
 	//************************************************************************************************//
 	
 	//:: GETTERS FUNC 
+	getStopLoss() {
+		return Number(this.botSettings.stopLoss) / 100
+	}
+
+	getStopPrice() {
+		let stopLoss = this.getStopLoss(),
+			price = this.botSettings.firstBuyPrice,
+			decimal = this.getDecimal(price),
+			stopPrice = price - price * stopLoss
+		return this.toDecimal(stopPrice, decimal)
+	}
+
 	getLastSafeOrder() {
 		let orders = this.safeOrders,
 			lastOrder = orders[0],
@@ -721,10 +745,12 @@ module.exports = class Process {
 	}
 
 	getChangeKey(field = '', botInd = null) {
-		return field ? `bots.processes.${this._id}.${field}` : `bots.processes.${this._id}`;
+		return field ? `bots.${botInd}.processes.${this._id}.${field}` : `bots.${botInd}.processes.${this._id}`;
 	}
 
-	getChangeObject(field = '', data = null, botInd = null) {
+	async getChangeObject(field = '', data = null) {
+		const user = { name: this.user.name },
+			botInd = await this.getBotIndex(user);
 		let key = this.getChangeKey(field, botInd),
 			obj = {};
 		
@@ -734,6 +760,7 @@ module.exports = class Process {
 	}
 
 	async getBotIndex(user = this.user, userData = null) {
+		console.log(user);
 		if(!userData) {
 			user = { name: user.name };
 			userData = await Mongo.syncSelect(user, 'users');
@@ -750,10 +777,10 @@ module.exports = class Process {
 	//************************************************************************************************//
 
 	//:: UPDATE FUNC
-	async updateLog(user = this.user) {
+	async updateLog() {
+		const user = { name: this.user.name };
 		try {
-			const botInd = await this.getBotIndex(user);
-			let change = this.getChangeObject('log', this.log, botInd);
+			let change = await this.getChangeObject('log', this.log);
 			await Mongo.syncUpdate(user, change, 'users');
 		} catch(err) {
 			console.log(err);
@@ -761,23 +788,22 @@ module.exports = class Process {
 	}
 
 	async updateProcess(user = this.user, message = '') {
+		user = { name: user.name };
 		console.log('[ updateProcess', message);
 		await this.updateProcessOrdersList(user);
-		const botInd = await this.getBotIndex(user);
-		let change = this.getChangeObject('', this, botInd);
+		let change = await this.getChangeObject('', this);
 		await Mongo.syncUpdate(user, change, 'users');
 		console.log('] updateProcess');
 	}
 
 	async syncUpdateBot(user = this.user, message = '') { //syncUpdateBot
+		user = { name: user.name };
 		console.log('[ sync upd ', message);
 		await this.updateProcessOrdersList(user);
 		let data = await Mongo.syncSelect(user, 'users')
 		data = data[0]
 		let tempBot = new Bot(this)
-		const index = data.bots.findIndex(bot => {
-			return bot.botID === tempBot.botID
-		})
+		const index = data.bots.findIndex(bot => bot.botID === tempBot.botID)
 		data.bots[index] = tempBot
 		await Mongo.syncUpdate(user = this.user, {bots: data.bots}, 'users');
 		console.log('] sync upd ')
@@ -787,7 +813,6 @@ module.exports = class Process {
 		console.log('[ updateProcessOrdersList');
 		user = { name: user.name };
 		let data = await Mongo.syncSelect(user, 'users');
-		console.log(data)
 		data = data[0];
 		const botInd = await this.getBotIndex(user, data);
 		// const botInd = data.bots.findIndex(bot => bot.botID === this.botID);
@@ -798,7 +823,7 @@ module.exports = class Process {
 		!ordersList[_id] && (ordersList[_id] = []);
 		ordersList[_id] = this.orders;
 
-		let change = this.getChangeObject('ordersList', ordersList, botInd);
+		let change = await this.getChangeObject('ordersList', ordersList);
 		await Mongo.syncUpdate(user, change, 'users');
 		console.log('] updateProcessOrdersList')
 	}
@@ -866,6 +891,14 @@ module.exports = class Process {
 	//************************************************************************************************//
 
 	//:: CHECK FUNC
+	isAuto() {
+		return this.state === CONSTANTS.BOT_STATE.AUTO;
+	}
+
+	isManual() {
+		return this.state === CONSTANTS.BOT_STATE.MANUAL;
+	}
+
 	isOrderSell(side) {
 		return side === CONSTANTS.ORDER_SIDE.SELL;
 	}

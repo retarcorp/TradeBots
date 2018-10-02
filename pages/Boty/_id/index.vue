@@ -119,7 +119,8 @@
                     <component @changed="onUpdated" :bot="bot" :is="currentComponent"></component>
                 </div>
                 <div v-show="!isChanging" class="bots__button">
-                    <button @click="onChangeSettings" class="button button--success button__change-settings">Изменить настройки</button>
+                    <!-- :disabled="!isBotHasOrders" -->
+                    <button  :class="{'button--disabled': isBotHasOrders}" @click="onChangeSettings" class="button button--success button__change-settings">Изменить настройки</button>
                     <button @click="onDeleteBot" class="button button--danger button__remove-bot">Удалить бота</button>
                 </div>
             </div>
@@ -234,6 +235,10 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
             }
         },
         computed: {
+            isBotHasOrders() {
+                return this.bot.orders.length &&
+                        this.bot.orders.filter(order => order && (order.status === 'NEW' || order.status === 'PARTIALLY_FILLED')).length
+            },
             bot() {
                 return this.$store.getters.getBot(this.$route.params.id)
             },
