@@ -203,7 +203,7 @@ let Users = {
 					user.bots.forEach(bot => {
 						bot = new Bot(bot);
 						this.Bots.push(bot);
-						bot.continueTrade(user);
+						// bot.continueTrade(user);
 					})
 				})
 			})
