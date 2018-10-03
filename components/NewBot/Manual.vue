@@ -209,7 +209,7 @@
                 this.bot.botSettings.safeOrder.size = (this.bot.botSettings.safeOrder.size <= 0 ) ? this.bot.botSettings.initialOrder : this.bot.botSettings.safeOrder.size
             },
             getStep() {
-                console.log(this.minNotional)
+                // console.log(this.minNotional)
                 return (Math.floor(this.minNotional) >= 1) ? 1 : this.minNotional;
             },
             setMinNotional() {

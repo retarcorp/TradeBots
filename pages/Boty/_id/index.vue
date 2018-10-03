@@ -125,6 +125,19 @@
                 </div>
             </div>
 
+            <div class='bots__log'>
+                <span>Кол-во процессов: </span>
+                <ul>
+                    <li 
+                        v-for='(log, index) in Object.keys(bot.processes)' 
+                        :key='index'
+                        :id='index'
+                        :class='{active: currentLogId === log}'
+                        @click='fillingInfo(log, $event)'
+                    >{{index + 1}}</li>
+                </ul>                
+            </div>
+
             <div class="bots__order">
                 <ul class="tabs__bar">
                     <li @click.prevent="isActive = true" class="tabs__item"  :style="isActive ? 'backgroundColor: #eee': ''">Выставленные ордера</li>
@@ -143,7 +156,7 @@
                             <th class="table__th"></th>
                         </tr>
                         <!-- TODO create component for 1 row -->
-                        <tbody class='overflow'>
+                        <tbody class='overflow' v-if='isActiveProcesses'>
                             <tr v-for="order in openedOrders"
                                 :key="order.id"
                                 class="table__tr">
@@ -175,7 +188,7 @@
                             <th class="table__th total-head">Всего</th>
                             <th class="table__th status-head">Статус</th>
                         </tr>
-                        <tbody class='overflow'>
+                        <tbody class='overflow' v-if='isActiveProcesses'>
                             <tr v-for="order in closedOrders" :key="order.id" class="table__tr">
                                 <td class="table__td date">{{ order.time | date }}</td>
                                 <td class="table__td pair">{{ order.symbol }}</td>
@@ -192,7 +205,7 @@
                             </tr>
                         </tbody>
                     </table>
-                    <div class="order__buttons">
+                    <div class="order__buttons" v-if='isActiveProcesses'>
                         <button @click.prevent="cancelAll" class="button button--primary">Отменить и продать</button>
                     </div>
                 </div>
@@ -220,6 +233,10 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
                 isChanging: false,
                 tmpOrd: null,
                 tmpBotId: null,
+                currentLogId: null,
+                currentSpecId: 0,
+                lines: [],
+                isActiveProcesses: true,
                 statusAlert: {
                     confirm: 'Вы точно хотите отменить все ордера и продать все монеты по рыночной цене?',
                     confirmCurrent: 'Вы точно хотите отменить ордер?',
@@ -235,18 +252,25 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
             }
         },
         computed: {
+            currentId() {
+                if( Object.keys(this.bot.processes).length ) return Object.keys(this.bot.processes)[this.currentSpecId];
+                else {
+                    this.isActiveProcesses = false;
+                    return '';
+                }
+            },
             isBotHasOrders() {
-                return this.bot.orders.length &&
-                        this.bot.orders.filter(order => order && (order.status === 'NEW' || order.status === 'PARTIALLY_FILLED')).length
+                return this.bot.processes[this.currentId].orders.length &&
+                        this.bot.processes[this.currentId].orders.filter(order => order && (order.status === 'NEW' || order.status === 'PARTIALLY_FILLED')).length
             },
             bot() {
                 return this.$store.getters.getBot(this.$route.params.id)
             },
             openedOrders() {
-                return this.bot.orders.filter(order => order !== null && (order.status === 'NEW' || order.status === 'PARTIALLY_FILLED'))
+                return this.bot.processes[this.currentId].orders.filter(order => order !== null && (order.status === 'NEW' || order.status === 'PARTIALLY_FILLED'))
             },
             closedOrders() {
-                return this.bot.orders.filter(order => order !== null && (order.status !== 'NEW' && order.status !== 'PARTIALLY_FILLED'))
+                return this.bot.processes[this.currentId].orders.filter(order => order !== null && (order.status !== 'NEW' && order.status !== 'PARTIALLY_FILLED'))
             },
             clientAnswer() {
                 return this.$store.getters.getClientAnswer;
@@ -254,9 +278,9 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
             getStatus() {
                 return this.$store.getters.getStatus;
             },
-            lines() {
-                return this.bot.log;
-            }
+            // lines() {
+            //     return this.bot.processes[this.currentId].log;
+            // }
         },
         // watch: {
         //     'bot.status'(value) {
@@ -277,6 +301,12 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
         //     }
         // },
         methods: {
+            fillingInfo(id, event) {
+                this.currentLogId = id;
+                // console.log(+event.target.getAttribute('id') + 1)
+                this.currentSpecId = +event.target.getAttribute('id');
+                this.lines = this.bot.processes[id].log;
+            },  
             setStatus(value) {
                 this.$axios
                     .$post('/bots/setStatus', {
@@ -399,6 +429,10 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
                 this.isChanging = false;
                 this.currentComponent = null;
             }
+        },
+        created() {
+            // if( Object.keys(this.bot.processes).length ) this.currentId = Object.keys(this.bot.processes)[0];
+            // else this.isActiveProcesses = false;
         }
     }
 </script>
@@ -407,6 +441,44 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
 
 
 /*    */
+
+.active {
+    font-weight: 600;    
+}
+
+.bots__log {
+    width: 16rem;
+    height: 5rem;
+    overflow-x: auto;
+    display: flex;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.bots__log span {
+    font-weight: 500;
+    font-size: 1.6rem;
+    font-family: inherit;
+}
+
+.bots__log ul {
+    display: flex;
+    flex-direction: row;
+}
+
+.bots__log ul li {
+    list-style: none;
+    text-decoration: none;
+    /* width:5rem;
+    height: 5rem; */
+    font-size: 3rem;
+    cursor: pointer;
+}
+
+.bots__log ul li {
+    margin-left: 1.5rem;
+}
+
 .cur_rating {
     background-color: #f1f1f1;
 }

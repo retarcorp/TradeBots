@@ -52,7 +52,7 @@ var Symbols = {
 			.then(data => {
 				Mongo.update({}, {symbols: data.symbols, id: 123}, CONSTANTS.SYMBOLS_PRICE_FILTER_COLLECTION, (data, err) => {
 					if(err) reject(err)
-					resolve(data)
+					resolve(data) 
 				})
 			})
 		})
