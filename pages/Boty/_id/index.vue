@@ -126,12 +126,14 @@
             </div>
 
             <div class='bots__log'>
+                <span>Кол-во процессов: </span>
                 <ul>
                     <li 
                         v-for='(log, index) in Object.keys(bot.processes)' 
                         :key='index'
-                        :id='log'
-                        @click='fillingInfo(log)'
+                        :id='index'
+                        :class='{active: currentLogId === log}'
+                        @click='fillingInfo(log, $event)'
                     >{{index + 1}}</li>
                 </ul>                
             </div>
@@ -231,6 +233,8 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
                 isChanging: false,
                 tmpOrd: null,
                 tmpBotId: null,
+                currentLogId: null,
+                currentSpecId: 0,
                 lines: [],
                 isActiveProcesses: true,
                 statusAlert: {
@@ -249,15 +253,13 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
         },
         computed: {
             currentId() {
-                if( Object.keys(this.bot.processes).length ) return Object.keys(this.bot.processes)[0];
+                if( Object.keys(this.bot.processes).length ) return Object.keys(this.bot.processes)[this.currentSpecId];
                 else {
                     this.isActiveProcesses = false;
                     return '';
                 }
             },
             isBotHasOrders() {
-                console.log(this.bot.processes);
-                console.log(this.currentId);
                 return this.bot.processes[this.currentId].orders.length &&
                         this.bot.processes[this.currentId].orders.filter(order => order && (order.status === 'NEW' || order.status === 'PARTIALLY_FILLED')).length
             },
@@ -299,7 +301,10 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
         //     }
         // },
         methods: {
-            fillingInfo(id) {
+            fillingInfo(id, event) {
+                this.currentLogId = id;
+                // console.log(+event.target.getAttribute('id') + 1)
+                this.currentSpecId = +event.target.getAttribute('id');
                 this.lines = this.bot.processes[id].log;
             },  
             setStatus(value) {
@@ -426,8 +431,8 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
             }
         },
         created() {
-            if( Object.keys(this.bot.processes).length ) this.currentId = Object.keys(this.bot.processes)[0];
-            else this.isActiveProcesses = false;
+            // if( Object.keys(this.bot.processes).length ) this.currentId = Object.keys(this.bot.processes)[0];
+            // else this.isActiveProcesses = false;
         }
     }
 </script>
@@ -437,11 +442,23 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
 
 /*    */
 
+.active {
+    font-weight: 600;    
+}
+
 .bots__log {
-    width: 15rem;
+    width: 16rem;
     height: 5rem;
     overflow-x: auto;
-    /* margin-bottom: 5rem;  */
+    display: flex;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.bots__log span {
+    font-weight: 500;
+    font-size: 1.6rem;
+    font-family: inherit;
 }
 
 .bots__log ul {
