@@ -27,10 +27,10 @@ router.post('/signin', (req, res, next) => {
 					res.send({status: 'ok', data: { email: data.name }});
 				});
 			} else {
-				res.send({status: 'error', message: 'Error: Check your login or password!'});
+				res.send({status: 'error', message: 'Ошибка: введен неверный логин или пароль.'});
 			}
 		} else {
-			res.send({status: 'error', message: 'User not found' });
+			res.send({status: 'error', message: 'Пользователь не найден.' });
 		}
 	});
 });

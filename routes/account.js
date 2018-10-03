@@ -9,7 +9,6 @@ router.get('/account/api', (req, res, next) => {
 
 router.post('/account/api', (req, res, next) => {
 	let user = {name: req.cookies.user.name};
-	console.log(req.body)
 	Users.setBinance(user, req.body, data => res.json(data));
 });
 

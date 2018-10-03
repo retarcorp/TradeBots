@@ -81,7 +81,7 @@
         <div class="newBot__conditions">
             <div class="newBot__conditions-title">Условия для начала сделки:</div>
             <div class="newBot__conditions-wrapper">
-                <select
+                <!-- <select
                     v-model="autoItem.signal"
                     class="newBot__conditions-select">
                     <option value="default" disabled selected>Стратегия</option>
@@ -90,7 +90,11 @@
                         :key="signal.id"
                         :value="signal.id"
                         >{{ signal.name }}</option>
-                </select>
+                </select> -->
+                <div
+                    class="newBot__conditions-select">
+                    {{ signals[0].name }}: 
+                </div>
                 <select
                     v-model="autoItem.timeframe"
                     class="newBot__conditions-select">
@@ -170,14 +174,14 @@ export default {
     },
     data() {
         return {
-            autoItem: {
-                signal: 'default' ,
-                timeframe: 'default' ,
-                checkRating: 'default'
-            },
             signals: [
                 { id: 'Tradingview', name: 'Tradingview'}
             ],
+            autoItem: {
+                signal: 'Tradingview',//'default' ,
+                timeframe: 'default' ,
+                checkRating: 'default'
+            },
             timefraims: [
                 { id:"1m", name: '1m' },
                 { id:"5m", name: '5m' },
