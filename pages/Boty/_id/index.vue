@@ -303,11 +303,9 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
         // },
         methods: {
             fillingInfo(id, event) {
-                // console.log(`id - ` + id);
                 this.currentLogId = id;
                 this.currentSpecId = +event.target.getAttribute('id');
                 this.lines = this.bot.processes[id].log;
-                // console.log(`lines - ` + this.lines);
                 this.isActiveTabOrders = true;
             },  
             setStatus(value) {
