@@ -263,7 +263,7 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
                 if( this.currentId )
                     return this.bot.processes[this.currentId].orders.length &&
                         this.bot.processes[this.currentId].orders.filter(order => order && (order.status === 'NEW' || order.status === 'PARTIALLY_FILLED')).length
-                else return '';        
+                else return [];        
             },
             bot() {
                 return this.$store.getters.getBot(this.$route.params.id)
@@ -271,12 +271,12 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
             openedOrders() {
                 if( this.currentId )
                     return this.bot.processes[this.currentId].orders.filter(order => order !== null && (order.status === 'NEW' || order.status === 'PARTIALLY_FILLED'))
-                else return ''; 
+                else return []; 
             },
             closedOrders() {
                 if( this.currentId )
                     return this.bot.processes[this.currentId].orders.filter(order => order !== null && (order.status !== 'NEW' && order.status !== 'PARTIALLY_FILLED'))
-                else return ''; 
+                else return []; 
             },
             clientAnswer() {
                 return this.$store.getters.getClientAnswer;
@@ -294,7 +294,6 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
         methods: {
             fillingInfo(id, event) {
                 this.currentLogId = id;
-                // console.log(+event.target.getAttribute('id') + 1)
                 this.currentSpecId = +event.target.getAttribute('id');
                 this.lines = this.bot.processes[id].log;
             },  
