@@ -18,7 +18,6 @@ let Users = {
 	,deleteUser(admin, userData, callback) {
 		Mongo.select(admin, 'users', data => {
 			if(data.length) {
-				console.log(userData)
 				Mongo.delete({name: userData.name}, 'users', data => {
 					if(callback) callback({
 						status: 'ok',
@@ -148,14 +147,23 @@ let Users = {
 
 	,getEmail(user, callback) {
 		Mongo.select(user, 'users', data => {
-			data = data[0];
-			let res = data.name ? data.name : '';
-			if(callback) callback({
-				status: 'ok',
-				data: {
-					email: res
-				}
-			})
+			if(data.length) {
+				data = data[0];
+				let res = data.name ? data.name : '';
+				if(callback) callback({
+					status: 'ok',
+					data: {
+						email: res
+					}
+				})
+			}
+			else {
+				if(callback)
+					callback({
+						status: 'error',
+						message: 'Такого пользователя не существует'
+					});
+			}
 		})
 	}
 
@@ -178,19 +186,28 @@ let Users = {
 
 	,getBinance(user, callback) {
 		Mongo.select(user, 'users', (data) => {
-			data = data[0];
-			let retData = {};
-			if(data.binanceAPI.key) {
-				retData = {
-					name: data.binanceAPI.name,
-					key: Crypto.decipher(data.binanceAPI.key, Crypto.getKey(data.regDate, data.name)),
-					secret: '*******'
+			if(data.length) {
+				data = data[0];
+				let retData = {};
+				if(data.binanceAPI.key) {
+					retData = {
+						name: data.binanceAPI.name,
+						key: Crypto.decipher(data.binanceAPI.key, Crypto.getKey(data.regDate, data.name)),
+						secret: '*******'
+					}
 				}
+				if(callback) callback({
+					status: 'ok',
+					data: retData
+				});
 			}
-			if(callback) callback({
-				status: 'ok',
-				data: retData
-			});
+			else {
+				if(callback)
+					callback({
+						status: 'error',
+						message: 'Такого пользователя не существует'
+					});
+			}
 		});
 	}
 
@@ -203,7 +220,7 @@ let Users = {
 					user.bots.forEach(bot => {
 						bot = new Bot(bot);
 						this.Bots.push(bot);
-						// bot.continueTrade(user);
+						bot.continueTrade(user);
 					})
 				})
 			})
@@ -224,21 +241,28 @@ let Users = {
 
 		,getBotList(user, callback) {
 			Mongo.select(user, 'users', (data) => {
-				data = data[0];
-				if(callback)
-					callback({
-						status: 'ok',
-						data: data.bots || []
-					})
+				if(data.length) {
+					data = data[0];
+					if(callback)
+						callback({
+							status: 'ok',
+							data: data.bots || []
+						})
+				}
+				else {
+					if(callback) 
+						callback({
+							status: 'error',
+							message: 'Такого пользователя не существует.'
+						});
+				}
 			})
 		}
 
 		,setBot(user, botData, callback) {
-			console.log(user);
 			Mongo.select(user, 'users', (data) => {
 				data = data[0];
 				let tempBot;
-				// console.log(botData);
 				if(typeof botData === 'object'){
 					tempBot = new Bot(botData);
 					data.bots.push(tempBot);
@@ -270,7 +294,7 @@ let Users = {
 					const index = this.Bots.findIndex(bot => bot.botID === botData)
 					this.Bots[index].cancelAllOrders(user)
 						.then(res => {
-							this.Bots[index].disableBot()
+							this.Bots[index].deleteBot()
 								.then(res => {
 									this.Bots.splice(index, 1);
 									Mongo.update(user, {bots: data.bots}, 'users', (data) => {
@@ -322,7 +346,6 @@ let Users = {
 					data = data[0]
 
 					const index = this.Bots.findIndex(bot => bot.botID === botData.botID)
-					// console.log(botData)
 					this.Bots[index].changeStatus(botData.status, data)
 					.then( d => callback(d) )
 
@@ -347,7 +370,6 @@ let Users = {
 
 		,cancelOrder(user, reqData, callback) {
 			try {
-				// console.log('cancel order')
 				Mongo.select(user, 'users', (data) => {
 					data = data[0]
 					// const index = data.bots.findIndex(bot => bot.botID === reqData.botID)
@@ -370,7 +392,6 @@ let Users = {
 				})
 			}
 			catch(error) {
-				// console.log(error)
 				callback({
 					status: 'error',
 					message: error
@@ -380,7 +401,6 @@ let Users = {
 
 		,cancelAllOrders(user, reqData, callback) {
 			try {
-				// console.log('cancel all orders')
 				Mongo.select(user, 'users', (data) => {
 					data = data[0]
 					// const index = data.bots.findIndex(bot => bot.botID === reqData.botID)
@@ -388,19 +408,18 @@ let Users = {
 					const index = this.Bots.findIndex(bot => bot.botID === reqData.botID)
 
 					this.Bots[index].cancelAllOrders(user)
-					.then(d => {
-						callback(d)
-					})
-					.catch(error => {
-						callback({
-							status: 'error',
-							message: error
+						.then(d => {
+							callback(d)
 						})
-					})
+						.catch(error => {
+							callback({
+								status: 'error',
+								message: error
+							})
+						})
 				})
 			}
 			catch(error) {
-				// console.log(error)
 				callback({
 					status: 'error',
 					message: error
@@ -425,7 +444,6 @@ let Users = {
 				})
 			}
 			catch(error) {
-				// console.log(error)
 				callback({
 					status: 'error',
 					message: error
@@ -603,20 +621,6 @@ let Users = {
 			}
 		}
 
-		// let Client = this.getClientAPI(user)
-
-		// let statistics = []
-		// for(let i = 0; i < CONSTANTS.PAIRS.length; i++) {
-		// 	let symbol = CONSTANTS.PAIRS[i]
-		// 	let list = []
-		// 	try {
-		// 		list = await Client.allOrders({symbol})
-		// 	}
-		// 	catch(error) {
-		// 		// console.log(error)
-		// 	}
-		// 	statistics.push(...list)
-		// }
 		return {
 			status: 'ok',
 			data: statistics
@@ -643,7 +647,6 @@ let Users = {
 			})
 		}
 		catch(error) {
-			// console.log(error)
 			callback({
 				status: 'error',
 				message: error
@@ -689,7 +692,6 @@ let Users = {
 	}
 
 	,checkCredentials(check, User) {
-		//console.log(md5(check.salt + User.password + check.salt));
 		return check.password == md5(check.salt + User.password + check.salt);
 	}
 

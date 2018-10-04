@@ -1122,7 +1122,7 @@ module.exports = class Bot {
 		return 'disable'
 	}
 
-	async cancelAllOrders(user) {
+	async cancelAllOrders(user = this.user) {
 		console.log('----- cancel all orders and sell it')
 		this._log('завершение всех ордеров и продажа по рынку')
 		try{

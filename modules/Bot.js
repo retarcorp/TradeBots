@@ -49,12 +49,12 @@ module.exports = class Bot {
 		this.user = user;
 
 
-		this.orders = orders;
-		this.safeOrders = safeOrders;
-		this.currentOrder = currentOrder;
-		this.freezeOrders = freezeOrders;
-		this.log = log;
-		this.Client = Client;
+		// this.orders = orders;
+		// this.safeOrders = safeOrders;
+		// this.currentOrder = currentOrder;
+		// this.freezeOrders = freezeOrders;
+		// this.log = log;
+		// this.Client = Client;
 		// if(user.name) this.setClient(user);
 	}
 
@@ -452,4 +452,40 @@ module.exports = class Bot {
 		this.status = CONSTANTS.BOT_STATUS.INACTIVE;
 	}
 
+	cancelAllOrders(user = this.user) {
+		return new Promise( async (resolve, reject) => {
+			try {
+				for (let _id in this.processes) {
+					await this.processes[_id].cancelAllOrders(user);
+					await this.processes[_id].disableProcess('Все распродано по рынку, бот выключен');
+				}
+				resolve({ 
+					status: 'info',
+					message: 'Все ордера отменены и монеты распроданы по рынку' 
+				});
+			}
+			catch(err) {
+				reject({
+					status: 'error',
+					message: err
+				});
+			}
+		});
+	}
+
+	async deleteBot(user = this.uesr) {
+		return new Promise( async (resolve, reject) => {
+			try {
+				this.disableBot(user);
+				await this.cancelAllOrders(user);
+				resolve({ status: 'ok' });
+			}
+			catch(err) {
+				reject({ 
+					status: 'error',
+					message: err 
+				});
+			}
+		});
+	}
 }
