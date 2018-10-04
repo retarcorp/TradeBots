@@ -49,12 +49,12 @@ module.exports = class Bot {
 		this.user = user;
 
 
-		this.orders = orders;
-		this.safeOrders = safeOrders;
-		this.currentOrder = currentOrder;
-		this.freezeOrders = freezeOrders;
-		this.log = log;
-		this.Client = Client;
+		// this.orders = orders;
+		// this.safeOrders = safeOrders;
+		// this.currentOrder = currentOrder;
+		// this.freezeOrders = freezeOrders;
+		// this.log = log;
+		// this.Client = Client;
 		// if(user.name) this.setClient(user);
 	}
 

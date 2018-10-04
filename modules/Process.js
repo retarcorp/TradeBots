@@ -143,10 +143,10 @@ module.exports = class Process {
 
 	async process(user = this.user) {
 		console.log('---- in PROCESS ' + this._id);
-		// await this._log('Проверка состояния ордеров...');
 		let orders = this.safeOrders || [],
-			length = orders.length;
+		length = orders.length;
 		if(length) {
+			await this._log('Проверка состояния ордеров...');
 			console.log('----- checked safeorders');
 			let nextSafeOrders = [];
 			for(let i = 0; i < length; i++) {

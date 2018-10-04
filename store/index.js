@@ -20,10 +20,10 @@ const store = () =>
 		clientAnswer: false,
 		pairs: {},
 		minNotionals: {
-		USDT: 10,
-		BTC: 0.001,
-		ETH: 0.01,
-		BNB: 1
+			USDT: 10,
+			BTC: 0.001,
+			ETH: 0.01,
+			BNB: 1
 		},
 		lotSize: {},
 		binanceAPIStatus: false,
