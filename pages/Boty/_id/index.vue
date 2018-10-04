@@ -125,7 +125,7 @@
                 </div>
             </div>
 
-            <div class='bots__log'>
+            <div class='bots__log' v-if='Object.keys(this.bot.processes).length'>
                 <span>Кол-во процессов: </span>
                 <ul>
                     <li 
@@ -156,7 +156,7 @@
                             <th class="table__th"></th>
                         </tr>
                         <!-- TODO create component for 1 row -->
-                        <tbody class='overflow' v-if='isActiveProcesses'>
+                        <tbody class='overflow' v-if='Object.keys(this.bot.processes).length'>
                             <tr v-for="order in openedOrders"
                                 :key="order.id"
                                 class="table__tr">
@@ -188,7 +188,7 @@
                             <th class="table__th total-head">Всего</th>
                             <th class="table__th status-head">Статус</th>
                         </tr>
-                        <tbody class='overflow' v-if='isActiveProcesses'>
+                        <tbody class='overflow' v-if='Object.keys(this.bot.processes).length'>
                             <tr v-for="order in closedOrders" :key="order.id" class="table__tr">
                                 <td class="table__td date">{{ order.time | date }}</td>
                                 <td class="table__td pair">{{ order.symbol }}</td>
@@ -205,7 +205,7 @@
                             </tr>
                         </tbody>
                     </table>
-                    <div class="order__buttons" v-if='isActiveProcesses'>
+                    <div class="order__buttons" v-if='Object.keys(this.bot.processes).length'>
                         <button @click.prevent="cancelAll" class="button button--primary">Отменить и продать</button>
                     </div>
                 </div>
@@ -260,44 +260,35 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
                 }
             },
             isBotHasOrders() {
-                return this.bot.processes[this.currentId].orders.length &&
+                if( this.currentId )
+                    return this.bot.processes[this.currentId].orders.length &&
                         this.bot.processes[this.currentId].orders.filter(order => order && (order.status === 'NEW' || order.status === 'PARTIALLY_FILLED')).length
+                else return '';        
             },
             bot() {
                 return this.$store.getters.getBot(this.$route.params.id)
             },
             openedOrders() {
-                return this.bot.processes[this.currentId].orders.filter(order => order !== null && (order.status === 'NEW' || order.status === 'PARTIALLY_FILLED'))
+                if( this.currentId )
+                    return this.bot.processes[this.currentId].orders.filter(order => order !== null && (order.status === 'NEW' || order.status === 'PARTIALLY_FILLED'))
+                else return ''; 
             },
             closedOrders() {
-                return this.bot.processes[this.currentId].orders.filter(order => order !== null && (order.status !== 'NEW' && order.status !== 'PARTIALLY_FILLED'))
+                if( this.currentId )
+                    return this.bot.processes[this.currentId].orders.filter(order => order !== null && (order.status !== 'NEW' && order.status !== 'PARTIALLY_FILLED'))
+                else return ''; 
             },
             clientAnswer() {
                 return this.$store.getters.getClientAnswer;
             },
             getStatus() {
                 return this.$store.getters.getStatus;
-            },
-            // lines() {
-            //     return this.bot.processes[this.currentId].log;
-            // }
+            }
         },
         // watch: {
-        //     'bot.status'(value) {
-        //         if(oldHref === location.href){
-        //         this.$axios
-        //             .$post('/bots/setStatus', {
-        //                 'botID': this.bot.botID,
-        //                 'status': value,
-        //                 'userID': this.$store.getters.getWsId
-        //             })
-        //             .then(res => {
-        //                 this.checkStatus(res);
-        //             })
-        //             .catch(e => console.log(e))
-        //             } else {
-        //             oldHref = location.href
-        //             }
+        //     '$route'(to, from) {
+        //         console.log(this.isActiveProcesses)
+        //         if( !Object.keys(this.bot.processes).length ) this.isActiveProcesses = false;
         //     }
         // },
         methods: {
@@ -431,8 +422,7 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
             }
         },
         created() {
-            // if( Object.keys(this.bot.processes).length ) this.currentId = Object.keys(this.bot.processes)[0];
-            // else this.isActiveProcesses = false;
+            console.log(`current bot  -  ${this.bot.processes}`)
         }
     }
 </script>
