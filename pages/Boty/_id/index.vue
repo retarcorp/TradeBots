@@ -125,6 +125,7 @@
                 </div>
             </div>
 
+
             <div class='bots__log' v-if='Object.keys(this.bot.processes).length'>
                 <span>Кол-во процессов: </span>
                 <ul>
@@ -138,7 +139,8 @@
                 </ul>                
             </div>
 
-            <div class="bots__order">
+
+            <div class="bots__order" v-if='isActiveTabOrders'>
                 <ul class="tabs__bar">
                     <li @click.prevent="isActive = true" class="tabs__item"  :style="isActive ? 'backgroundColor: #eee': ''">Выставленные ордера</li>
                     <li @click.prevent="isActive = false" class="tabs__item"  :style="!isActive ? 'backgroundColor: #eee': ''">Выполненные</li>
@@ -211,7 +213,7 @@
                 </div>
             </div>
         </section>
-        <div class="log">
+        <div class="log" v-if='lines'>
             <div class="log-line" v-for="line in lines" :key="line">{{line}}</div>
         </div>
     </div>
@@ -233,10 +235,11 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
                 isChanging: false,
                 tmpOrd: null,
                 tmpBotId: null,
-                currentLogId: null,
+                currentLogId: 0,
                 currentSpecId: 0,
                 lines: [],
                 isActiveProcesses: true,
+                isActiveTabOrders: false,
                 statusAlert: {
                     confirm: 'Вы точно хотите отменить все ордера и продать все монеты по рыночной цене?',
                     confirmCurrent: 'Вы точно хотите отменить ордер?',
@@ -283,19 +286,29 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
             },
             getStatus() {
                 return this.$store.getters.getStatus;
-            }
+            },
+            // lines() {
+            //     if( this.currentLogId )
+            //         return this.bot.processes[this.currentLogId].log;
+            //     else {
+            //         console.log(this.bot.processes[this.currentLogId])
+            //         return [];
+            //     }
+            // }
         },
         // watch: {
         //     '$route'(to, from) {
-        //         console.log(this.isActiveProcesses)
-        //         if( !Object.keys(this.bot.processes).length ) this.isActiveProcesses = false;
+        //         console.log(this.currentLogId)
         //     }
         // },
         methods: {
             fillingInfo(id, event) {
+                // console.log(`id - ` + id);
                 this.currentLogId = id;
                 this.currentSpecId = +event.target.getAttribute('id');
                 this.lines = this.bot.processes[id].log;
+                // console.log(`lines - ` + this.lines);
+                this.isActiveTabOrders = true;
             },  
             setStatus(value) {
                 this.$axios
@@ -421,7 +434,9 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
             }
         },
         created() {
-            console.log(`current bot  -  ${this.bot.processes}`)
+            // console.log(`currentLogId`)
+            // console.log(this.currentLogId);
+            // console.log(this.bot.processes[this.currentLogId])
         }
     }
 </script>
