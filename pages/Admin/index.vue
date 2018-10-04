@@ -21,29 +21,21 @@
                     <thead>
                         <tr class="table__tr">
                             <th class="table__th">Дата регистрации</th>
+                            <th class="table__th">Истечение тарифа</th>
                             <th class="table__th">Email</th>
                             <th class="table__th">Кол-во ботов</th>
-                            <!-- <th class="table__th">Тариф</th> -->
-                            <!-- <th class="table__th">Баланс</th> -->
-                            <!-- <th class="table__th">Действие</th> -->
+                            <th class="table__th">Макс кол-во ботов</th>
                             <th class="table__th"></th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <tr v-for="(user, i) in users" :key="user.name" class="table__tr">
-                            <td class="table__th"><p>{{ getDate(user.regDate) }}</p></td>
-                            <td class="table__th"><p>{{ user.name }}</p></td>
-                            <td class="table__th"><p>{{ user.botsCount }}</p></td>
-                            <!-- <td class="table__th"></td>
-                            <td class="table__th"></td> -->
-                            <!-- <td class="table__th yellow">
-                                <button @click.prevent="activateEditor(i)">Редактировать</button>
-                            </td> -->
-                            <td class="table__th red">
-                                <button @click.prevent="deleteUser(i)">Удалить</button>
-                            </td>
-                        </tr>
-                    </tbody>
+
+                    <userTableRow 
+                        v-for="(user, i) in users" 
+                        :key="i" 
+                        :user="user" 
+                        :userIndex="i"
+                        @getUserIndex='getIndex'>
+                    </userTableRow>
                 </table>
             </div>
         </div>
@@ -51,8 +43,12 @@
 </template>
 
 <script>
+    import userTableRow from '~/components/UserTableRow.vue'
     export default {
         layout: 'admin',
+        components: {
+            userTableRow
+        },
         computed: {
             getStatus() {
                 return this.$store.getters.getStatus;
@@ -69,7 +65,8 @@
                 tmpUserIndex: null,
                 statusAlert: {
                     deleteUser: 'Вы уверены, что хотите удалить этого пользователя?'
-                }
+                },
+                isActive: false
             }
         },
         methods: {
@@ -85,10 +82,16 @@
             onConfirm() {
                 if( this.getStatus === 'deleteUser') {
                     this.$store.commit('setClientAnswer', 'acceptDeleteUser');
-                    this.deleteUser(this.tmpUserIndex);
+                    if(this.clientAnswer === 'acceptDeleteUser') {
+                        this.$store.dispatch('deleteUser', this.tmpUserIndex);
+                        this.tmpUserIndex = null;
+                    }
                 }
                 this.onCancel();
                 this.$store.commit('clearAnswer');
+            },
+            getIndex(index) {
+                this.tmpUserIndex = index;
             },
             getDate(date = Date.now()) {
                 date = new Date(date);
@@ -106,19 +109,6 @@
                 MM = MM.length < 2 ? '0' + MM : MM;
 
                 return `${hh}:${mm}:${ss} ${DD}.${MM}.${YYYY}`;
-            },
-            deleteUser(userIndex) {
-                if(userIndex >= 0) {
-                    this.tmpUserIndex = userIndex;
-                    this.$store.commit('setStatus', 'deleteUser');
-                    if(this.clientAnswer === 'acceptDeleteUser') {
-                        this.$store.dispatch('deleteUser', userIndex);
-                        this.tmpUserIndex = null;
-                    }
-                }
-            },
-            activateEditor(userIndex) {
-
             }
         },
         created() {

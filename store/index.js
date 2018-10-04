@@ -185,9 +185,25 @@ const store = () =>
 		},
 		deleteUser(state, payload) {
 			state.users.splice(payload, 1);
+		},
+		editUser(state, payload) {
+			// state.users.
 		}
 	},
 	actions: {
+		editUser({ commit, getters }, payload){
+			let user =  getters.getUser(payload);
+
+			this.$axios
+				.$post('/api/admin/changeUserData', user)
+				.then( res => {
+					console.log(res);
+					// if(res.status === 'ok') 
+					// commit('editUser', res.data);
+					commit('setStatus', res.status);
+					commit('setMessage', res.message);
+				})
+		},
 		deleteUser({ commit, getters }, payload) {
 			let user = getters.getUser(payload);
 			this.$axios
