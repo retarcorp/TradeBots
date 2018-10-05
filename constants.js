@@ -103,6 +103,8 @@ const CONSTANTS = {
 
 	BT: 'BOT-',
 
+	TF: 'TF-',
+
 	DISABLE_FLAG: 'disable',
 
 	CONTINUE_FLAG: true,
@@ -117,6 +119,10 @@ const CONSTANTS = {
 
 	SYMBOLS_LIST_COLLECTION: 'symbolsList',
 
-	SYMBOLS_PRICE_FILTER_COLLECTION: 'exchangeInfoSymbols'
+	SYMBOLS_PRICE_FILTER_COLLECTION: 'exchangeInfoSymbols',
+
+	USERS_COLLECTION: 'users',
+
+	TARIFFS_COLLECTION: 'tariffs'
 }
 module.exports = CONSTANTS
