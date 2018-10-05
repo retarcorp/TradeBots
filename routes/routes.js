@@ -10,6 +10,8 @@ const symbolsList = require('./symbolsList');
 const income = require('./income');
 const tariffs = require('./tariffs');
 const Mongo = require('../modules/Mongo');
+const url = require('url');
+const qrs = require('querystring');
 const Tariffs = require('../modules/Tariffs');
 // const uniqid = require('uniqid');
 
@@ -24,7 +26,8 @@ router.use(income);
 router.use(tariffs);
 
 router.get('/test', (req, res, next) => {
-	// res.send('test');
+	const query = qrs.parse(url.parse(req.url).query);
+	res.send(query);
 	// let admin = req.cookies.admin;
 	// Tariffs.setTariff(admin, {title: 'ЯЯЯ'}, data => res.json(data));
 	// Tariffs.removeTariff(admin, {title: 'aa'}, data => res.json(data));

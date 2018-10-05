@@ -10,6 +10,8 @@ var app = express();
 var bots = require('./routes/bots');
 
 const bodyParser = require('body-parser');
+const url = require('url');
+const qrs = require('querystring');
 const expressSession = require('express-session');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
