@@ -130,9 +130,10 @@
                 <span>Кол-во процессов: </span>
                 <ul>
                     <li 
-                        v-for='(log, index) in Object.keys(bot.processes)' 
-                        :key='index'
+                        v-for='(log, index) in Object.keys(bot.processes)'
                         :id='index'
+                        v-if='bot.processes[log].runningProcess'
+                        :key='index'
                         :class='{active: currentLogId === log}'
                         @click='fillingInfo(log, $event)'
                     >{{index + 1}}</li>
