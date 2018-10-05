@@ -1,5 +1,5 @@
 <template>
-    <div class="modal-wrapper">
+    <div class="modal-wrapper" v-if='open' @click='changeStatus'>
         <div class="modal">
             <form class="container-fluid">
                 <h1 class="title title--big modal__title">title</h1>
@@ -47,6 +47,12 @@
         data() {
             return {
 
+            }
+        },
+        methods: {
+            changeStatus(event) {
+                if( event.target.classList.contains('modal-wrapper') ) 
+                    this.$emit('changeStatus', false);
             }
         }
     }

@@ -23,7 +23,7 @@
                 <button @click.prevent="onAddTariff" class="button button--success rates__addTariff">Добавить тариф</button>
             </div>
         </div>
-        <app-modal :open="isModalOpen"></app-modal>
+        <app-modal :open="isModalOpen" @changeStatus='changeStatus'></app-modal>
     </div>
 </template>
 <script>
@@ -35,12 +35,15 @@ import modal from '~/components/TariffSettings';
         layout: 'admin',
         data() {
             return {
-                isModalOpen: true
+                isModalOpen: false
             }
         },
         methods: {
             onAddTariff() {
-
+                this.isModalOpen = true;
+            },
+            changeStatus() {
+                this.isModalOpen = false;
             }
         }
     }
