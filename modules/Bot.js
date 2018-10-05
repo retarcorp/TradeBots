@@ -473,6 +473,48 @@ module.exports = class Bot {
 		});
 	}
 
+	async cancelOrder(orderId = 0, processId = '') {
+		orderId = Number(orderId);
+		console.log(orderId, processId);
+		// try {
+		// 	let pair = this.getPair()
+		// 	let order = await this.getOrder(orderId),
+		// 		side = order.side,
+		// 		qty = order.origQty,
+		// 		status = '',
+		// 		message = ''
+		// 	try {
+		// 		var cancelOrder = await this.Client.cancelOrder({
+		// 			symbol: pair,
+		// 			orderId: orderId
+		// 		})
+		// 		if(this.isOrderSell(side)) {
+		// 			this.recountQuantity(qty)
+		// 		}
+		// 		status = 'ok'
+		// 		message = `ордер ${cancelOrder.orderId} завершен`
+		// 	}
+		// 	catch(error) {
+		// 		status = 'error'
+		// 		message = `ошибка при завершении ордера ${cancelOrder.orderId}`
+		// 	}
+		// 	this._log('закрытие ордера - ' + message)
+		// 	return {
+		// 		status: status,
+		// 		message: message,
+		// 		data: { order: cancelOrder }
+		// 	}
+		// }
+		// catch(error) {
+		// 	this._log('закрытие ордера - ' + error)
+		// 	return {
+		// 		status: 'error',
+		// 		message: error,
+		// 		data: { orderId: orderId }
+		// 	}
+		// }
+	}
+
 	async deleteBot(user = this.uesr) {
 		return new Promise( async (resolve, reject) => {
 			try {

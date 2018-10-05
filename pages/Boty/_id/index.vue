@@ -386,7 +386,8 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
                     this.$axios
                         .$post('/bots/orders/cancel', {
                             'botID': this.tmpBotId,
-                            'orderId': this.tmpOrd
+                            'orderId': this.tmpOrd,
+                            'processeId': this.currentId
                         })
                         .then( () => this.$store.commit('setSpiner', false) )
                 }
