@@ -11,6 +11,7 @@ module.exports = class Process {
 	constructor({
 		_id = uniqid(PRC),
 		symbol = '',
+		runningProcess = true,
 		status = CONSTANTS.BOT_STATUS.INACTIVE,
 		state = CONSTANTS.BOT_STATE.MANUAL,
 		freeze = CONSTANTS.BOT_FREEZE_STATUS.INACTIVE,
@@ -29,6 +30,7 @@ module.exports = class Process {
 	} = {}) {
 		this._id = this.JSONclone(_id);
 		this.symbol = this.JSONclone(symbol);
+		this.runningProcess = this.JSONclone(runningProcess);
 		this.state = this.JSONclone(state);
 		this.status = this.JSONclone(status);
 		this.freeze = this.JSONclone(freeze);
@@ -430,14 +432,14 @@ module.exports = class Process {
 		await this._log(`завершение процесса, причина -> (${message})`);
 		if(this.symbol) await this.cancelOrders(this.safeOrders);
 
-		this.safeOrders = []
-		this.currentOrder = {}
+		this.safeOrders = [];
+		this.currentOrder = {};
 		
-		this.botSettings.quantityOfUsedSafeOrders = 0
-		this.botSettings.quantityOfActiveSafeOrders = 0
-		this.botSettings.currentOrder = this.botSettings.initialOrder
-		this.botSettings.firstBuyPrice = 0
-
+		this.botSettings.quantityOfUsedSafeOrders = 0;
+		this.botSettings.quantityOfActiveSafeOrders = 0;
+		this.botSettings.currentOrder = this.botSettings.initialOrder;
+		this.botSettings.firstBuyPrice = 0;
+		this.runningProcess = false;
 		if(this.symbol) this.orders = await this.updateOrders(this.orders);
 
 		if(!isContinue) this.status = CONSTANTS.BOT_STATUS.INACTIVE;

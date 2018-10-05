@@ -406,7 +406,7 @@ let Users = {
 					// let bot = new Bot(data.bots[index], data)
 					const index = this.Bots.findIndex(bot => bot.botID === reqData.botID)
 
-					this.Bots[index].cancelAllOrders(user)
+					this.Bots[index].cancelAllOrders(user, reqData.processeId)
 						.then(d => {
 							callback(d)
 						})

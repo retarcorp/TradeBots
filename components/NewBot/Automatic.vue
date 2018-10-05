@@ -265,7 +265,7 @@ export default {
         addItem() {
             this.bot.botSettings.tradingSignals.push(this.autoItem)
             this.autoItem = {
-                signal: 'default',
+                // signal: 'default',
                 timeframe: 'default',
                 checkRating: 'default'
             }
