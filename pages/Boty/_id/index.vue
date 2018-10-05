@@ -213,7 +213,7 @@
                 </div>
             </div>
         </section>
-        <div class="log" v-if='lines'>
+        <div class="log" v-if='lines && isActiveTabOrders'>
             <div class="log-line" v-for="line in lines" :key="line">{{line}}</div>
         </div>
     </div>
@@ -237,7 +237,7 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
                 tmpBotId: null,
                 currentLogId: 0,
                 currentSpecId: 0,
-                lines: [],
+                // lines: [],
                 isActiveProcesses: true,
                 isActiveTabOrders: false,
                 statusAlert: {
@@ -287,25 +287,27 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
             getStatus() {
                 return this.$store.getters.getStatus;
             },
-            // lines() {
-            //     if( this.currentLogId )
-            //         return this.bot.processes[this.currentLogId].log;
-            //     else {
-            //         console.log(this.bot.processes[this.currentLogId])
-            //         return [];
-            //     }
-            // }
+            lines() {
+                return this.currentId ? this.bot.processes[this.currentId].log : [];
+                // if( this.currentId ) {
+                //     return this.bot.processes[this.currentId].log;
+                // }
+                // else {
+
+                //     return [];
+                // }
+            }
         },
-        // watch: {
-        //     '$route'(to, from) {
-        //         console.log(this.currentLogId)
-        //     }
-        // },
+        watch: {
+            '$route'(to, from) {
+                console.log(`currentLogId - ${this.currentId}`)
+            }
+        },
         methods: {
             fillingInfo(id, event) {
                 this.currentLogId = id;
                 this.currentSpecId = +event.target.getAttribute('id');
-                this.lines = this.bot.processes[id].log;
+                // this.lines = this.bot.processes[id].log;
                 this.isActiveTabOrders = true;
             },  
             setStatus(value) {
@@ -433,9 +435,7 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
             }
         },
         created() {
-            // console.log(`currentLogId`)
-            // console.log(this.currentLogId);
-            // console.log(this.bot.processes[this.currentLogId])
+            console.log(`currentLogId - ${this.currentId}`)
         }
     }
 </script>
