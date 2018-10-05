@@ -364,7 +364,8 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
                     this.$store.commit('setSpiner', true);
                     this.$axios
                         .$post('/bots/orders/cancelAll', {
-                            'botID': this.bot.botID
+                            'botID': this.bot.botID,
+                            'processeId': this.currentId
                         })
                         .then( res => {
                             this.$store.commit('setSpiner', false)
@@ -389,7 +390,8 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
                     this.$axios
                         .$post('/bots/orders/cancel', {
                             'botID': this.tmpBotId,
-                            'orderId': this.tmpOrd
+                            'orderId': this.tmpOrd,
+                            'processeId': this.currentId
                         })
                         .then( () => this.$store.commit('setSpiner', false) )
                 }

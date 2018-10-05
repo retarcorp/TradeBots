@@ -61,20 +61,11 @@ module.exports = class Bot {
 	continueTrade(user = this.user) {
 		console.log('continueTrade');
 		for (let _id in this.processes) {
-			this.processes[_id] = new Process(this.processes[_id]);
-			this.processes[_id].continueTrade(user);
-			// this.processes[_id].continueTrade(user);
+			if(this.processes[_id].runningProcess) {
+				this.processes[_id] = new Process(this.processes[_id]);
+				this.processes[_id].continueTrade(user);
+			}
 		}
-		
-		
-		// if(this.setClient(user)) {
-		// 	if(this.state === CONSTANTS.BOT_STATE.MANUAL) {
-		// 		this.tradeManual(user)
-		// 	}
-		// 	else if(this.state === CONSTANTS.BOT_STATE.AUTO) {
-		// 		this.tradeAuto(user)
-		// 	}
-		// }
 	}
 
 	async changeStatus(nextStatus, user = this.user) {
@@ -107,7 +98,7 @@ module.exports = class Bot {
 		else if(this.checkForDeactivate(nextStatus)) {
 			this.status = nextStatus;
 			for (let _id in this.processes) {
-				this.processes[_id].deactivateProcess();
+				this.processes[_id] = new Process(this.processes[processId]).deactivateProcess();
 			}
 			status = 'info';
 			message = "Бот перестанет работать после завершения всех рабочих циклов.";
@@ -167,15 +158,15 @@ module.exports = class Bot {
 	//:: START FUNC
 	async startManual(user = this.user) {
 		console.log('startManual');
-		if(Object.keys(this.processes).length === 0) {
+		// if(Object.keys(this.processes).length === 0) {
 			let resObj = {
-					symbol: this.getPair(),
-					botSettings: this.botSettings,
-					botID: this.botID,
-					user: user,
-					state: this.state,
-					status: this.status
-				},
+				symbol: this.getPair(),
+				botSettings: this.botSettings,
+				botID: this.botID,
+				user: user,
+				state: this.state,
+				status: this.status
+			},
 				newProcess = new Process(resObj);
 
 			this.processes[newProcess._id] = newProcess;
@@ -183,10 +174,10 @@ module.exports = class Bot {
 			this.processes[newProcess._id]
 				.startTrade(user)
 				.catch(err => console.log(err));
-		}
-		else {
-			this.status = CONSTANTS.BOT_STATUS.INACTIVE;
-		}
+		// }
+		// else {
+		// 	this.status = CONSTANTS.BOT_STATUS.INACTIVE;
+		// }
 	}
 
 	async startAuto(user = this.user, message = '') {
@@ -296,8 +287,18 @@ module.exports = class Bot {
 	}
 
 	checkForActivate(nextStatus) {
-		let bot_status = CONSTANTS.BOT_STATUS;
-		return (this.status === bot_status.INACTIVE && nextStatus === bot_status.ACTIVE)
+		let bot_status = CONSTANTS.BOT_STATUS,
+			processesStatus = false;
+
+		for (let processId in this.processes) {
+			let proc = this.processes[processId];
+			if(proc.status === bot_status.ACTIVE || proc.runningProcess) {
+				processesStatus = true;
+				break;
+			}
+		}
+		
+		return (this.status === bot_status.INACTIVE && nextStatus === bot_status.ACTIVE && !processesStatus);
 	}
 	
 	checkForDeactivate(nextStatus) {
@@ -452,25 +453,88 @@ module.exports = class Bot {
 		this.status = CONSTANTS.BOT_STATUS.INACTIVE;
 	}
 
-	cancelAllOrders(user = this.user) {
+	cancelAllOrders(user = this.user, processId = 0) {
 		return new Promise( async (resolve, reject) => {
 			try {
-				for (let _id in this.processes) {
-					await this.processes[_id].cancelAllOrders(user);
-					await this.processes[_id].disableProcess('Все распродано по рынку, бот выключен');
+				if(processId && this.processes[processId]) {
+					let res = await this.processes[processId].cancelAllOrders(user);
+					if(res.status !== 'error') {
+						await this.processId[processId].disableProcess('Все распродано по рынку, бот выключен');
+					}
+					// for (let _id in this.processes) {
+					// 	await this.processes[_id].cancelAllOrders(user);
+					// 	await this.processes[_id].disableProcess('Все распродано по рынку, бот выключен');
+					// }
+					resolve(res);
+				} else {
+					reject({
+						status: 'error',
+						message: 'Неверный идентификатор'
+					});
 				}
-				resolve({ 
-					status: 'info',
-					message: 'Все ордера отменены и монеты распроданы по рынку' 
-				});
 			}
 			catch(err) {
 				reject({
 					status: 'error',
-					message: err
+					message: `eeeror ${err}`
 				});
 			}
 		});
+	}
+
+	async cancelOrder(orderId = 0, processId = '') {
+		orderId = Number(orderId);
+		if(orderId && processId && this.processes[processId]) {
+			let res = await this.processes[processId].cancelOrder(orderId);
+			return res;
+		} else {
+			return {
+				status: 'error',
+				message: 'Неверно отправленны данные ордера и процесса.',
+				data: { orderId: orderId,
+						processId: processId
+					}
+			}
+		}
+
+
+		// try {
+		// 	let pair = this.getPair()
+		// 	let order = await this.getOrder(orderId),
+		// 		side = order.side,
+		// 		qty = order.origQty,
+		// 		status = '',
+		// 		message = ''
+		// 	try {
+		// 		var cancelOrder = await this.Client.cancelOrder({
+		// 			symbol: pair,
+		// 			orderId: orderId
+		// 		})
+		// 		if(this.isOrderSell(side)) {
+		// 			this.recountQuantity(qty)
+		// 		}
+		// 		status = 'ok'
+		// 		message = `ордер ${cancelOrder.orderId} завершен`
+		// 	}
+		// 	catch(error) {
+		// 		status = 'error'
+		// 		message = `ошибка при завершении ордера ${cancelOrder.orderId}`
+		// 	}
+		// 	this._log('закрытие ордера - ' + message)
+		// 	return {
+		// 		status: status,
+		// 		message: message,
+		// 		data: { order: cancelOrder }
+		// 	}
+		// }
+		// catch(error) {
+		// 	this._log('закрытие ордера - ' + error)
+		// 	return {
+		// 		status: 'error',
+		// 		message: error,
+		// 		data: { orderId: orderId }
+		// 	}
+		// }
 	}
 
 	async deleteBot(user = this.uesr) {

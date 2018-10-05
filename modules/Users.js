@@ -220,7 +220,7 @@ let Users = {
 					user.bots.forEach(bot => {
 						bot = new Bot(bot);
 						this.Bots.push(bot);
-						// bot.continueTrade(user);
+						bot.continueTrade(user);
 					})
 				})
 			})
@@ -376,8 +376,7 @@ let Users = {
 					const index = this.Bots.findIndex(bot => bot.botID === reqData.botID)
 
 					// let bot = new Bot(data.bots[index], data)
-
-					this.Bots[index].cancelOrder(reqData.orderId)
+					this.Bots[index].cancelOrder(reqData.orderId, reqData.processeId)
 					.then(d => {
 						callback({
 							status: d.status,
@@ -407,7 +406,7 @@ let Users = {
 					// let bot = new Bot(data.bots[index], data)
 					const index = this.Bots.findIndex(bot => bot.botID === reqData.botID)
 
-					this.Bots[index].cancelAllOrders(user)
+					this.Bots[index].cancelAllOrders(user, reqData.processeId)
 						.then(d => {
 							callback(d)
 						})
