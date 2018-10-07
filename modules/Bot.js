@@ -61,7 +61,7 @@ module.exports = class Bot {
 	continueTrade(user = this.user) {
 		console.log('continueTrade');
 		for (let _id in this.processes) {
-			if(this.processes[_id].runningProcess) {
+			if(this.processes[_id] && this.processes[_id].runningProcess) {
 				this.processes[_id] = new Process(this.processes[_id]);
 				this.processes[_id].continueTrade(user);
 			}
@@ -98,7 +98,7 @@ module.exports = class Bot {
 		else if(this.checkForDeactivate(nextStatus)) {
 			this.status = nextStatus;
 			for (let _id in this.processes) {
-				this.processes[_id] = new Process(this.processes[processId]).deactivateProcess();
+				this.processes[_id] = new Process(this.processes[_id]).deactivateProcess();
 			}
 			status = 'info';
 			message = "Бот перестанет работать после завершения всех рабочих циклов.";
