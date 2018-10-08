@@ -120,7 +120,7 @@
                 </div>
                 <div v-show="!isChanging" class="bots__button">
                     <!-- :disabled="!isBotHasOrders" -->
-                    <button  :class="{'button--disabled': isBotHasOrders}" @click="onChangeSettings" class="button button--success button__change-settings">Изменить настройки</button>
+                    <button  :class="{'button--disabled': (isBotHasOrders.length > 0)}" @click="onChangeSettings" class="button button--success button__change-settings">Изменить настройки</button>
                     <button @click="onDeleteBot" class="button button--danger button__remove-bot">Удалить бота</button>
                 </div>
             </div>

@@ -47,7 +47,7 @@ module.exports = class Bot {
 		this.botID = botID;
 		this.processes = processes;
 		this.user = user;
-
+		this.ALL = 'all';
 
 		// this.orders = orders;
 		// this.safeOrders = safeOrders;
@@ -98,7 +98,13 @@ module.exports = class Bot {
 		else if(this.checkForDeactivate(nextStatus)) {
 			this.status = nextStatus;
 			for (let _id in this.processes) {
-				this.processes[_id] = new Process(this.processes[_id]).deactivateProcess();
+				console.log(_id);
+				this.processes[_id].deactivateProcess();
+				// console.log(this.processes[_id].status);
+				// console.log(this.processes[_id].deactivateProcess);
+				// this.processes[_id] = new Process(this.processes[_id]);
+				// this.processes[_id].deactivateProcess();
+				// console.log(this.processes[_id].status);
 			}
 			status = 'info';
 			message = "Бот перестанет работать после завершения всех рабочих циклов.";
@@ -168,7 +174,12 @@ module.exports = class Bot {
 				status: this.status
 			},
 				newProcess = new Process(resObj);
-
+			for (let _id in this.processes) {
+				console.log(this.processes[_id].setRunnigProcess)
+				if(this.processes[_id].runningProcess) {
+					this.processes[_id].setRunnigProcess();
+				}
+			}
 			this.processes[newProcess._id] = newProcess;
 			await this.updateBot(user);
 			this.processes[newProcess._id]
@@ -292,7 +303,7 @@ module.exports = class Bot {
 
 		for (let processId in this.processes) {
 			let proc = this.processes[processId];
-			if(proc.status === bot_status.ACTIVE || proc.runningProcess) {
+			if(proc.status === bot_status.ACTIVE || (proc.runningProcess && proc.currentOrder.orderId)) {
 				processesStatus = true;
 				break;
 			}
@@ -448,29 +459,44 @@ module.exports = class Bot {
 
 	disableBot(user = this.user) {
 		for (let _id in this.processes) {
+			this.processes[_id] = new Process(this.processes[_id]);
 			this.processes[_id].deactivateProcess();
 		}
 		this.status = CONSTANTS.BOT_STATUS.INACTIVE;
 	}
 
 	cancelAllOrders(user = this.user, processId = 0) {
+		console.log("---------------------CANCELALLORDERS IN BOT");
 		return new Promise( async (resolve, reject) => {
 			try {
-				if(processId && this.processes[processId]) {
-					let res = await this.processes[processId].cancelAllOrders(user);
-					if(res.status !== 'error') {
-						await this.processId[processId].disableProcess('Все распродано по рынку, бот выключен');
+				if(processId === this.ALL) {	
+					console.log("---------------------THIS ALL");
+					console.log(this.processes)
+					for (let _id in this.processes) {
+						if(this.processes[_id].runningProcess) {
+							this.processes[_id].deactivateProcess();
+							await this.processes[_id].cancelAllOrders(user);
+							await this.processes[_id].disableProcess('Все распродано по рынку, бот выключен');
+						}
 					}
-					// for (let _id in this.processes) {
-					// 	await this.processes[_id].cancelAllOrders(user);
-					// 	await this.processes[_id].disableProcess('Все распродано по рынку, бот выключен');
-					// }
-					resolve(res);
-				} else {
-					reject({
-						status: 'error',
-						message: 'Неверный идентификатор'
+					resolve({
+						status: 'ok',
+						message: 'Все процессы завершены'
 					});
+				} else {
+					console.log("---------------------ELSE");
+					if(processId && this.processes[processId]) {
+						let res = await this.processes[processId].cancelAllOrders(user);
+						if(res.status !== 'error') {
+							await this.processId[processId].disableProcess('Все распродано по рынку, бот выключен');
+						}
+						resolve(res);
+					} else {
+						reject({
+							status: 'error',
+							message: 'Неверный идентификатор'
+						});
+					}
 				}
 			}
 			catch(err) {
@@ -496,53 +522,20 @@ module.exports = class Bot {
 					}
 			}
 		}
-
-
-		// try {
-		// 	let pair = this.getPair()
-		// 	let order = await this.getOrder(orderId),
-		// 		side = order.side,
-		// 		qty = order.origQty,
-		// 		status = '',
-		// 		message = ''
-		// 	try {
-		// 		var cancelOrder = await this.Client.cancelOrder({
-		// 			symbol: pair,
-		// 			orderId: orderId
-		// 		})
-		// 		if(this.isOrderSell(side)) {
-		// 			this.recountQuantity(qty)
-		// 		}
-		// 		status = 'ok'
-		// 		message = `ордер ${cancelOrder.orderId} завершен`
-		// 	}
-		// 	catch(error) {
-		// 		status = 'error'
-		// 		message = `ошибка при завершении ордера ${cancelOrder.orderId}`
-		// 	}
-		// 	this._log('закрытие ордера - ' + message)
-		// 	return {
-		// 		status: status,
-		// 		message: message,
-		// 		data: { order: cancelOrder }
-		// 	}
-		// }
-		// catch(error) {
-		// 	this._log('закрытие ордера - ' + error)
-		// 	return {
-		// 		status: 'error',
-		// 		message: error,
-		// 		data: { orderId: orderId }
-		// 	}
-		// }
 	}
 
 	async deleteBot(user = this.uesr) {
+		console.log("---------------------DELTEBOT IN BOT");
 		return new Promise( async (resolve, reject) => {
 			try {
 				this.disableBot(user);
-				await this.cancelAllOrders(user);
-				resolve({ status: 'ok' });
+				await this.cancelAllOrders(user, this.ALL);
+				resolve({ 
+					status: 'ok', 
+					data: {
+						deletedBot: this
+					}
+				});
 			}
 			catch(err) {
 				reject({ 
