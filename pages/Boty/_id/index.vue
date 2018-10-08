@@ -120,7 +120,7 @@
                 </div>
                 <div v-show="!isChanging" class="bots__button">
                     <!-- :disabled="!isBotHasOrders" -->
-                    <button  :class="{'button--disabled': isBotHasOrders}" @click="onChangeSettings" class="button button--success button__change-settings">Изменить настройки</button>
+                    <button  :class="{'button--disabled': (isBotHasOrders.length > 0)}" @click="onChangeSettings" class="button button--success button__change-settings">Изменить настройки</button>
                     <button @click="onDeleteBot" class="button button--danger button__remove-bot">Удалить бота</button>
                 </div>
             </div>
@@ -130,9 +130,10 @@
                 <span>Кол-во процессов: </span>
                 <ul>
                     <li 
-                        v-for='(log, index) in Object.keys(bot.processes)' 
-                        :key='index'
+                        v-for='(log, index) in Object.keys(bot.processes)'
                         :id='index'
+                        v-if='bot.processes[log].runningProcess'
+                        :key='index'
                         :class='{active: currentLogId === log}'
                         @click='fillingInfo(log, $event)'
                     >{{index + 1}}</li>
@@ -363,7 +364,8 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
                     this.$store.commit('setSpiner', true);
                     this.$axios
                         .$post('/bots/orders/cancelAll', {
-                            'botID': this.bot.botID
+                            'botID': this.bot.botID,
+                            'processeId': this.currentId
                         })
                         .then( res => {
                             this.$store.commit('setSpiner', false)
@@ -450,7 +452,7 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
 }
 
 .bots__log {
-    width: 16rem;
+    width: 100%;
     height: 5rem;
     overflow-x: auto;
     display: flex;
@@ -516,6 +518,7 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
     border: 1px solid #EFEFEF;
     padding: 2rem;
     font-size: 1.5rem;
+    margin-bottom: 1.5rem;
 }
 
 .log-line {

@@ -28,7 +28,8 @@ const store = () =>
 		lotSize: {},
 		binanceAPIStatus: false,
 		binanceAPI: {},
-		users: []
+		users: [],
+		tariffList: []
 	},
 	getters: {
 		getUser(state, payload) {
@@ -84,6 +85,9 @@ const store = () =>
 		},
 		getBinanceAPI(state) {
 			return state.binanceAPI;
+		},
+		getTariffList(state) {
+			return state.tariffList;
 		}
 	},
 	mutations: {
@@ -185,6 +189,9 @@ const store = () =>
 		},
 		deleteUser(state, payload) {
 			state.users.splice(payload, 1);
+		},
+		setTariffList(state, payload) {
+			state.tariffList = payload;
 		}
 	},
 	actions: {
@@ -425,6 +432,15 @@ const store = () =>
 			commit('setSpiner', false);
 			commit('setStatus', 'error');
 			commit('setMessage', res.message);
+		},
+		loadTariffList({commit}) {
+			this.$axios
+				.$get('/api/admin/getTariffList')
+                .then(res => {
+					commit('setTariffList', res.data)
+				})
+                .catch(error => console.log(error))
+			
 		}
 	}
 	});

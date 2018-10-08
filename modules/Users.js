@@ -6,7 +6,7 @@ const CONSTANTS = require('../constants')
 const Binance = require('./Binance')
 const Mailer = require('./Mailer').init();
 const Templates = require('./Templates');
-let binanceAPI = require('binance-api-node').default
+let binanceAPI = require('binance-api-node').default;
 
 let Users = {
 
@@ -19,21 +19,24 @@ let Users = {
 
 	,deleteUser(admin, userData, callback) {
 		Mongo.select(admin, 'users', data => {
+			let res = {};
 			if(data.length) {
 				Mongo.delete({name: userData.name}, 'users', data => {
-					if(callback) callback({
+					res = {
 						status: 'ok',
 						data: data,
 						message: `Пользователь ${userData.name} успешно удален!` 
-					})
+					};
+					if(callback) callback(res);
 				})
 			} else {
-				if(callback) callback({
+				res = {
 					status: 'info',
 					message: 'Недостаточно прав для выполнения операции.'
-				});
+				};
+				if(callback) callback(res);
 			}
-		})
+		});
 	}
 
 	,getUsersList(admin, callback) {
@@ -86,6 +89,7 @@ let Users = {
 				,salt: salt
 				,admin: admin
 				,ordersList: {}
+				,tariffs: []
 				,bots: []
 				,maxBotAmount: 0
 				,regKey: md5(Users.genSalt(16))
@@ -223,8 +227,8 @@ let Users = {
 				users.forEach(user => {
 					user.bots.forEach(bot => {
 						bot = new Bot(bot);
-						this.Bots.push(bot);
 						bot.continueTrade(user);
+						this.Bots.push(bot);
 					})
 				})
 			})
@@ -272,23 +276,27 @@ let Users = {
 					data.bots.push(tempBot);
 					this.Bots.push(tempBot)
 					Mongo.update(user, {bots: data.bots}, 'users', (data) => {
-						if(typeof botData === 'object') {
-							callback({
+						// let res = {};
+						// if(typeof botData === 'object') {
+						let res = {
 								status: 'ok',
+								message: `Новый бот успешно создан (${tempBot.botID})`,
 								data: tempBot
-							});
-						}
-						else {
-							callback({
-								status: 'ok',
-								data: {
-									botID: botData
-								}
-							});
-						}
+							};
+							callback(res);
+						// }
+						// else {
+						// 	res = {
+						// 		status: 'ok',
+						// 		message: `Бот ${botID} успешно обновлен`,
+						// 		data: botData
+						// 	};
+						// 	callback(res);
+						// }
 					});
 				}
 				else {
+					console.log("---------------------DELTEBOT");
 					let tempBots = [];
 					data.bots.forEach(bot => {
 						if(bot.botID !== botData) tempBots.push(bot);
@@ -296,31 +304,27 @@ let Users = {
 					data.bots = tempBots;
 
 					const index = this.Bots.findIndex(bot => bot.botID === botData)
-					this.Bots[index].cancelAllOrders(user)
+					this.Bots[index].deleteBot()
 						.then(res => {
-							this.Bots[index].deleteBot()
-								.then(res => {
-									this.Bots.splice(index, 1);
-									Mongo.update(user, {bots: data.bots}, 'users', (data) => {
-										if(typeof botData === 'object') {
-											callback({
-												status: 'ok',
-												data: tempBot
-											});
-										}
-										else {
-											callback({
-												status: 'ok',
-												data: {
-													botID: botData
-												}
-											});
-										}
-									});
-								})
+							this.Bots.splice(index, 1);
+							Mongo.update(user, {bots: data.bots}, 'users', (data) => {
+								// if(typeof botData === 'object') {
+								// 	callback({
+								// 		status: 'ok',
+								// 		data: tempBot
+								// 	});
+								// }
+								// else {
+									let res = {
+										status: 'ok',
+										message: `Бот ${botData.botID} успешно удален`,
+										data: botData
+									};
+									callback(res);
+								// }
+							});
 						})
 				}
-				
 			});
 		}
 
@@ -329,17 +333,21 @@ let Users = {
 				data = data[0];
 				let tempBot = new Bot(botData);
 				const index = data.bots.findIndex(bot => bot.botID === tempBot.botID);
-				data.bots[index] = tempBot;
 
 				const newIndex = this.Bots.findIndex(bot => bot.botID === tempBot.botID)
-				this.Bots[newIndex] = tempBot
+				this.Bots[newIndex] = tempBot;
+				let changeObj = {},
+					change = `bots.${index}`;
+				
+				changeObj[change] = tempBot;
 
-				Mongo.update(user, {bots: data.bots}, 'users', (data) => {
-					if(callback)
-						callback({
-							status: 'ok',
-							data: tempBot
-						});
+				Mongo.update(user, changeObj, 'users', (data) => {
+					let res = {
+						status: 'ok',
+						message: `Бот ${tempBot.botID} успешно обновлен`,
+						data: tempBot
+					};
+					if(callback) callback(res);
 				});
 			});
 		}
@@ -351,7 +359,7 @@ let Users = {
 
 					const index = this.Bots.findIndex(bot => bot.botID === botData.botID)
 					this.Bots[index].changeStatus(botData.status, data)
-					.then( d => callback(d) )
+						.then( d => callback(d));
 
 					// const index = data.bots.findIndex(bot => bot.botID === botData.botID)
 					// let newBot = new Bot(data.bots[index])
@@ -381,13 +389,7 @@ let Users = {
 
 					// let bot = new Bot(data.bots[index], data)
 					this.Bots[index].cancelOrder(reqData.orderId, reqData.processeId)
-					.then(d => {
-						callback({
-							status: d.status,
-							message: d.message,
-							data: d.order
-						})
-					})
+					.then(d => callback(d))
 					.catch(error => callback({
 						status: 'error',
 						message: error
@@ -409,16 +411,15 @@ let Users = {
 					// const index = data.bots.findIndex(bot => bot.botID === reqData.botID)
 					// let bot = new Bot(data.bots[index], data)
 					const index = this.Bots.findIndex(bot => bot.botID === reqData.botID)
-
-					this.Bots[index].cancelAllOrders(user)
+					this.Bots[index].cancelAllOrders(user, reqData.processeId)
 						.then(d => {
-							callback(d)
+							callback(d);
 						})
 						.catch(error => {
 							callback({
 								status: 'error',
 								message: error
-							})
+							});
 						})
 				})
 			}

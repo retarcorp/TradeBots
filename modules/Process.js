@@ -11,6 +11,8 @@ module.exports = class Process {
 	constructor({
 		_id = uniqid(PRC),
 		symbol = '',
+		signal = {},
+		runningProcess = true,
 		status = CONSTANTS.BOT_STATUS.INACTIVE,
 		state = CONSTANTS.BOT_STATE.MANUAL,
 		freeze = CONSTANTS.BOT_FREEZE_STATUS.INACTIVE,
@@ -29,6 +31,8 @@ module.exports = class Process {
 	} = {}) {
 		this._id = this.JSONclone(_id);
 		this.symbol = this.JSONclone(symbol);
+		this.signal = this.JSONclone(signal);
+		this.runningProcess = this.JSONclone(runningProcess);
 		this.state = this.JSONclone(state);
 		this.status = this.JSONclone(status);
 		this.freeze = this.JSONclone(freeze);
@@ -71,7 +75,7 @@ module.exports = class Process {
 			let profitPrice = this.getProfitPrice(price);
 			let newSellOrder = await this.newSellOrder(profitPrice, CONSTANTS.ORDER_TYPE.LIMIT, qty);
 			if(newSellOrder !== CONSTANTS.DISABLE_FLAG) await this.updateProcess(user);
-			if(this.status === CONSTANTS.BOT_STATUS.ACTIVE) {
+			// if(this.status === CONSTANTS.BOT_STATUS.ACTIVE) {
 				this.currentOrder = newSellOrder;
 				this.orders.push(newSellOrder);
 
@@ -81,7 +85,7 @@ module.exports = class Process {
 
 				this.trade(user)
 					.catch(err => console.log(err));
-			}
+			// }
 		}
 		else {
 			await this.disableProcess('Неуспешная покупка начального ордера.', CONSTANTS.CONTINUE_FLAG)
@@ -107,12 +111,12 @@ module.exports = class Process {
 			if(this.checkFilling(currentOrderStatus) && !Number(this.freeze) && !Number(this.preFreeze)) {
 				await this.disableProcess('Процесс удачно завершён.', CONSTANTS.CONTINUE_FLAG);
 				await this.updateProcess(user);
-				if(this.status === CONSTANTS.BOT_STATUS.ACTIVE && this.isManual()) this.startTrade(user);
+				if(this.status === CONSTANTS.BOT_STATUS.ACTIVE && (this.isManual() || this.checkSignalStatus()) ) this.startTrade(user);
 			}
 			else if(this.checkFailing(currentOrderStatus) && !Number(this.freeze) && !Number(this.preFreeze)) {
 				await this.disableProcess('Процесс завершен, причина - выключение бота или ошибка.', CONSTANTS.CONTINUE_FLAG);
 				await this.updateProcess(user);
-				if(this.status === CONSTANTS.BOT_STATUS.ACTIVE && this.isManual()) this.startTrade(user);
+				if(this.status === CONSTANTS.BOT_STATUS.ACTIVE && (this.isManual() || this.checkSignalStatus()) ) this.startTrade(user);
 			}
 			else {
 				if(this.freeze === CONSTANTS.BOT_FREEZE_STATUS.INACTIVE) {
@@ -425,19 +429,24 @@ module.exports = class Process {
 		return (x.toString().includes('.')) ? (x.toString().split('.').pop().length) : (0);
 	}
 
+	setRunnigProcess(nexStatus = false) {
+		this.runningProcess = nexStatus;
+	}
+
 	async disableProcess(message, isContinue = false) {
+		console.log("---------------------DISABLEPROCESS IN PROCESS")
 		console.log('[----- disableProcess ' + message);
 		await this._log(`завершение процесса, причина -> (${message})`);
 		if(this.symbol) await this.cancelOrders(this.safeOrders);
 
-		this.safeOrders = []
-		this.currentOrder = {}
+		this.safeOrders = [];
+		this.currentOrder = {};
 		
-		this.botSettings.quantityOfUsedSafeOrders = 0
-		this.botSettings.quantityOfActiveSafeOrders = 0
-		this.botSettings.currentOrder = this.botSettings.initialOrder
-		this.botSettings.firstBuyPrice = 0
-
+		this.botSettings.quantityOfUsedSafeOrders = 0;
+		this.botSettings.quantityOfActiveSafeOrders = 0;
+		this.botSettings.currentOrder = this.botSettings.initialOrder;
+		this.botSettings.firstBuyPrice = 0;
+		// this.runningProcess = false;
 		if(this.symbol) this.orders = await this.updateOrders(this.orders);
 
 		if(!isContinue) this.status = CONSTANTS.BOT_STATUS.INACTIVE;
@@ -449,19 +458,26 @@ module.exports = class Process {
 	}
 
 	async cancelAllOrders(user = this.user) {
+		console.log("---------------------CANCEL ALL ORDERS IN PROCESS");
 		console.log('----- cancel all orders and sell it');
 		await this._log('Завершение всех ордеров и продажа по рынку.');
 		try{
-			await this.cancelOrders(this.safeOrders);
-			await this.cancelOrder(this.currentOrder.orderId);
-			let lastPrice = await this.getLastPrice(),
-				qty = this.getQuantity(),
-				newOrder = await this.newSellOrder(lastPrice, CONSTANTS.ORDER_TYPE.MARKET, qty);
-			
-			if(newOrder !== CONSTANTS.DISABLE_FLAG) await this.updateProcess(user);;
-			this.orders.push(newOrder);
-			this.orders = await this.updateOrders(this.orders);
-			await this.updateProcess(user)
+			if(this.safeOrders.length && this.currentOrder.orderId) {
+				await this.cancelOrders(this.safeOrders);
+				await this.cancelOrder(this.currentOrder.orderId);
+	
+				if(this.isOrderSell(this.currentOrder.side)) {
+					let lastPrice = await this.getLastPrice(),
+						qty = this.getQuantity(),
+						newOrder = await this.newSellOrder(lastPrice, CONSTANTS.ORDER_TYPE.MARKET, qty);
+					
+					if(newOrder !== CONSTANTS.DISABLE_FLAG) await this.updateProcess(user);
+					this.orders.push(newOrder);
+				}
+				
+				this.orders = await this.updateOrders(this.orders);
+				await this.updateProcess(user);
+			}
 			return {
 				status: 'info',
 				message: 'Все ордера отменены и монеты распроданы по рынку'
@@ -491,6 +507,7 @@ module.exports = class Process {
 				qty = order.origQty,
 				status = '',
 				message = '';
+
 			try {
 				var cancelOrder = await this.Client.cancelOrder({
 					symbol: pair,
@@ -506,6 +523,7 @@ module.exports = class Process {
 				status = 'error';
 				message = `ошибка при завершении ордера ${cancelOrder.orderId}`;
 			}
+			
 			await this._log('закрытие ордера - ' + message);
 			return {
 				status: status,
@@ -702,7 +720,7 @@ module.exports = class Process {
 			});
 		}
 		catch(error) {
-			if(await this.isError1021(error)) order = await this.getOrder(orderId);
+			if(await this.isError1021(error)) return await this.getOrder(orderId);
 		}
 		return new Order(order);
 	}
@@ -751,12 +769,17 @@ module.exports = class Process {
 	async getChangeObject(field = '', data = null) {
 		const user = { name: this.user.name },
 			botInd = await this.getBotIndex(user);
-		let key = this.getChangeKey(field, botInd),
-			obj = {};
 		
-		obj[key] = data;
-
-		return obj;
+		if(botInd !== -1) {
+			let key = this.getChangeKey(field, botInd),
+				obj = {};
+			
+			obj[key] = data;
+	
+			return obj;
+		} else {
+			return -1;
+		}
 	}
 
 	async getBotIndex(user = this.user, userData = null) {
@@ -781,7 +804,9 @@ module.exports = class Process {
 		const user = { name: this.user.name };
 		try {
 			let change = await this.getChangeObject('log', this.log);
-			await Mongo.syncUpdate(user, change, 'users');
+			if(change !== -1) {
+				await Mongo.syncUpdate(user, change, 'users');
+			}
 		} catch(err) {
 			console.log(err);
 		}
@@ -792,21 +817,10 @@ module.exports = class Process {
 		console.log('[ updateProcess', message);
 		await this.updateProcessOrdersList(user);
 		let change = await this.getChangeObject('', this);
-		await Mongo.syncUpdate(user, change, 'users');
+		if(change !== -1) {
+			await Mongo.syncUpdate(user, change, 'users');
+		}
 		console.log('] updateProcess');
-	}
-
-	async syncUpdateBot(user = this.user, message = '') { //syncUpdateBot
-		user = { name: user.name };
-		console.log('[ sync upd ', message);
-		await this.updateProcessOrdersList(user);
-		let data = await Mongo.syncSelect(user, 'users')
-		data = data[0]
-		let tempBot = new Bot(this)
-		const index = data.bots.findIndex(bot => bot.botID === tempBot.botID)
-		data.bots[index] = tempBot
-		await Mongo.syncUpdate(user = this.user, {bots: data.bots}, 'users');
-		console.log('] sync upd ')
 	}
 
 	async updateProcessOrdersList(user = this.user) {
@@ -816,31 +830,31 @@ module.exports = class Process {
 		data = data[0];
 		const botInd = await this.getBotIndex(user, data);
 		// const botInd = data.bots.findIndex(bot => bot.botID === this.botID);
-		let ordersList = data.bots[botInd].processes[this._id].ordersList;
-		!ordersList && (ordersList = {});
-
-		let _id = `${this._id}${this.botID}-${this._id}`;
-		!ordersList[_id] && (ordersList[_id] = []);
-		ordersList[_id] = this.orders;
-
-		let change = await this.getChangeObject('ordersList', ordersList);
-		await Mongo.syncUpdate(user, change, 'users');
-		console.log('] updateProcessOrdersList')
+		console.log(botInd);
+		if(botInd != -1) {
+			let ordersList = data.bots[botInd].processes[this._id].ordersList;
+			!ordersList && (ordersList = {});
+	
+			let _id = `${this._id}${this.botID}-${this._id}`;
+			!ordersList[_id] && (ordersList[_id] = []);
+			ordersList[_id] = this.orders;
+	
+			let change = await this.getChangeObject('ordersList', ordersList);
+			if(change !== -1) {
+				await Mongo.syncUpdate(user, change, 'users');
+			}
+		}
+		console.log('] updateProcessOrdersList');
 	}
 
 	async updateOrders(orders = []) {
 		console.log('------- updateOrders');
-		let pair = this.getSymbol(),
-			nextOrders = [],
+		let nextOrders = [],
 			len = orders.length;
 		for(let i = 0; i < len; i++) {
 			try{
 				if(!orders[i].isUpdate) {
-					let orderData = await this.Client.getOrder({
-						symbol: pair,
-						orderId: orders[i].orderId
-					});
-					let order = new Order(orderData);
+					let order = await this.getOrder(orders[i].orderId);
 					if(this.checkFailing(order.status) || this.checkFilling(order.status)) order.isUpdate = true;
 					nextOrders.push(order);
 				}
@@ -867,7 +881,7 @@ module.exports = class Process {
 	async isError1021(error = new Error('default err')) {  	
 		let code = this.errorCode(error);
 		console.log(code);
-		await this._log('ошибка code:' + code + ', Timestamp for this request is outside of the recvWindow');
+		await this._log('ошибка code:' + code + ', Временная метка для этого запроса находится вне recvWindow');
 		return code === -1021;
 	}
 
@@ -875,7 +889,7 @@ module.exports = class Process {
 	async isError1013(error = new Error('default err')) { 
 		let code = this.errorCode(error);
 		console.log(code);
-		await this._log('ошибка code:' + code + ', MIN_NOTATIAN');
+		await this._log('ошибка code:' + code + ', Количество продоваемых монет ниже минимально-допустимого');
 		return code === -1013;
 	}
 
@@ -883,7 +897,7 @@ module.exports = class Process {
 	async isError2010(error = new Error('default err')) { 
 		let code = this.errorCode(error);
 		console.log(code);
-		await this._log('ошибка code:' + code + ', insufficient balance');
+		await this._log('ошибка code:' + code + ', Недостаточно средств на балансе валюты');
 		return code === -2010;
 	}
 	//:: ERRORS TYPES END
@@ -924,6 +938,15 @@ module.exports = class Process {
 			status === CONSTANTS.ORDER_STATUS.PENDING_CANCEL ||
 			status === CONSTANTS.ORDER_STATUS.REJECTED || 
 			status === CONSTANTS.ORDER_STATUS.EXPIRED;
+	}
+
+	async checkSignalStatus() {
+		if(this.isAuto()) {
+			let key = { id: this.signal.id },
+				signal = await Mongo.syncSelect(key, CONSTANTS.TRADING_SIGNALS_COLLECTION);
+	
+			return ( signal && ( signal.rating === signal.checkRating || (signal.checkRating === CONSTANTS.TRANSACTION_TERMS.BUY && signal.rating === CONSTANTS.TRANSACTION_TERMS.STRONG_BUY) ));
+		} else return false;
 	}
 
 	async checkFreezeStatus(user = this.user) {

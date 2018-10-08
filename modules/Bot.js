@@ -12,7 +12,6 @@ const md5 = require('md5');
 const uniqid = require('uniqid');
 
 const Process = require('./Process');
-
 const CONSTANTS = require('../constants');
 const BT = CONSTANTS.BT;
 
@@ -47,7 +46,7 @@ module.exports = class Bot {
 		this.botID = botID;
 		this.processes = processes;
 		this.user = user;
-
+		this.ALL = 'all';
 
 		// this.orders = orders;
 		// this.safeOrders = safeOrders;
@@ -60,21 +59,33 @@ module.exports = class Bot {
 
 	continueTrade(user = this.user) {
 		console.log('continueTrade');
-		for (let _id in this.processes) {
-			this.processes[_id] = new Process(this.processes[_id]);
-			this.processes[_id].continueTrade(user);
-			// this.processes[_id].continueTrade(user);
+		if(this.isManual()) {
+			for (let _id in this.processes) {
+				if(this.processes[_id] && this.processes[_id].runningProcess) {
+					this.processes[_id] = new Process(this.processes[_id]);
+					this.processes[_id].continueTrade(user);
+				}
+			}
+		} else if(this.isAuto()) {
+			let isRunningProcessesExist = false;
+			for (let _id in this.processes) {
+				if(this.processes[_id] && this.processes[_id].runningProcess) {
+					isRunningProcessesExist = true;
+					break;
+				}
+			}
+
+			if(isRunningProcessesExist) {
+				for (let _id in this.processes) {
+					if(this.processes[_id] && this.processes[_id].runningProcess) {
+						this.processes[_id] = new Process(this.processes[_id]);
+						this.processes[_id].continueTrade(user);
+					}
+				}
+			} else {
+				this.startAuto(user, 'continue');
+			}
 		}
-		
-		
-		// if(this.setClient(user)) {
-		// 	if(this.state === CONSTANTS.BOT_STATE.MANUAL) {
-		// 		this.tradeManual(user)
-		// 	}
-		// 	else if(this.state === CONSTANTS.BOT_STATE.AUTO) {
-		// 		this.tradeAuto(user)
-		// 	}
-		// }
 	}
 
 	async changeStatus(nextStatus, user = this.user) {
@@ -107,7 +118,13 @@ module.exports = class Bot {
 		else if(this.checkForDeactivate(nextStatus)) {
 			this.status = nextStatus;
 			for (let _id in this.processes) {
+				console.log(_id);
 				this.processes[_id].deactivateProcess();
+				// console.log(this.processes[_id].status);
+				// console.log(this.processes[_id].deactivateProcess);
+				// this.processes[_id] = new Process(this.processes[_id]);
+				// this.processes[_id].deactivateProcess();
+				// console.log(this.processes[_id].status);
 			}
 			status = 'info';
 			message = "Бот перестанет работать после завершения всех рабочих циклов.";
@@ -167,26 +184,31 @@ module.exports = class Bot {
 	//:: START FUNC
 	async startManual(user = this.user) {
 		console.log('startManual');
-		if(Object.keys(this.processes).length === 0) {
+		// if(Object.keys(this.processes).length === 0) {
 			let resObj = {
-					symbol: this.getPair(),
-					botSettings: this.botSettings,
-					botID: this.botID,
-					user: user,
-					state: this.state,
-					status: this.status
-				},
+				symbol: this.getPair(),
+				botSettings: this.botSettings,
+				botID: this.botID,
+				user: user,
+				state: this.state,
+				status: this.status
+			},
 				newProcess = new Process(resObj);
-
+			for (let _id in this.processes) {
+				console.log(this.processes[_id].setRunnigProcess)
+				if(this.processes[_id].runningProcess) {
+					this.processes[_id].setRunnigProcess();
+				}
+			}
 			this.processes[newProcess._id] = newProcess;
 			await this.updateBot(user);
 			this.processes[newProcess._id]
 				.startTrade(user)
 				.catch(err => console.log(err));
-		}
-		else {
-			this.status = CONSTANTS.BOT_STATUS.INACTIVE;
-		}
+		// }
+		// else {
+		// 	this.status = CONSTANTS.BOT_STATUS.INACTIVE;
+		// }
 	}
 
 	async startAuto(user = this.user, message = '') {
@@ -212,7 +234,8 @@ module.exports = class Bot {
 							botID: this.botID,
 							user: user,
 							state: this.state,
-							status: this.status
+							status: this.status,
+							signal: signal
 						},
 						newProcess = new Process(resObj);
 					
@@ -247,8 +270,8 @@ module.exports = class Bot {
 
 		if(user.binanceAPI.name !== '') {
 			try {
-				key = Crypto.decipher(user.binanceAPI.key,  Crypto.getKey(user.regDate, user.name))
-				secret = Crypto.decipher(user.binanceAPI.secret,  Crypto.getKey(user.regDate, user.name))
+				key = Crypto.decipher(user.binanceAPI.key,  Crypto.getKey(user.regDate, user.name));
+				secret = Crypto.decipher(user.binanceAPI.secret,  Crypto.getKey(user.regDate, user.name));
 			}
 			catch(err) {
 				console.log('ошибка с определением ключей бинанса');
@@ -259,12 +282,12 @@ module.exports = class Bot {
 			this.Client = binanceAPI({
 				apiKey: key,
 				apiSecret: secret
-			})
+			});
 		}
 		else {
 			ret = false;
 		}
-		return ret
+		return ret;
 	}
 	//:: SET FUNC END
 	
@@ -279,8 +302,8 @@ module.exports = class Bot {
 		let ret = false;
 		this.pair.requested.forEach(elem => {
 			if(symbol.indexOf(elem) >= 0) ret = elem;
-		})
-		return ret
+		});
+		return ret;
 	}
 	//:: GET FUNC END
 	
@@ -296,12 +319,22 @@ module.exports = class Bot {
 	}
 
 	checkForActivate(nextStatus) {
-		let bot_status = CONSTANTS.BOT_STATUS;
-		return (this.status === bot_status.INACTIVE && nextStatus === bot_status.ACTIVE)
+		let bot_status = CONSTANTS.BOT_STATUS,
+			processesStatus = false;
+
+		for (let processId in this.processes) {
+			let proc = this.processes[processId];
+			if(proc.status === bot_status.ACTIVE || (proc.runningProcess && proc.currentOrder.orderId)) {
+				processesStatus = true;
+				break;
+			}
+		}
+		
+		return (this.status === bot_status.INACTIVE && nextStatus === bot_status.ACTIVE && !processesStatus);
 	}
 	
 	checkForDeactivate(nextStatus) {
-		let bot_status = CONSTANTS.BOT_STATUS
+		let bot_status = CONSTANTS.BOT_STATUS;
 		return (this.status === bot_status.ACTIVE && nextStatus === bot_status.INACTIVE);
 	}
 
@@ -309,7 +342,7 @@ module.exports = class Bot {
 		let ret = true;
 
 		for (let _id in this.processes) {
-			if(this.processes[_id].symbol === signal.symbol) {
+			if(this.processes[_id].symbol === signal.symbol/* && this.processes[_id].runningProcess*/) {
 				ret = false;
 				break;
 			}
@@ -447,27 +480,49 @@ module.exports = class Bot {
 
 	disableBot(user = this.user) {
 		for (let _id in this.processes) {
+			// this.processes[_id] = new Process(this.processes[_id]);
 			this.processes[_id].deactivateProcess();
 		}
 		this.status = CONSTANTS.BOT_STATUS.INACTIVE;
 	}
 
-	cancelAllOrders(user = this.user) {
+	cancelAllOrders(user = this.user, processId = 0) {
+		console.log("---------------------CANCELALLORDERS IN BOT");
 		return new Promise( async (resolve, reject) => {
 			try {
-				for (let _id in this.processes) {
-					await this.processes[_id].cancelAllOrders(user);
-					await this.processes[_id].disableProcess('Все распродано по рынку, бот выключен');
+				if(processId === this.ALL) {	
+					console.log("---------------------THIS ALL");
+					console.log(this.processes)
+					for (let _id in this.processes) {
+						if(this.processes[_id].runningProcess) {
+							await this.processes[_id].cancelAllOrders(user);
+							await this.processes[_id].disableProcess('Все распродано по рынку, бот выключен');
+						}
+					}
+					resolve({
+						status: 'ok',
+						message: 'Все процессы завершены'
+					});
+				} else {
+					console.log("---------------------ELSE");
+					if(processId && this.processes[processId]) {
+						let res = await this.processes[processId].cancelAllOrders(user);
+						if(res.status !== 'error') {
+							await this.processes[processId].disableProcess('Все распродано по рынку, бот выключен');
+						}
+						resolve(res);
+					} else {
+						reject({
+							status: 'error',
+							message: 'Неверный идентификатор'
+						});
+					}
 				}
-				resolve({ 
-					status: 'info',
-					message: 'Все ордера отменены и монеты распроданы по рынку' 
-				});
 			}
 			catch(err) {
 				reject({
 					status: 'error',
-					message: err
+					message: `eeeror ${err}`
 				});
 			}
 		});
@@ -475,52 +530,32 @@ module.exports = class Bot {
 
 	async cancelOrder(orderId = 0, processId = '') {
 		orderId = Number(orderId);
-		console.log(orderId, processId);
-		// try {
-		// 	let pair = this.getPair()
-		// 	let order = await this.getOrder(orderId),
-		// 		side = order.side,
-		// 		qty = order.origQty,
-		// 		status = '',
-		// 		message = ''
-		// 	try {
-		// 		var cancelOrder = await this.Client.cancelOrder({
-		// 			symbol: pair,
-		// 			orderId: orderId
-		// 		})
-		// 		if(this.isOrderSell(side)) {
-		// 			this.recountQuantity(qty)
-		// 		}
-		// 		status = 'ok'
-		// 		message = `ордер ${cancelOrder.orderId} завершен`
-		// 	}
-		// 	catch(error) {
-		// 		status = 'error'
-		// 		message = `ошибка при завершении ордера ${cancelOrder.orderId}`
-		// 	}
-		// 	this._log('закрытие ордера - ' + message)
-		// 	return {
-		// 		status: status,
-		// 		message: message,
-		// 		data: { order: cancelOrder }
-		// 	}
-		// }
-		// catch(error) {
-		// 	this._log('закрытие ордера - ' + error)
-		// 	return {
-		// 		status: 'error',
-		// 		message: error,
-		// 		data: { orderId: orderId }
-		// 	}
-		// }
+		if(orderId && processId && this.processes[processId]) {
+			let res = await this.processes[processId].cancelOrder(orderId);
+			return res;
+		} else {
+			return {
+				status: 'error',
+				message: 'Неверно отправленны данные ордера и процесса.',
+				data: { orderId: orderId,
+						processId: processId
+					}
+			}
+		}
 	}
 
 	async deleteBot(user = this.uesr) {
+		console.log("---------------------DELTEBOT IN BOT");
 		return new Promise( async (resolve, reject) => {
 			try {
 				this.disableBot(user);
-				await this.cancelAllOrders(user);
-				resolve({ status: 'ok' });
+				await this.cancelAllOrders(user, this.ALL);
+				resolve({ 
+					status: 'ok', 
+					data: {
+						deletedBot: this
+					}
+				});
 			}
 			catch(err) {
 				reject({ 
