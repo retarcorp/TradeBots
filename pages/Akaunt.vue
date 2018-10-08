@@ -9,10 +9,10 @@
                     </div> -->
                 
                 
-                    <!-- <div class="account__menu-item">
-                        Тариф: Оптимум
-                        <nuxt-link to="/Akaunt/Triph" class="account__menu-link">Изменить</nuxt-link>
-                    </div> -->
+                    <div class="account__menu-item">
+                        Тариф: Не задано
+                        <nuxt-link to="/Akaunt/Tariph" class="account__menu-link">Изменить</nuxt-link>
+                    </div>
                 
                     <div class="account__menu-item">
                         Аккаунт Binance: {{ getBinance ? 'задано' : 'не задано' }} 
