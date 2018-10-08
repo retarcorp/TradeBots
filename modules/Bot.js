@@ -234,7 +234,8 @@ module.exports = class Bot {
 							botID: this.botID,
 							user: user,
 							state: this.state,
-							status: this.status
+							status: this.status,
+							signal: signal
 						},
 						newProcess = new Process(resObj);
 					
@@ -341,7 +342,7 @@ module.exports = class Bot {
 		let ret = true;
 
 		for (let _id in this.processes) {
-			if(this.processes[_id].symbol === signal.symbol) {
+			if(this.processes[_id].symbol === signal.symbol/* && this.processes[_id].runningProcess*/) {
 				ret = false;
 				break;
 			}
@@ -372,7 +373,6 @@ module.exports = class Bot {
 			};
 		
 		while(!ret.flag && this.status !== CONSTANTS.BOT_STATUS.INACTIVE) {
-			console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 			await sleep(CONSTANTS.ORDER_TIMEOUT);
 			// await this.updateBot(user);
 			await this.updateSignals(user);
