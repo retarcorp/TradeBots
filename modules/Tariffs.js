@@ -45,7 +45,7 @@ class TariffList {
 		return Object.assign({}, this.FailureMessage, data);
 	}
 
-	async purchaseTariff(user = {}, tariffId = Number(), callback = (data = {}) => {console.log(data)}) {
+	async purchaseTariff(user = {}, tariffId = Number(), callback = (data = {}) => {}) {
 		user = { name: user.name };
 		if(await this.userExists(user)) {
 			// user <- currentTariff <- tariffData
@@ -71,7 +71,7 @@ class TariffList {
 		}
 	}
 
-	async setTariff(admin = {}, tariffData = {}, callback = (data = {}) => {console.log(data)}) {
+	async setTariff(admin = {}, tariffData = {}, callback = (data = {}) => {}) {
 		if(await this.authenticationAdmin(admin)) {
 			let newTariff = new Tariff(tariffData);
 
@@ -88,7 +88,7 @@ class TariffList {
 		}
 	}
 
-	async getUsersTariffs(user = {}, callback = (data = {}) => {console.log(data)}) {
+	async getUsersTariffs(user = {}, callback = (data = {}) => {}) {
 		user = { name: user.name };
 		if(await this.userExists(user)) {
 			let curUser = await Mongo.syncSelect(user, CONSTANTS.USERS_COLLECTION);
@@ -102,7 +102,7 @@ class TariffList {
 		}
 	}
 
-	async getTariffList(admin = {}, callback = (data = {}) => {console.log(data)}) {
+	async getTariffList(admin = {}, callback = (data = {}) => {}) {
 		// if(await this.authenticationAdmin(admin)) {
 			let tariffList = await Mongo.syncSelect({}, CONSTANTS.TARIFFS_COLLECTION);
 			callback(this.getSuccessfullyMessage({ data: tariffList }));
@@ -112,7 +112,7 @@ class TariffList {
 		// }
 	}
 
-	async removeTariff(admin = {}, removedTariff = {}, callback = (data = {}) => {console.log(data)}) {
+	async removeTariff(admin = {}, removedTariff = {}, callback = (data = {}) => {}) {
 		if(await this.authenticationAdmin(admin)) {
 			removedTariff = new Tariff(removedTariff);
 			if(await this.tariffExists(removedTariff)) {
@@ -126,7 +126,7 @@ class TariffList {
 		}
 	}
 
-	async editTariff(admin = {}, nextTariffData = {}, callback = (data = {}) => {console.log(data)}) {
+	async editTariff(admin = {}, nextTariffData = {}, callback = (data = {}) => {}) {
 		if(await this.authenticationAdmin(admin)) {
 			nextTariffData = new Tariff(nextTariffData);
 			await Mongo.syncUpdate({ tariffId: nextTariffData.tariffId }, nextTariffData, CONSTANTS.TARIFFS_COLLECTION);
