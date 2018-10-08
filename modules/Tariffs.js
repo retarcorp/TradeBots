@@ -63,12 +63,12 @@ class TariffList {
 	}
 
 	async getTariffList(admin = {}, callback = (data = {}) => {console.log(data)}) {
-		if(await this.authenticationAdmin(admin)) {
+		// if(await this.authenticationAdmin(admin)) {
 			let tariffList = await Mongo.syncSelect({}, CONSTANTS.TARIFFS_COLLECTION);
 			callback(this.getSuccessfullyMessage({ data: tariffList }));
-		} else {
-			callback(this.getFailureMessage());
-		}
+		// } else {
+		// 	callback(this.getFailureMessage());
+		// }
 	}
 
 	async removeTariff(admin = {}, removedTariff = {}, callback = (data = {}) => {console.log(data)}) {
