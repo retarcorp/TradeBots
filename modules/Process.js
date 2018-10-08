@@ -718,7 +718,7 @@ module.exports = class Process {
 			});
 		}
 		catch(error) {
-			if(await this.isError1021(error)) order = await this.getOrder(orderId);
+			if(await this.isError1021(error)) return await this.getOrder(orderId);
 		}
 		return new Order(order);
 	}
@@ -847,17 +847,12 @@ module.exports = class Process {
 
 	async updateOrders(orders = []) {
 		console.log('------- updateOrders');
-		let pair = this.getSymbol(),
-			nextOrders = [],
+		let nextOrders = [],
 			len = orders.length;
 		for(let i = 0; i < len; i++) {
 			try{
 				if(!orders[i].isUpdate) {
-					let orderData = await this.Client.getOrder({
-						symbol: pair,
-						orderId: orders[i].orderId
-					});
-					let order = new Order(orderData);
+					let order = await this.getOrder(orders[i].orderId);
 					if(this.checkFailing(order.status) || this.checkFilling(order.status)) order.isUpdate = true;
 					nextOrders.push(order);
 				}

@@ -12,7 +12,6 @@ const md5 = require('md5');
 const uniqid = require('uniqid');
 
 const Process = require('./Process');
-
 const CONSTANTS = require('../constants');
 const BT = CONSTANTS.BT;
 
@@ -373,6 +372,7 @@ module.exports = class Bot {
 			};
 		
 		while(!ret.flag && this.status !== CONSTANTS.BOT_STATUS.INACTIVE) {
+			console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 			await sleep(CONSTANTS.ORDER_TIMEOUT);
 			// await this.updateBot(user);
 			await this.updateSignals(user);
