@@ -9,6 +9,8 @@ const statistics = require('./statistics');
 const symbolsList = require('./symbolsList');
 const income = require('./income');
 const tariffs = require('./tariffs');
+const userActivation = require('./userActivation');
+
 const Mongo = require('../modules/Mongo');
 const url = require('url');
 const qrs = require('querystring');
@@ -24,6 +26,7 @@ router.use(statistics);
 router.use(symbolsList);
 router.use(income);
 router.use(tariffs);
+router.use(userActivation);
 
 router.get('/test', (req, res, next) => {
 	const query = qrs.parse(url.parse(req.url).query);
