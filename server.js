@@ -9,6 +9,8 @@ var nuxtConfigFile = resolve(rootDir, 'nuxt.config.js');
 var app = express();
 var bots = require('./routes/bots');
 
+var userActivation = require('./routes/userActivation');
+
 const bodyParser = require('body-parser');
 const url = require('url');
 const qrs = require('querystring');
@@ -29,7 +31,6 @@ Mongo.init()
 // const Crypto = require('./modules/Crypto');
 // const Binance = require('./modules/Binance');
 let binanceAPI = require('binance-api-node').default;
-
 
 //Routers
 var routers = require('./routes/routes')
@@ -59,6 +60,8 @@ app.use(expressSession({secret: 'kitty secret'}));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.disable('x-powered-by');
+
+app.get('/user/activate', userActivation);
 
 app.use(routers)
 

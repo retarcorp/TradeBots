@@ -4,6 +4,8 @@ const Bot = require('../modules/Bot')
 const Crypto = require('./Crypto')
 const CONSTANTS = require('../constants')
 const Binance = require('./Binance')
+const Mailer = require('./Mailer').init();
+const Templates = require('./Templates');
 let binanceAPI = require('binance-api-node').default
 
 let Users = {
@@ -86,6 +88,8 @@ let Users = {
 				,ordersList: {}
 				,bots: []
 				,maxBotAmount: 0
+				,regKey: md5(Users.genSalt(16))
+				,active: false
 				,binanceAPI: {
 					name: null,
 					key: null,
@@ -105,12 +109,12 @@ let Users = {
 				// 	,to: user.name
 				// });
 
-				// Mailer.send({
-				// 	from: 'serehactka@gmail.com'
-				// 	,to: user.name
-				// 	,subject: 'Testing'
-				// 	,html: Templates.getRegistrationMail(user)
-				// });
+				Mailer.send({
+					from: 'potato_1234@mail.ru'
+					,to: user.name
+					,subject: 'Testing'
+					,html: Templates.getUserActivationHtml(User.regKey)
+				});
 
 			} else {
 				callback({ status: 'error', message: "User already exist!" });
@@ -694,11 +698,11 @@ let Users = {
 		return check.password == md5(check.salt + User.password + check.salt);
 	}
 
-	,genSalt() {
+	,genSalt(size = 8) {
 		let salt = "",
 			code = 0;
 
-		for (let i = 0; i < 8; i++) {
+		for (let i = 0; i < size; i++) {
 			code = Math.round(Math.random() * 76 + 48);
 			salt += String.fromCharCode(code);
 		}

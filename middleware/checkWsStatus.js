@@ -1,5 +1,6 @@
 export default function ({ store, route, redirect }) {
   console.log(route.path)
+
   if(route.path === '/') {
     redirect('/Boty')
   }
