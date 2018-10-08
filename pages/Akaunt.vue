@@ -10,7 +10,7 @@
                 
                 
                     <div class="account__menu-item">
-                        Тариф: Не задано
+                        Тариф: {{ selectedTariffs.length ? 'Задано' : 'Не задано' }}
                         <nuxt-link to="/Akaunt/Tariph" class="account__menu-link">Изменить</nuxt-link>
                     </div>
                 
@@ -23,7 +23,7 @@
                 <nuxt-link to="/Akaunt/Nastroyki" tag="button" class="button button--primary account__button">Изменить пароль</nuxt-link>
             </div>
             <div class="col-12 col-md-6 col-lg-8">
-                <nuxt-child />
+                <nuxt-child :tariffs="selectedTariffs" />
             </div>
         </div>
     </div>
@@ -33,7 +33,7 @@
 export default {
     data() {
         return {
-            
+            selectedTariffs: []
         }
     },
     computed: {
@@ -41,7 +41,14 @@ export default {
             return this.$store.getters.getBinanceAPIStatus;
         }
     },
+    methods: {
+        getCurrentTariff () {
+            this.$axios.$get('/api/user/getUsersTariffs')
+                .then(res => this.selectedTariffs = res.data)
+        }
+    },
     created() {
+        this.getCurrentTariff()
         // this.$store.dispatch('firstGetBinanceAPI');
     }
 }

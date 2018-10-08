@@ -46,6 +46,9 @@
     </section> -->
     <section>
         rates --- {{ rates }}
+        <div v-for="tariff in tariffs" :key="tariff.id">
+            {{ tariff }}
+        </div>
         <div v-for="rate in rates" :key="rate._id">
             title --- {{ rate.title }}
             termOfUse ---- {{ rate.termOfUse }}
@@ -58,6 +61,7 @@
 
 <script>
 export default {
+    props: ['tariffs'],
     data () {
         return {
             rates: []
