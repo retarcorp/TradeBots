@@ -459,7 +459,7 @@ module.exports = class Bot {
 
 	disableBot(user = this.user) {
 		for (let _id in this.processes) {
-			this.processes[_id] = new Process(this.processes[_id]);
+			// this.processes[_id] = new Process(this.processes[_id]);
 			this.processes[_id].deactivateProcess();
 		}
 		this.status = CONSTANTS.BOT_STATUS.INACTIVE;
@@ -474,7 +474,6 @@ module.exports = class Bot {
 					console.log(this.processes)
 					for (let _id in this.processes) {
 						if(this.processes[_id].runningProcess) {
-							this.processes[_id].deactivateProcess();
 							await this.processes[_id].cancelAllOrders(user);
 							await this.processes[_id].disableProcess('Все распродано по рынку, бот выключен');
 						}
@@ -488,7 +487,7 @@ module.exports = class Bot {
 					if(processId && this.processes[processId]) {
 						let res = await this.processes[processId].cancelAllOrders(user);
 						if(res.status !== 'error') {
-							await this.processId[processId].disableProcess('Все распродано по рынку, бот выключен');
+							await this.processes[processId].disableProcess('Все распродано по рынку, бот выключен');
 						}
 						resolve(res);
 					} else {

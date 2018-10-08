@@ -813,7 +813,9 @@ module.exports = class Process {
 		console.log('[ updateProcess', message);
 		await this.updateProcessOrdersList(user);
 		let change = await this.getChangeObject('', this);
-		await Mongo.syncUpdate(user, change, 'users');~!!!~~!~!
+		if(change !== -1) {
+			await Mongo.syncUpdate(user, change, 'users');
+		}
 		console.log('] updateProcess');
 	}
 
@@ -825,7 +827,6 @@ module.exports = class Process {
 		const botInd = await this.getBotIndex(user, data);
 		// const botInd = data.bots.findIndex(bot => bot.botID === this.botID);
 		console.log(botInd);
-		console.log('SSSSSSSSSSSSSSSSSSSssssss');
 		if(botInd != -1) {
 			let ordersList = data.bots[botInd].processes[this._id].ordersList;
 			!ordersList && (ordersList = {});
@@ -835,7 +836,9 @@ module.exports = class Process {
 			ordersList[_id] = this.orders;
 	
 			let change = await this.getChangeObject('ordersList', ordersList);
-			await Mongo.syncUpdate(user, change, 'users');
+			if(change !== -1) {
+				await Mongo.syncUpdate(user, change, 'users');
+			}
 		}
 		console.log('] updateProcessOrdersList');
 	}
