@@ -19,6 +19,11 @@ router.get('/api/admin/getTariffList', (req, res, next) => {
 	Tariffs.getTariffList(admin, data => res.json(data));
 });
 
+router.get('/api/user/getUsersTariffs', (req, res, next) => {
+	let user = req.cookies.user;
+	Tariffs.getUsersTariffs(user, data => res.json(data));
+});
+
 router.post('/api/admin/removeTariff', (req, res, next) => {
 	let admin = req.cookies.admin,
 		reqTariff = req.body;

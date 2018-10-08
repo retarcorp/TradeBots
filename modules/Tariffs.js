@@ -53,8 +53,9 @@ class TariffList {
 				currentTariff = tariffList.find(tariff => tariff.tariffId === tariffId);
 
 			if(currentTariff) {
-				let curUser = await Mongo.syncSelect(user, CONSTANTS.USERS_COLLECTION),
-					userTariffs = curUser.tariffs || [];
+				let curUser = await Mongo.syncSelect(user, CONSTANTS.USERS_COLLECTION);
+					curUser = curUser[0];
+				let userTariffs = curUser.tariffs || [];
 
 				userTariffs.push(currentTariff);
 
@@ -84,6 +85,20 @@ class TariffList {
 
 		} else {
 			callback(this.getFailureMessage());
+		}
+	}
+
+	async getUsersTariffs(user = {}, callback = (data = {}) => {console.log(data)}) {
+		user = { name: user.name };
+		if(await this.userExists(user)) {
+			let curUser = await Mongo.syncSelect(user, CONSTANTS.USERS_COLLECTION);
+				curUser = curUser[0];
+
+			let userTariffs = curUser.tariffs;
+			callback(this.getSuccessfullyMessage({ data: userTariffs }));
+
+		} else {
+			callback(this.getFailureMessage({ message: 'Пользователь не найден!' }));
 		}
 	}
 
