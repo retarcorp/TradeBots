@@ -39,4 +39,14 @@ router.post('/api/admin/editTariff', (req, res, next) => {
 	});
 });
 
+router.post('/api/user/purchaseTariff', (req, res, next) => {
+	let user = req.cookies.user,
+		tariffId = req.body.id;
+	
+	Tariffs.purchaseTariff(user, tariffId, data => {
+		log(data);
+		res.json(data);
+	});
+});
+
 module.exports = router;

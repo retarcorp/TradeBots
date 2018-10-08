@@ -87,6 +87,7 @@ let Users = {
 				,salt: salt
 				,admin: admin
 				,ordersList: {}
+				,tariffs: []
 				,bots: []
 				,maxBotAmount: 0
 				,binanceAPI: {

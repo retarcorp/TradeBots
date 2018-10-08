@@ -60,10 +60,31 @@ module.exports = class Bot {
 
 	continueTrade(user = this.user) {
 		console.log('continueTrade');
-		for (let _id in this.processes) {
-			if(this.processes[_id] && this.processes[_id].runningProcess) {
-				this.processes[_id] = new Process(this.processes[_id]);
-				this.processes[_id].continueTrade(user);
+		if(this.isManual()) {
+			for (let _id in this.processes) {
+				if(this.processes[_id] && this.processes[_id].runningProcess) {
+					this.processes[_id] = new Process(this.processes[_id]);
+					this.processes[_id].continueTrade(user);
+				}
+			}
+		} else if(this.isAuto()) {
+			let isRunningProcessesExist = false;
+			for (let _id in this.processes) {
+				if(this.processes[_id] && this.processes[_id].runningProcess) {
+					isRunningProcessesExist = true;
+					break;
+				}
+			}
+
+			if(isRunningProcessesExist) {
+				for (let _id in this.processes) {
+					if(this.processes[_id] && this.processes[_id].runningProcess) {
+						this.processes[_id] = new Process(this.processes[_id]);
+						this.processes[_id].continueTrade(user);
+					}
+				}
+			} else {
+				this.startAuto(user, 'continue');
 			}
 		}
 	}
@@ -249,8 +270,8 @@ module.exports = class Bot {
 
 		if(user.binanceAPI.name !== '') {
 			try {
-				key = Crypto.decipher(user.binanceAPI.key,  Crypto.getKey(user.regDate, user.name))
-				secret = Crypto.decipher(user.binanceAPI.secret,  Crypto.getKey(user.regDate, user.name))
+				key = Crypto.decipher(user.binanceAPI.key,  Crypto.getKey(user.regDate, user.name));
+				secret = Crypto.decipher(user.binanceAPI.secret,  Crypto.getKey(user.regDate, user.name));
 			}
 			catch(err) {
 				console.log('ошибка с определением ключей бинанса');
@@ -261,12 +282,12 @@ module.exports = class Bot {
 			this.Client = binanceAPI({
 				apiKey: key,
 				apiSecret: secret
-			})
+			});
 		}
 		else {
 			ret = false;
 		}
-		return ret
+		return ret;
 	}
 	//:: SET FUNC END
 	
@@ -281,8 +302,8 @@ module.exports = class Bot {
 		let ret = false;
 		this.pair.requested.forEach(elem => {
 			if(symbol.indexOf(elem) >= 0) ret = elem;
-		})
-		return ret
+		});
+		return ret;
 	}
 	//:: GET FUNC END
 	
@@ -313,7 +334,7 @@ module.exports = class Bot {
 	}
 	
 	checkForDeactivate(nextStatus) {
-		let bot_status = CONSTANTS.BOT_STATUS
+		let bot_status = CONSTANTS.BOT_STATUS;
 		return (this.status === bot_status.ACTIVE && nextStatus === bot_status.INACTIVE);
 	}
 

@@ -45,11 +45,36 @@ class TariffList {
 		return Object.assign({}, this.FailureMessage, data);
 	}
 
+	async purchaseTariff(user = {}, tariffId = Number(), callback = (data = {}) => {console.log(data)}) {
+		user = { name: user.name };
+		if(await this.userExists(user)) {
+			// user <- currentTariff <- tariffData
+			let tariffList = await this.getTariffList(),
+				currentTariff = tariffList.find(tariff => tariff.tariffId === tariffId);
+
+			if(currentTariff) {
+				let curUser = await Mongo.syncSelect(user, CONSTANTS.USERS_COLLECTION),
+					userTariffs = curUser.tariffs;
+
+				userTariffs.push(currentTariff);
+
+				await Mongo.syncUpdate(user, { tariff: tariff }, CONSTANTS.USERS_COLLECTION);
+				callback(this.getSuccessfullyMessage());
+
+			} else {
+				callback(this.getFailureMessage({ message: 'Выбранный тариф не существует!' }));
+			}
+
+		} else {
+			callback(this.getFailureMessage({ message: 'Пользователь не найден!' }));
+		}
+	}
+
 	async setTariff(admin = {}, tariffData = {}, callback = (data = {}) => {console.log(data)}) {
 		if(await this.authenticationAdmin(admin)) {
 			let newTariff = new Tariff(tariffData);
 
-			if(!(await this.isTariffExist(newTariff))) {
+			if(!(await this.tariffExists(newTariff))) {
 				await Mongo.syncInsert(newTariff, CONSTANTS.TARIFFS_COLLECTION);
 				callback(this.getSuccessfullyMessage());
 			} else {
@@ -66,6 +91,7 @@ class TariffList {
 		// if(await this.authenticationAdmin(admin)) {
 			let tariffList = await Mongo.syncSelect({}, CONSTANTS.TARIFFS_COLLECTION);
 			callback(this.getSuccessfullyMessage({ data: tariffList }));
+			return tariffList;
 		// } else {
 		// 	callback(this.getFailureMessage());
 		// }
@@ -74,7 +100,7 @@ class TariffList {
 	async removeTariff(admin = {}, removedTariff = {}, callback = (data = {}) => {console.log(data)}) {
 		if(await this.authenticationAdmin(admin)) {
 			removedTariff = new Tariff(removedTariff);
-			if(await this.isTariffExist(removedTariff)) {
+			if(await this.tariffExists(removedTariff)) {
 				await Mongo.syncDelete({ tariffId: removedTariff.tariffId }, CONSTANTS.TARIFFS_COLLECTION);
 				callback(this.getSuccessfullyMessage());
 			} else {
@@ -90,8 +116,7 @@ class TariffList {
 			nextTariffData = new Tariff(nextTariffData);
 			await Mongo.syncUpdate({ tariffId: nextTariffData.tariffId }, nextTariffData, CONSTANTS.TARIFFS_COLLECTION);
 			callback(this.getSuccessfullyMessage({ data: nextTariffData }));
-		}	
-		else {
+		} else {
 			callback(this.getFailureMessage());
 		}
 	}
@@ -107,7 +132,13 @@ class TariffList {
 		}
 	}
 
-	async isTariffExist(tariff = {}) {
+	async userExists(user = {}) {
+		user = { name: user.name };
+		let userData = await Mongo.syncSelect(user, CONSTANTS.USERS_COLLECTION);
+		return userData.length;
+	}
+
+	async tariffExists(tariff = {}) {
 		tariff = { title: tariff.title };
 		let tariffsArray = await Mongo.syncSelect(tariff, CONSTANTS.TARIFFS_COLLECTION);
 		return tariffsArray.length;
