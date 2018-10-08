@@ -59,7 +59,7 @@ class TariffList {
 
 				userTariffs.push(currentTariff);
 
-				await Mongo.syncUpdate(user, { tariff: userTariffs }, CONSTANTS.USERS_COLLECTION);
+				await Mongo.syncUpdate(user, { tariffs: userTariffs }, CONSTANTS.USERS_COLLECTION);
 				callback(this.getSuccessfullyMessage());
 
 			} else {
