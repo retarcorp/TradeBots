@@ -54,7 +54,7 @@ class TariffList {
 
 			if(currentTariff) {
 				let curUser = await Mongo.syncSelect(user, CONSTANTS.USERS_COLLECTION),
-					userTariffs = curUser.tariffs;
+					userTariffs = curUser.tariffs || [];
 
 				userTariffs.push(currentTariff);
 
