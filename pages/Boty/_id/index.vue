@@ -452,7 +452,7 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
 }
 
 .bots__log {
-    width: 16rem;
+    width: 100%;
     height: 5rem;
     overflow-x: auto;
     display: flex;
@@ -518,6 +518,7 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
     border: 1px solid #EFEFEF;
     padding: 2rem;
     font-size: 1.5rem;
+    margin-bottom: 1.5rem;
 }
 
 .log-line {

@@ -460,20 +460,22 @@ module.exports = class Process {
 		console.log('----- cancel all orders and sell it');
 		await this._log('Завершение всех ордеров и продажа по рынку.');
 		try{
-			await this.cancelOrders(this.safeOrders);
-			await this.cancelOrder(this.currentOrder.orderId);
-
-			if(this.isOrderSell(this.currentOrder.side)) {
-				let lastPrice = await this.getLastPrice(),
-					qty = this.getQuantity(),
-					newOrder = await this.newSellOrder(lastPrice, CONSTANTS.ORDER_TYPE.MARKET, qty);
+			if(this.safeOrders.length && this.currentOrder.orderId) {
+				await this.cancelOrders(this.safeOrders);
+				await this.cancelOrder(this.currentOrder.orderId);
+	
+				if(this.isOrderSell(this.currentOrder.side)) {
+					let lastPrice = await this.getLastPrice(),
+						qty = this.getQuantity(),
+						newOrder = await this.newSellOrder(lastPrice, CONSTANTS.ORDER_TYPE.MARKET, qty);
+					
+					if(newOrder !== CONSTANTS.DISABLE_FLAG) await this.updateProcess(user);
+					this.orders.push(newOrder);
+				}
 				
-				if(newOrder !== CONSTANTS.DISABLE_FLAG) await this.updateProcess(user);
-				this.orders.push(newOrder);
+				this.orders = await this.updateOrders(this.orders);
+				await this.updateProcess(user);
 			}
-			
-			this.orders = await this.updateOrders(this.orders);
-			await this.updateProcess(user);
 			return {
 				status: 'info',
 				message: 'Все ордера отменены и монеты распроданы по рынку'
@@ -882,7 +884,7 @@ module.exports = class Process {
 	async isError1021(error = new Error('default err')) {  	
 		let code = this.errorCode(error);
 		console.log(code);
-		await this._log('ошибка code:' + code + ', Timestamp for this request is outside of the recvWindow');
+		await this._log('ошибка code:' + code + ', Временная метка для этого запроса находится вне recvWindow');
 		return code === -1021;
 	}
 
@@ -890,7 +892,7 @@ module.exports = class Process {
 	async isError1013(error = new Error('default err')) { 
 		let code = this.errorCode(error);
 		console.log(code);
-		await this._log('ошибка code:' + code + ', MIN_NOTATIAN');
+		await this._log('ошибка code:' + code + ', Количество продоваемых монет ниже минимально-допустимого');
 		return code === -1013;
 	}
 
@@ -898,7 +900,7 @@ module.exports = class Process {
 	async isError2010(error = new Error('default err')) { 
 		let code = this.errorCode(error);
 		console.log(code);
-		await this._log('ошибка code:' + code + ', insufficient balance');
+		await this._log('ошибка code:' + code + ', Недостаточно средств на балансе валюты');
 		return code === -2010;
 	}
 	//:: ERRORS TYPES END
