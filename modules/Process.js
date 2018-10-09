@@ -667,7 +667,7 @@ module.exports = class Process {
 			});
 
 			let checkClient = await this.Client.accountInfo();
-			if(this.isError2014(checkClient)) {
+			if(!checkClient.balances) {
 				if(flag) await this._log('ошибка с определением бинанс ключей!');
 				ret = false;
 			}
@@ -946,9 +946,9 @@ module.exports = class Process {
 	// Неверные бинанс ключи
 	async isError2014(error = new Error('default err')) {
 		let code = this.errorCode(error);
-		console.log(code);
+		// console.log(code);
 		// await this._log('ошибка code:' + code + ', Неверные бинанс ключи');
-		return code === -2014;
+		return code === -2014
 	}
 	//:: ERRORS TYPES END
 
