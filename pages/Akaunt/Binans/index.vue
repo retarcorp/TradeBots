@@ -24,7 +24,6 @@
                         <button v-if="!isSaved" @click.prevent="onSettingsSave" class="button button--success">Сохранить</button>
                         <button v-else @click.prevent="isSaved = false" class="button button--success">Изменить</button>
                         <button @click.prevent="onSettingsDelete" class="button button--danger">Удалить</button>
-
                     </div>
                 </div>
             </form>
@@ -53,13 +52,13 @@
             onSettingsSave() {
                 this.$store.commit('setSpiner', true);
                 this.$store.dispatch('setBinanceAPI', this.binance);
+                this.$router.push('/Akaunt');
             },
             onSettingsDelete() {
-                this.isActive = true;
                 this.$store.dispatch('deleteBinanceAPI')
                 this.binance = {}
                 this.isSaved = true;
-                this.isActive = false;
+                this.$router.push('/Akaunt');
             }
         },
         created() {
