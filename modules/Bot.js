@@ -492,7 +492,6 @@ module.exports = class Bot {
 			try {
 				if(processId === this.ALL) {	
 					console.log("---------------------THIS ALL");
-					console.log(this.processes)
 					for (let _id in this.processes) {
 						if(this.processes[_id].runningProcess) {
 							await this.processes[_id].cancelAllOrders(user);

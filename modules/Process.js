@@ -71,6 +71,9 @@ module.exports = class Process {
 			let qty = this.setQuantity(null, Number(newBuyOrder.origQty));
 			let price = Number(newBuyOrder.price);
 
+			while(this.isFreeze()) {
+				sleep(CONSTANTS.TIMEOUT);
+			};
 			this.botSettings.firstBuyPrice = price;
 			let profitPrice = this.getProfitPrice(price);
 			let newSellOrder = await this.newSellOrder(profitPrice, CONSTANTS.ORDER_TYPE.LIMIT, qty);
@@ -108,21 +111,21 @@ module.exports = class Process {
 			this.currentOrder = await this.getOrder(this.currentOrder.orderId);
 			let currentOrderStatus = this.currentOrder.status;
 			
-			if(this.checkFilling(currentOrderStatus) && !Number(this.freeze) && !Number(this.preFreeze)) {
+			if(this.checkFilling(currentOrderStatus) && !this.isFreeze()) {
 				await this.disableProcess('Процесс удачно завершён.', CONSTANTS.CONTINUE_FLAG);
 				await this.updateProcess(user);
 				if(this.status === CONSTANTS.BOT_STATUS.ACTIVE && (this.isManual() || this.checkSignalStatus()) ) this.startTrade(user);
 			}
-			else if(this.checkFailing(currentOrderStatus) && !Number(this.freeze) && !Number(this.preFreeze)) {
+			else if(this.checkFailing(currentOrderStatus) && !this.isFreeze()) {
 				await this.disableProcess('Процесс завершен, причина - выключение бота или ошибка.', CONSTANTS.CONTINUE_FLAG);
 				await this.updateProcess(user);
 				if(this.status === CONSTANTS.BOT_STATUS.ACTIVE && (this.isManual() || this.checkSignalStatus()) ) this.startTrade(user);
 			}
 			else {
-				if(this.freeze === CONSTANTS.BOT_FREEZE_STATUS.INACTIVE) {
+				// if(this.freeze === CONSTANTS.BOT_FREEZE_STATUS.INACTIVE) {
 					await this.process(user);
 					this.orders = await this.updateOrders(this.orders);
-				}
+				// }
 				if(this.status === CONSTANTS.BOT_STATUS.ACTIVE) {
 					this.checkFreezeStatus(user);
 				}
@@ -130,8 +133,10 @@ module.exports = class Process {
 					if(this.currentOrder.orderId) {
 						console.log('------ wait for disabling bot');
 						this.checkFreezeStatus(user);
-					}
-					else {
+					} else if(this.isFreeze()) {
+						await this._log('Ожидание разморозки бота');
+						this.checkFreezeStatus(user);
+					} else {
 						console.log('----- bot is disabled');
 						await this.disableProcess('нажали выкл -> бот завершил работу -> выключаем бота');
 					}
@@ -142,50 +147,64 @@ module.exports = class Process {
 	}
 
 	nextTradeStep(user = this.user) {
-		setTimeout(() => this.trade(user), CONSTANTS.TIMEOUT);
+		sleep(CONSTANTS.TIMEOUT);
+		this.trade(user);
+		// setTimeout(() => this.trade(user), CONSTANTS.TIMEOUT);
 	}
 
 	async process(user = this.user) {
 		console.log('---- in PROCESS ' + this._id);
 		let orders = this.safeOrders || [],
-		length = orders.length;
+			length = orders.length,
+			nextSafeOrders = [];
+
 		if(length) {
 			await this._log('Проверка состояния ордеров...');
 			console.log('----- checked safeorders');
-			let nextSafeOrders = [];
 			for(let i = 0; i < length; i++) {
+				console.log(i + 'ордер есть ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
 				try {
 					let order = await this.getOrder(orders[i].orderId);
 					this.botSettings.quantityOfActiveSafeOrders --;
 
 					if(this.checkFilling(order.status)) {
+						console.log('ордер ФИЛИНГ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
 						await this.cancelOrder(this.currentOrder.orderId);
 						this.recountInitialOrder(order);
 						this.recountQuantity(order.origQty);
 
 						let newProfitPrice = this.recountProfitPrice(order),
-						newSellOrder = await this.newSellOrder(newProfitPrice, CONSTANTS.ORDER_TYPE.LIMIT, this.getQuantity());
+							newSellOrder = await this.newSellOrder(newProfitPrice, CONSTANTS.ORDER_TYPE.LIMIT, this.getQuantity());
 
 						if(newSellOrder !== CONSTANTS.DISABLE_FLAG) await this.updateProcess(user);
-						let newSafeOrder = await this.createSafeOrder(null);
 
 						this.currentOrder = newSellOrder;
 						this.orders.push(this.currentOrder);
 
-						if(newSafeOrder.orderId) {
-							this.orders.push(newSafeOrder);
-							nextSafeOrders.push(newSafeOrder);
-						}
-					}
-					else if(this.checkCanceling(order.status)) {
-						let newSafeOrder = await this.createSafeOrder(null);
+						if(!this.isFreeze()) {
+							console.log('ордер ФИЛИНГ НЕ ФРИЗ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
+							let newSafeOrder = await this.createSafeOrder(null);
 
-						if(newSafeOrder.orderId) {
-							this.orders.push(newSafeOrder);
-							nextSafeOrders.push(newSafeOrder);
+							if(newSafeOrder.orderId) {
+								this.orders.push(newSafeOrder);
+								nextSafeOrders.push(newSafeOrder);
+							}
+						}
+
+					} else if(this.checkCanceling(order.status)) {
+						console.log('ордер КАНСЕЛ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
+						if(!this.isFreeze()) {
+							console.log('ордер КАНСЕЛ НЕ ФРИЗ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
+							let newSafeOrder = await this.createSafeOrder(null);
+
+							if(newSafeOrder.orderId) {
+								this.orders.push(newSafeOrder);
+								nextSafeOrders.push(newSafeOrder);
+							}
 						}
 					}
 					else {
+						console.log('ордер ПРОСТО ЕСЛЕ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
 						nextSafeOrders.push(order);
 					}
 				}
@@ -194,8 +213,22 @@ module.exports = class Process {
 				}
 			}
 			this.safeOrders = nextSafeOrders;
-		}
-		else {
+
+		} else if(this.isFreeze() && !this.isPreFreeze()) {
+			console.log('ТИП ВРОДЕ НИХУЯ ДЕЛАТЬ НЕ НАДО ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
+			//тип вроде нихуя делать не надо
+		} else if(!this.isFreeze() && this.isPreFreeze()) {
+			//тип надо выставить некст сейв ордер, если еще можно
+			console.log('ВЫСТАВЛЯЕМ НОВЫЙ СЕЙВ ОРДЕР ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
+			let newSafeOrder = await this.createSafeOrder();
+
+			if(newSafeOrder.orderId) {
+				this.orders.push(newSafeOrder);
+				nextSafeOrders.push(newSafeOrder);
+			}
+			this.safeOrders = nextSafeOrders;
+
+		} else {
 			console.log('----- checked stoploss');
 			let price = await this.getLastPrice(),
 				stopPrice = this.getStopPrice();
@@ -351,7 +384,7 @@ module.exports = class Process {
 		return safeOrders;
 	}
 
-	async createSafeOrder(price = 0, quantity = 0) {
+	async createSafeOrder(price = this.botSettings.lastSafeOrderPrice, quantity = 0) {
 		console.log('---! createSafeOrder');
 		await this._log(`новый страховочный ордер (price - ${price}, qty - ${quantity})`);
 		price = Number(price);
@@ -377,6 +410,7 @@ module.exports = class Process {
 
 			try {
 				newOrder = await this.newBuyOrder(newPrice, CONSTANTS.ORDER_TYPE.LIMIT, qty);
+				this.botSettings.lastSafeOrderPrice = Number(newOrder.price);
 			}
 			catch(error) {
 				await this._log(error);
@@ -949,21 +983,29 @@ module.exports = class Process {
 		} else return false;
 	}
 
+	isFreeze() {
+		return this.freeze === CONSTANTS.BOT_FREEZE_STATUS.ACTIVE;
+	}
+
+	isPreFreeze() {
+		return this.preFreeze === CONSTANTS.BOT_FREEZE_STATUS.ACTIVE;
+	}
+
 	async checkFreezeStatus(user = this.user) {
 		const activeF = CONSTANTS.BOT_FREEZE_STATUS.ACTIVE,
 			inactiveF = CONSTANTS.BOT_FREEZE_STATUS.INACTIVE;
-		if(this.freeze === activeF && this.preFreeze === inactiveF) {
-			await this.freezeProcess(user);
+		// if(this.freeze === activeF && this.preFreeze === inactiveF) {
+		// 	await this.freezeProcess(user);
+		// 	this.nextTradeStep(user);
+		// }
+		// else if(this.freeze === inactiveF && this.preFreeze === activeF) {
+		// 	await this.unfreezeProcess(user);
+		// 	this.nextTradeStep(user);
+		// }
+		// else {
+		// 	console.warn('----- general trade');
 			this.nextTradeStep(user);
-		}
-		else if(this.freeze === inactiveF && this.preFreeze === activeF) {
-			await this.unfreezeProcess(user);
-			this.nextTradeStep(user);
-		}
-		else {
-			console.warn('----- general trade');
-			this.nextTradeStep(user);
-		}
+		// }
 	}
 	//:: CHECK FUNC END
 }
