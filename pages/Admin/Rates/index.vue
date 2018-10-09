@@ -10,8 +10,10 @@
             <div class="modal-wrapper__content">
                 <span class="close" @click='closePopup'>&times;</span>
                 <p>Вы действительно желаете удалить данный тариф?</p>
-                <input type="button" value="Удалить" @click='confirmDeleteTariff'>
-                <input type="button" value="Отмена" @click='closePopup'>
+                <div>
+                    <input type="button" value="Удалить" class='button confirm' @click='confirmDeleteTariff'>
+                    <input type="button" value="Отмена" class='button closeStatus' @click='closePopup'>
+                </div>
             </div>
         </div>
         <div class="row">
@@ -117,27 +119,37 @@ import tariffElement from '~/components/TariffElement';
 </script>
 <style>
 .modal-wrapper {
-    position: fixed; /* Stay in place */
-    z-index: 1; /* Sit on top */
+    position: fixed; 
+    z-index: 1; 
     left: 0;
     top: 0;
-    width: 100%; /* Full width */
-    height: 100%; /* Full height */
-    overflow: auto; /* Enable scroll if needed */
-    background-color: rgb(0,0,0); /* Fallback color */
-    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+    width: 100%; 
+    height: 100%; 
+    overflow: auto; 
+    background-color: rgb(0,0,0); 
+    background-color: rgba(0,0,0,0.4); 
 }
 
-/* Modal Content/Box */
 .modal-wrapper__content {
     background-color: #fefefe;
-    margin: 15% auto; /* 15% from the top and centered */
+    margin: 15% auto; 
     padding: 20px;
     border: 1px solid #888;
-    width: 80%; /* Could be more or less, depending on screen size */
+    width: 80%; 
 }
 
-/* The Close Button */
+.modal-wrapper__content div {
+    margin-top: 2rem;
+}
+
+.confirm {
+    margin-right: 2rem; 
+}
+
+.confirm:hover, .closeStatus:hover {
+    background-color: #888;
+}
+
 .close {
     color: #aaa;
     float: right;

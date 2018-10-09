@@ -11,6 +11,7 @@ module.exports = class Process {
 	constructor({
 		_id = uniqid(PRC),
 		symbol = '',
+		signal = {},
 		runningProcess = true,
 		status = CONSTANTS.BOT_STATUS.INACTIVE,
 		state = CONSTANTS.BOT_STATE.MANUAL,
@@ -30,6 +31,7 @@ module.exports = class Process {
 	} = {}) {
 		this._id = this.JSONclone(_id);
 		this.symbol = this.JSONclone(symbol);
+		this.signal = this.JSONclone(signal);
 		this.runningProcess = this.JSONclone(runningProcess);
 		this.state = this.JSONclone(state);
 		this.status = this.JSONclone(status);
@@ -109,12 +111,12 @@ module.exports = class Process {
 			if(this.checkFilling(currentOrderStatus) && !Number(this.freeze) && !Number(this.preFreeze)) {
 				await this.disableProcess('Процесс удачно завершён.', CONSTANTS.CONTINUE_FLAG);
 				await this.updateProcess(user);
-				if(this.status === CONSTANTS.BOT_STATUS.ACTIVE && this.isManual()) this.startTrade(user);
+				if(this.status === CONSTANTS.BOT_STATUS.ACTIVE && (this.isManual() || this.checkSignalStatus()) ) this.startTrade(user);
 			}
 			else if(this.checkFailing(currentOrderStatus) && !Number(this.freeze) && !Number(this.preFreeze)) {
 				await this.disableProcess('Процесс завершен, причина - выключение бота или ошибка.', CONSTANTS.CONTINUE_FLAG);
 				await this.updateProcess(user);
-				if(this.status === CONSTANTS.BOT_STATUS.ACTIVE && this.isManual()) this.startTrade(user);
+				if(this.status === CONSTANTS.BOT_STATUS.ACTIVE && (this.isManual() || this.checkSignalStatus()) ) this.startTrade(user);
 			}
 			else {
 				if(this.freeze === CONSTANTS.BOT_FREEZE_STATUS.INACTIVE) {
@@ -718,7 +720,7 @@ module.exports = class Process {
 			});
 		}
 		catch(error) {
-			if(await this.isError1021(error)) order = await this.getOrder(orderId);
+			if(await this.isError1021(error)) return await this.getOrder(orderId);
 		}
 		return new Order(order);
 	}
@@ -847,17 +849,12 @@ module.exports = class Process {
 
 	async updateOrders(orders = []) {
 		console.log('------- updateOrders');
-		let pair = this.getSymbol(),
-			nextOrders = [],
+		let nextOrders = [],
 			len = orders.length;
 		for(let i = 0; i < len; i++) {
 			try{
 				if(!orders[i].isUpdate) {
-					let orderData = await this.Client.getOrder({
-						symbol: pair,
-						orderId: orders[i].orderId
-					});
-					let order = new Order(orderData);
+					let order = await this.getOrder(orders[i].orderId);
 					if(this.checkFailing(order.status) || this.checkFilling(order.status)) order.isUpdate = true;
 					nextOrders.push(order);
 				}
@@ -941,6 +938,15 @@ module.exports = class Process {
 			status === CONSTANTS.ORDER_STATUS.PENDING_CANCEL ||
 			status === CONSTANTS.ORDER_STATUS.REJECTED || 
 			status === CONSTANTS.ORDER_STATUS.EXPIRED;
+	}
+
+	async checkSignalStatus() {
+		if(this.isAuto()) {
+			let key = { id: this.signal.id },
+				signal = await Mongo.syncSelect(key, CONSTANTS.TRADING_SIGNALS_COLLECTION);
+	
+			return ( signal && ( signal.rating === signal.checkRating || (signal.checkRating === CONSTANTS.TRANSACTION_TERMS.BUY && signal.rating === CONSTANTS.TRANSACTION_TERMS.STRONG_BUY) ));
+		} else return false;
 	}
 
 	async checkFreezeStatus(user = this.user) {

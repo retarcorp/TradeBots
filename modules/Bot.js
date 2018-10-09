@@ -12,7 +12,6 @@ const md5 = require('md5');
 const uniqid = require('uniqid');
 
 const Process = require('./Process');
-
 const CONSTANTS = require('../constants');
 const BT = CONSTANTS.BT;
 
@@ -235,7 +234,8 @@ module.exports = class Bot {
 							botID: this.botID,
 							user: user,
 							state: this.state,
-							status: this.status
+							status: this.status,
+							signal: signal
 						},
 						newProcess = new Process(resObj);
 					
@@ -342,7 +342,7 @@ module.exports = class Bot {
 		let ret = true;
 
 		for (let _id in this.processes) {
-			if(this.processes[_id].symbol === signal.symbol) {
+			if(this.processes[_id].symbol === signal.symbol/* && this.processes[_id].runningProcess*/) {
 				ret = false;
 				break;
 			}

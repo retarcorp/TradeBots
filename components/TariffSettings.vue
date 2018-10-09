@@ -58,15 +58,17 @@
             changeStatus(event) {
                 if( event.target.classList.contains('modal-wrapper') ) {
                     this.$emit('changeStatus', false);
-                    this.tarif_name = '';
-                    this.tarif_price = '';
-                    this.bots_maxCount = '';
-                    this.termOfUse = '';
+                    this.clearFields();
                 }
+            },
+            clearFields() {
+                this.tarif_name = '';
+                this.tarif_price = '';
+                this.bots_maxCount = '';
+                this.termOfUse = '';
             },
             onSaveTariff() {
                 if( this.status === 'add' ) {
-                    console.log(this.curTariff.title)
                     this.$axios.post('/api/admin/setTariff', {
                         title: this.curTariff.title,
                         price: this.curTariff.price,
@@ -74,13 +76,10 @@
                         termOfUse: this.curTariff.termOfUse
                     })
                         .then(res => {
-                            if( res.status === 200) {
+                            if(res.status === 200) {
                                 this.$store.dispatch('loadTariffList');
                                 this.$emit('changeStatus', false);
-                                this.tarif_name = '';
-                                this.tarif_price = '';
-                                this.bots_maxCount = '';
-                                this.termOfUse = '';
+                                this.clearFields();
                             } else {
                                 console.log(res.status);
                             }
@@ -98,10 +97,7 @@
                             if( res.status === 200) {
                                 this.$store.dispatch('loadTariffList');
                                 this.$emit('changeStatus', false);
-                                this.tarif_name = '';
-                                this.tarif_price = '';
-                                this.bots_maxCount = '';
-                                this.termOfUse = '';
+                                this.clearFields();
                             } else {
                                 console.log(res.status);
                             }
