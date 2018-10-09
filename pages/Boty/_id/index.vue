@@ -127,7 +127,6 @@
 
 
             <div class='bots__log' v-if='Object.keys(this.bot.processes).length'>
-                <span>Кол-во процессов: </span>
                 <ul>
                     <li 
                         v-for='(log, index) in Object.keys(bot.processes)'
@@ -136,7 +135,7 @@
                         :key='index'
                         :class='{active: currentLogId === log}'
                         @click='fillingInfo(log, $event)'
-                    >{{index + 1}}</li>
+                    >{{bot.processes[log].symbol}}</li>
                 </ul>                
             </div>
 
@@ -398,8 +397,8 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
             },
             setBotFreeze() {
                 this.bot.freeze === '0'
-                ? this.bot.freeze = '1'
-                : this.bot.freeze = '0'
+                    ? this.bot.freeze = '1'
+                    : this.bot.freeze = '0'
                 this.$axios
                     .$post('/bots/setFreeze', {
                         botID: this.bot.botID,
@@ -448,7 +447,7 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
 /*    */
 
 .active {
-    font-weight: 600;    
+    background-color: rgb(238, 238, 238);   
 }
 
 .bots__log {
@@ -462,26 +461,28 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
 
 .bots__log span {
     font-weight: 500;
-    font-size: 1.6rem;
-    font-family: inherit;
+    font-size: 2rem;
+    margin-right: 2rem;
 }
 
 .bots__log ul {
     display: flex;
     flex-direction: row;
+    width: 30rem;
+    overflow-x: auto;
 }
 
 .bots__log ul li {
     list-style: none;
     text-decoration: none;
-    /* width:5rem;
-    height: 5rem; */
-    font-size: 3rem;
     cursor: pointer;
+    margin-left: 1.5rem;
+    font-size: 1.6rem;
+    padding: 1rem;
 }
 
-.bots__log ul li {
-    margin-left: 1.5rem;
+.bots__log ul li:first-child {
+    margin-left: 0;
 }
 
 .cur_rating {
