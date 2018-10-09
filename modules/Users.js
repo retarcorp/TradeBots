@@ -183,15 +183,43 @@ let Users = {
 			if(binanceData){
 				binanceData.data = data;
 				data.binanceAPI = new Binance(binanceData);
-			}
-			else data.binanceAPI = {};
-			Mongo.update(user, {binanceAPI: data.binanceAPI}, 'users', (data) => {
-				callback({
-					status: 'ok',
-					data: data.binanceAPI
+			} else data.binanceAPI = {};
+
+			if(binanceData.name) {
+				let c = binanceAPI({
+					apiKey: binanceData.key,
+					apiSecret: binanceData.secret
 				});
-			});
+
+				c.accountInfo().then(data => {
+					if(data.balances) {
+						Mongo.update(user, {binanceAPI: data.binanceAPI}, 'users', (data) => {
+							callback({
+								status: 'ok',
+								data: data.binanceAPI
+							});
+						});
+					}
+					else {
+						callback({status: 'error', message: 'Невалидные ключи!'});
+					}
+				}).catch(err => {
+					callback({status: 'error', message: 'Невалидные ключи!'});
+				});
+			} else {
+				Mongo.update(user, {binanceAPI: data.binanceAPI}, 'users', (data) => {
+					callback({
+						status: 'ok',
+						data: data.binanceAPI,
+						message: 'Невалидные ключи!'
+					});
+				});
+			}
+				
 		});
+
+
+			
 	}
 
 	,getBinance(user, callback) {
@@ -631,16 +659,6 @@ let Users = {
 			status: 'ok',
 			data: statistics
 		}
-	}
-
-	,getClientAPI(user) {
-		let key = Crypto.decipher(user.binanceAPI.key,  Crypto.getKey(user.regDate, user.name))
-		let secret = Crypto.decipher(user.binanceAPI.secret,  Crypto.getKey(user.regDate, user.name))
-
-		return binanceAPI({
-			apiKey: key,
-			apiSecret: secret
-		})
 	}
 
 	,getClientStatistics(user, callback) {

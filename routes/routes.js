@@ -15,6 +15,7 @@ const Mongo = require('../modules/Mongo');
 const url = require('url');
 const qrs = require('querystring');
 const Tariffs = require('../modules/Tariffs');
+const binanceAPI = require('binance-api-node').default;
 // const uniqid = require('uniqid');
 
 router.use(account);
@@ -30,6 +31,8 @@ router.use(userActivation);
 
 router.get('/test', (req, res, next) => {
 	const query = qrs.parse(url.parse(req.url).query);
+	
+
 	res.send(query);
 	// let admin = req.cookies.admin;
 	// Tariffs.setTariff(admin, {title: 'ЯЯЯ'}, data => res.json(data));

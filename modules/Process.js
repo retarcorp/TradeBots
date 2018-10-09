@@ -63,37 +63,38 @@ module.exports = class Process {
 
 	async startTrade(user) {
 		await this._log('Начало нового цикла торговли.');
-		this.setClient(user);
-		this.currentOrder = {};
-
-		let newBuyOrder = await this.firstBuyOrder(user);
-		if(newBuyOrder.orderId) {
-			let qty = this.setQuantity(null, Number(newBuyOrder.origQty));
-			let price = Number(newBuyOrder.price);
-
-			while(this.isFreeze()) {
-				sleep(CONSTANTS.TIMEOUT);
-			};
-			this.botSettings.firstBuyPrice = price;
-			let profitPrice = this.getProfitPrice(price);
-			let newSellOrder = await this.newSellOrder(profitPrice, CONSTANTS.ORDER_TYPE.LIMIT, qty);
-			if(newSellOrder !== CONSTANTS.DISABLE_FLAG) await this.updateProcess(user);
-			// if(this.status === CONSTANTS.BOT_STATUS.ACTIVE) {
-				this.currentOrder = newSellOrder;
-				this.orders.push(newSellOrder);
-
-				let safeOrders = await this.createSafeOrders(price, qty);
-				this.safeOrders.push(...safeOrders);
-				this.orders.push(...safeOrders);
-
-				this.trade(user)
-					.catch(err => console.log(err));
-			// }
-		}
-		else {
-			await this.disableProcess('Неуспешная покупка начального ордера.', CONSTANTS.CONTINUE_FLAG)
-			await this.updateProcess(user) 
-			if(this.status === CONSTANTS.BOT_STATUS.ACTIVE) this.startTrade(user)
+		if(this.setClient(user)) {
+			this.currentOrder = {};
+	
+			let newBuyOrder = await this.firstBuyOrder(user);
+			if(newBuyOrder.orderId) {
+				let qty = this.setQuantity(null, Number(newBuyOrder.origQty));
+				let price = Number(newBuyOrder.price);
+	
+				while(this.isFreeze()) {
+					sleep(CONSTANTS.TIMEOUT);
+				};
+				this.botSettings.firstBuyPrice = price;
+				let profitPrice = this.getProfitPrice(price);
+				let newSellOrder = await this.newSellOrder(profitPrice, CONSTANTS.ORDER_TYPE.LIMIT, qty);
+				if(newSellOrder !== CONSTANTS.DISABLE_FLAG) await this.updateProcess(user);
+				// if(this.status === CONSTANTS.BOT_STATUS.ACTIVE) {
+					this.currentOrder = newSellOrder;
+					this.orders.push(newSellOrder);
+	
+					let safeOrders = await this.createSafeOrders(price, qty);
+					this.safeOrders.push(...safeOrders);
+					this.orders.push(...safeOrders);
+	
+					this.trade(user)
+						.catch(err => console.log(err));
+				// }
+			}
+			else {
+				await this.disableProcess('Неуспешная покупка начального ордера.', CONSTANTS.CONTINUE_FLAG)
+				await this.updateProcess(user) 
+				if(this.status === CONSTANTS.BOT_STATUS.ACTIVE) this.startTrade(user)
+			}
 		}
 	}
 
@@ -663,10 +664,17 @@ module.exports = class Process {
 			this.Client = binanceAPI({
 				apiKey: key,
 				apiSecret: secret
-			})
+			});
+
+			let checkClient = await this.Client.accountInfo();
+			if(this.isError2014(checkClient)) {
+				await this._log('ошибка с определением бинанс ключей!');
+				ret = false;
+			}
 		}
 		else {
 			await this._log('ошибка с определением бинанс ключей!');
+			ret = false;
 		}
 		return ret
 	}
@@ -915,7 +923,7 @@ module.exports = class Process {
 	async isError1021(error = new Error('default err')) {  	
 		let code = this.errorCode(error);
 		console.log(code);
-		await this._log('ошибка code:' + code + ', Временная метка для этого запроса находится вне recvWindow');
+		// await this._log('ошибка code:' + code + ', Временная метка для этого запроса находится вне recvWindow');
 		return code === -1021;
 	}
 
@@ -923,7 +931,7 @@ module.exports = class Process {
 	async isError1013(error = new Error('default err')) { 
 		let code = this.errorCode(error);
 		console.log(code);
-		await this._log('ошибка code:' + code + ', Количество продоваемых монет ниже минимально-допустимого');
+		// await this._log('ошибка code:' + code + ', Количество продоваемых монет ниже минимально-допустимого');
 		return code === -1013;
 	}
 
@@ -931,8 +939,16 @@ module.exports = class Process {
 	async isError2010(error = new Error('default err')) { 
 		let code = this.errorCode(error);
 		console.log(code);
-		await this._log('ошибка code:' + code + ', Недостаточно средств на балансе валюты');
+		// await this._log('ошибка code:' + code + ', Недостаточно средств на балансе валюты');
 		return code === -2010;
+	}
+
+	// Неверные бинанс ключи
+	async isError2014(error = new Error('default err')) {
+		let code = this.errorCode(error);
+		console.log(code);
+		// await this._log('ошибка code:' + code + ', Неверные бинанс ключи');
+		return code === -2014;
 	}
 	//:: ERRORS TYPES END
 
