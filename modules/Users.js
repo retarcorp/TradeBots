@@ -47,11 +47,13 @@ let Users = {
 					data = data.map(({
 						name,
 						regDate,
+						maxBotAmount,
 						bots
 					}) => {
 						return {
 							name: name,
 							regDate: regDate,
+							maxBotAmount: maxBotAmount,
 							botsCount: bots.length
 						}
 					})
