@@ -133,6 +133,7 @@
                         :id='index'
                         v-if='bot.processes[log].runningProcess'
                         :key='index'
+                        class="processes_tab"
                         :class='{active: currentLogId === log}'
                         @click='fillingInfo(log, $event)'
                     >{{bot.processes[log].symbol}}</li>
@@ -448,6 +449,11 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
 
 .active {
     background-color: rgb(238, 238, 238);   
+}
+
+.processes_tab {
+    border: solid 1px rgb(238, 238, 238); 
+    border-radius: 1px;
 }
 
 .bots__log {
