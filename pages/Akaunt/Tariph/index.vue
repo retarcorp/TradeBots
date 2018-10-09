@@ -45,17 +45,36 @@
         </div>
     </section> -->
     <section>
-        rates --- {{ rates }}
-        <div v-for="tariff in tariffs" :key="tariff.id">
-            {{ tariff }}
-        </div>
-        <div v-for="rate in rates" :key="rate._id">
-            title --- {{ rate.title }}
-            termOfUse ---- {{ rate.termOfUse }}
-            maxBotAmount --- {{ rate.maxBotAmount }}
-            price --- {{ rate.price }}
-            <button @click="onSelectTarif(rate.tariffId)">Select</button>
-        </div>
+        <h2>Выбранные тарифы</h2>
+
+        <table class="table">
+            <tr class="table__tr">
+                <th class="table__th">Название</th>
+                <th class="table__th">Цена</th>
+                <th class="table__th">Максимальное количество ботов</th>
+            </tr>
+            <tr v-for="tariff in tariffs" :key="tariff._id" class="table__tr">
+                <td class="table__td">{{ tariff.title }}</td>
+                <td class="table__td">{{ tariff.price }}</td>
+                <td class="table__td">{{ tariff.maxBotAmount }}</td>
+            </tr>
+        </table>
+        <h2>Тарифы на выбор</h2>
+
+        <table class="table">
+            <tr class="table__tr">
+                <th class="table__th">Название</th>
+                <th class="table__th">Цена</th>
+                <th class="table__th">Максимальное количество ботов</th>
+                <th class="table__th"></th>
+            </tr>
+            <tr v-for="rate in rates" :key="rate._id" class="table__tr">
+                <td class="table__td">{{ rate.title }}</td>
+                <td class="table__td">{{ rate.price }}</td>
+                <td class="table__td">{{ rate.maxBotAmount }}</td>
+                <td class="table__td"><button @click="onSelectTarif(rate.tariffId)" class="button button--primary">Выбрать</button></td>
+            </tr>
+        </table>
     </section>
 </template>
 

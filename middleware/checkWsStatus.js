@@ -1,6 +1,12 @@
 export default function ({ store, route, redirect }) {
   console.log(route.path)
+<<<<<<< HEAD
 
+=======
+  if(route.path === '/admin/signin' && ~document.cookie.indexOf('admin')) {
+    redirect('/admin')
+  }
+>>>>>>> origin/design-processes
   if(route.path === '/') {
     redirect('/Boty')
   }
