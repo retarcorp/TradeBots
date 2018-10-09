@@ -24,9 +24,9 @@
   "homepage": "https://github.com/retarcorp/TradeBots#readme",
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.2.0",
-    "@nuxtjs/axios": "^5.3.1",
+    "@nuxtjs/axios": "^5.3.3",
     "assert": "^1.4.1",
-    "binance-api-node": "^0.8.3",
+    "binance-api-node": "^0.8.5",
     "body-parser": "^1.18.3",
     "cookie-parser": "^1.4.3",
     "cors": "^2.8.4",
