@@ -43,7 +43,7 @@ module.exports = class Process {
 		this.freezeOrders = this.JSONclone(freezeOrders);
 		this.botSettings = this.JSONclone(botSettings);
 		this.log = this.JSONclone(log);
-		if(user.name) this.setClient(user);
+		if(user.name) this.setClient(user, true);
 		this.user = user;
 		this.botID = this.JSONclone(botID);
 	}
@@ -644,7 +644,7 @@ module.exports = class Process {
 	}
 	
 	//:: SETTERS FUNC 
-	async setClient(user = this.user) {
+	async setClient(user = this.user, flag = false) {
 		let key = '',
 			secret = '',
 			ret = true;
@@ -656,9 +656,9 @@ module.exports = class Process {
 			}
 			catch(err) {
 				console.log('ошибка с определением ключей бинанса');
-				await this._log('ошибка с определением бинанс ключей!');
+				if(flag) await this._log('ошибка с определением бинанс ключей!');
 				key = '';
-				secret = '';
+				secret = ''; 
 				ret = false;
 			}
 			this.Client = binanceAPI({
@@ -668,12 +668,12 @@ module.exports = class Process {
 
 			let checkClient = await this.Client.accountInfo();
 			if(this.isError2014(checkClient)) {
-				await this._log('ошибка с определением бинанс ключей!');
+				if(flag) await this._log('ошибка с определением бинанс ключей!');
 				ret = false;
 			}
 		}
 		else {
-			await this._log('ошибка с определением бинанс ключей!');
+			if(flag) await this._log('ошибка с определением бинанс ключей!');
 			ret = false;
 		}
 		return ret

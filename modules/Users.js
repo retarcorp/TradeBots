@@ -191,8 +191,8 @@ let Users = {
 					apiSecret: binanceData.secret
 				});
 
-				c.accountInfo().then(data => {
-					if(data.balances) {
+				c.accountInfo().then(d => {
+					if(d.balances) {
 						Mongo.update(user, {binanceAPI: data.binanceAPI}, 'users', (data) => {
 							callback({
 								status: 'ok',
@@ -227,7 +227,7 @@ let Users = {
 			if(data.length) {
 				data = data[0];
 				let retData = {};
-				if(data.binanceAPI.key) {
+				if(data.binanceAPI && data.binanceAPI.key) {
 					retData = {
 						name: data.binanceAPI.name,
 						key: Crypto.decipher(data.binanceAPI.key, Crypto.getKey(data.regDate, data.name)),
