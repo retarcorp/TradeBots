@@ -125,6 +125,8 @@ const CONSTANTS = {
 
 	TARIFFS_COLLECTION: 'tariffs',
 
-	HISTORY_LOG: 'historyLog'
+	HISTORY_LOG: 'historyLog',
+
+	STATISTICS_COLLECTION: 'statistics'
 }
 module.exports = CONSTANTS
