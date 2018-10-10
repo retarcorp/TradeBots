@@ -5,8 +5,10 @@ const Crypto = require('./Crypto')
 const CONSTANTS = require('../constants')
 const Binance = require('./Binance')
 const Mailer = require('./Mailer').init();
+const uniqid = require('uniqid');
 const Templates = require('./Templates');
 let binanceAPI = require('binance-api-node').default;
+const US = CONSTANTS.US;
 
 let Users = {
 
@@ -77,6 +79,7 @@ let Users = {
 	,create(user, collection, callback) {
 		let salt = md5(this.genSalt()),
 			name = user.name,
+			userId = uniqid(US),
 			password = md5(salt + user.password + salt),
 			admin = (user.admin) ? true : false,
 			regDate = Date.now(),
@@ -85,6 +88,7 @@ let Users = {
 
 			User = {
 				name: name
+				,userId: userId
 				,regDate: regDate
 				,expirationDate: expirationDate
 				,password: password
@@ -359,26 +363,36 @@ let Users = {
 		}
 
 		,updateBot(user, botData, callback) {
+			// if(callback) callback({
+			// 	status: 'error',
+			// 	message: 'на данный момент этот функционал не работает.'
+			// })
 			Mongo.select(user, 'users', (data) => {
-				data = data[0];
-				let tempBot = new Bot(botData);
-				const index = data.bots.findIndex(bot => bot.botID === tempBot.botID);
-
-				const newIndex = this.Bots.findIndex(bot => bot.botID === tempBot.botID)
-				this.Bots[newIndex] = tempBot;
-				let changeObj = {},
-					change = `bots.${index}`;
-				
-				changeObj[change] = tempBot;
-
-				Mongo.update(user, changeObj, 'users', (data) => {
-					let res = {
-						status: 'ok',
-						message: `Бот ${tempBot.botID} успешно обновлен`,
-						data: tempBot
-					};
-					if(callback) callback(res);
-				});
+				if(data.length) {
+					data = data[0];
+					let tempBot = new Bot(botData);
+					const index = data.bots.findIndex(bot => bot.botID === tempBot.botID);
+					const newIndex = this.Bots.findIndex(bot => bot.botID === tempBot.botID);
+	
+					this.Bots[newIndex].updateLocalBot(tempBot, d => {
+						let changeObj = {},
+							change = `bots.${index}`;
+						
+						changeObj[change] = tempBot;
+						if(d.status === 'ok') {
+							Mongo.update(user, changeObj, 'users', (data) => {
+								if(callback) callback(d);
+							});
+						} else {
+							if(callback) callback(d);
+						}
+					});
+				} else {
+					callback({
+						status: 'error',
+						message: 'Пользователь не найден. Невозможно обновить бота.'
+					});
+				}
 			});
 		}
 
@@ -435,6 +449,7 @@ let Users = {
 		}
 
 		,cancelAllOrders(user, reqData, callback) {
+			console.log('CANCEL ALL ORDERS ______________________________________________________________________')
 			try {
 				Mongo.select(user, 'users', (data) => {
 					data = data[0]

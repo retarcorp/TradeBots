@@ -86,6 +86,7 @@ module.exports = class Bot {
 				this.startAuto(user, 'continue');
 			}
 		}
+		this.updateUserOrdersList(user);
 	}
 
 	async changeStatus(nextStatus, user = this.user) {
@@ -117,7 +118,12 @@ module.exports = class Bot {
 		} else if(this.checkForDeactivate(nextStatus)) {
 			this.status = nextStatus;
 			for (let _id in this.processes) {
-				this.processes[_id].deactivateProcess();
+				if(this.processes[_id].deactivateProcess) {
+					this.processes[_id].deactivateProcess();
+				} else {
+					this.processes[_id] = new Process(this.processes[_id]);
+					this.processes[_id].deactivateProcess();
+				}
 			}
 			status = 'info';
 			message = "Бот перестанет работать после завершения всех рабочих циклов.";
@@ -194,8 +200,9 @@ module.exports = class Bot {
 			},
 				newProcess = new Process(resObj);
 			for (let _id in this.processes) {
+				console.log(_id)
 				console.log(this.processes[_id].setRunnigProcess)
-				if(this.processes[_id].runningProcess) {
+				if(this.processes[_id].setRunnigProcess && this.processes[_id].runningProcess) {
 					this.processes[_id].setRunnigProcess();
 				}
 			}
@@ -304,6 +311,14 @@ module.exports = class Bot {
 		});
 		return ret;
 	}
+
+	getAllOrders() {
+		let allOrders = [];
+		for (let _id in this.processes) {
+			this.processes[_id].orders.forEach(order => allOrders.push(order));
+		}
+		return allOrders;
+	}
 	//:: GET FUNC END
 	
 	//************************************************************************************************//
@@ -395,6 +410,41 @@ module.exports = class Bot {
 		}
 		return ret.signal;
 	}
+
+	updateLocalBot(next = this, callback = (data = {}) => {}) {
+		try {
+			this.title = next.title;
+			this.pair = next.pair;
+			this.botSettings.initialOrder = next.botSettings.initialOrder;
+			this.botSettings.safeOrder = next.botSettings.safeOrder;
+			this.botSettings.stopLoss = next.botSettings.stopLoss;
+			this.botSettings.takeProfit = next.botSettings.takeProfit;
+			this.botSettings.tradingSignals = next.botSettings.tradingSignals;
+			this.botSettings.maxOpenSafetyOrders = next.botSettings.maxOpenSafetyOrders;
+			this.botSettings.deviation = next.botSettings.deviation;
+	
+			for (let _id in this.processes) {
+				if(this.processes[_id].updateProcess) {
+					this.processes[_id].updateLocalProcess(this, this.getPair());
+				}
+			}
+	
+			callback({
+				status: 'ok',
+				message: `Бот ${this.botID} успешно обновлен. Обновления вступят в силу после завершения цикла всех процессов.`,
+				data: this
+			});
+		} catch(err) {
+			callback({
+				status: 'error',
+				message: `Ошибка при обновлении бота ${this.botID}.`,
+				data: {
+					bot: this,
+					error: err
+				}
+			});
+		}
+	}
 	//:: CHECK FUNC END
 
 	//************************************************************************************************//
@@ -420,7 +470,7 @@ module.exports = class Bot {
 	async updateBot(user = this.user, message = '') {
 		console.log('[ sync upd ');
 		user = { name: user.name };
-		// await this.syncUpdateUserOrdersList(user);
+		await this.updateUserOrdersList(user);
 		let data = await Mongo.syncSelect(user, 'users');
 		data = data[0];
 		let tempBot = new Bot(this);
@@ -434,6 +484,29 @@ module.exports = class Bot {
 
 		await Mongo.syncUpdate(user, changeObj, 'users');
 		console.log('] sync upd ');
+	}
+
+	async updateUserOrdersList(user = this.user) {
+		console.log('[ syncUpdateUserOrdersList');
+		user = { name: user.name };
+		let data = await Mongo.syncSelect(user, 'users');
+
+		if(data.length) {
+			data = data[0];
+			let ordersList = data.ordersList;
+
+			!ordersList && (ordersList = {});
+
+			let _id = `${this.botID}`;
+
+			!ordersList[_id] && (ordersList[_id] = []);
+
+			ordersList[_id] = this.getAllOrders();
+
+			await Mongo.syncUpdate(user, {ordersList:  ordersList}, 'users');
+		}
+
+		console.log('] syncUpdateUserOrdersList')
 	}
 	//:: UPDATE FUNC END
 	
@@ -479,21 +552,17 @@ module.exports = class Bot {
 
 	disableBot(user = this.user) {
 		for (let _id in this.processes) {
-			// this.processes[_id] = new Process(this.processes[_id]);
-			this.processes[_id].deactivateProcess();
+			if(this.processes[_id].deactivateProcess) {
+				this.processes[_id].deactivateProcess();
+			} else {
+				this.processes[_id] = new Process(this.processes[_id]);
+				this.processes[_id].deactivateProcess();
+			}
 		}
 		this.status = CONSTANTS.BOT_STATUS.INACTIVE;
 	}
 
 	cancelAllOrders(user = this.user, processId = 0) {
-		console.log()
-		console.log()
-		console.log()
-		console.log(user.name, processId);
-		console.log()
-		console.log()
-		console.log()
-		console.log("---------------------CANCELALLORDERS IN BOT");
 		return new Promise( async (resolve, reject) => {
 			try {
 				if(processId === this.ALL) {	
@@ -501,7 +570,7 @@ module.exports = class Bot {
 					for (let _id in this.processes) {
 						if(this.processes[_id].runningProcess) {
 							await this.processes[_id].cancelAllOrders(user);
-							await this.processes[_id].disableProcess('Все распродано по рынку, бот выключен');
+							await this.processes[_id].disableProcess('Удаление бота.');
 						}
 					}
 					resolve({
@@ -513,7 +582,7 @@ module.exports = class Bot {
 					if(processId && this.processes[processId]) {
 						let res = await this.processes[processId].cancelAllOrders(user);
 						if(res.status !== 'error') {
-							await this.processes[processId].disableProcess('Все распродано по рынку, бот выключен');
+							await this.processes[processId].disableProcess('Нажали на "отменить и продать".', CONSTANTS.CONTINUE_FLAG);
 						}
 						resolve(res);
 					} else {
