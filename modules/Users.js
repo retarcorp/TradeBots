@@ -5,8 +5,10 @@ const Crypto = require('./Crypto')
 const CONSTANTS = require('../constants')
 const Binance = require('./Binance')
 const Mailer = require('./Mailer').init();
+const uniqid = require('uniqid');
 const Templates = require('./Templates');
 let binanceAPI = require('binance-api-node').default;
+const US = CONSTANTS.US;
 
 let Users = {
 
@@ -77,6 +79,7 @@ let Users = {
 	,create(user, collection, callback) {
 		let salt = md5(this.genSalt()),
 			name = user.name,
+			userId = uniqid(US),
 			password = md5(salt + user.password + salt),
 			admin = (user.admin) ? true : false,
 			regDate = Date.now(),
@@ -85,6 +88,7 @@ let Users = {
 
 			User = {
 				name: name
+				,userId: userId
 				,regDate: regDate
 				,expirationDate: expirationDate
 				,password: password
