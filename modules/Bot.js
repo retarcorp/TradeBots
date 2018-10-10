@@ -117,7 +117,12 @@ module.exports = class Bot {
 		} else if(this.checkForDeactivate(nextStatus)) {
 			this.status = nextStatus;
 			for (let _id in this.processes) {
-				this.processes[_id].deactivateProcess();
+				if(this.processes[_id].deactivateProcess) {
+					this.processes[_id].deactivateProcess();
+				} else {
+					this.processes[_id] = new Process(this.processes[_id]);
+					this.processes[_id].deactivateProcess();
+				}
 			}
 			status = 'info';
 			message = "Бот перестанет работать после завершения всех рабочих циклов.";
@@ -417,7 +422,7 @@ module.exports = class Bot {
 	
 			callback({
 				status: 'ok',
-				message: `Бот ${this.botID} успешно обновлен.`,
+				message: `Бот ${this.botID} успешно обновлен. Обновления вступят в силу после завершения цикла всех процессов.`,
 				data: this
 			});
 		} catch(err) {
@@ -515,8 +520,12 @@ module.exports = class Bot {
 
 	disableBot(user = this.user) {
 		for (let _id in this.processes) {
-			// this.processes[_id] = new Process(this.processes[_id]);
-			this.processes[_id].deactivateProcess();
+			if(this.processes[_id].deactivateProcess) {
+				this.processes[_id].deactivateProcess();
+			} else {
+				this.processes[_id] = new Process(this.processes[_id]);
+				this.processes[_id].deactivateProcess();
+			}
 		}
 		this.status = CONSTANTS.BOT_STATUS.INACTIVE;
 	}
@@ -526,10 +535,10 @@ module.exports = class Bot {
 		console.log()
 		console.log()
 		console.log(user, processId);
-		console.log()
-		console.log()
-		console.log()
 		console.log("---------------------CANCELALLORDERS IN BOT");
+		console.log()
+		console.log()
+		console.log()
 		return new Promise( async (resolve, reject) => {
 			try {
 				if(processId === this.ALL) {	
@@ -537,7 +546,7 @@ module.exports = class Bot {
 					for (let _id in this.processes) {
 						if(this.processes[_id].runningProcess) {
 							await this.processes[_id].cancelAllOrders(user);
-							await this.processes[_id].disableProcess('Все распродано по рынку, бот выключен');
+							await this.processes[_id].disableProcess('Удаление бота.');
 						}
 					}
 					resolve({
@@ -549,7 +558,7 @@ module.exports = class Bot {
 					if(processId && this.processes[processId]) {
 						let res = await this.processes[processId].cancelAllOrders(user);
 						if(res.status !== 'error') {
-							await this.processes[processId].disableProcess('Все распродано по рынку, бот выключен');
+							await this.processes[processId].disableProcess('Нажали на "отменить и продать".', CONSTANTS.CONTINUE_FLAG);
 						}
 						resolve(res);
 					} else {

@@ -359,37 +359,37 @@ let Users = {
 		}
 
 		,updateBot(user, botData, callback) {
-			if(callback) callback({
-				status: 'error',
-				message: 'на данный момент этот функционал не работает.'
-			})
-			// Mongo.select(user, 'users', (data) => {
-			// 	if(data.length) {
-			// 		data = data[0];
-			// 		let tempBot = new Bot(botData);
-			// 		const index = data.bots.findIndex(bot => bot.botID === tempBot.botID);
+			// if(callback) callback({
+			// 	status: 'error',
+			// 	message: 'на данный момент этот функционал не работает.'
+			// })
+			Mongo.select(user, 'users', (data) => {
+				if(data.length) {
+					data = data[0];
+					let tempBot = new Bot(botData);
+					const index = data.bots.findIndex(bot => bot.botID === tempBot.botID);
+					const newIndex = this.Bots.findIndex(bot => bot.botID === tempBot.botID);
 	
-			// 		const newIndex = this.Bots.findIndex(bot => bot.botID === tempBot.botID)
-			// 		this.Bots[newIndex].updateLocalBot(tempBot, d => {
-			// 			let changeObj = {},
-			// 				change = `bots.${index}`;
+					this.Bots[newIndex].updateLocalBot(tempBot, d => {
+						let changeObj = {},
+							change = `bots.${index}`;
 						
-			// 			changeObj[change] = tempBot;
-			// 			if(d.status === 'ok') {
-			// 				Mongo.update(user, changeObj, 'users', (data) => {
-			// 					if(callback) callback(d);
-			// 				});
-			// 			} else {
-			// 				if(callback) callback(d);
-			// 			}
-			// 		});
-			// 	} else {
-			// 		callback({
-			// 			status: 'error',
-			// 			message: 'Пользователь не найдет. Невозможно обновить бота.'
-			// 		});
-			// 	}
-			// });
+						changeObj[change] = tempBot;
+						if(d.status === 'ok') {
+							Mongo.update(user, changeObj, 'users', (data) => {
+								if(callback) callback(d);
+							});
+						} else {
+							if(callback) callback(d);
+						}
+					});
+				} else {
+					callback({
+						status: 'error',
+						message: 'Пользователь не найден. Невозможно обновить бота.'
+					});
+				}
+			});
 		}
 
 		,setStatus(user, botData, callback) {
@@ -445,6 +445,7 @@ let Users = {
 		}
 
 		,cancelAllOrders(user, reqData, callback) {
+			console.log('CANCEL ALL ORDERS ______________________________________________________________________')
 			try {
 				Mongo.select(user, 'users', (data) => {
 					data = data[0]
