@@ -132,7 +132,15 @@ module.exports = class Process {
 				}
 				else if(this.status === CONSTANTS.BOT_STATUS.INACTIVE) {
 					if(this.currentOrder.orderId) {
+						console.log();
+						console.log();
+						console.log();
+						console.log();
 						console.log('------ wait for disabling bot');
+						console.log();
+						console.log();
+						console.log();
+						console.log();
 						this.checkFreezeStatus(user);
 					} else if(this.isFreeze()) {
 						await this._log('Ожидание разморозки бота');
@@ -500,7 +508,7 @@ module.exports = class Process {
 		console.log('----- cancel all orders and sell it');
 		await this._log('Завершение всех ордеров и продажа по рынку.');
 		try{
-			if(this.safeOrders.length && this.currentOrder.orderId) {
+			// if(this.safeOrders.length && this.currentOrder.orderId) {
 				await this.cancelOrders(this.safeOrders);
 				await this.cancelOrder(this.currentOrder.orderId);
 	
@@ -515,7 +523,7 @@ module.exports = class Process {
 				
 				this.orders = await this.updateOrders(this.orders);
 				await this.updateProcess(user);
-			}
+			// }
 			return {
 				status: 'info',
 				message: 'Все ордера отменены и монеты распроданы по рынку'
@@ -647,6 +655,12 @@ module.exports = class Process {
 	}
 	
 	//:: SETTERS FUNC 
+	setStatus(nextStatus = '') {
+		if(nextStatus === CONSTANTS.BOT_STATUS.ACTIVE || nextStatus === CONSTANTS.BOT_STATUS.INACTIVE) {
+			this.status = nextStatus;
+		}	
+	}
+
 	async setClient(user = this.user, flag = false) {
 		let key = '',
 			secret = '',

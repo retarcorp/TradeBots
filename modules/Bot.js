@@ -114,26 +114,25 @@ module.exports = class Bot {
 				message = "Ошибка (НЕИЗВЕСТНЫЙ ТИП БОТА)";
 				this.status = CONSTANTS.BOT_STATUS.INACTIVE;
 			}
-		}
-		else if(this.checkForDeactivate(nextStatus)) {
+		} else if(this.checkForDeactivate(nextStatus)) {
 			this.status = nextStatus;
 			for (let _id in this.processes) {
-				console.log(_id);
 				this.processes[_id].deactivateProcess();
-				// console.log(this.processes[_id].status);
-				// console.log(this.processes[_id].deactivateProcess);
-				// this.processes[_id] = new Process(this.processes[_id]);
-				// this.processes[_id].deactivateProcess();
-				// console.log(this.processes[_id].status);
 			}
 			status = 'info';
 			message = "Бот перестанет работать после завершения всех рабочих циклов.";
 			await this.updateBot(user); 
-		}
-		else {
-			this.status = CONSTANTS.BOT_STATUS.INACTIVE;
+		} else if(nextStatus === CONSTANTS.BOT_STATUS.ACTIVE || nextStatus === CONSTANTS.BOT_STATUS.INACTIVE){
+			this.status = nextStatus;
+			for (let _id in this.processes) {
+				this.processes[_id].setStatus(nextStatus);
+			}
+			status = 'ok';
+			// message = "Возможно вы пытаетесь включить бота, который не завершил свой последний цикл.";
+			await this.updateBot(user);
+		} else {
 			status = 'error';
-			message = "Возможно вы пытаетесь включить бота, который не завершил свой последний цикл.";
+			message = `Неверный статус(${nextStatus}).`;
 			await this.updateBot(user);
 		}
 
@@ -487,6 +486,13 @@ module.exports = class Bot {
 	}
 
 	cancelAllOrders(user = this.user, processId = 0) {
+		console.log()
+		console.log()
+		console.log()
+		console.log(user.name, processId);
+		console.log()
+		console.log()
+		console.log()
 		console.log("---------------------CANCELALLORDERS IN BOT");
 		return new Promise( async (resolve, reject) => {
 			try {
