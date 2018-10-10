@@ -106,7 +106,7 @@ module.exports = class Process {
 		}
 	}
 
-	async trade(user = this.user) {
+	async trade(user = this.user, flag = false) {
 		console.log('----------- trade ------------' + this._id);
 		if(this.currentOrder.orderId) {
 			this.currentOrder = await this.getOrder(this.currentOrder.orderId);
@@ -143,8 +143,11 @@ module.exports = class Process {
 					}
 				}
 			}
+		} else if(!flag) {
+			this.currentOrder = this.getSellOrder();
+			this.trade(user, true);
 		}
-		await this.updateProcess(user)
+		await this.updateProcess(user);
 	}
 
 	nextTradeStep(user = this.user) {
@@ -749,6 +752,21 @@ module.exports = class Process {
 
 	getTakeProfit() {
 		return (Number(this.botSettings.takeProfit) + 2 * CONSTANTS.BINANCE_FEE) / 100;
+	}
+
+	getSellOrder() {
+		let orders = this.orders,
+			l = orders.length,
+			order = {};
+
+		for (let i = 0; i < l; i++) {
+			if( this.isOrderSell(orders[i].side) && !orders[i].isUpdate && this.checkProcessing(orders[i].status) ) {
+				order = orders[i];
+				break;
+			}
+		}
+
+		return new Order(order);
 	}
 
 	async getOrder(orderId) {
