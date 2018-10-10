@@ -132,15 +132,7 @@ module.exports = class Process {
 				}
 				else if(this.status === CONSTANTS.BOT_STATUS.INACTIVE) {
 					if(this.currentOrder.orderId) {
-						console.log();
-						console.log();
-						console.log();
-						console.log();
 						console.log('------ wait for disabling bot');
-						console.log();
-						console.log();
-						console.log();
-						console.log();
 						this.checkFreezeStatus(user);
 					} else if(this.isFreeze()) {
 						await this._log('Ожидание разморозки бота');
