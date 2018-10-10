@@ -20,6 +20,7 @@ module.exports = class Process {
 		currentOrder = {},
 		orders = [],
 		safeOrders = [],
+		updateStatus = false,
 		freezeOrders = {
 			safe: [],
 			current: {}
@@ -32,6 +33,7 @@ module.exports = class Process {
 		this._id = this.JSONclone(_id);
 		this.symbol = this.JSONclone(symbol);
 		this.signal = this.JSONclone(signal);
+		this.updateStatus = this.JSONclone(updateStatus);
 		this.runningProcess = this.JSONclone(runningProcess);
 		this.state = this.JSONclone(state);
 		this.status = this.JSONclone(status);
@@ -482,6 +484,7 @@ module.exports = class Process {
 		
 		this.botSettings.quantityOfUsedSafeOrders = 0;
 		this.botSettings.quantityOfActiveSafeOrders = 0;
+		this.updateStatus = false;
 		this.botSettings.currentOrder = this.botSettings.initialOrder;
 		this.botSettings.firstBuyPrice = 0;
 		// this.runningProcess = false;
@@ -876,6 +879,31 @@ module.exports = class Process {
 		} catch(err) {
 			console.log(err);
 		}
+	}
+
+	async updateLocalProcess(next = this, nextSymbol = this.symbol) {
+		this.updateStatus = true;
+
+		while(this.updateStatus) {
+			console.log();
+			console.log();
+			console.log();
+			console.log('           updateProcess');
+			console.log();
+			console.log();
+			sleep(CONSTANTS.SLEEP);
+		}
+		console.log('__________________________________________________')
+		console.log('__________________________________________________')
+
+		this.symbol = nextSymbol;
+		this.botSettings.initialOrder = next.botSettings.initialOrder;
+		this.botSettings.safeOrder = next.botSettings.safeOrder;
+		this.botSettings.stopLoss = next.botSettings.stopLoss;
+		this.botSettings.takeProfit = next.botSettings.takeProfit;
+		this.botSettings.tradingSignals = next.botSettings.tradingSignals;
+		this.botSettings.maxOpenSafetyOrders = next.botSettings.maxOpenSafetyOrders;
+		this.botSettings.deviation = next.botSettings.deviation;
 	}
 
 	async updateProcess(user = this.user, message = '') {

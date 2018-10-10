@@ -194,8 +194,9 @@ module.exports = class Bot {
 			},
 				newProcess = new Process(resObj);
 			for (let _id in this.processes) {
+				console.log(_id)
 				console.log(this.processes[_id].setRunnigProcess)
-				if(this.processes[_id].runningProcess) {
+				if(this.processes[_id].setRunnigProcess && this.processes[_id].runningProcess) {
 					this.processes[_id].setRunnigProcess();
 				}
 			}
@@ -395,6 +396,41 @@ module.exports = class Bot {
 		}
 		return ret.signal;
 	}
+
+	updateLocalBot(next = this, callback = (data = {}) => {}) {
+		try {
+			this.title = next.title;
+			this.pair = next.pair;
+			this.botSettings.initialOrder = next.botSettings.initialOrder;
+			this.botSettings.safeOrder = next.botSettings.safeOrder;
+			this.botSettings.stopLoss = next.botSettings.stopLoss;
+			this.botSettings.takeProfit = next.botSettings.takeProfit;
+			this.botSettings.tradingSignals = next.botSettings.tradingSignals;
+			this.botSettings.maxOpenSafetyOrders = next.botSettings.maxOpenSafetyOrders;
+			this.botSettings.deviation = next.botSettings.deviation;
+	
+			for (let _id in this.processes) {
+				if(this.processes[_id].updateProcess) {
+					this.processes[_id].updateLocalProcess(this, this.getPair());
+				}
+			}
+	
+			callback({
+				status: 'ok',
+				message: `Бот ${this.botID} успешно обновлен.`,
+				data: this
+			});
+		} catch(err) {
+			callback({
+				status: 'error',
+				message: `Ошибка при обновлении бота ${this.botID}.`,
+				data: {
+					bot: this,
+					error: err
+				}
+			});
+		}
+	}
 	//:: CHECK FUNC END
 
 	//************************************************************************************************//
@@ -489,7 +525,7 @@ module.exports = class Bot {
 		console.log()
 		console.log()
 		console.log()
-		console.log(user.name, processId);
+		console.log(user, processId);
 		console.log()
 		console.log()
 		console.log()
