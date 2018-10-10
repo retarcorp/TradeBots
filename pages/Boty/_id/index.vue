@@ -125,16 +125,15 @@
                 </div>
             </div>
 
-
+<!-- v-if='bot.processes[log].runningProcess' -->
             <div class='bots__log' v-if='Object.keys(this.bot.processes).length'>
                 <ul>
                     <li 
                         v-for='(log, index) in Object.keys(bot.processes)'
                         :id='index'
-                        v-if='bot.processes[log].runningProcess'
                         :key='index'
                         class="processes_tab"
-                        :class='{active: currentLogId === log}'
+                        :class='{active: currentLogId === log, isNotActive: !bot.processes[log].runningProcess }'
                         @click='fillingInfo(log, $event)'
                     >{{bot.processes[log].symbol}}</li>
                 </ul>                
@@ -159,10 +158,14 @@
                             <th class="table__th"></th>
                         </tr>
                         <!-- TODO create component for 1 row -->
-                        <tbody class='overflow' v-if='Object.keys(this.bot.processes).length'>
+                        <tbody 
+                            class='overflow'  
+                            v-if='Object.keys(this.bot.processes).length'
+                        >
                             <tr v-for="order in openedOrders"
                                 :key="order.id"
-                                class="table__tr">
+                                class="table__tr"
+                            >
                                 <td class="table__td date">{{ order.time | date }}</td>
                                 <td class="table__td pair">{{ order.symbol }}</td>
                                 <td
@@ -176,7 +179,11 @@
                                 <td class="table__td total">{{ order.cummulativeQuoteQty }}</td>
                                 <td class="table__td status">{{ order.status }}</td>
                                 <td class="table__td">
-                                    <button @click.prevent="refuseCurrentOrder(order.orderId, bot.botID)" class="button table__button button--primary">Отменить</button>
+                                    <button 
+                                        @click.prevent="refuseCurrentOrder(order.orderId, bot.botID)"
+                                        v-if='bot.processes[currentId].runningProcess'
+                                        class="button table__button button--primary"
+                                    >Отменить</button>
                                 </td>
                             </tr>
                         </tbody>
@@ -192,7 +199,11 @@
                             <th class="table__th status-head">Статус</th>
                         </tr>
                         <tbody class='overflow' v-if='Object.keys(this.bot.processes).length'>
-                            <tr v-for="order in closedOrders" :key="order.id" class="table__tr">
+                            <tr 
+                                v-for="order in closedOrders" 
+                                :key="order.id" 
+                                class="table__tr"
+                            >
                                 <td class="table__td date">{{ order.time | date }}</td>
                                 <td class="table__td pair">{{ order.symbol }}</td>
                                 <td
@@ -209,12 +220,19 @@
                         </tbody>
                     </table>
                     <div class="order__buttons" v-if='Object.keys(this.bot.processes).length'>
-                        <button @click.prevent="cancelAll" class="button button--primary">Отменить и продать</button>
+                        <button 
+                            @click.prevent="cancelAll" 
+                            class="button button--primary"
+                            v-if='bot.processes[currentId].runningProcess'
+                        >Отменить и продать</button>
                     </div>
                 </div>
             </div>
         </section>
-        <div class="log" v-if='lines && isActiveTabOrders'>
+        <div 
+            class="log" 
+            v-if='lines && isActiveTabOrders' 
+        >
             <div class="log-line" v-for="line in lines" :key="line">{{line}}</div>
         </div>
     </div>
@@ -238,7 +256,6 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
                 tmpBotId: null,
                 currentLogId: 0,
                 currentSpecId: 0,
-                // lines: [],
                 isActiveProcesses: true,
                 isActiveTabOrders: false,
                 statusAlert: {
@@ -290,20 +307,13 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
             },
             lines() {
                 return this.currentId ? this.bot.processes[this.currentId].log : [];
-                // if( this.currentId ) {
-                //     return this.bot.processes[this.currentId].log;
-                // }
-                // else {
-
-                //     return [];
-                // }
             }
         },
-        watch: {
-            '$route'(to, from) {
-                console.log(`currentLogId - ${this.currentId}`)
-            }
-        },
+        // watch: {
+        //     '$route'(to, from) {
+        //         console.log(`currentLogId - ${this.currentId}`)
+        //     }
+        // },
         methods: {
             fillingInfo(id, event) {
                 this.currentLogId = id;
@@ -449,6 +459,10 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
 
 .active {
     background-color: rgb(238, 238, 238);   
+}
+
+.isNotActive {
+    background-color:#CECECE; 
 }
 
 .processes_tab {
