@@ -21,7 +21,6 @@
             class="input auth-form__input" 
             placeholder="Подтверждение пароля"
             name='password'
-            
         >
         <div class="d-flex">
             <button
@@ -126,26 +125,5 @@
 .form__input {
     max-width: 100%;
     margin-bottom: 2rem;
-}
-.info-popup {
-    text-align: justify;
-    font-size: 1.6rem;
-    margin-top: 2rem;
-    display: flex;
-    justify-content: space-between;
-    font-family: 'Roboto', sans-serif;
-    border: 1px solid #E3E3E3;
-    position: absolute;
-    top: 230px;
-    left: 7px;
-    margin-left: 1rem;
-    width: 221px;
-    background-color: white;
-    z-index: 9999;
-}
-
-.info-popup p {
-    padding: 0.5rem;
-    font-size: 1.8rem
 }
 </style>
