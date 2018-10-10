@@ -63,8 +63,13 @@ export default {
         isFormValid() {
             return this.currentPass !== '' &&
                 this.newPass !== '' &&
+                this.newPass.length >=6 &&
+                this.newPass.length <= 20 &&
+                this.newPass.toUpperCase() !== this.newPass &&
+                this.newPass.toLowerCase() !== this.newPass &&
+                this.newPass.match(/[0-9]/) !== null
                 this.confirmedNewPass !== '' &&
-                this.newPass == this.confirmedNewPass
+                this.newPass === this.confirmedNewPass
         }
     },
     methods: {

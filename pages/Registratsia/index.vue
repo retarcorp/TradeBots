@@ -1,5 +1,5 @@
 <template>
-    <form @submit.prevent="onSignUp" class="absolute-center auth-form">
+    <form @submit.prevent="onSignUp" class="absolute-center auth-form relative-wrapper">
         <h1 class="title title--big text-center auth-form__title">Регистрация</h1>
         <input 
             v-model="email" 
@@ -13,6 +13,7 @@
             class="input auth-form__input" 
             placeholder="Пароль"
             name='password'
+            @blur='closeInfoPopup'
         >
         <input 
             v-model="confirmPassword" 
@@ -20,6 +21,7 @@
             class="input auth-form__input" 
             placeholder="Подтверждение пароля"
             name='password'
+            
         >
         <div class="d-flex">
             <button
@@ -44,29 +46,37 @@
             return {
                 email: '',
                 password: '',
-                confirmPassword: ''
+                confirmPassword: '',
+                statusInfo: false
             }
         },
         computed: {
+            isRightPassword() {
+                return this.password.length >= 6 
+                    && this.password.length <= 20
+                    && this.email.length !== 0
+                    && this.password.toUpperCase() !== this.password
+                    && this.password.toLowerCase() !== this.password
+                    && this.password.match(/[0-9]/) !== null
+                    ? true
+                    : false;
+            },
             isFormValid() {
                 return this.password === this.confirmPassword
-                        && this.password.length >= 6
-                        && this.email.length !== 0
-                        && this.password.toUpperCase() !== this.password
-                        && this.password.toLowerCase() !== this.password
-                        && this.password.match(/[0-9]/) !== null
+                    && this.isRightPassword;
             }
         },
         methods: {
             onSignUp() {
-                this.$store.commit('setSpiner', true)
+                this.$store.commit('setSpiner', true);
                 if(this.isFormValid) {
                     this.$axios.$post('/signup',{
                         name: this.email,
                         password: this.password
                     })
                     .then(res => {
-                        if(res.status) {
+                        console.log(res.status)
+                        if(res.status !== 'error') {
                             this.$store.commit('setSpiner', false);
                             this.$router.push('/Vhod');
                         } else {
@@ -89,6 +99,18 @@
                 Array.from(document.querySelectorAll('input[type="text"]')).forEach(elem => {
                     elem.setAttribute('type','password');
                 })
+            },
+            // infoPopup() {
+            //     // this.statusInfo = false;
+            // },
+            // closeApp() {
+            //     this.statusInfo = false;
+            // },
+            closeInfoPopup() {
+                if( !this.isRightPassword ) {
+                    this.$store.commit('setStatus', 'info');
+                    this.$store.commit('setMessage', 'Пароль должен содержать от 6 до 20 символов, включая минимум одну заглавную букву, прописную и цифру.');
+                }
             }
         }
     }
@@ -104,6 +126,26 @@
 .form__input {
     max-width: 100%;
     margin-bottom: 2rem;
-    border: 1px solid
+}
+.info-popup {
+    text-align: justify;
+    font-size: 1.6rem;
+    margin-top: 2rem;
+    display: flex;
+    justify-content: space-between;
+    font-family: 'Roboto', sans-serif;
+    border: 1px solid #E3E3E3;
+    position: absolute;
+    top: 230px;
+    left: 7px;
+    margin-left: 1rem;
+    width: 221px;
+    background-color: white;
+    z-index: 9999;
+}
+
+.info-popup p {
+    padding: 0.5rem;
+    font-size: 1.8rem
 }
 </style>

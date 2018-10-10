@@ -55,8 +55,8 @@
                 this.$router.push('/Akaunt');
             },
             onSettingsDelete() {
-                this.$store.dispatch('deleteBinanceAPI')
-                this.binance = {}
+                this.$store.dispatch('deleteBinanceAPI');
+                this.binance = {};
                 this.isSaved = true;
                 this.$router.push('/Akaunt');
             }
