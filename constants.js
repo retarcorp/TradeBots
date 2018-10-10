@@ -99,11 +99,13 @@ const CONSTANTS = {
 		MAX_NUM_ALGO_ORDERS: 'MAX_NUM_ALGO_ORDERS'
 	},
 
-	PRC: 'PRC-',
+	PRC: 'PRC-', //Process
 
-	BT: 'BOT-',
+	BT: 'BOT-', //Bot
 
-	TF: 'TF-',
+	TF: 'TF-', //Tariff
+
+	US: 'US-', //User
 
 	DISABLE_FLAG: 'disable',
 
@@ -129,6 +131,8 @@ const CONSTANTS = {
 
 	HISTORY_LOG: 'historyLog',
 
-	STATISTICS_COLLECTION: 'statistics'
+	STATISTICS_COLLECTION: 'statistics',
+
+	USERS_ORDERS_COLLECTION: 'usersOrders'
 }
 module.exports = CONSTANTS

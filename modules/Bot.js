@@ -86,6 +86,7 @@ module.exports = class Bot {
 				this.startAuto(user, 'continue');
 			}
 		}
+		this.updateUserOrdersList(user);
 	}
 
 	async changeStatus(nextStatus, user = this.user) {
@@ -310,6 +311,14 @@ module.exports = class Bot {
 		});
 		return ret;
 	}
+
+	getAllOrders() {
+		let allOrders = [];
+		for (let _id in this.processes) {
+			this.processes[_id].orders.forEach(order => allOrders.push(order));
+		}
+		return allOrders;
+	}
 	//:: GET FUNC END
 	
 	//************************************************************************************************//
@@ -461,7 +470,7 @@ module.exports = class Bot {
 	async updateBot(user = this.user, message = '') {
 		console.log('[ sync upd ');
 		user = { name: user.name };
-		// await this.syncUpdateUserOrdersList(user);
+		await this.updateUserOrdersList(user);
 		let data = await Mongo.syncSelect(user, 'users');
 		data = data[0];
 		let tempBot = new Bot(this);
@@ -475,6 +484,29 @@ module.exports = class Bot {
 
 		await Mongo.syncUpdate(user, changeObj, 'users');
 		console.log('] sync upd ');
+	}
+
+	async updateUserOrdersList(user = this.user) {
+		console.log('[ syncUpdateUserOrdersList');
+		user = { name: user.name };
+		let data = await Mongo.syncSelect(user, 'users');
+
+		if(data.length) {
+			data = data[0];
+			let ordersList = data.ordersList;
+
+			!ordersList && (ordersList = {});
+
+			let _id = `${this.botID}`;
+
+			!ordersList[_id] && (ordersList[_id] = []);
+
+			ordersList[_id] = this.getAllOrders();
+
+			await Mongo.syncUpdate(user, {ordersList:  ordersList}, 'users');
+		}
+
+		console.log('] syncUpdateUserOrdersList')
 	}
 	//:: UPDATE FUNC END
 	
@@ -531,14 +563,6 @@ module.exports = class Bot {
 	}
 
 	cancelAllOrders(user = this.user, processId = 0) {
-		console.log()
-		console.log()
-		console.log()
-		console.log(user, processId);
-		console.log("---------------------CANCELALLORDERS IN BOT");
-		console.log()
-		console.log()
-		console.log()
 		return new Promise( async (resolve, reject) => {
 			try {
 				if(processId === this.ALL) {	

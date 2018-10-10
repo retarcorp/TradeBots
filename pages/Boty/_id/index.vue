@@ -458,7 +458,7 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
 /*    */
 
 .active {
-    background-color: rgb(238, 238, 238);   
+    background-color: rgb(238, 238, 238) !important;
 }
 
 .isNotActive {
@@ -488,7 +488,7 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
 .bots__log ul {
     display: flex;
     flex-direction: row;
-    width: 30rem;
+    width: 100%;
     overflow-x: auto;
 }
 
