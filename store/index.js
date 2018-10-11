@@ -142,7 +142,7 @@ const store = () =>
 			if( payload === 'ok' || payload === 'info') {
 				setTimeout(function() {
 					state.status = '';
-				}, 1000);
+				}, 2000);
 			}
 		},
 		setStatisticsList(state, payload) {
