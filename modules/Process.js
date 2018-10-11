@@ -6,10 +6,12 @@ const Mongo = require('./Mongo');
 const sleep = require('system-sleep');
 const uniqid = require('uniqid');
 const PRC = CONSTANTS.PRC;
+const DL = CONSTANTS.DL;
 
 module.exports = class Process {
 	constructor({
 		_id = uniqid(PRC),
+		dealId = uniqid(DL),
 		symbol = '',
 		signal = {},
 		runningProcess = true,
@@ -19,6 +21,7 @@ module.exports = class Process {
 		preFreeze = freeze,
 		currentOrder = {},
 		orders = [],
+		dealOrders = [],
 		safeOrders = [],
 		updateStatus = false,
 		freezeOrders = {
@@ -32,6 +35,7 @@ module.exports = class Process {
 		botID = String(Date.now())
 	} = {}) {
 		this._id = this.JSONclone(_id);
+		this.dealId = this.JSONclone(dealId);
 		this.symbol = this.JSONclone(symbol);
 		this.signal = this.JSONclone(signal);
 		this.updateStatus = this.JSONclone(updateStatus);
@@ -41,6 +45,7 @@ module.exports = class Process {
 		this.freeze = this.JSONclone(freeze);
 		this.preFreeze = this.JSONclone(preFreeze);
 		this.currentOrder = this.JSONclone(currentOrder);
+		this.dealOrders = this.JSONclone(dealOrders);
 		this.orders = this.JSONclone(orders);
 		this.safeOrders = this.JSONclone(safeOrders);
 		this.freezeOrders = this.JSONclone(freezeOrders);
@@ -69,7 +74,7 @@ module.exports = class Process {
 		await this._log('Начало нового цикла торговли.');
 		if(this.setClient(user)) {
 			this.currentOrder = {};
-	
+			this.setDealId();
 			let newBuyOrder = await this.firstBuyOrder(user);
 			if(newBuyOrder.orderId) {
 				let qty = this.setQuantity(null, Number(newBuyOrder.origQty));
@@ -85,10 +90,12 @@ module.exports = class Process {
 				// if(this.status === CONSTANTS.BOT_STATUS.ACTIVE) {
 					this.currentOrder = newSellOrder;
 					this.orders.push(newSellOrder);
+					this.dealOrders.push(newSellOrder);
 	
 					let safeOrders = await this.createSafeOrders(price, qty);
 					this.safeOrders.push(...safeOrders);
 					this.orders.push(...safeOrders);
+					this.dealOrders.push(...safeOrders);
 	
 					this.trade(user)
 						.catch(err => console.log(err));
@@ -196,6 +203,7 @@ module.exports = class Process {
 
 						this.currentOrder = newSellOrder;
 						this.orders.push(this.currentOrder);
+						this.dealOrders.push(this.currentOrder);
 
 						if(!this.isFreeze()) {
 							console.log('ордер ФИЛИНГ НЕ ФРИЗ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
@@ -203,6 +211,7 @@ module.exports = class Process {
 
 							if(newSafeOrder.orderId) {
 								this.orders.push(newSafeOrder);
+								this.dealOrders.push(newSafeOrder);
 								nextSafeOrders.push(newSafeOrder);
 							}
 						}
@@ -215,6 +224,7 @@ module.exports = class Process {
 
 							if(newSafeOrder.orderId) {
 								this.orders.push(newSafeOrder);
+								this.dealOrders.push(newSafeOrder);
 								nextSafeOrders.push(newSafeOrder);
 							}
 						}
@@ -240,6 +250,7 @@ module.exports = class Process {
 
 			if(newSafeOrder.orderId) {
 				this.orders.push(newSafeOrder);
+				this.dealOrders.push(newSafeOrder);
 				nextSafeOrders.push(newSafeOrder);
 			}
 			this.safeOrders = nextSafeOrders;
@@ -277,6 +288,7 @@ module.exports = class Process {
 		
 		order = await this.getOrder(orderId);
 		this.orders.push(order);
+		this.dealOrders.push(order);
 		await this.updateProcess(user);
 		await this._log('первый закупочный - ' + order.price + ', ' + order.origQty + ', (~total ' + (order.price * order.origQty) + ')...');
 		
@@ -288,6 +300,7 @@ module.exports = class Process {
 			order = await this.getOrder(orderId);
 			const ind = this.orders.findIndex(elem => elem.orderId === order.orderId);
 			if(ind === -1) this.orders.push(new Order(order));
+			if(ind === -1) this.dealOrders.push(new Order(order));
 			else this.orders[ind] = new Order(order);
 			await this.updateProcess(user);
 
@@ -357,7 +370,7 @@ module.exports = class Process {
 			let newSellOrder = await this.Client.order(newOrderParams);
 			this.recountQuantity(newSellOrder.origQty, 1);
 			await this._log('попытка создать ордер - ' + newSellOrder.price + ', ' + newSellOrder.origQty);
-			return new Order(newSellOrder);
+			return new Order(newSellOrder, this.dealId);
 		}
 		catch(error) {
 			await this._log(this.errorCode(error));
@@ -524,7 +537,7 @@ module.exports = class Process {
 		if(!isContinue) this.status = CONSTANTS.BOT_STATUS.INACTIVE;
 
 		console.log(']----- disableProcess ');
-		
+		 
 		await this._log(`процесс завершен.`);
 		return 'disable';
 	}
@@ -533,7 +546,6 @@ module.exports = class Process {
 		console.log("---------------------CANCEL ALL ORDERS IN PROCESS");
 		console.log('----- cancel all orders and sell it');
 		await this._log('Завершение всех ордеров и продажа по рынку.');
-		console.log(this.currentOrder)
 		try{
 			if(this.currentOrder.orderId) {
 				await this.cancelOrders(this.safeOrders);
@@ -546,6 +558,7 @@ module.exports = class Process {
 					
 					if(newOrder !== CONSTANTS.DISABLE_FLAG) await this.updateProcess(user);
 					this.orders.push(newOrder);
+					this.dealOrders.push(newOrder);
 				}
 				
 				this.orders = await this.updateOrders(this.orders);
@@ -651,7 +664,9 @@ module.exports = class Process {
 		this.safeOrders = newSafeOrders;
 		this.currentOrder = newCurOrder;
 		this.orders.push(...this.safeOrders);
+		this.dealOrders.push(...this.safeOrders);
 		this.orders.push(this.currentOrder);
+		this.dealOrders.push(this.currentOrder);
 		await this.updateProcess(user);
 		await this._log('Разморозка бота успешно завершена.');
 	}
@@ -730,10 +745,12 @@ module.exports = class Process {
 
 	setQuantity(price = 0, quantity = 0) {
 		this.botSettings.quantity = price ? this.toDecimal(Number(this.botSettings.currentOrder)/ price) : Number(quantity);
-		console.log("SEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEET")
-		console.log(this.botSettings.quantity, this.botSettings.currentOrder);
-		console.log("SEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEET")
 		return Number(this.botSettings.quantity);
+	}
+
+	setDealId() {
+		this.dealId = uniqid(DL);
+		this.dealOrders = [];
 	}
 	//:: SETTERS FUNC END
 	
@@ -871,16 +888,21 @@ module.exports = class Process {
 		return this.symbol;
 	}
 
-	getChangeKey(field = '', botInd = null) {
+	getChangeUserKey(field = '', botInd = null) {
 		return field ? `bots.${botInd}.processes.${this._id}.${field}` : `bots.${botInd}.processes.${this._id}`;
 	}
 
-	async getChangeObject(field = '', data = null) {
+	getChangeKey(field = '') {
+		// _userOrders_._user_._botID_._processId_
+		return field ? `bots.${this.botID}.processes.${this._id}.${field}` : `bots.${this.botID}.processes.${this._id}`;
+	}
+
+	async getChangeUserObject(field = '', data = null) {
 		const user = { name: this.user.name },
 			botInd = await this.getBotIndex(user);
 		
 		if(botInd !== -1) {
-			let key = this.getChangeKey(field, botInd),
+			let key = this.getChangeUserKey(field, botInd),
 				obj = {};
 			
 			obj[key] = data;
@@ -889,6 +911,14 @@ module.exports = class Process {
 		} else {
 			return -1;
 		}
+	}
+
+	getChangeObject(field = '', data = null) {
+		let key = this.getChangeKey(field),
+			obj = {};
+		
+		obj[key] = data;
+		return obj;
 	}
 
 	async getBotIndex(user = this.user, userData = null) {
@@ -911,7 +941,7 @@ module.exports = class Process {
 	async updateLog() {
 		const user = { name: this.user.name };
 		try {
-			let change = await this.getChangeObject('log', this.log);
+			let change = await this.getChangeUserObject('log', this.log);
 			if(change !== -1) {
 				await Mongo.syncUpdate(user, change, 'users');
 			}
@@ -940,35 +970,39 @@ module.exports = class Process {
 		user = { name: user.name };
 		// console.log('[ updateProcess', message);
 		await this.updateProcessOrdersList(user);
-		let change = await this.getChangeObject('', this);
+		let change = await this.getChangeUserObject('', this);
 		if(change !== -1) {
 			await Mongo.syncUpdate(user, change, 'users');
 		}
 		// console.log('] updateProcess');
 	}
 
+	// async updateProcessOrdersList(user = this.user) {
+	// 	user = { name: user.name };
+	// 	let data = await Mongo.syncSelect(user, 'users');
+	// 	data = data[0];
+	// 	const botInd = await this.getBotIndex(user, data);
+	// 	if(botInd != -1) {
+	// 		let ordersList = data.bots[botInd].processes[this._id].ordersList;
+	// 		!ordersList && (ordersList = {});
+	
+	// 		let _id = `${this._id}${this.botID}-${this._id}`;
+	// 		!ordersList[_id] && (ordersList[_id] = []);
+	// 		ordersList[_id] = this.orders;
+	
+	// 		let change = await this.getChangeUserObject('ordersList', ordersList);
+	// 		if(change !== -1) {
+	// 			await Mongo.syncUpdate(user, change, 'users');
+	// 		}
+	// 	}
+	// }
+
 	async updateProcessOrdersList(user = this.user) {
-		// console.log('[ updateProcessOrdersList');
+		const collection = CONSTANTS.USERS_DATA_COLLECTION;
 		user = { name: user.name };
-		let data = await Mongo.syncSelect(user, 'users');
-		data = data[0];
-		const botInd = await this.getBotIndex(user, data);
-		// const botInd = data.bots.findIndex(bot => bot.botID === this.botID);
-		// console.log(botInd);
-		if(botInd != -1) {
-			let ordersList = data.bots[botInd].processes[this._id].ordersList;
-			!ordersList && (ordersList = {});
-	
-			let _id = `${this._id}${this.botID}-${this._id}`;
-			!ordersList[_id] && (ordersList[_id] = []);
-			ordersList[_id] = this.orders;
-	
-			let change = await this.getChangeObject('ordersList', ordersList);
-			if(change !== -1) {
-				await Mongo.syncUpdate(user, change, 'users');
-			}
-		}
-		// console.log('] updateProcessOrdersList');
+		let ordersList = this.dealOrders,
+			change = await this.getChangeObject(`orders.${this.dealId}`, ordersList);
+		await Mongo.syncUpdate(user, change, collection);
 	}
 
 	async updateOrders(orders = []) {

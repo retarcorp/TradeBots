@@ -107,6 +107,8 @@ const CONSTANTS = {
 
 	US: 'US-', //User
 
+	DL: 'DL-', //Deal
+
 	DISABLE_FLAG: 'disable',
 
 	CONTINUE_FLAG: true,
@@ -135,6 +137,6 @@ const CONSTANTS = {
 
 	STATISTICS_COLLECTION: 'statistics',
 
-	USERS_ORDERS_COLLECTION: 'usersOrders'
+	USERS_DATA_COLLECTION: 'usersData'
 }
 module.exports = CONSTANTS

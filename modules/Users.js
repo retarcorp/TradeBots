@@ -127,7 +127,7 @@ let Users = {
 				});
 
 			} else {
-				callback({ status: 'error', message: "User already exist!" });
+				callback({ status: 'error', message: "Такой пользователь уже существует!" });
 			}
 		});
 	}
@@ -189,7 +189,7 @@ let Users = {
 				data.binanceAPI = new Binance(binanceData);
 			} else data.binanceAPI = {};
 
-			if(binanceData.name) {
+			if(binanceData && binanceData.name) {
 				let c = binanceAPI({
 					apiKey: binanceData.key,
 					apiSecret: binanceData.secret
@@ -497,24 +497,31 @@ let Users = {
 	}
 
 	,Income: {
-		get(user, callback) {
-			Mongo.select(user, 'users', data => {
-				data = data[0];
-				const ordersList = data.ordersList;
+		get(user, callback = (data = {}) => console.log(data)) {
+			Mongo.select(user, CONSTANTS.USERS_DATA_COLLECTION, data => {
+				if(data.length) {
+					data = data[0];
+					const ordersList = data.ordersList;
+					callback(data);
+				} else {
+					callback({
+						status: 'error',
+						message: 'Пользователь не найден.'
+					});
+				}
+				// let Income = {
+				// 	// dayIncome: this.coutDayIncome(ordersList),
+				// 	// allIncome: this.countAllIncome(ordersList)
+				// };
 
-				let Income = {
-					// dayIncome: this.coutDayIncome(ordersList),
-					// allIncome: this.countAllIncome(ordersList)
-				};
-
-				const res = {
-					status: 'ok',
-					data: {
-						income: Income
-					}
-				};
+				// const res = {
+				// 	status: 'ok',
+				// 	data: {
+				// 		income: Income
+				// 	}
+				// };
 				
-				if(callback) callback(res)
+				// if(callback) callback(res)
 			});
 		},
 

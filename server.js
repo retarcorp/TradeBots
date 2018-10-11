@@ -23,7 +23,7 @@ let Symbols = require('./modules/Symbols')
 Mongo.init()
 .then(data => {
   Users.Bots.setBotsArray();
-  Statistics.updateUsersStatistic();
+  // Statistics.updateUsersStatistic();
 	Symbols.initClient();
 	Symbols.updateSymbolsPriceFilter();
 });

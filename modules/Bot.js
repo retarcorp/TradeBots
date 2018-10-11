@@ -86,7 +86,7 @@ module.exports = class Bot {
 				this.startAuto(user, 'continue');
 			}
 		}
-		this.updateUserOrdersList(user);
+		// this.updateUserOrdersList(user);
 	}
 
 	async changeStatus(nextStatus, user = this.user) {
@@ -615,7 +615,7 @@ module.exports = class Bot {
 		}
 	}
 
-	async deleteBot(user = this.uesr) {
+	async deleteBot(user = this.user) {
 		console.log("---------------------DELTEBOT IN BOT");
 		return new Promise( async (resolve, reject) => {
 			try {

@@ -19,7 +19,7 @@ class Statistics {
 	async updateUsersStatistic() {
 		console.time('updateUsersStatistic');
 		let users = await Mongo.syncSelect({}, CONSTANTS.USERS_COLLECTION);
-		let res = {}
+		let res = {};
 
 		for (let i = 0; i < users.length; i++) {
 			let user = users[i];
@@ -35,7 +35,7 @@ class Statistics {
 					}
 	
 				}
-				await Mongo.syncUpdate({ name: user.name }, { orderList: orders }, CONSTANTS.USERS_ORDERS_COLLECTION);
+				await Mongo.syncUpdate({ name: user.name }, { orderList: orders }, CONSTANTS.USERS_DATA_COLLECTION);
 				res[user.name] = { //!!!!!!!!!!!!!user.userId
 					orderList: orders
 				};
