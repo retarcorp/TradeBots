@@ -111,7 +111,7 @@ module.exports = class Process {
 	}
 
 	async trade(user = this.user, flag = false) {
-		console.log('----------- trade ------------' + this._id, flag);
+		console.log('----------- trade ------------' + this._id, flag, this.currentOrder.orderId);
 		if(this.currentOrder.orderId) {
 			this.currentOrder = await this.getOrder(this.currentOrder.orderId);
 			let currentOrderStatus = this.currentOrder.status;
@@ -147,6 +147,11 @@ module.exports = class Process {
 					}
 				}
 			}
+		} else if(this.isFreeze() && !flag) {
+			console.log("ТИПА МЫ УДАЛИЛИ КУРЕНТ ОРДЕР А БОТ БЫЛ ЗАМОРОЖЕН, ТАК ЧТО НАМ ПРОСТО НУЖно ЖДАТЬ ЕБАНАРОТ");
+			setTimeout(() => {
+				this.trade(user);
+			}, CONSTANTS.BOT_SLEEP)
 		} else if(!flag) {
 			this.currentOrder = this.getSellOrder();
 			this.trade(user, true);
@@ -228,7 +233,7 @@ module.exports = class Process {
 		} else if(this.isFreeze() && !this.isPreFreeze()) {
 			console.log('ТИП ВРОДЕ НИХУЯ ДЕЛАТЬ НЕ НАДО ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
 			//тип вроде нихуя делать не надо
-		} else if(!this.isFreeze() && this.isPreFreeze()) {
+		} else if(!this.isFreeze() && this.isPreFreeze() && this.isNeedToOpenNewSafeOrders()) {
 			//тип надо выставить некст сейв ордер, если еще можно
 			console.log('ВЫСТАВЛЯЕМ НОВЫЙ СЕЙВ ОРДЕР ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
 			let newSafeOrder = await this.createSafeOrder();
@@ -489,6 +494,7 @@ module.exports = class Process {
 		bs.tradingSignals = next.tradingSignals;
 		bs.maxOpenSafetyOrders = next.maxOpenSafetyOrders;
 		bs.deviation = next.deviation;
+		bs.martingale = next.martingale;
 
 		this.updateStatus = false;
 	}
@@ -724,6 +730,9 @@ module.exports = class Process {
 
 	setQuantity(price = 0, quantity = 0) {
 		this.botSettings.quantity = price ? this.toDecimal(Number(this.botSettings.currentOrder)/ price) : Number(quantity);
+		console.log("SEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEET")
+		console.log(this.botSettings.quantity, this.botSettings.currentOrder);
+		console.log("SEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEET")
 		return Number(this.botSettings.quantity);
 	}
 	//:: SETTERS FUNC END
@@ -915,13 +924,14 @@ module.exports = class Process {
 		this.updateStatus = true;
 		let nextProcessSettings = {
 			symbol: nextSymbol,
-			initialOrder: next.botSettings.initialOrder,
+			initialOrder: Number(next.botSettings.initialOrder),
 			safeOrder: next.botSettings.safeOrder,
 			stopLoss: next.botSettings.stopLoss,
 			takeProfit: next.botSettings.takeProfit,
 			tradingSignals: next.botSettings.tradingSignals,
 			maxOpenSafetyOrders: next.botSettings.maxOpenSafetyOrders,
-			deviation: next.botSettings.deviation
+			deviation: next.botSettings.deviation,
+			martingale: next.botSettings.martingale
 		}
 		this.nextProcessSettings = nextProcessSettings;
 	}
@@ -1027,6 +1037,16 @@ module.exports = class Process {
 	//************************************************************************************************//
 
 	//:: CHECK FUNC
+	
+	isNeedToOpenNewSafeOrders() {
+		let maxOpenSO = this.getMaxOpenedAmount(),
+			currentQtyUsedSO = this.getQtyOfUsedSafeOrders(),
+			currentQtyActiveSO = this.getQtyOfActiveSafeOrders(),
+			maxAmountSO = this.getAmount();
+
+		return (maxOpenSO > currentQtyActiveSO && maxAmountSO > currentQtyUsedSO);
+	}
+
 	isAuto() {
 		return this.state === CONSTANTS.BOT_STATE.AUTO;
 	}

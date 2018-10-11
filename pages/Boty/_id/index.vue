@@ -427,19 +427,33 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
                     : this.currentComponent = "SettingsAutomatic"
             },
             onSaveSettings() {
-                this.$store.commit('setSpiner', true);
-                this.$axios
-                    .$post('/bots/update', this.bot)
-                    .then(res => {
-                        if(res.data.status === 'ok') {
-                            this.isSaved = true;
-                            this.$store.commit('setSpiner', false);
-                        } else {
-                            console.log(res.message)
-                            this.$store.commit('setSpiner', false);
-                        }
-                    })
-                    .catch(e => console.log(e))
+                console.log('ОЛЯЛЯ')
+                // this.$store.commit('setSpiner', true);
+                // let nextBotSettings = {
+                //     botID: this.bot.botID,
+                //     title: this.bot.title,
+                //     pair: this.bot.pair,
+                //     initialOrder: this.bot.botSettings.initialOrder,
+                //     safeOrder: this.bot.botSettings.safeOrder,
+                //     stopLoss: this.bot.botSettings.stopLoss,
+                //     takeProfit: this.bot.botSettings.takeProfit,
+                //     tradingSignals: this.bot.botSettings.tradingSignals,
+                //     maxOpenSafetyOrders: this.bot.botSettings.maxOpenSafetyOrders,
+                //     deviation: this.bot.botSettings.deviation
+                // };
+                // console.log(nextBotSettings)
+                // this.$axios
+                //     .$post('/bots/update', nextBotSettings)
+                //     .then(res => {
+                //         if(res.data.status === 'ok') {
+                //             this.isSaved = true;
+                //             this.$store.commit('setSpiner', false);
+                //         } else {
+                //             console.log(res.message)
+                //             this.$store.commit('setSpiner', false);
+                //         }
+                //     })
+                //     .catch(e => console.log(e))
             },
             onUpdated() {
                 this.isChanging = false;

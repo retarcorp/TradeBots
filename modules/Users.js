@@ -372,7 +372,7 @@ let Users = {
 						let changeObj = {},
 							change = `bots.${index}`;
 						
-						changeObj[change] = tempBot;
+						changeObj[change] = d.data;
 						if(d.status === 'ok') {
 							Mongo.update(user, changeObj, 'users', (data) => {
 								if(callback) callback(d);
@@ -503,8 +503,8 @@ let Users = {
 				const ordersList = data.ordersList;
 
 				let Income = {
-					dayIncome: this.coutDayIncome(data.ordersList),
-					allIncome: this.countAllIncome(data.ordersList)
+					// dayIncome: this.coutDayIncome(ordersList),
+					// allIncome: this.countAllIncome(ordersList)
 				};
 
 				const res = {
@@ -513,7 +513,7 @@ let Users = {
 						income: Income
 					}
 				};
-
+				
 				if(callback) callback(res)
 			});
 		},

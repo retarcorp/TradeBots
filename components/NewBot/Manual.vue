@@ -251,7 +251,21 @@
             onAddManualBot() {
                 this.$store.commit('setСonfigurationProcess', false);
                 if(this.bot.botID) {
-                    this.$store.dispatch('updateBot', this.bot)
+                    let nextBotSettings = {
+                        botID: this.bot.botID,
+                        title: this.bot.title,
+                        pair: this.bot.pair,
+                        botSettings: this.bot.botSettings
+                        // initialOrder: this.bot.botSettings.initialOrder,
+                        // safeOrder: this.bot.botSettings.safeOrder,
+                        // stopLoss: this.bot.botSettings.stopLoss,
+                        // takeProfit: this.bot.botSettings.takeProfit,
+                        // tradingSignals: this.bot.botSettings.tradingSignals,
+                        // maxOpenSafetyOrders: this.bot.botSettings.maxOpenSafetyOrders,
+                        // deviation: this.bot.botSettings.deviation
+                    };
+                    console.log('onAddManualBot')
+                    this.$store.dispatch('updateBot', nextBotSettings)
                         .then(() => {
                             this.$emit('changed')
                         })

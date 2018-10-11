@@ -281,18 +281,26 @@ export default {
             this.bot.botSettings.tradingSignals.splice(i, 1)
         },
         addAutomaticBot() {
-            // const automaticBot = {
-            //     'title': this.bot.title,
-            //     'pair': this.bot.pair,
-            //     'botSettings': {
-            //         'dailyVolumeBTC': this.bot.botSettings.dailyVolumeBTC,
-            //         'tradingSignals': this.bot.botSettings.tradingSignals
-            //     }
-            // }
+
             let path = '';
+            let nextData = {};
+            let nextBotSettings = {
+                botID: this.bot.botID,
+                title: this.bot.title,
+                pair: this.bot.pair,
+                botSettings: this.bot.botSettings
+                // initialOrder: this.bot.botSettings.initialOrder,
+                // safeOrder: this.bot.botSettings.safeOrder,
+                // stopLoss: this.bot.botSettings.stopLoss,
+                // takeProfit: this.bot.botSettings.takeProfit,
+                // tradingSignals: this.bot.botSettings.tradingSignals,
+                // maxOpenSafetyOrders: this.bot.botSettings.maxOpenSafetyOrders,
+                // deviation: this.bot.botSettings.deviation
+            };
+            console.log('onAddManualBot')
             this.$store.commit('setСonfigurationProcess', false);
-            (this.bot && this.bot.botID) ? (path = 'updateBot') : (path = 'addBot');
-            this.$store.dispatch(path, this.bot)
+            (this.bot && this.bot.botID) ? (path = 'updateBot', nextData = nextBotSettings) : (path = 'addBot', nextData = this.bot);
+            this.$store.dispatch(path, nextData)
                 .then(() => {
                     this.$emit('changed')
                 })

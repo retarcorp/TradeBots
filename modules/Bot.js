@@ -189,32 +189,27 @@ module.exports = class Bot {
 	//:: START FUNC
 	async startManual(user = this.user) {
 		console.log('startManual');
-		// if(Object.keys(this.processes).length === 0) {
-			let resObj = {
-				symbol: this.getPair(),
-				botSettings: this.botSettings,
-				botID: this.botID,
-				user: user,
-				state: this.state,
-				status: this.status
-			},
-				newProcess = new Process(resObj);
-			for (let _id in this.processes) {
-				console.log(_id)
-				console.log(this.processes[_id].setRunnigProcess)
-				if(this.processes[_id].setRunnigProcess && this.processes[_id].runningProcess) {
-					this.processes[_id].setRunnigProcess();
-				}
+		let resObj = {
+			symbol: this.getPair(),
+			botSettings: this.botSettings,
+			botID: this.botID,
+			user: user,
+			state: this.state,
+			status: this.status
+		},
+			newProcess = new Process(resObj);
+		for (let _id in this.processes) {
+			console.log(_id)
+			console.log(this.processes[_id].setRunnigProcess)
+			if(this.processes[_id].setRunnigProcess && this.processes[_id].runningProcess) {
+				this.processes[_id].setRunnigProcess();
 			}
-			this.processes[newProcess._id] = newProcess;
-			await this.updateBot(user);
-			this.processes[newProcess._id]
-				.startTrade(user)
-				.catch(err => console.log(err));
-		// }
-		// else {
-		// 	this.status = CONSTANTS.BOT_STATUS.INACTIVE;
-		// }
+		}
+		this.processes[newProcess._id] = newProcess;
+		await this.updateBot(user);
+		this.processes[newProcess._id]
+			.startTrade(user)
+			.catch(err => console.log(err));
 	}
 
 	async startAuto(user = this.user, message = '') {
@@ -255,7 +250,7 @@ module.exports = class Bot {
 					this.pair.from = '';
 				}
 
-				sleep(CONSTANTS.AUTO_BOT_SLEEP);
+				sleep(CONSTANTS.BOT_SLEEP);
 			}
 		}
 
@@ -410,18 +405,41 @@ module.exports = class Bot {
 		}
 		return ret.signal;
 	}
+	//:: CHECK FUNC END
 
+	//************************************************************************************************//
+	
+	//:: UPDATE FUNC
+	async updateSignals(user = this.user) {
+		console.log('[ upd signals');
+		user = { name: user.name };
+
+		let data = await Mongo.syncSelect(user, 'users');
+		data = data[0];
+
+		const index = data.bots.findIndex(bot => bot.botID === this.botID);
+		
+		const change = `bots.${index}.botSettings.curTradingSignals`,
+			changeObj = {};
+		
+		changeObj[change] = this.botSettings.curTradingSignals;
+		await Mongo.syncUpdate(user, changeObj, 'users');
+		console.log('] upd signals');
+	}
+	
 	updateLocalBot(next = this, callback = (data = {}) => {}) {
 		try {
 			this.title = next.title;
 			this.pair = next.pair;
 			this.botSettings.initialOrder = next.botSettings.initialOrder;
+			this.botSettings.currentOrder = this.botSettings.initialOrder;
 			this.botSettings.safeOrder = next.botSettings.safeOrder;
 			this.botSettings.stopLoss = next.botSettings.stopLoss;
 			this.botSettings.takeProfit = next.botSettings.takeProfit;
 			this.botSettings.tradingSignals = next.botSettings.tradingSignals;
 			this.botSettings.maxOpenSafetyOrders = next.botSettings.maxOpenSafetyOrders;
 			this.botSettings.deviation = next.botSettings.deviation;
+			this.botSettings.martingale = next.botSettings.martingale;
 	
 			for (let _id in this.processes) {
 				if(this.processes[_id].updateProcess) {
@@ -444,27 +462,6 @@ module.exports = class Bot {
 				}
 			});
 		}
-	}
-	//:: CHECK FUNC END
-
-	//************************************************************************************************//
-	
-	//:: UPDATE FUNC
-	async updateSignals(user = this.user) {
-		console.log('[ upd signals');
-		user = { name: user.name };
-
-		let data = await Mongo.syncSelect(user, 'users');
-		data = data[0];
-
-		const index = data.bots.findIndex(bot => bot.botID === this.botID);
-		
-		const change = `bots.${index}.botSettings.curTradingSignals`,
-			changeObj = {};
-		
-		changeObj[change] = this.botSettings.curTradingSignals;
-		await Mongo.syncUpdate(user, changeObj, 'users');
-		console.log('] upd signals');
 	}
 
 	async updateBot(user = this.user, message = '') {
