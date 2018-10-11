@@ -310,23 +310,12 @@ let Users = {
 					data.bots.push(tempBot);
 					this.Bots.push(tempBot)
 					Mongo.update(user, {bots: data.bots}, 'users', (data) => {
-						// let res = {};
-						// if(typeof botData === 'object') {
 						let res = {
-								status: 'ok',
-								message: `Новый бот успешно создан (${tempBot.botID})`,
-								data: tempBot
-							};
-							callback(res);
-						// }
-						// else {
-						// 	res = {
-						// 		status: 'ok',
-						// 		message: `Бот ${botID} успешно обновлен`,
-						// 		data: botData
-						// 	};
-						// 	callback(res);
-						// }
+							status: 'ok',
+							message: `Новый бот успешно создан (${tempBot.botID})`,
+							data: tempBot
+						};
+						callback(res);
 					});
 				}
 				else {
@@ -338,7 +327,7 @@ let Users = {
 					data.bots = tempBots;
 
 					const index = this.Bots.findIndex(bot => bot.botID === botData)
-					this.Bots[index].deleteBot()
+					this.Bots[index].deleteBot(user)
 						.then(res => {
 							if(res.status === 'ok') {
 								this.Bots.splice(index, 1);
