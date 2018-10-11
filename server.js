@@ -16,15 +16,17 @@ const expressSession = require('express-session');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
 
-const Mongo = require('./modules/Mongo')
-const Users = require('./modules/Users')
+const Mongo = require('./modules/Mongo');
+const Users = require('./modules/Users');
+const Statistics = require('./modules/Statistics');
 let Symbols = require('./modules/Symbols')
 Mongo.init()
 .then(data => {
-	Users.Bots.setBotsArray()
-	Symbols.initClient()
-	Symbols.updateSymbolsPriceFilter()
-})
+  Users.Bots.setBotsArray();
+  Statistics.updateUsersStatistic();
+	Symbols.initClient();
+	Symbols.updateSymbolsPriceFilter();
+});
 // const Users = require('./modules/Users');
 // const Crypto = require('./modules/Crypto');
 // const Binance = require('./modules/Binance');

@@ -340,23 +340,17 @@ let Users = {
 					const index = this.Bots.findIndex(bot => bot.botID === botData)
 					this.Bots[index].deleteBot()
 						.then(res => {
-							this.Bots.splice(index, 1);
-							Mongo.update(user, {bots: data.bots}, 'users', (data) => {
-								// if(typeof botData === 'object') {
-								// 	callback({
-								// 		status: 'ok',
-								// 		data: tempBot
-								// 	});
-								// }
-								// else {
+							if(res.status === 'ok') {
+								this.Bots.splice(index, 1);
+								Mongo.update(user, {bots: data.bots}, 'users', (data) => {
 									let res = {
 										status: 'ok',
 										message: `Бот ${botData.botID} успешно удален`,
 										data: botData
 									};
 									callback(res);
-								// }
-							});
+								});
+							}
 						})
 				}
 			});

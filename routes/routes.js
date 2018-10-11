@@ -32,7 +32,6 @@ router.use(userActivation);
 router.get('/test', (req, res, next) => {
 	const query = qrs.parse(url.parse(req.url).query);
 	
-
 	res.send(query);
 	// let admin = req.cookies.admin;
 	// Tariffs.setTariff(admin, {title: 'ЯЯЯ'}, data => res.json(data));
