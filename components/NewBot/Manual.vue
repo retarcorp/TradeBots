@@ -3,7 +3,7 @@
         <div class="bots__settings manual-settings">
             <div class="form-control newBot__settings-control">
                 <label class="label" for="label">Название бота:</label>
-                <input v-model="bot.title" id="bot__name" type="text" class="input settings__input">
+                <input v-model="bot.title" id="bot__name" maxlength="20" type="text" class="input settings__input">
             </div>
             <div class="form-control newBot__settings-control">
                 <label class="label" for="main__pair">Основная пара:</label>
@@ -42,24 +42,50 @@
             <div class="form-control newBot__settings-control">
                 <label class="label" for="save__order">Страховочный ордер:</label>
                 <input v-model="bot.botSettings.safeOrder.size" 
-                        @change="checkValue('safeOrderSize'); checkSafeOrderSize()"
-                        :step="getStep()" 
-                        :min="minNotional" 
-                        id="save__order" 
-                        type="number" 
-                        class="input settings__input">
+                    @change="checkValue('safeOrderSize'); checkSafeOrderSize()"
+                    :step="getStep()" 
+                    :min="minNotional" 
+                    id="save__order" 
+                    type="number" 
+                    class="input settings__input">
             </div>
             <div class="form-control newBot__settings-control">
                 <label class="label" for="count__save-order">Кол-во страховочных ордеров:</label>
-                <input :min="0" :step="1" @change="checkValue('safeOrderAmount'); checkStopLoss(); checkMaxOrders();" v-model="bot.botSettings.safeOrder.amount" id="count__save-order" type="number" class="input settings__input">
+                <input 
+                    :min="0"
+                    :max='99' 
+                    :step="1" 
+                    @change="checkValue('safeOrderAmount'); checkStopLoss(); checkMaxOrders();" 
+                    v-model="bot.botSettings.safeOrder.amount" 
+                    id="count__save-order" 
+                    type="number" 
+                    class="input settings__input"
+                >
             </div>
             <div class="form-control newBot__settings-control">
                 <label class="label" for="count__bots">Макс открытых СО:</label>
-                <input :min="0" :max="bot.botSettings.safeOrder.amount" :step="1" @change="checkValue('maxOrders'); checkMaxOrders(true)" v-model="bot.botSettings.maxOpenSafetyOrders" id="count__max-save-order" type="number" class="input settings__input">
+                <input 
+                    :min="0" 
+                    :max="bot.botSettings.safeOrder.amount" 
+                    :step="1" 
+                    @change="checkValue('maxOrders'); checkMaxOrders(true)" 
+                    v-model="bot.botSettings.maxOpenSafetyOrders" 
+                    id="count__max-save-order" 
+                    type="number" 
+                    class="input settings__input"
+                >
             </div>
             <div class="form-control newBot__settings-control" style="margin-top: 9px;">
                 <label class="label label__double-row" for="deviation">Отклонение от начального ордера %</label>
-                <input @change="checkValue('deviation'); checkStopLoss()" v-model="bot.botSettings.deviation" id="deviation" type="number" step='0.01' class="input settings__input">
+                <input 
+                    @change="checkValue('deviation'); checkStopLoss()" 
+                    v-model="bot.botSettings.deviation" 
+                    id="deviation" 
+                    type="number" 
+                    step='0.1'
+                    max='10' 
+                    class="input settings__input"
+                >
             </div>
             <div class="form-control newBot__settings-control">
                 <label class="label" for="stop__loss">Стоп лосс %</label>
@@ -69,12 +95,22 @@
                     id="stop__loss" 
                     type="number" 
                     min="0"
-                    step='0.01'
+                    max='10'
+                    step='0.1'
                     class="input settings__input">
             </div>
             <div class="form-control newBot__settings-control">
                 <label class="label" for="take__profit">Тейк профит %</label>
-                <input v-model="bot.botSettings.takeProfit" @change="checkValue('takeProfit')" id="take__profit" type="number" min="0" step='0.01' class="input settings__input">
+                <input 
+                    v-model="bot.botSettings.takeProfit" 
+                    @change="checkValue('takeProfit')" 
+                    id="take__profit" 
+                    type="number" 
+                    min="0"
+                    max='10' 
+                    step='0.1' 
+                    class="input settings__input"
+                >
             </div>
             <div class="form-control newBot__settings-control">
                 <label class="label">Мартингейл</label>
@@ -182,6 +218,12 @@
         },
         methods: {
             checkValue(state) {
+                //
+                if( this.bot.botSettings.safeOrder.amount.length > 2 ) this.bot.botSettings.safeOrder.amount = 99;
+                if( this.bot.botSettings.deviation.length > 2 ) this.bot.botSettings.deviation = 10;
+                if( this.bot.botSettings.stopLoss.length > 2 ) this.bot.botSettings.stopLoss = 10;
+                if( this.bot.botSettings.takeProfit.length > 2 ) this.bot.botSettings.takeProfit = 10;
+                //
                 let bs = this.bot.botSettings;
                 const takeProfit = 'takeProfit',
                     initialOrder = 'initialOrder',
