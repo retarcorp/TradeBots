@@ -1,7 +1,14 @@
 let express = require('express');
 var router = express.Router();
-// let Users = require('../modules/Users');
+let Users = require('../modules/Users');
 let Income = require('../modules/Income');
+
+
+
+router.get('/api/income/get', (req, res, next) => {
+	let user = {name: req.cookies.user.name};
+	Users.Income.get(user, data => res.json(data));
+});
 
 router.get('/api/income/getUserIncome', (req, res, next) => {
 	let user = {name: req.cookies.user.name};
