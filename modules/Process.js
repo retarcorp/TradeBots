@@ -1000,8 +1000,9 @@ module.exports = class Process {
 	async updateProcessOrdersList(user = this.user) {
 		const collection = CONSTANTS.USERS_DATA_COLLECTION;
 		user = { name: user.name };
-		let ordersList = this.dealOrders,
-			change = await this.getChangeObject(`orders.${this.dealId}`, ordersList);
+		let ordersList = this.dealOrders;
+		ordersList = await this.updateOrders(ordersList);
+		let change = await this.getChangeObject(`orders.${this.dealId}`, ordersList);
 		await Mongo.syncUpdate(user, change, collection);
 	}
 
