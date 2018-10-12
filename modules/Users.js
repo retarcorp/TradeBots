@@ -487,30 +487,33 @@ let Users = {
 
 	,Income: {
 		get(user, callback = (data = {}) => console.log(data)) {
-			Mongo.select(user, CONSTANTS.USERS_DATA_COLLECTION, data => {
+			Mongo.select(user, CONSTANTS.USERS_COLLECTION, data => {
+				
 				if(data.length) {
 					data = data[0];
 					const ordersList = data.ordersList;
-					callback(data);
+					console.log(ordersList)
+					let Income = {
+						dayIncome: this.coutDayIncome(ordersList),
+						allIncome: this.countAllIncome(ordersList)
+					};
+	
+					const res = {
+						status: 'ok',
+						data: {
+							income: Income
+						}
+					};
+					
+					if(callback) callback(res)
+					// callback(data);
 				} else {
 					callback({
 						status: 'error',
 						message: 'Пользователь не найден.'
 					});
 				}
-				// let Income = {
-				// 	// dayIncome: this.coutDayIncome(ordersList),
-				// 	// allIncome: this.countAllIncome(ordersList)
-				// };
-
-				// const res = {
-				// 	status: 'ok',
-				// 	data: {
-				// 		income: Income
-				// 	}
-				// };
 				
-				// if(callback) callback(res)
 			});
 		},
 
@@ -639,10 +642,10 @@ let Users = {
 				}
 			}
 			
-			if(order.side === CONSTANTS.ORDER_SIDE.BUY) {
+			if(order.side === CONSTANTS.ORDER_SIDE.BUY && order.status === CONSTANTS.ORDER_STATUS.FILLED) {
 				income[curSymbol].value -= Number(order.cummulativeQuoteQty);
 			}
-			else if(order.side === CONSTANTS.ORDER_SIDE.SELL) {
+			else if(order.side === CONSTANTS.ORDER_SIDE.SELL && order.status === CONSTANTS.ORDER_STATUS.FILLED) {
 				income[curSymbol].value  += Number(order.cummulativeQuoteQty);
 			}
 

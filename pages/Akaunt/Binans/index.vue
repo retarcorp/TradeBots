@@ -21,9 +21,15 @@
                 </div>
                 <div class="form__actions">
                     <div class="d-flex">
-                        <button v-if="!isSaved" @click.prevent="onSettingsSave" class="button button--success">Сохранить</button>
-                        <button v-else @click.prevent="isSaved = false" class="button button--success">Изменить</button>
-                        <button @click.prevent="onSettingsDelete" class="button button--danger">Удалить</button>
+                        <button v-if="!isSaved"
+                                @click.prevent="onSettingsSave" 
+                                :class="{'button--disabled': !isFormValid}" 
+                                :disabled="!isFormValid" 
+                                class="button button--success">Сохранить</button>
+                        <button v-else @click.prevent="isSaved = false" 
+                                class="button button--success">Изменить</button>
+                        <button @click.prevent="onSettingsDelete" 
+                            class="button button--danger">Удалить</button>
                     </div>
                 </div>
             </form>
@@ -46,6 +52,9 @@
         computed: {
             binance() {
                 return this.$store.getters.getBinanceAPI;
+            },
+            isFormValid() {
+                return this.binance.name && this.binance.key && this.binance.secret;
             }
         },
         methods: {

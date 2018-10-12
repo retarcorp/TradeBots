@@ -32,7 +32,7 @@ export default {
     },
     created() {
         this.$store.commit('setSpiner', true);
-        this.$axios.$get('/api/income/getUserIncome')
+        this.$axios.$get('/api/income/get')//UserIncome')
             .then(res => {
                 if(res.status === 'ok') {
                     this.income = res.data.income;
