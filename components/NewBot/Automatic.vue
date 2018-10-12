@@ -3,7 +3,13 @@
         <div class="newBot__settings">
             <div class="form-control newBot__settings-control">
                 <label class="label">Название бота:</label>
-                <input v-model="bot.title" maxlength="20" type="text" class="input">
+                <input 
+                    v-model="bot.title" 
+                    maxlength="20" 
+                    type="text" 
+                    class="input"
+                    @blur='checkContent'
+                >
             </div>
             <div class="form-control newBot__settings-control">
                 <label class="label" for="main__pair">Основная пара:</label>
@@ -12,6 +18,7 @@
                     id="main__pair" 
                     type="text" 
                     @change="setMinNotional()"
+                    @blur='checkContent'
                     class="input settings__input">
                     <option value="ETH">ETH</option>
                     <option value="BNB">BNB</option>
@@ -21,8 +28,12 @@
             </div>
             <div class="form-control newBot__settings-control">
                 <label class="label" for="main__pair">Котируемая пара:</label>
-                
-                <select v-model="bot.pair.from" id="main__pair" type="text" class="input settings__input">
+                <select 
+                    v-model="bot.pair.from" 
+                    id="main__pair" 
+                    type="text" 
+                    class="input settings__input"
+                    @blur='checkContent'>
                     <option 
                         v-for="pair in filteredPairs" 
                         :key="pair.id" 
@@ -68,6 +79,7 @@
                     id="start__order" 
                     type="number" 
                     class="input settings__input"
+                    @blur='checkContent'
                 >
             </div>
             <div class="form-control newBot__settings-control">
@@ -77,13 +89,24 @@
                     v-model="bot.botSettings.stopLoss"
                     id="stop__loss"
                     type="number"
-                    step='0.01'
+                    step='0.1'
                     min="0"
+                    max='10'
                     class="input settings__input">
             </div>
             <div class="form-control newBot__settings-control">
                 <label class="label" for="take__profit">Тейк профит %</label>
-                <input v-model="bot.botSettings.takeProfit" @change="checkValue('takeProfit')" min="0" id="take__profit" type="number" step='0.01' class="input settings__input">
+                <input 
+                    v-model="bot.botSettings.takeProfit" 
+                    @change="checkValue('takeProfit')" 
+                    min="0"
+                    max='10' 
+                    id="take__profit" 
+                    type="number" 
+                    step='0.1' 
+                    class="input settings__input"
+                    @blur='checkContent'
+                >
             </div>
         </div>
         <div class="newBot__conditions">
@@ -240,9 +263,19 @@ export default {
         }
     },
     methods: {
+        templateMessage(number) {
+            this.$store.commit('setStatus', 'info');
+            this.$store.commit('setMessage', `Максимальное значение данного поля - ${number}`);
+        },
         checkValue(state) {
-            if( this.bot.botSettings.stopLoss.length > 2 ) this.bot.botSettings.stopLoss = 10;
-            if( this.bot.botSettings.takeProfit.length > 2 ) this.bot.botSettings.takeProfit = 10;
+            if( this.bot.botSettings.stopLoss > 10 ) {
+                this.bot.botSettings.stopLoss = 10;
+                this.templateMessage(10);
+            }
+            if( this.bot.botSettings.takeProfit > 10 ) {
+                this.bot.botSettings.takeProfit = 10;
+                this.templateMessage(10);
+            }
             let bs = this.bot.botSettings;
             const takeProfit = 'takeProfit',
                 initialOrder = 'initialOrder',
@@ -261,6 +294,12 @@ export default {
         getStep() {
             if(Math.floor(this.minNotional) >= 1) return 1;
             else return this.minNotional;
+        },
+        checkContent(event) {
+            if( !event.target.value ) {
+                this.$store.commit('setStatus', 'info');
+                this.$store.commit('setMessage', 'Это поле является обязательным');
+            }
         },
         setMinNotional() {
             if(this.bot.pair.to !== '') {
