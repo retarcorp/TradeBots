@@ -25,7 +25,12 @@
                 </div>
                 <div class="form-control">
                     <div class="label">Новый пароль</div>
-                    <input v-model="newPass" class="input" type="password">
+                    <input 
+                        v-model="newPass" 
+                        class="input" 
+                        type="password"
+                        @blur='closeInfoPopup'
+                    >
                 </div>
                 <div class="form-control">
                     <div class="label">Подтверждение нового пароля</div>
@@ -59,6 +64,15 @@ export default {
         },
         clientAnswer() {
             return this.$store.getters.getClientAnswer;
+        },
+        isRightPassword() {
+            return this.newPass.length >= 6 
+                && this.newPass.length <= 20
+                && this.newPass.toUpperCase() !== this.newPass
+                && this.newPass.toLowerCase() !== this.newPass
+                && this.newPass.match(/[0-9]/) !== null
+                ? true
+                : false;
         },
         isFormValid() {
             return this.currentPass !== '' &&
@@ -102,6 +116,12 @@ export default {
             }
             this.onCancel();
             this.$store.commit('clearAnswer');
+        },
+        closeInfoPopup() {
+            if( !this.isRightPassword ) {
+                this.$store.commit('setStatus', 'info');
+                this.$store.commit('setMessage', 'Пароль должен содержать от 6 до 20 символов, включая минимум одну заглавную букву, прописную и цифру.');
+            }
         }
     }
 }
