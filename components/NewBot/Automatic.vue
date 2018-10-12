@@ -3,7 +3,7 @@
         <div class="newBot__settings">
             <div class="form-control newBot__settings-control">
                 <label class="label">Название бота:</label>
-                <input v-model="bot.title" type="text" class="input">
+                <input v-model="bot.title" maxlength="20" type="text" class="input">
             </div>
             <div class="form-control newBot__settings-control">
                 <label class="label" for="main__pair">Основная пара:</label>
@@ -60,7 +60,15 @@
             </div> -->
             <div class="form-control newBot__settings-control">
                 <label class="label" for="start__order">Начальный ордер:</label>
-                <input v-model="bot.botSettings.initialOrder" @change="checkValue('initialOrder'); checkInitialOrder()" :min="minNotional" :step="getStep()" id="start__order" type="number" class="input settings__input">
+                <input 
+                    v-model="bot.botSettings.initialOrder" 
+                    @change="checkValue('initialOrder'); checkInitialOrder()" 
+                    :min="minNotional" 
+                    :step="getStep()" 
+                    id="start__order" 
+                    type="number" 
+                    class="input settings__input"
+                >
             </div>
             <div class="form-control newBot__settings-control">
                 <label class="label" for="stop__loss">Стоп лосс %</label>
@@ -233,6 +241,8 @@ export default {
     },
     methods: {
         checkValue(state) {
+            if( this.bot.botSettings.stopLoss.length > 2 ) this.bot.botSettings.stopLoss = 10;
+            if( this.bot.botSettings.takeProfit.length > 2 ) this.bot.botSettings.takeProfit = 10;
             let bs = this.bot.botSettings;
             const takeProfit = 'takeProfit',
                 initialOrder = 'initialOrder',
