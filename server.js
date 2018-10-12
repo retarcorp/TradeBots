@@ -19,11 +19,13 @@ const cors = require('cors');
 const Mongo = require('./modules/Mongo');
 const Users = require('./modules/Users');
 const Statistics = require('./modules/Statistics');
+const Income = require('./modules/Income');
 let Symbols = require('./modules/Symbols')
 Mongo.init()
 .then(data => {
   Users.Bots.setBotsArray();
   // Statistics.updateUsersStatistic();
+  Income.liveUpdateIncome();
 	Symbols.initClient();
 	Symbols.updateSymbolsPriceFilter();
 });
