@@ -3,7 +3,14 @@
         <div class="bots__settings manual-settings">
             <div class="form-control newBot__settings-control">
                 <label class="label" for="label">Название бота:</label>
-                <input v-model="bot.title" id="bot__name" maxlength="20" type="text" class="input settings__input">
+                <input 
+                    v-model="bot.title" 
+                    id="bot__name" 
+                    maxlength="20" 
+                    type="text" 
+                    class="input settings__input"
+                    @blur='checkContent'
+                >
             </div>
             <div class="form-control newBot__settings-control">
                 <label class="label" for="main__pair">Основная пара:</label>
@@ -12,6 +19,7 @@
                     id="main__pair" 
                     type="text" 
                     @change="setMinNotional()"
+                    @blur='checkContent'
                     class="input settings__input">
                     <option value="ETH">ETH</option>
                     <option value="BNB">BNB</option>
@@ -21,7 +29,13 @@
             </div>
             <div class="form-control newBot__settings-control">
                 <label class="label" for="main__pair">Котируемая пара:</label>
-                <select v-model="bot.pair.from" id="main__pair" type="text" class="input settings__input">
+                <select 
+                    v-model="bot.pair.from" 
+                    id="main__pair" 
+                    type="text" 
+                    class="input settings__input"
+                    @blur='checkContent'
+                >
                     <option 
                         v-for="pair in filteredPairs" 
                         :key="pair.id" 
@@ -32,17 +46,20 @@
             <div class="form-control newBot__settings-control">
                 <label class="label" for="start__order">Начальный ордер:</label>
                 <input @change="changeSafeOrderSize(); checkValue('initialOrder')" 
-                        v-model="bot.botSettings.initialOrder" 
-                        :step="getStep()" 
-                        :min="minNotional" 
-                        id="start__order" 
-                        type="number" 
-                        class="input settings__input">
+                    v-model="bot.botSettings.initialOrder" 
+                    :step="getStep()" 
+                    :min="minNotional" 
+                    id="start__order" 
+                    type="number" 
+                    class="input settings__input"
+                    @blur='checkContent'
+                >
             </div>
             <div class="form-control newBot__settings-control">
                 <label class="label" for="save__order">Страховочный ордер:</label>
                 <input v-model="bot.botSettings.safeOrder.size" 
                     @change="checkValue('safeOrderSize'); checkSafeOrderSize()"
+                    @blur='checkContent'
                     :step="getStep()" 
                     :min="minNotional" 
                     id="save__order" 
@@ -56,6 +73,7 @@
                     :max='99' 
                     :step="1" 
                     @change="checkValue('safeOrderAmount'); checkStopLoss(); checkMaxOrders();" 
+                    @blur='checkContent'
                     v-model="bot.botSettings.safeOrder.amount" 
                     id="count__save-order" 
                     type="number" 
@@ -68,7 +86,8 @@
                     :min="0" 
                     :max="bot.botSettings.safeOrder.amount" 
                     :step="1" 
-                    @change="checkValue('maxOrders'); checkMaxOrders(true)" 
+                    @change="checkValue('maxOrders'); checkMaxOrders(true)"
+                    @blur='checkContent' 
                     v-model="bot.botSettings.maxOpenSafetyOrders" 
                     id="count__max-save-order" 
                     type="number" 
@@ -85,6 +104,7 @@
                     step='0.1'
                     max='10' 
                     class="input settings__input"
+                    @blur='checkContent'
                 >
             </div>
             <div class="form-control newBot__settings-control">
@@ -110,6 +130,7 @@
                     max='10' 
                     step='0.1' 
                     class="input settings__input"
+                    @blur='checkContent'
                 >
             </div>
             <div class="form-control newBot__settings-control">
@@ -121,8 +142,8 @@
                             id="martingale-on" 
                             class="radio__point" 
                             type="radio"
-                            value="1" 
-                            >
+                            value="1"
+                        >
                         Вкл
                     </label>
                     <label class="martingeil__mode">
@@ -131,7 +152,9 @@
                             id="martingale-off" 
                             class="radio__point" 
                             type="radio"
-                            value="0" >
+                            value="0" 
+                            @blur='checkContent'
+                        >
                         Выкл
                     </label>
                 </div>
@@ -142,7 +165,8 @@
                 <label class="label label__double-row" for="save__order-up">Увеличение страховочного ордера: </label>
                 <span class="range__value">{{ bot.botSettings.martingale.value }}</span>
                 <input 
-                    v-model="bot.botSettings.martingale.value" 
+                    v-model="bot.botSettings.martingale.value"
+                    @blur='checkContent' 
                     id="save__order-up"
                     type="range" 
                     min="1.01" 
@@ -152,7 +176,12 @@
             </div>
         </div>
         <div class="text-right">
-            <button @click.prevent="onAddManualBot" class="button button--success" :class="{'button--disabled': !isFormValid}" :disabled="!isFormValid">{{ bot.botID ? 'Сохранить' : 'Добавить' }}</button>
+            <button 
+                @click.prevent="onAddManualBot" 
+                class="button button--success" 
+                :class="{'button--disabled': !isFormValid}" 
+                :disabled="!isFormValid">{{ bot.botID ? 'Сохранить' : 'Добавить' }}
+            </button>
         </div>
     </div>
 </template>
@@ -217,12 +246,32 @@
             }
         },
         methods: {
+            templateMessage(number) {
+                this.$store.commit('setStatus', 'info');
+                this.$store.commit('setMessage', `Максимальное значение данного поля - ${number}`);
+            },
             checkValue(state) {
                 //
-                if( this.bot.botSettings.safeOrder.amount.length > 2 ) this.bot.botSettings.safeOrder.amount = 99;
-                if( this.bot.botSettings.deviation.length > 2 ) this.bot.botSettings.deviation = 10;
-                if( this.bot.botSettings.stopLoss.length > 2 ) this.bot.botSettings.stopLoss = 10;
-                if( this.bot.botSettings.takeProfit.length > 2 ) this.bot.botSettings.takeProfit = 10;
+                if( this.bot.botSettings.safeOrder.amount > 99 ) {
+                    this.bot.botSettings.safeOrder.amount = 99;
+                    this.templateMessage(99);
+                }
+                if( this.bot.botSettings.maxOpenSafetyOrders > 99 ) {
+                    this.bot.botSettings.maxOpenSafetyOrders = 99;
+                    this.templateMessage(99);
+                }
+                if( this.bot.botSettings.deviation > 10 ) {
+                    this.bot.botSettings.deviation = 10;
+                    this.templateMessage(10);
+                }
+                if( this.bot.botSettings.stopLoss > 10 ) {
+                    this.bot.botSettings.stopLoss = 10;
+                    this.templateMessage(10);
+                }
+                if( this.bot.botSettings.takeProfit > 10 ) {
+                    this.bot.botSettings.takeProfit = 10;
+                    this.templateMessage(10);
+                }
                 //
                 let bs = this.bot.botSettings;
                 const takeProfit = 'takeProfit',
@@ -245,6 +294,12 @@
             },
             checkSafeOrderSize() {
                 this.bot.botSettings.safeOrder.size = this.bot.botSettings.safeOrder.size <= this.minNotional ? this.minNotional : this.bot.botSettings.safeOrder.size;
+            },
+            checkContent(event) {
+                if( !event.target.value ) {
+                    this.$store.commit('setStatus', 'info');
+                    this.$store.commit('setMessage', 'Это поле является обязательным');
+                }
             },
             changeSafeOrderSize() {
                 this.bot.botSettings.initialOrder = this.bot.botSettings.initialOrder <= this.minNotional ? this.minNotional : this.bot.botSettings.initialOrder;
@@ -289,6 +344,12 @@
                     this.bot.botSettings.stopLoss = (this.bot.botSettings.deviation * this.bot.botSettings.safeOrder.amount * 1.1).toFixed(2)
                 }
                 if(this.bot.botSettings.stopLoss < 0) this.bot.botSettings.stopLoss = 0;
+            },
+            checkContent(event) {
+                if( !event.target.value ) {
+                    this.$store.commit('setStatus', 'info');
+                    this.$store.commit('setMessage', 'Это поле является обязательным');
+                }
             },
             onAddManualBot() {
                 this.$store.commit('setСonfigurationProcess', false);
