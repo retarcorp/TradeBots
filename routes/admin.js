@@ -31,20 +31,18 @@ router.post('/api/admin/signin', (req, res, next) => {
 });
 
 router.get('/api/admin/getUsersList', (req, res, next) => {
-	let admin = {name: req.cookies.admin.name};
+	let admin = req.cookies.admin;
 	Users.getUsersList(admin, data => res.json(data));
 });
 
 router.post('/api/admin/deleteUser', (req, res, next) => {
-	let admin = {name: req.cookies.admin.name};
+	let admin = req.cookies.admin;
 	Users.deleteUser(admin, req.body, data => res.json(data));
 });
 
 router.post('/api/admin/changeUserData', (req, res, next) => {
-	Users.changeUserData();
-	res.json({
-		status: 'ok'
-	});
+	let admin = req.cookies.admin;
+	Users.changeUserData(admin, req.body, data => res.send(data));
 });
 
 router.post('/api/admin/signinAsUser', (req, res, next) => {

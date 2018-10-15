@@ -196,7 +196,7 @@ const store = () =>
 	},
 	actions: {
 		editUser({ commit, getters }, payload){
-			let user =  getters.getUser(payload);
+			let user =  getters.getUser(payload); 
 
 			this.$axios
 				.$post('/api/admin/changeUserData', user)

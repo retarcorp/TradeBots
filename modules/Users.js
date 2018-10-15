@@ -21,10 +21,16 @@ let Users = {
 
 	,async changeUserData(admin = {}, nextUserData = {}, callback = (data = 0) => {}) {
 		if(admin.name && admin.admin) {
-			admin = { name: admin.name }
+			admin = { name: admin.name };
 			let _admin = await Mongo.syncSelect(admin, CONSTANTS.USERS_COLLECTION);
 
-			if(adminData.length) {
+			if(_admin.length) {
+				let user = { name: nextUserData.name }, 
+					change = Object.assign({}, nextUserData);
+
+				delete change.name;
+
+				await Mongo.syncUpdate(user, change, CONSTANTS.USERS_COLLECTION);
 
 				callback({
 					status: 'ok',
