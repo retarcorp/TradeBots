@@ -26,7 +26,10 @@ let Users = {
 
 			if(adminData.length) {
 
-				
+				callback({
+					status: 'ok',
+					message: 'Выполнено успешно!'
+				});
 
 			} else {
 				callback({
