@@ -1,15 +1,15 @@
 <template>
     <span class="spiner__wrapper">
-        <spinner size='100%' v-if='isActive'></spinner>
+        <!-- <spinner size='100%' v-if='isActive'></spinner> -->
     </span>
 </template>
 
 <script>
-    import Spinner from 'vue-loading-spinner/src/components/Circle';
+    // import Spinner from 'vue-loading-spinner/src/components/Circle';
     export default {
-        components: {
-            Spinner
-        },
+        // components: {
+        //     Spinner
+        // },
         computed: {
             isActive() {
                 return this.$store.getters.getSpinerStatus

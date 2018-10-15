@@ -1,6 +1,6 @@
 <template>
     <div class='alertInfo'>
-        <!-- <div 
+        <div 
             v-if="getStatus === 'ok'" 
             class='alertInfo__text alertInfo__text--success'>
             <p>{{getMessage || 'Выполнено успешно!'}}</p>
@@ -18,7 +18,7 @@
             class='alertInfo__text alertInfo__text--primary'>
             <p>{{getMessage ||'information received'}} </p>
         </div>
-         -->
+        
     </div> 
 </template>
 
