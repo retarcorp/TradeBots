@@ -123,8 +123,7 @@
                         >{{ signal.name }}</option>
                 </select> -->
                 <div
-                    class="newBot__conditions-select">
-                    {{ signals[0].name }}: 
+                    class="newBot__conditions-select">{{ signals[0].name }}: 
                 </div>
                 <select
                     v-model="autoItem.timeframe"
