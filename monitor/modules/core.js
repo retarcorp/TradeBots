@@ -9,13 +9,15 @@ module.exports = Core = {
             ,uri: 'http://localhost:3003/api/tradeSignals/getData'
         }, (err, response, body) => {
             let data = [];
-
-            console.log(body);
+            body = JSON.parse(body);
+            console.log(body, typeof body);
 
             if (err) {
                 console.log(err);
                 return;
             }
+
+
 
             if ((typeof body !== 'object' && !(body instanceof Array)) || body.length === 0) {
                 setTimeout(this.init.bind(this), 10000);
@@ -49,10 +51,9 @@ module.exports = Core = {
     	});
 
     	for (let tmf of tmfs) {
-    		response = await getFromApi(tmf.toLocaleUpperCase());
-    		response = JSON.parse(response);
+    		response = await this.getFromApi(tmf.toLocaleUpperCase());
 
-    		binance = response.data;
+    		binance = response;
 
     		data = data.map( (elm) => {
      			const curr = binance.find( bin => bin.d[0] == elm.symbol && elm.timeframe == tmf);
