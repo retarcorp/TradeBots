@@ -143,6 +143,7 @@ let Users = {
 		this.find( { name: name }, collection, (data) => {
 
 			if (!data.length) {
+				Mongo.insert({ name: User.name, userId: User.userId }, CONSTANTS.USERS_DATA_COLLECTION, data => console.log(data, "ISERT TO USERSDATA"));
 				Mongo.insert(User, collection, callback);
 
 				// Mailer.send({

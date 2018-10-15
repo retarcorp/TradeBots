@@ -1,9 +1,6 @@
-const md5 = require('md5')
-const Mongo = require('./Mongo')
-const Bot = require('../modules/Bot')
-const Crypto = require('./Crypto')
-const CONSTANTS = require('../constants')
-const Binance = require('./Binance')
+const Mongo = require('./Mongo');
+const CONSTANTS = require('../constants');
+const Bitaps = require('../modules/Bitaps');
 const uniqid = require('uniqid');
 const TF = CONSTANTS.TF;
 let binanceAPI = require('binance-api-node').default;
@@ -14,13 +11,17 @@ class Tariff {
 		tariffId = uniqid.time(TF),
 		price = 0,
 		maxBotAmount = 0,
-		termOfUse = 0
+		termOfUse = 0,
+		status = false,
+		paidPrice = 0
 	} = {}) {
 		this.title = title;
 		this.tariffId = tariffId;
 		this.price = price;
 		this.maxBotAmount = maxBotAmount;
 		this.termOfUse = termOfUse; 
+		this.status = status;
+		this.paidPrice = paidPrice;
 	}
 }
 
@@ -56,11 +57,17 @@ class TariffList {
 				let curUser = await Mongo.syncSelect(user, CONSTANTS.USERS_COLLECTION);
 					curUser = curUser[0];
 				let userTariffs = curUser.tariffs || [];
+				let sendUser = {
+					name: curUser.name,
+					userId: curUser.userId
+				}
 
 				userTariffs.push(currentTariff);
 
 				await Mongo.syncUpdate(user, { tariffs: userTariffs }, CONSTANTS.USERS_COLLECTION);
 				callback(this.getSuccessfullyMessage());
+				console.log(currentTariff)
+				// await Bitaps.createPayment(sendUser, currentTariff, callback);
 
 			} else {
 				callback(this.getFailureMessage({ message: 'Выбранный тариф не существует!' }));

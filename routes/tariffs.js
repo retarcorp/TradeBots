@@ -44,6 +44,9 @@ router.post('/api/admin/editTariff', (req, res, next) => {
 	});
 });
 
+
+
+//переделать!
 router.post('/api/user/purchaseTariff', (req, res, next) => {
 	let user = req.cookies.user,
 		tariffId = req.body.id;

@@ -105,9 +105,11 @@ const CONSTANTS = {
 
 	TF: 'TF-', //Tariff
 
-	US: 'US-', //User
+	US: 'US-', //User 
 
 	DL: 'DL-', //Deal
+
+	PM: 'PM-', //Payment
 
 	DISABLE_FLAG: 'disable',
 
@@ -137,6 +139,8 @@ const CONSTANTS = {
 
 	STATISTICS_COLLECTION: 'statistics',
 
-	USERS_DATA_COLLECTION: 'usersData'
+	USERS_DATA_COLLECTION: 'usersData',
+
+	PAYMENTS_COLLECTION: 'payments'
 }
 module.exports = CONSTANTS
