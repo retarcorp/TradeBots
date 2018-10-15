@@ -158,7 +158,7 @@
                 v-for="(item,i) in bot.botSettings.tradingSignals"
                 :key="item.id"
                 :item="item"
-                @item-deleted="onDeleteItem(i)">{{ i+1 }}</automatic-item>
+                @item-deleted="onDeleteItem(i)">{{i + 1}}</automatic-item>
         </div>
         <div class="text-right">
             <button
@@ -289,7 +289,9 @@ export default {
             }
         },
         checkInitialOrder() {
-            this.bot.botSettings.initialOrder = this.bot.botSettings.initialOrder <= this.minNotional ? this.minNotional : this.bot.botSettings.initialOrder;
+            this.bot.botSettings.initialOrder = this.bot.botSettings.initialOrder <= this.minNotional 
+                ? this.minNotional 
+                : this.bot.botSettings.initialOrder;
         },
         getStep() {
             if(Math.floor(this.minNotional) >= 1) return 1;
@@ -348,7 +350,9 @@ export default {
             };
             console.log('onAddManualBot')
             this.$store.commit('setСonfigurationProcess', false);
-            (this.bot && this.bot.botID) ? (path = 'updateBot', nextData = nextBotSettings) : (path = 'addBot', nextData = this.bot);
+            (this.bot && this.bot.botID) 
+                ? (path = 'updateBot', nextData = nextBotSettings) 
+                : (path = 'addBot', nextData = this.bot);
             this.$store.dispatch(path, nextData)
                 .then(() => {
                     this.$emit('changed')
