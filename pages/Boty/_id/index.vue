@@ -124,8 +124,6 @@
                     <button @click="onDeleteBot" class="button button--danger button__remove-bot">Удалить бота</button>
                 </div>
             </div>
-
-<!-- v-if='bot.processes[log].runningProcess' -->
             <div class='bots__log' v-if='Object.keys(this.bot.processes).length'>
                 <ul>
                     <li 
@@ -283,7 +281,7 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
             isBotHasOrders() {
                 if( this.currentId )
                     return this.bot.processes[this.currentId].orders.length &&
-                        this.bot.processes[this.currentId].orders.filter(order => order && (order.status === 'NEW' || order.status === 'PARTIALLY_FILLED')).length
+                        this.bot.processes[this.currentId].orders.filter(order => order && order.status !== 'cancelled' &&  (order.status === 'NEW' || order.status === 'PARTIALLY_FILLED')).length
                 else return [];        
             },
             bot() {
@@ -291,12 +289,12 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
             },
             openedOrders() {
                 if( this.currentId )
-                    return this.bot.processes[this.currentId].orders.filter(order => order !== null && (order.status === 'NEW' || order.status === 'PARTIALLY_FILLED'))
+                    return this.bot.processes[this.currentId].orders.filter(order => order !== null && order.status !== 'cancelled' && (order.status === 'NEW' || order.status === 'PARTIALLY_FILLED'))
                 else return []; 
             },
             closedOrders() {
                 if( this.currentId )
-                    return this.bot.processes[this.currentId].orders.filter(order => order !== null && (order.status !== 'NEW' && order.status !== 'PARTIALLY_FILLED'))
+                    return this.bot.processes[this.currentId].orders.filter(order => order !== null && order.status !== 'cancelled' && (order.status !== 'NEW' && order.status !== 'PARTIALLY_FILLED'))
                 else return []; 
             },
             clientAnswer() {
@@ -371,14 +369,14 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
             cancelAll() {
                 this.$store.commit('setStatus', 'confirm');
                 if(this.clientAnswer === 'accept') {
-                    this.$store.commit('setSpiner', true);
+                    // this.$store.commit('setSpiner', true);
                     this.$axios
                         .$post('/bots/orders/cancelAll', {
                             'botID': this.bot.botID,
                             'processeId': this.currentId
                         })
                         .then( res => {
-                            this.$store.commit('setSpiner', false)
+                            // this.$store.commit('setSpiner', false)
                             this.checkStatus(res);
                         })
                 }
@@ -403,7 +401,7 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
                             'orderId': this.tmpOrd,
                             'processeId': this.currentId
                         })
-                        .then( () => this.$store.commit('setSpiner', false) )
+                        // .then( () => this.$store.commit('setSpiner', false) )
                 }
             },
             setBotFreeze() {

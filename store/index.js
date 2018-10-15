@@ -1,7 +1,7 @@
-import Vue from 'vue'
-import Vuex from 'vuex'
+import Vue from 'vue';
+import Vuex from 'vuex';
 
-Vue.use(Vuex)
+Vue.use(Vuex);
 
 const store = () =>
 	new Vuex.Store({
@@ -218,7 +218,7 @@ const store = () =>
 					commit('setMessage', res.message);
 				})
 		},
-		setUsers({ commit }, payload) {
+		setUsers({ commit }) {
 			this.$axios
 				.$get('/api/admin/getUsersList')
 				.then(res => {
@@ -231,16 +231,16 @@ const store = () =>
 				})
 				.catch(e => console.log(e));
 		},
-		adminSignout({ commit, dispatch }, payload) {
+		adminSignout({ commit, dispatch }) {
 			this.$axios.$get('/api/admin/signout')
 				.then(res => {
 					if(res.status === 'ok') {
 						this.$router.push('/admin/signin');
-						commit('setSpiner', false);
+						// commit('setSpiner', false);
 						dispatch('setAuthorizedAdmin', false);
 					} else {
 						// alert(res.message)
-						commit('setSpiner', false);
+						// commit('setSpiner', false);
 					}
 				})
 				.catch(e => console.log(e))
@@ -268,7 +268,7 @@ const store = () =>
 				})
 				.catch(e => consoe.log(e));
 		},
-		setEmail({ commit }, payload) {
+		setEmail({ commit }) {
 			this.$axios
 				.get('/api/account/getEmail')
 				.then(res => {
@@ -278,7 +278,7 @@ const store = () =>
 				})
 				.catch(e => console.log(e));
 		},
-		deleteBinanceAPI({ commit }, payload) {
+		deleteBinanceAPI({ commit }) {
 			this.$axios
 				.$delete('/account/api')
 				.then(res => {
@@ -289,7 +289,7 @@ const store = () =>
 				})
 				.catch(e => console.log(e))
 		},
-		firstGetBinanceAPI({ commit, getters }, payload) {
+		firstGetBinanceAPI({ commit, getters }) {
 			this.$axios
 				.$get('/account/api')
 				.then(res => {
@@ -312,70 +312,70 @@ const store = () =>
 				.then(res => {
 					if(res.status === 'ok') {
 						commit('setBinanceAPIStatus', true);
-						commit('setSpiner', false);
+						// commit('setSpiner', false);
 					} else {
 						commit('setBinanceAPIStatus', false);
-						commit('setSpiner', false)
+						// commit('setSpiner', false)
 					}
 				})
 				.catch(e => {
-					commit('setSpiner', false)
+					// commit('setSpiner', false)
 				})
 		},
-		getMinNotionals({ commit }, payload) {
+		getMinNotionals({ commit }) {
 			this.$axios
 			.$get(`/api/symbol/getMinNotionals`)
 			.then(res => {
 				if(res.status === 'ok') {
-				commit('setMinNotionals', res.minNotionals)
+					commit('setMinNotionals', res.minNotionals)
 				}
 			})
 			.catch(err => {
 				console.log(err)
 			})
 		},
-		getLotSizes({ commit }, payload) {
+		getLotSizes({ commit }) {
 			this.$axios
 				.$get(`/api/symbol/getLotSizes`)
 				.then(res => {
-				if(res.status === 'ok') {
-					commit('setLotSizes', res.lotSizes)
-				}
+					if(res.status === 'ok') {
+						commit('setLotSizes', res.lotSizes)
+					}
 				})
 				.catch(err => {
-				console.log(err)
+					console.log(err)
 				})
 		},
 		getSymbolsList({ commit }) {
-			commit('setSpiner', true)
+			// commit('setSpiner', true)
 			this.$axios
 				.$get('/api/symbol/list')
 				.then(res => {
-				if(res.status === 'ok') {
-					commit('setSymbolsList', res.data)
-				}
-				else console.error(res)
+					if(res.status === 'ok') {
+						commit('setSymbolsList', res.data)
+					} else console.error(res)
 				})
 				.catch(err => {
-				console.error(err)
+					console.error(err)
 				})
 		},
 		setAuthorizedStatus({ commit }, payload) {
 			commit("setAuthorized", payload);
 		},
 		addBot({ commit, dispatch }, payload) {
-			commit('setSpiner', true);
+			// commit('setSpiner', true);
 			this.$axios
 				.$post("/bots/add", payload)
 				.then(res => {
-				if (res.status === "ok") {
-					commit("addBot", res.data);
-					this.$router.push("/Boty");
-					commit('setStatus', 'ok');
-					commit('setSpiner', false);
-				} else {
-					dispatch('lounchBadMutations');
-				}
+					if (res.status === "ok") {
+						commit("addBot", res.data);
+						commit('setMessage', 'Бот успешно создан');
+						this.$router.push("/Boty");
+						commit('setStatus', 'ok');
+						// commit('setSpiner', false);
+					} else {
+						dispatch('lounchBadMutations');
+					}
 				})
 				.catch(e => console.log(e));
 		},
@@ -383,14 +383,14 @@ const store = () =>
 			commit("addNewBot", payload);
 		},
 		setBotsList({ commit, dispatch }) {
-			commit('setSpiner', true);
+			// commit('setSpiner', true);
 			this.$axios
 				.$get("/bots/getBotsList") 
 				.then(res => {
 					if (res.status === "ok") {
 						commit("setBotsList", res.data);
-						commit('setSpiner', false);
-						// if(res.data.find(bot => bot.status === true)) {
+						// commit('setSpiner', false);
+							// if(res.data.find(bot => bot.status === true)) {
 						// console.log('im here')
 						setTimeout(() => {
 							dispatch('setBotsList')
@@ -402,11 +402,11 @@ const store = () =>
 					} else {
 						dispatch('lounchBadMutations');
 					}
-					})
-					.catch(e => console.log(e));
+				})
+				.catch(e => console.log(e));
 		},
 		deleteBot({ commit, dispatch }, payload) {
-			commit('setSpiner', true);
+			// commit('setSpiner', true);
 			this.$axios
 				.$post("/bots/delete", {
 				botID: payload
@@ -415,8 +415,9 @@ const store = () =>
 				if (res.status === "ok") {
 					this.$router.push('/Boty')
 					commit("deleteBot", res.data.botID);
+					commit('setMessage', 'Бот успешно удален');
 					commit('setStatus', 'ok');
-					commit('setSpiner', false);
+					// commit('setSpiner', false);
 				} else {
 					dispatch('lounchBadMutations');
 				}
@@ -424,25 +425,26 @@ const store = () =>
 				.catch(e => console.log(e));
 		},
 		updateBot({ commit, dispatch }, payload) {
-			commit('setSpiner', true);
+			// commit('setSpiner', true);
 			this.$axios
 				.$post("/bots/update", payload)
 				.then(res => {
-				if (res.status === "ok") {
-					dispatch('lounchGoodMutations', res.data);
-				} else {
-					dispatch('lounchBadMutations');
-				}
+					if (res.status === "ok") {
+						dispatch('lounchGoodMutations', res.data);
+					} else {
+						dispatch('lounchBadMutations');
+					}
 				})
 				.catch(e => console.log(e));
 		},
 		lounchGoodMutations({commit}, payload) {
 			commit("updateBot", payload);
+			commit('setMessage', 'Бот успешно обновлен');
 			commit('setStatus', 'ok');
-			commit('setSpiner', false);
+			// commit('setSpiner', false);
 		},
 		lounchBadMutations({commit}) {
-			commit('setSpiner', false);
+			// commit('setSpiner', false);
 			commit('setStatus', 'error');
 			commit('setMessage', res.message);
 		},

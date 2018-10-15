@@ -1,14 +1,22 @@
 <template>
     <div class='alertInfo'>
-        <div v-if="getStatus === 'ok'" class='alertInfo__text alertInfo__text--success'>
-            <p>{{getMessage||'Выполнено успешно!'}}</p>
+        <div 
+            v-if="getStatus === 'ok'" 
+            class='alertInfo__text alertInfo__text--success'>
+            <p>{{getMessage || 'Выполнено успешно!'}}</p>
         </div>
-        <div v-else-if="getStatus === 'error'" class='alertInfo__text alertInfo__text--error'>
-            <p>{{getMessage||'system error'}}</p>
-            <span class="close" @click='closeApp'>&times;</span>
+        <div 
+            v-else-if="getStatus === 'error'" 
+            class='alertInfo__text alertInfo__text--error'>
+            <p>{{getMessage || 'system error'}}</p>
+            <span  
+                class="close" 
+                @click='closeApp'>&times;</span>
         </div>
-        <div v-else-if="getStatus === 'info'" class='alertInfo__text alertInfo__text--primary'>
-            <p>{{getMessage||'information received'}} </p>
+        <div 
+            v-else-if="getStatus === 'info'" 
+            class='alertInfo__text alertInfo__text--primary'>
+            <p>{{getMessage ||'information received'}} </p>
         </div>
         
     </div> 
@@ -33,7 +41,6 @@
 </script>
 
 <style scoped>
-
 .alertInfo {
     position: fixed; 
     z-index: 999;

@@ -5,12 +5,30 @@
                 <div class="title title--big newBot__title">Добавить бота</div>
                 <div class="newBot__mode">
                     <div class="newBot__mode-item">
-                        <input v-model="mode" name="mode" type="radio" id="auto" value="0">
-                        <label class="newBot__mode-label" for="auto">Автоматический режим</label>
+                        <input 
+                            v-model="mode" 
+                            name="mode" 
+                            type="radio" 
+                            id="auto" 
+                            value="0"
+                        >
+                        <label 
+                            class="newBot__mode-label" 
+                            for="auto"
+                        >Автоматический режим</label>
                     </div>
                     <div class="newBot__mode-item">
-                        <input v-model="mode" name="mode" type="radio" id="manual" value="1">
-                        <label class="newBot__mode-label" for="manual">Ручной</label>
+                        <input 
+                            v-model="mode" 
+                            name="mode" 
+                            type="radio" 
+                            id="manual" 
+                            value="1"
+                        >
+                        <label 
+                            class="newBot__mode-label" 
+                            for="manual"
+                        >Ручной</label>
                     </div>
                 </div>
             </div>
@@ -40,8 +58,9 @@ export default {
     },
     computed: {
         currentComponent() {
-            return this.mode === '0' ? BotAutomatic
-            : BotManual
+            return this.mode === '0' 
+                ? BotAutomatic
+                : BotManual
         }
     }
 }

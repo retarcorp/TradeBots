@@ -45,8 +45,7 @@
             return {
                 email: '',
                 password: '',
-                confirmPassword: '',
-                statusInfo: false
+                confirmPassword: ''
             }
         },
         computed: {
@@ -99,12 +98,6 @@
                     elem.setAttribute('type','password');
                 })
             },
-            // infoPopup() {
-            //     // this.statusInfo = false;
-            // },
-            // closeApp() {
-            //     this.statusInfo = false;
-            // },
             closeInfoPopup() {
                 if( !this.isRightPassword ) {
                     this.$store.commit('setStatus', 'info');

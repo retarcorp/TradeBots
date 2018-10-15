@@ -46,17 +46,17 @@
                 this.$router.push('/Vhod')
             },
             onSignOut() {
-                this.$store.commit('setSpiner', true);
+                // this.$store.commit('setSpiner', true);
                 this.$axios.$get('/signout')
                     .then(res => {
                         if(res.status === 'ok') {
                             this.$router.push('/Registratsia')
-                            this.$store.commit('setSpiner', false);
+                            // this.$store.commit('setSpiner', false);
                             this.$store.dispatch('setAuthorizedStatus', false)
                             this.$store.commit('setEmail', '');
                         } else {
                             alert(res.message)
-                            this.$store.commit('setSpiner', false);
+                            // this.$store.commit('setSpiner', false);
                         }
                     })
                     .catch(e => console.log(e))

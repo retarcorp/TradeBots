@@ -143,8 +143,7 @@
                             class="radio__point" 
                             type="radio"
                             value="1"
-                        >
-                        Вкл
+                        >Вкл
                     </label>
                     <label class="martingeil__mode">
                         <input 
@@ -154,8 +153,7 @@
                             type="radio"
                             value="0" 
                             @blur='checkContent'
-                        >
-                        Выкл
+                        >Выкл
                     </label>
                 </div>
             </div>
@@ -216,7 +214,6 @@
                                 active: '0'
                             }
                         }
-
                     }
                 }
             }
@@ -234,7 +231,6 @@
                         this.bot.botSettings.initialOrder > 0 &&
                         this.bot.botSettings.stopLoss >= 0 &&
                         this.bot.botSettings.takeProfit > 0
-
             },
             filteredPairs() {
                 return this.$store.state.pairs[this.bot.pair.to]
@@ -251,7 +247,6 @@
                 this.$store.commit('setMessage', `Максимальное значение данного поля - ${number}`);
             },
             checkValue(state) {
-                //
                 if( this.bot.botSettings.safeOrder.amount > 99 ) {
                     this.bot.botSettings.safeOrder.amount = 99;
                     this.templateMessage(99);
@@ -272,7 +267,6 @@
                     this.bot.botSettings.takeProfit = 10;
                     this.templateMessage(10);
                 }
-                //
                 let bs = this.bot.botSettings;
                 const takeProfit = 'takeProfit',
                     initialOrder = 'initialOrder',
@@ -281,7 +275,6 @@
                     safeOrderAmount = 'safeOrderAmount',
                     deviation = 'deviation',
                     maxOrders = 'maxOrders';
-
                 switch(state) {
                     case takeProfit: bs.takeProfit = bs.takeProfit < 0 ? 0 : bs.takeProfit; break;
                     case initialOrder: bs.initialOrder = bs.initialOrder < 0 ? 0 : bs.initialOrder; break;
@@ -293,7 +286,9 @@
                 }
             },
             checkSafeOrderSize() {
-                this.bot.botSettings.safeOrder.size = this.bot.botSettings.safeOrder.size <= this.minNotional ? this.minNotional : this.bot.botSettings.safeOrder.size;
+                this.bot.botSettings.safeOrder.size = this.bot.botSettings.safeOrder.size <= this.minNotional 
+                    ? this.minNotional 
+                    : this.bot.botSettings.safeOrder.size;
             },
             checkContent(event) {
                 if( !event.target.value ) {
@@ -302,11 +297,14 @@
                 }
             },
             changeSafeOrderSize() {
-                this.bot.botSettings.initialOrder = this.bot.botSettings.initialOrder <= this.minNotional ? this.minNotional : this.bot.botSettings.initialOrder;
-                this.bot.botSettings.safeOrder.size = (this.bot.botSettings.safeOrder.size <= 0 ) ? this.bot.botSettings.initialOrder : this.bot.botSettings.safeOrder.size
+                this.bot.botSettings.initialOrder = this.bot.botSettings.initialOrder <= this.minNotional 
+                    ? this.minNotional 
+                    : this.bot.botSettings.initialOrder;
+                this.bot.botSettings.safeOrder.size = (this.bot.botSettings.safeOrder.size <= 0 ) 
+                    ? this.bot.botSettings.initialOrder 
+                    : this.bot.botSettings.safeOrder.size
             },
             getStep() {
-                // console.log(this.minNotional)
                 return (Math.floor(this.minNotional) >= 1) ? 1 : this.minNotional;
             },
             setMinNotional() {
@@ -314,8 +312,7 @@
                 if(this.bot.pair.to !== '') {
                     let symbol = this.bot.pair.to;
                     this.minNotional = this.$store.getters.getMinNotional(symbol);
-                }
-                else {
+                } else {
                     this.minNotional = 0;
                 }
                 console.log('___ ' + this.minNotional)
@@ -327,13 +324,10 @@
                 if(!flag) {
                     if(Number(bs.safeOrder.amount) !== 0) {
                         bs.maxOpenSafetyOrders = (bs.safeOrder.amount >= 3) ? 3 : 1;
-                    }
-                    else {
+                    } else {
                         bs.maxOpenSafetyOrders = 0;
                     }
-                    
-                }
-                else {
+                } else {
                     if(Number(bs.safeOrder.amount) < Number(bs.maxOpenSafetyOrders)) {
                         bs.maxOpenSafetyOrders = bs.safeOrder.amount;
                     }
@@ -375,7 +369,6 @@
                 } else {
                     this.$store.dispatch('addBot', this.bot)
                 }
-                
             }
         }
     }

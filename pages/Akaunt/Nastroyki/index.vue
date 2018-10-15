@@ -1,49 +1,53 @@
 <template>
-<div>
-    <div v-if="getStatus === 'newPass'" class='confirm-block' @click="checkWindow">
-        <div class='confirm-block__content'>
-            <p>{{ statusAlert[getStatus] }}</p>
-            <div class='confirm-block__buttons-box'>
-                <button
-                    class='button button--success'
-                    @click='onConfirm'>Да
-                </button>
-                <button
-                    class='button'
-                    @click='onCancel'>Нет
-                </button>
+    <div>
+        <div v-if="getStatus === 'newPass'" class='confirm-block' @click="checkWindow">
+            <div class='confirm-block__content'>
+                <p>{{ statusAlert[getStatus] }}</p>
+                <div class='confirm-block__buttons-box'>
+                    <button
+                        class='button button--success'
+                        @click='onConfirm'>Да
+                    </button>
+                    <button
+                        class='button'
+                        @click='onCancel'>Нет
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="settings">
+            <div class="settings__title title--medium">Изменение пароля</div>
+            <div class="settings__form">
+                <form>
+                    <div class="form-control">
+                        <div class="label">Текущий</div>
+                        <input v-model="currentPass" class="input" type="password">
+                    </div>
+                    <div class="form-control">
+                        <div class="label">Новый пароль</div>
+                        <input 
+                            v-model="newPass" 
+                            class="input" 
+                            type="password"
+                            @blur='closeInfoPopup'
+                        >
+                    </div>
+                    <div class="form-control">
+                        <div class="label">Подтверждение нового пароля</div>
+                        <input v-model="confirmedNewPass" class="input" type="password">
+                    </div>
+                    <div class="form__actions">
+                        <button 
+                            @click.prevent="safePass" 
+                            :class="{'button--disabled': !isFormValid}" 
+                            :disabled="!isFormValid" 
+                            class=" button button--success">Сохранить</button>
+                        <!-- <button class=" button button--danger">Удалить</button> -->
+                    </div>
+                </form>
             </div>
         </div>
     </div>
-    <div class="settings">
-        <div class="settings__title title--medium">Изменение пароля</div>
-        <div class="settings__form">
-            <form>
-                <div class="form-control">
-                    <div class="label">Текущий</div>
-                    <input v-model="currentPass" class="input" type="password">
-                </div>
-                <div class="form-control">
-                    <div class="label">Новый пароль</div>
-                    <input 
-                        v-model="newPass" 
-                        class="input" 
-                        type="password"
-                        @blur='closeInfoPopup'
-                    >
-                </div>
-                <div class="form-control">
-                    <div class="label">Подтверждение нового пароля</div>
-                    <input v-model="confirmedNewPass" class="input" type="password">
-                </div>
-                <div class="form__actions">
-                    <button @click.prevent="safePass" :class="{'button--disabled': !isFormValid}" :disabled="!isFormValid" class=" button button--success">Сохранить</button>
-                    <!-- <button class=" button button--danger">Удалить</button> -->
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
 </template>
 
 <script>
@@ -77,7 +81,7 @@ export default {
         isFormValid() {
             return this.currentPass !== '' &&
                 this.newPass !== '' &&
-                this.newPass.length >=6 &&
+                this.newPass.length >= 6 &&
                 this.newPass.length <= 20 &&
                 this.newPass.toUpperCase() !== this.newPass &&
                 this.newPass.toLowerCase() !== this.newPass &&
@@ -145,7 +149,7 @@ export default {
 }
 
 .form__actions {
-    display: flex
+    display: flex;
 }
 
 .form__button:not(:last-child) {

@@ -59,7 +59,7 @@
         },
         methods: {
             onSettingsSave() {
-                this.$store.commit('setSpiner', true);
+                // this.$store.commit('setSpiner', true);
                 this.$store.dispatch('setBinanceAPI', this.binance);
                 this.$router.push('/Akaunt');
             },
@@ -69,9 +69,6 @@
                 this.isSaved = true;
                 this.$router.push('/Akaunt');
             }
-        },
-        created() {
-            // this.$store.dispatch('firstGetBinanceAPI');
         }
     }
 </script>
