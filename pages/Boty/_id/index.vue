@@ -281,7 +281,7 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
             isBotHasOrders() {
                 if( this.currentId )
                     return this.bot.processes[this.currentId].orders.length &&
-                        this.bot.processes[this.currentId].orders.filter(order => order && order.status !== 'cancelled' &&  (order.status === 'NEW' || order.status === 'PARTIALLY_FILLED')).length
+                        this.bot.processes[this.currentId].orders.filter(order => order && order.status !== 'CANCELED' &&  (order.status === 'NEW' || order.status === 'PARTIALLY_FILLED')).length
                 else return [];        
             },
             bot() {
@@ -289,12 +289,12 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
             },
             openedOrders() {
                 if( this.currentId )
-                    return this.bot.processes[this.currentId].orders.filter(order => order !== null && order.status !== 'cancelled' && (order.status === 'NEW' || order.status === 'PARTIALLY_FILLED'))
+                    return this.bot.processes[this.currentId].orders.filter(order => order !== null && order.status !== 'CANCELED' && (order.status === 'NEW' || order.status === 'PARTIALLY_FILLED'))
                 else return []; 
             },
             closedOrders() {
                 if( this.currentId )
-                    return this.bot.processes[this.currentId].orders.filter(order => order !== null && order.status !== 'cancelled' && (order.status !== 'NEW' && order.status !== 'PARTIALLY_FILLED'))
+                    return this.bot.processes[this.currentId].orders.filter(order => order !== null && order.status !== 'CANCELED' && (order.status !== 'NEW' && order.status !== 'PARTIALLY_FILLED'))
                 else return []; 
             },
             clientAnswer() {

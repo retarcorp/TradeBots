@@ -66,7 +66,7 @@
         },
         methods: {
             onSignUp() {
-                this.$store.commit('setSpiner', true);
+                // this.$store.commit('setSpiner', true);
                 if(this.isFormValid) {
                     this.$axios.$post('/signup',{
                         name: this.email,
@@ -75,16 +75,16 @@
                     .then(res => {
                         console.log(res.status)
                         if(res.status !== 'error') {
-                            this.$store.commit('setSpiner', false);
+                            // this.$store.commit('setSpiner', false);
                             this.$router.push('/Vhod');
                         } else {
                             this.$store.commit('setStatus', 'error');
                             this.$store.commit('setMessage', res.message);
-                            this.$store.commit('setSpiner', false);
+                            // this.$store.commit('setSpiner', false);
                         }
                     })
                     .catch(e => {
-                        this.$store.commit('setSpiner', false);
+                        // this.$store.commit('setSpiner', false);
                     })
                 }
             },

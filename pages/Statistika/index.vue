@@ -2,19 +2,19 @@
     <section class="container">
         <ul class="tabs">
             <li 
-            @click="currentTab = 'opened'" 
-            class="tabs__item"
-            :style="currentTab === 'opened' ? 'backgroundColor: #eee' : ''"
+                @click="currentTab = 'opened'" 
+                class="tabs__item"
+                :style="currentTab === 'opened' ? 'backgroundColor: #eee' : ''"
             >Открытые сделки</li>
             <li 
-            @click="currentTab = 'closed'" 
-            class="tabs__item"
-            :style="currentTab === 'closed' ? 'backgroundColor: #eee' : ''"
+                @click="currentTab = 'closed'" 
+                class="tabs__item"
+                :style="currentTab === 'closed' ? 'backgroundColor: #eee' : ''"
             >Завершенные</li>
             <li 
-            @click="currentTab = 'rejected'" 
-            class="tabs__item"
-            :style="currentTab === 'rejected' ? 'backgroundColor: #eee' : ''"
+                @click="currentTab = 'rejected'" 
+                class="tabs__item"
+                :style="currentTab === 'rejected' ? 'backgroundColor: #eee' : ''"
             >Ошибки</li>
         </ul>
         <div class="tabs__content">
