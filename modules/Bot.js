@@ -59,6 +59,7 @@ module.exports = class Bot {
 
 	continueTrade(user = this.user) {
 		console.log('continueTrade');
+		this.updateUserOrdersList(user);
 		if(this.isManual()) {
 			for (let _id in this.processes) {
 				if(this.processes[_id] && this.processes[_id].runningProcess) {
@@ -141,6 +142,7 @@ module.exports = class Bot {
 			message = `Неверный статус(${nextStatus}).`;
 			await this.updateBot(user);
 		}
+		this.updateUserOrdersList(user);
 
 		return {
 			status: status,
@@ -183,7 +185,7 @@ module.exports = class Bot {
 		}
 		await this.updateBot(user);
 		console.log(']------- changeFreeze');
-		return res
+		return res;
 	}
 
 	//:: START FUNC

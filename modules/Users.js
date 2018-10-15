@@ -19,6 +19,29 @@ let Users = {
 		Mongo.select({ name: user.name }, collection, callback);
 	}
 
+	,async changeUserData(admin = {}, nextUserData = {}, callback = (data = 0) => {}) {
+		if(admin.name && admin.admin) {
+			admin = { name: admin.name }
+			let _admin = await Mongo.syncSelect(admin, CONSTANTS.USERS_COLLECTION);
+
+			if(adminData.length) {
+
+				
+
+			} else {
+				callback({
+					status: 'error',
+					message: 'Недостаточно прав!'
+				});
+			}
+		} else {
+			callback({
+				status: 'error',
+				message: 'Недостаточно прав'
+			});
+		}
+	}
+
 	,deleteUser(admin, userData, callback) {
 		Mongo.select(admin, 'users', data => {
 			let res = {};
@@ -492,7 +515,6 @@ let Users = {
 				if(data.length) {
 					data = data[0];
 					const ordersList = data.ordersList;
-					console.log(ordersList)
 					let Income = {
 						dayIncome: this.coutDayIncome(ordersList),
 						allIncome: this.countAllIncome(ordersList)

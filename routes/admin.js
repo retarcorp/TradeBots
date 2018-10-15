@@ -41,6 +41,7 @@ router.post('/api/admin/deleteUser', (req, res, next) => {
 });
 
 router.post('/api/admin/changeUserData', (req, res, next) => {
+	Users.changeUserData();
 	res.json({
 		status: 'ok'
 	});
