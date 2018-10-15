@@ -31,12 +31,12 @@ export default {
         }
     },
     created() {
-        this.$store.commit('setSpiner', true);
+        // this.$store.commit('setSpiner', true);
         this.$axios.$get('/api/income/getUserIncome')
             .then(res => {
                 if(res.status === 'ok') {
                     this.income = res.data.income;
-                    this.$store.commit('setSpiner', false);
+                    // this.$store.commit('setSpiner', false);
                     this.$store.commit('setIncome', this.income);
                     // this.$store.commit('setStatus', res.status);
                 }
