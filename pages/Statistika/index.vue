@@ -140,7 +140,7 @@ export default {
         }
     },
     created() {
-        this.$store.commit('setSpiner', true);
+        // this.$store.commit('setSpiner', true);
         this.$axios.$get('/statistics')
             .then(res => {
                 if(res.status === 'ok') {
@@ -148,7 +148,7 @@ export default {
                     this.$store.commit('setStatisticsList', this.orders);
                     // this.$store.commit('setMessage', res.message);
                     // this.$store.commit('setStatus', res.status);
-                    this.$store.commit('setSpiner', false);
+                    // this.$store.commit('setSpiner', false);
                 } 
                 else if(res.status === 'info') {
                     this.$store.commit('setMessage', res.message);
