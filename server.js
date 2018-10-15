@@ -9,6 +9,12 @@ var nuxtConfigFile = resolve(rootDir, 'nuxt.config.js');
 var app = express();
 var bots = require('./routes/bots');
 
+var https = require('https');
+var SSL = {
+  cert: fs.readFileSync("./SSL/td-cert.pem"),
+  key: fs.readFileSync("./SSL/td-key.pem")
+};
+
 const bodyParser = require('body-parser');
 const url = require('url');
 const qrs = require('querystring');
@@ -73,4 +79,7 @@ app.get('/test', (req, res, next) => {
 })
 
 app.use(nuxt.render);
-app.listen(process.env.PORT || 8072);
+
+https.createServer(SSL, app).listen(8072);
+
+// app.listen(process.env.PORT || 8072);
