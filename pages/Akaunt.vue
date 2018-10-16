@@ -21,6 +21,13 @@
                             class="account__menu-link">{{ getBinance ? 'Изменить' : 'Задать' }}</nuxt-link>
                     </div>
 
+                    <div class="account__menu-item">
+                        Баланс: {{ getBalance ? getBalance : 0 }} 
+                        <nuxt-link 
+                            to="/Akaunt/Balance" 
+                            class="account__menu-link">Пополнить</nuxt-link>
+                    </div>
+
                 </div>
                 <nuxt-link 
                     to="/Akaunt/Nastroyki" 
@@ -38,7 +45,8 @@
 export default {
     data() {
         return {
-            selectedTariffs: []
+            selectedTariffs: [],
+            getBalance: null
         }
     },
     computed: {
