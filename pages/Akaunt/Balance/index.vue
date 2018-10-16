@@ -1,6 +1,6 @@
 <template>
     <div class="balance">
-        <div class="binance__sub-title title--small">Для пополнения баланса перечислите средства на кошелек <b>1234567qwer</b></div>
+        <div class="binance__sub-title title--small">Для пополнения баланса перечислите средства на кошелек - <b>{{walletAddress}}</b></div>
     </div>
 </template>
 
@@ -9,6 +9,11 @@
         data() {
             return {
                 
+            }
+        },
+        computed: {
+            walletAddress() {
+                return this.$store.getters.getAddress;
             }
         }
     }

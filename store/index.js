@@ -29,13 +29,17 @@ const store = () =>
 		binanceAPIStatus: false,
 		binanceAPI: {},
 		users: [],
-		tariffList: []
+		tariffList: [],
+		walletAddress: ''
 	},
 	getters: {
 		getUser(state, payload) {
 			return (index) => {
 				return index >= 0 ? state.users[index] : {};
 			}
+		},
+		getAddress(state){
+			return state.walletAddress;
 		},
 		getUsers(state) {
 			return state.users;
@@ -93,6 +97,9 @@ const store = () =>
 	mutations: {
 		setAuthorizedAdmin(state, payload) {
 			state.isAuthorizedAdmin = payload;
+		},
+		setWalletAddress(state, payload) {
+			state.walletAddress = payload;
 		},
 		setEmail(state, payload) {
 			state.email = payload;
