@@ -4,6 +4,7 @@ const url = require('url');
 const qrs = require('querystring');
 const Bitaps = require('../modules/Bitaps');
 const Balance = require('../modules/Balance');
+const HistoryLog = require('../modules/HistoryLog');
 const log = (data) => HistoryLog._log(data);
 
 router.post('/api/bitaps/addBalance', (req, res, next) => {

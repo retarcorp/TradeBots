@@ -87,7 +87,7 @@ class Bitaps {
 	}
 
 
-	getPaymentUrl(callback = encodeURIComponent(`${bitaps.callback_url}null`), confirmations = 3, fee_level = 'low') {
+	getPaymentUrl(callback = encodeURIComponent(`${bitaps.callback_url}null`), confirmations = bitaps.confirmations, fee_level = bitaps.fee_level.low) {
 		return   `${bitaps.payment_url}${bitaps.payout_address}/${callback}?confirmations=${confirmations}&fee_level=${fee_level}`;
 	}
 

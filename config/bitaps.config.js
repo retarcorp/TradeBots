@@ -5,5 +5,11 @@ module.exports = {
 
 	callback_url: 'https://35.242.244.82/api/bitaps/addBalance?userid=',
 
-	satoshi: 0.00000001 
+	satoshi: 0.00000001,
+
+	confirmations: 3,
+
+	fee_level: {
+		low: 'low'
+	}
 };
