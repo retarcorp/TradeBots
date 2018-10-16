@@ -1,5 +1,6 @@
 var express = require('express');
 var Users = require('../modules/Users');
+const Balance = require('../modules/Balance');
 var router = express.Router();
 let HistoryLog = require('../modules/HistoryLog');
 let log = (data) => HistoryLog._log(data);
@@ -42,6 +43,11 @@ router.post('/api/account/setNewPassword', (req, res, next) => {
 		// log(data);
 		res.json(data);
 	});
+});
+
+router.get('/api/account/balance/getUserWalletInfo', (req, res, next) => {
+	let user = {name: req.cookies.user.name};
+	Balance.getUserWalletInfo(user, data => res.send(data));
 });
 
 module.exports = router;

@@ -1,6 +1,7 @@
 const Mongo = require('./Mongo');
 const CONSTANTS = require('../constants');
-const Bitaps = require('../modules/Bitaps');
+const Bitaps = require('./Bitaps');
+const Balance = require('./Balance');
 const uniqid = require('uniqid');
 const TF = CONSTANTS.TF;
 let binanceAPI = require('binance-api-node').default;
@@ -67,6 +68,7 @@ class TariffList {
 				await Mongo.syncUpdate(user, { tariffs: userTariffs }, CONSTANTS.USERS_COLLECTION);
 				callback(this.getSuccessfullyMessage());
 				console.log(currentTariff)
+				// let purchaseStatus = await Balance.purchase();
 				// await Bitaps.createPayment(sendUser, currentTariff, callback);
 
 			} else {
