@@ -80,6 +80,6 @@ app.get('/test', (req, res, next) => {
 
 app.use(nuxt.render);
 
-https.createServer(SSL, app).listen(8072);
+// https.createServer(SSL, app).listen(8072);
 
-// app.listen(process.env.PORT || 8072);
+app.listen(process.env.PORT || 8072);
