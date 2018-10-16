@@ -22,9 +22,9 @@
                     </div>
 
                     <div class="account__menu-item">
-                        Баланс: {{ getBalance ? getBalance : 0 }} 
+                        Баланс: {{ walletBalance ? walletBalance : 0 }} 
                         <nuxt-link 
-                            to="/Akaunt/Balance" 
+                            to="/Akaunt/Balance"
                             class="account__menu-link">Пополнить</nuxt-link>
                     </div>
 
@@ -46,7 +46,7 @@ export default {
     data() {
         return {
             selectedTariffs: [],
-            getBalance: null
+            walletBalance: ''
         }
     },
     computed: {
@@ -61,8 +61,14 @@ export default {
         }
     },
     created() {
-        this.getCurrentTariff()
-        // this.$store.dispatch('firstGetBinanceAPI');
+        this.getCurrentTariff();
+        this.$axios
+            .$get('/api/account/balance/getUserWalletInfo')
+            .then(res => {
+                this.walletBalance = res.data.walletBalance;
+                this.$store.commit('setWalletAddress', res.data.walletAddress);
+            })
+            .catch(error => console.log(error))
     }
 }
 </script>
