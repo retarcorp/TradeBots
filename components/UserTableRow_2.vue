@@ -18,7 +18,7 @@
 						</div>
                         <div class="form-control">
                             <label class="label">Баланс кошелька (BTC)</label>
-                            <input class="inpu_pt" type="text" v-model='user.walletBalance' :disabled="disabled">
+                            <input class="input" :class="{active: isEdit, editable__input: true}" type="text" v-model='user.walletBalance' :disabled="disabled">
 							<!-- <div class="input_p">
 								<p>{{user.walletBalance}}</p>
 							</div> -->
