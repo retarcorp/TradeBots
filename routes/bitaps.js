@@ -12,9 +12,12 @@ router.post('/api/bitaps/addBalance', (req, res, next) => {
 	Balance.confirmPayment(query, req.body, data => {
 		res.send(data);
 		log({
-			query: query,
-			reqbody: req.body,
-			data: data
+			message: 'Ответ на отклик с прохождения транзакции',
+			data: {
+				query: query,
+				reqbody: req.body,
+				data: data
+			}
 		});
 	});
 });
