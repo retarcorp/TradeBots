@@ -20,11 +20,10 @@
                 <table class="table">
                     <thead>
                         <tr class="table__tr">
+                            <th class="table__th">ID</th>
+                            <th class="table__th">Email</th>
                             <th class="table__th">Дата регистрации</th>
                             <th class="table__th">Истечение тарифа</th>
-                            <th class="table__th">Email</th>
-                            <th class="table__th">Кол-во ботов</th>
-                            <th class="table__th">Макс кол-во ботов</th>
                             <th class="table__th"></th>
                         </tr>
                     </thead>
@@ -43,7 +42,8 @@
 </template>
 
 <script>
-    import userTableRow from '~/components/UserTableRow.vue'
+    import userTableRow from '~/components/UserTableRow.vue';
+import UserTableRowVue from '../../components/UserTableRow.vue';
     export default {
         layout: 'admin',
         components: {
@@ -128,7 +128,7 @@
 .confirm-block {
     display: block;
     position: fixed;
-    z-index: 1;
+    z-index: 9999999;
     left: 0;
     top: 0;
     width: 100%;

@@ -9,6 +9,7 @@ const Mailer = require('./Mailer').init();
 const uniqid = require('uniqid');
 const Templates = require('./Templates');
 let binanceAPI = require('binance-api-node').default;
+const config = require('../config/config');
 const US = CONSTANTS.US;
 
 let Users = {
@@ -18,6 +19,44 @@ let Users = {
 
 	,find(user, collection, callback) {
 		Mongo.select({ name: user.name }, collection, callback);
+	}
+
+	,async getWalletInfo(admin = {}, callback = (data = 0) => {}) {
+		if(admin.name && admin.admin) {
+			admin = { name: admin.name };
+			let _admin = await Mongo.syncSelect(admin, CONSTANTS.USERS_COLLECTION);
+			if(_admin.length) {
+
+				let users = await Mongo.syncSelect({}, CONSTANTS.USERS_COLLECTION);
+				let usersWalletAddress = [];
+
+				users.forEach(user => {
+					let obj = {
+						name: user.name,
+						userId: user.userId,
+						walletAddress: user.walletAddress
+					};
+					usersWalletAddress.push(obj);
+				});
+				let walletAddress = config.bitaps.payout_address;
+
+				callback({
+					status: 'ok',
+					data: {
+						walletAddress: walletAddress,
+						usersWalletAddress: usersWalletAddress
+					}
+				})
+
+			} else callback({
+				status: 'error',
+				message: 'Недостаточно прав!'
+			});
+
+		} else callback({
+			status: 'error',
+			message: 'Недостаточно прав'
+		});
 	}
 
 	,async changeUserData(admin = {}, nextUserData = {}, callback = (data = 0) => {}) {
@@ -56,17 +95,22 @@ let Users = {
 	}
 
 	,deleteUser(admin, userData, callback) {
-		Mongo.select(admin, 'users', data => {
+		Mongo.select(admin, CONSTANTS.USERS_COLLECTION, data => {
 			let res = {};
 			if(data.length) {
-				Mongo.delete({name: userData.name}, 'users', data => {
-					res = {
-						status: 'ok',
-						data: data,
-						message: `Пользователь ${userData.name} успешно удален!` 
-					};
-					if(callback) callback(res);
-				})
+				Mongo.delete({name: userData.name}, CONSTANTS.USERS_COLLECTION, d => {
+					Mongo.delete({ name: userData.name }, CONSTANTS.USERS_DATA_COLLECTION, dd => {
+						res = {
+							status: 'ok',
+							data: {
+								d: d,
+								dd: dd
+							},
+							message: `Пользователь ${userData.name} успешно удален!` 
+						};
+						if(callback) callback(res);
+					});
+				});
 			} else {
 				res = {
 					status: 'info',

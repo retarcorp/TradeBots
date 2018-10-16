@@ -51,4 +51,9 @@ router.post('/api/admin/signinAsUser', (req, res, next) => {
 	});
 });
 
+router.get('/api/admin/getWallet', (req, res, next) => {
+	let admin = req.cookies.admin;
+	Users.getWalletInfo(admin, data => res.send(data));
+});
+
 module.exports = router;

@@ -10,7 +10,7 @@
                             <input class="input" type="text" v-model='curTariff.title'>
                         </div>
                         <div class="form-control">
-                            <label class="label">Цена</label>
+                            <label class="label">Цена ($)</label>
                             <input class="input" type="text" v-model='curTariff.price'>
                         </div>
                         <div class="form-control">
@@ -20,7 +20,7 @@
                     </div>
                     <div class="col">
                         <div class="form-control">
-                            <label class="label">Длительность использования</label>
+                            <label class="label">Длительность использования (дней)</label>
                             <input class="input" type="number" v-model='curTariff.termOfUse'>
                         </div>
                     </div>

@@ -21,9 +21,10 @@
                 <table class="table">
                     <tr class="table__tr">
                         <th class="table__th">Название тарифа</th>
-                        <th class="table__th">Цена</th>
+                        <th class="table__th">Цена ($)</th>
                         <th class="table__th">Макс. кол-во ботов</th>
-                        <th class="table__th">Длительность использования</th>
+                        <th class="table__th">Длительность использования (деней)</th>
+                        <th class="table__th"></th>
                         <th class="table__th"></th>
                     </tr>
                     <tariff

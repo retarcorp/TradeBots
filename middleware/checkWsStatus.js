@@ -10,7 +10,7 @@ export default function ({ store, route, redirect }) {
     console.log('here');
   } else {
     console.log('некст роут ' + route.path.toLowerCase());
-    if (route.path.toLowerCase() === '/admin' || route.path.toLowerCase() === '/admin/' || route.path.toLowerCase() === '/admin/rates' || route.path.toLowerCase() === '/admin/rates/') {
+    if (route.path.toLowerCase() === '/admin' || route.path.toLowerCase() === '/admin/' || route.path.toLowerCase() === '/admin/rates' || route.path.toLowerCase() === '/admin/rates/' || route.path.toLowerCase() === '/admin/wallet/' || route.path.toLowerCase() === '/admin/wallet') {
       if(!((document.cookie.indexOf('admin') >= 0) && document.cookie.indexOf('true') && (document.cookie.indexOf('admin') < document.cookie.indexOf('true')))) {
         store.commit('setAuthorizedAdmin', false);
         redirect('/admin/signin');

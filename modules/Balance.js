@@ -3,7 +3,9 @@ const CONSTANTS = require('../constants');
 const Bitaps = require('./Bitaps');
 const M = require('./Message');
 const uniqid = require('uniqid');
+const HistoryLog = require('./HistoryLog');
 const { bitaps } = require('../config/config');
+const log = (data) => HistoryLog._log(data);
 
 class Balance {
 
@@ -28,6 +30,7 @@ class Balance {
 		user = { userId: user.userId };
 
 		let paymentWallet = await Bitaps.createWallet(user);
+		log({m: "createWallet", user: user, payment: paymentWallet});
 		if(paymentWallet) {
 			callback(paymentWallet.address);
 			return paymentWallet.address;
@@ -53,7 +56,7 @@ class Balance {
 			let userData = await Mongo.syncSelect(user, CONSTANTS.USERS_COLLECTION);
 				// exchangeRates = await Bitaps.getExchangeRates();
 
-			if(userData.length && confirmData.invoice && (Number(confirmData.confirmations) === bitaps.confirmations) ) {
+			if(userData.length && confirmData.invoice && (Number(confirmData.confirmations) >= bitaps.confirmations) ) {
 				userData = userData[0];	
 				let confirmAddress = confirmData.address,
 					confirmAmount = Number(confirmData.amount),
