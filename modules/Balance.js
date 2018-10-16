@@ -30,7 +30,7 @@ class Balance {
 		user = { userId: user.userId };
 
 		let paymentWallet = await Bitaps.createWallet(user);
-		log({m: "createWallet", user: user, payment: paymentWallet});
+		log({message: "createWallet", data: {user: user, payment: paymentWallet}});
 		if(paymentWallet) {
 			callback(paymentWallet.address);
 			return paymentWallet.address;
