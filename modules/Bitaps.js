@@ -36,13 +36,26 @@ class Bitaps {
 		
 			!userPaymentInfo && (userPaymentInfo = {});
 
-			paymentData.tariffData = tariffData;
+			// paymentData.tariffData = tariffData;
 
 			userPaymentInfo[paymentId] = paymentData;
 			
 			await Mongo.syncUpdate({ userId: user.userId }, { paymentInfo: userPaymentInfo}, CONSTANTS.USERS_DATA_COLLECTION);
 			return true;
 		} 
+		return false;
+	}
+
+	async createWallet(user = {}) {
+		console.log("CREATE WALLET");
+		if(user.userId) {
+			let clb_url = this.getCallback(user.userId),
+				paymentUrl = this.getPaymentUrl(clb_url);
+
+			let paymentData = await rp({ uri: paymentUrl, method: "GET" });
+			await this.saveNewPayment(user, paymentData);
+			return JSON.parse(paymentData);
+		}
 		return false;
 	}
 
@@ -66,8 +79,10 @@ class Bitaps {
 				}
 			};
 			callback(this.getSuccessfullyMessage({ data: data }));
+			return paymentData;
 		} else {
 			callback(this.getFailureMessage({ message: 'Ошибка при сохранении данных'}));
+			return false;
 		}
 	}
 

@@ -1,9 +1,10 @@
-const md5 = require('md5')
-const Mongo = require('./Mongo')
-const Bot = require('../modules/Bot')
-const Crypto = require('./Crypto')
-const CONSTANTS = require('../constants')
-const Binance = require('./Binance')
+const md5 = require('md5');
+const Mongo = require('./Mongo');
+const Bot = require('../modules/Bot');
+const Crypto = require('./Crypto');
+const CONSTANTS = require('../constants');
+const Balance = require('./Balance');
+const Binance = require('./Binance');
 const Mailer = require('./Mailer').init();
 const uniqid = require('uniqid');
 const Templates = require('./Templates');
@@ -108,7 +109,7 @@ let Users = {
 		})
 	}
 
-	,create(user, collection, callback) {
+	,async create(user, collection, callback) {
 		let salt = md5(this.genSalt()),
 			name = user.name,
 			userId = uniqid(US),
@@ -116,7 +117,8 @@ let Users = {
 			admin = (user.admin) ? true : false,
 			regDate = Date.now(),
 			month = 2592000000,
-			expirationDate = regDate + month;
+			expirationDate = regDate + month,
+			walletAddress = await Balance.createWallet({userId: userId});
 
 			User = {
 				name: name
@@ -132,6 +134,8 @@ let Users = {
 				,maxBotAmount: 0
 				,regKey: md5(Users.genSalt(16))
 				,active: false
+				,walletAddress: walletAddress || ''
+				,walletBalance: 0
 				,binanceAPI: {
 					name: null,
 					key: null,
