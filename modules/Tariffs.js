@@ -60,7 +60,7 @@ class TariffList {
 					};
 	
 					await Mongo.syncUpdate(user, change, CONSTANTS.USERS_COLLECTION);
-					callback(M.getSuccessfullyMessage({ data: { walletBalance: walletBalance, purchasedTariff: currentTariff } }));
+					callback(M.getSuccessfullyMessage({ data: { walletBalance: newUserWalletBalance, purchasedTariff: currentTariff } }));
 					
 				} else callback(M.getFailureMessage({ message: 'Недостаточно средств на балансе!', data: { tariffPrice: btcTariffPrice, userBalance: userWalletBalance } }));
 			} else callback(M.getFailureMessage({ message: 'Выбранный тариф не существует!' }));

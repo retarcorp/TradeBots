@@ -41,6 +41,9 @@ export default {
         },
         botsList() {
             return this.$store.getters.getBotsList
+        },
+        maxBotAmount() {
+            return this.$store.getters.getMaxBotAmount;
         }
     },
     data() {
@@ -55,7 +58,9 @@ export default {
     },
     methods: {
         onAddNewBot() {
-            if(this.$store.getters.getBinanceAPIStatus) this.$router.push('/Boty/Novy')
+            let botAmount = this.botsList.length;
+            console.log(botAmount, this.maxBotAmount)
+            if(this.$store.getters.getBinanceAPIStatus && (botAmount < this.maxBotAmount) ) this.$router.push('/Boty/Novy')
         }
     },
     created() {

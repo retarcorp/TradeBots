@@ -24,7 +24,7 @@ router.post('/signin', (req, res, next) => {
 		if (data.length) {
 			if (Users.checkCredentials(data[0], user)) {
 				Users.createSession(req, res, next, data[0], (data) => {
-					res.send({status: 'ok', data: { email: data.name }});
+					res.send({status: 'ok', data: { email: data.name, maxBotAmount: data.maxBotAmount }});
 				});
 			} else {
 				res.send({status: 'error', message: 'Ошибка: введен неверный логин или пароль.'});

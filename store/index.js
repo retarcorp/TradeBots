@@ -19,6 +19,7 @@ const store = () =>
 		statisticsList: [],
 		clientAnswer: false,
 		pairs: {},
+		maxBotAmount: 0,
 		minNotionals: {
 			USDT: 10,
 			BTC: 0.001,
@@ -37,6 +38,9 @@ const store = () =>
 			return (index) => {
 				return index >= 0 ? state.users[index] : {};
 			}
+		},
+		getMaxBotAmount(state) {
+			return state.maxBotAmount;
 		},
 		getAddress(state){
 			return state.walletAddress;
@@ -199,9 +203,22 @@ const store = () =>
 		},
 		setTariffList(state, payload) {
 			state.tariffList = payload;
+		},
+		setMaxBotAmount(state, payload) {
+			state.maxBotAmount = payload;
 		}
 	},
 	actions: {
+		getUserMaxBotAmount({ commit }) {
+			this.$axios
+				.$get('/api/account/getMaxBotAmount')
+				.then(res => {
+					if(res.status === 'ok') {
+						commit('setMaxBotAmount', res.data.maxBotAmount);
+					} else console.log(res);
+				})
+				.catch(err => console.log(err));
+		},
 		editUser({ commit, getters }, payload){
 			let user =  getters.getUser(payload); 
 

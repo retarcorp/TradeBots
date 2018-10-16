@@ -196,26 +196,51 @@ let Users = {
 		})
 	}
 
-	,getEmail(user, callback) {
-		Mongo.select(user, 'users', data => {
-			if(data.length) {
-				data = data[0];
-				let res = data.name ? data.name : '';
-				if(callback) callback({
-					status: 'ok',
-					data: {
-						email: res
-					}
-				})
-			}
-			else {
-				if(callback)
+	,getMaxBotAmount(user = {}, callback = (data = {}) => {}) {
+		if(user.name) {
+			Mongo.select(user, CONSTANTS.USERS_COLLECTION, data => {
+				if(data.length) {
+					data = data[0];
+					let res = {
+						status: 'ok',
+						data: {
+							maxBotAmount: data.maxBotAmount
+						}
+					};
+					callback(res);
+
+				} else {
 					callback({
 						status: 'error',
 						message: 'Такого пользователя не существует'
 					});
-			}
-		})
+				}
+			});
+		} else callback({status: 'error'});
+	}
+
+	,getEmail(user = {}, callback) {
+		if(user.name) {
+			Mongo.select(user, 'users', data => {
+				if(data.length) {
+					data = data[0];
+					let res = data.name ? data.name : '';
+					if(callback) callback({
+						status: 'ok',
+						data: {
+							email: res
+						}
+					})
+				}
+				else {
+					if(callback)
+						callback({
+							status: 'error',
+							message: 'Такого пользователя не существует'
+						});
+				}
+			})
+		} else callback({status: 'error'});
 	}
 
 	,setBinance(user, binanceData, callback) {

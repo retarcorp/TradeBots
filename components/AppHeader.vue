@@ -39,7 +39,10 @@
             },
             binanceStatus() {
                 return this.$store.getters.getBinanceAPIStatus;
-            }       
+            },
+            maxBotAmount() {
+                return this.$store.getters.getMaxBotAmount;
+            }
         },
         methods: {
             onSignIn() {
@@ -64,6 +67,7 @@
         },
         created() {
             this.$store.dispatch('setEmail');
+            this.$store.dispatch('getUserMaxBotAmount');
             this.$store.dispatch('firstGetBinanceAPI');
             // this.$store.dispatch('checkBinance');
         }
