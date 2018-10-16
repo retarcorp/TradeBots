@@ -147,6 +147,11 @@ class Bitaps {
 		} 
 		callback(body.invoice);
 	}
+
+	async getExchangeRates() {
+		let exhr = await rp({ uri: 'https://bitaps.com/api/ticker/average', method: 'GET' });
+		return JSON.parse(exhr);
+	}
 }
 
 module.exports = new Bitaps();

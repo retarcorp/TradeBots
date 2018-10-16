@@ -20,7 +20,7 @@ router.get('/api/admin/getTariffList', (req, res, next) => {
 });
 
 router.get('/api/user/getUsersTariffs', (req, res, next) => {
-	let user = req.cookies.user;
+	let user = {name: req.cookies.user.name};
 	Tariffs.getUsersTariffs(user, data => res.json(data));
 });
 
@@ -44,11 +44,8 @@ router.post('/api/admin/editTariff', (req, res, next) => {
 	});
 });
 
-
-
-//переделать!
 router.post('/api/user/purchaseTariff', (req, res, next) => {
-	let user = req.cookies.user,
+	let user = {name: req.cookies.user.name},
 		tariffId = req.body.id;
 	
 	Tariffs.purchaseTariff(user, tariffId, data => {

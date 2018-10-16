@@ -10,6 +10,9 @@ const symbolsList = require('./symbolsList');
 const income = require('./income');
 const tariffs = require('./tariffs');
 const userActivation = require('./userActivation');
+const bitaps = require('./bitaps');
+const rp = require('request-promise');
+
 
 const Mongo = require('../modules/Mongo');
 const url = require('url');
@@ -20,20 +23,23 @@ const binanceAPI = require('binance-api-node').default;
 
 router.use(account);
 router.use(admin);
+router.use(bitaps);
 router.use(bots);
+router.use(income);
 router.use(signin);
 router.use(signup);
 router.use(statistics);
 router.use(symbolsList);
-router.use(income);
 router.use(tariffs);
 router.use(userActivation);
 
 router.get('/test', (req, res, next) => {
 	const query = qrs.parse(url.parse(req.url).query);
 	
+	rp({ uri: 'https://bitaps.com/api/ticker/average', method: 'GET' })
+		.then(data => res.json(JSON.parse(data)));
 
-	res.send(query);
+	// res.send(query);
 	// let admin = req.cookies.admin;
 	// Tariffs.setTariff(admin, {title: 'ЯЯЯ'}, data => res.json(data));
 	// Tariffs.removeTariff(admin, {title: 'aa'}, data => res.json(data));

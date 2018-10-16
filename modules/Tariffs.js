@@ -4,6 +4,7 @@ const Bitaps = require('./Bitaps');
 const Balance = require('./Balance');
 const uniqid = require('uniqid');
 const TF = CONSTANTS.TF;
+const M = require('./Message');
 let binanceAPI = require('binance-api-node').default;
 
 class Tariff {
@@ -27,57 +28,43 @@ class Tariff {
 }
 
 class TariffList {
-	constructor() {
-		this.FailureMessage = {
-			status: 'error',
-			message: 'Недостаточно прав!'
-		}
-
-		this.SuccessfullyMessage = {
-			status: 'ok',
-			message: 'Выполнено успешно!'
-		}
-	}
-
-	getSuccessfullyMessage(data = {}) {
-		return Object.assign({}, this.SuccessfullyMessage, data);
-	}
-
-	getFailureMessage(data = {}) {
-		return Object.assign({}, this.FailureMessage, data);
-	}
-
 	async purchaseTariff(user = {}, tariffId = Number(), callback = (data = {}) => {}) {
 		user = { name: user.name };
-		if(await this.userExists(user)) {
+		let userData = {};
+
+		if(userData = await this.userExists(user)) {
+			userData = userData[0];
 			// user <- currentTariff <- tariffData
 			let tariffList = await this.getTariffList(),
 				currentTariff = tariffList.find(tariff => tariff.tariffId === tariffId);
 
 			if(currentTariff) {
-				let curUser = await Mongo.syncSelect(user, CONSTANTS.USERS_COLLECTION);
-					curUser = curUser[0];
-				let userTariffs = curUser.tariffs || [];
-				let sendUser = {
-					name: curUser.name,
-					userId: curUser.userId
-				}
+				let exhrs = await Bitaps.getExchangeRates(),
+					tariffPrice = Number(currentTariff.price),
+					btcTariffPrice = tariffPrice / Number(exhrs.usd), 
+					userWalletBalance = Number(userData.walletBalance);
 
-				userTariffs.push(currentTariff);
+				if(userWalletBalance > btcTariffPrice) {
+					let userTariffs = userData.tariffs || [],
+						newUserWalletBalance = userWalletBalance - btcTariffPrice,
+						userMaxBotAmount = userData.maxBotAmount,
+						tariffMaxBotAmount = Number(currentTariff.maxBotAmount),
+						nextUserMaxBotAmount = userMaxBotAmount + tariffMaxBotAmount;
 
-				await Mongo.syncUpdate(user, { tariffs: userTariffs }, CONSTANTS.USERS_COLLECTION);
-				callback(this.getSuccessfullyMessage());
-				console.log(currentTariff)
-				// let purchaseStatus = await Balance.purchase();
-				// await Bitaps.createPayment(sendUser, currentTariff, callback);
+					userTariffs.push(currentTariff);
 
-			} else {
-				callback(this.getFailureMessage({ message: 'Выбранный тариф не существует!' }));
-			}
-
-		} else {
-			callback(this.getFailureMessage({ message: 'Пользователь не найден!' }));
-		}
+					let change = {
+						tariffs: userTariffs,
+						walletBalance: newUserWalletBalance,
+						maxBotAmount: nextUserMaxBotAmount
+					};
+	
+					await Mongo.syncUpdate(user, change, CONSTANTS.USERS_COLLECTION);
+					callback(M.getSuccessfullyMessage({ data: { walletBalance: walletBalance, purchasedTariff: currentTariff } }));
+					
+				} else callback(M.getFailureMessage({ message: 'Недостаточно средств на балансе!', data: { tariffPrice: btcTariffPrice, userBalance: userWalletBalance } }));
+			} else callback(M.getFailureMessage({ message: 'Выбранный тариф не существует!' }));
+		} else callback(M.getFailureMessage({ message: 'Пользователь не найден!' }));
 	}
 
 	async setTariff(admin = {}, tariffData = {}, callback = (data = {}) => {}) {
@@ -86,14 +73,14 @@ class TariffList {
 
 			if(!(await this.tariffExists(newTariff))) {
 				await Mongo.syncInsert(newTariff, CONSTANTS.TARIFFS_COLLECTION);
-				callback(this.getSuccessfullyMessage());
+				callback(M.getSuccessfullyMessage());
 			} else {
-				callback(this.getSuccessfullyMessage({ message: 'Тариф уже существует!' }));
+				callback(M.getSuccessfullyMessage({ message: 'Тариф уже существует!' }));
 			}
 
 
 		} else {
-			callback(this.getFailureMessage());
+			callback(M.getFailureMessage());
 		}
 	}
 
@@ -104,20 +91,20 @@ class TariffList {
 				curUser = curUser[0];
 
 			let userTariffs = curUser.tariffs || [];
-			callback(this.getSuccessfullyMessage({ data: userTariffs }));
+			callback(M.getSuccessfullyMessage({ data: userTariffs }));
 
 		} else {
-			callback(this.getFailureMessage({ message: 'Пользователь не найден!' }));
+			callback(M.getFailureMessage({ message: 'Пользователь не найден!' }));
 		}
 	}
 
 	async getTariffList(admin = {}, callback = (data = {}) => {}) {
 		// if(await this.authenticationAdmin(admin)) {
 			let tariffList = await Mongo.syncSelect({}, CONSTANTS.TARIFFS_COLLECTION);
-			callback(this.getSuccessfullyMessage({ data: tariffList }));
+			callback(M.getSuccessfullyMessage({ data: tariffList }));
 			return tariffList;
 		// } else {
-		// 	callback(this.getFailureMessage());
+		// 	callback(M.getFailureMessage());
 		// }
 	}
 
@@ -126,12 +113,12 @@ class TariffList {
 			removedTariff = new Tariff(removedTariff);
 			if(await this.tariffExists(removedTariff)) {
 				await Mongo.syncDelete({ tariffId: removedTariff.tariffId }, CONSTANTS.TARIFFS_COLLECTION);
-				callback(this.getSuccessfullyMessage());
+				callback(M.getSuccessfullyMessage());
 			} else {
-				callback(this.getFailureMessage({ message: 'Запрашиваемый тариф не существует!' }));
+				callback(M.getFailureMessage({ message: 'Запрашиваемый тариф не существует!' }));
 			}
 		} else {
-			callback(this.getFailureMessage());
+			callback(M.getFailureMessage());
 		}
 	}
 
@@ -139,9 +126,9 @@ class TariffList {
 		if(await this.authenticationAdmin(admin)) {
 			nextTariffData = new Tariff(nextTariffData);
 			await Mongo.syncUpdate({ tariffId: nextTariffData.tariffId }, nextTariffData, CONSTANTS.TARIFFS_COLLECTION);
-			callback(this.getSuccessfullyMessage({ data: nextTariffData }));
+			callback(M.getSuccessfullyMessage({ data: nextTariffData }));
 		} else {
-			callback(this.getFailureMessage());
+			callback(M.getFailureMessage());
 		}
 	}
 
@@ -159,7 +146,7 @@ class TariffList {
 	async userExists(user = {}) {
 		user = { name: user.name };
 		let userData = await Mongo.syncSelect(user, CONSTANTS.USERS_COLLECTION);
-		return userData.length;
+		return userData;
 	}
 
 	async tariffExists(tariff = {}) {

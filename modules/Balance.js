@@ -3,6 +3,7 @@ const CONSTANTS = require('../constants');
 const Bitaps = require('./Bitaps');
 const M = require('./Message');
 const uniqid = require('uniqid');
+const { bitaps } = require('../config/config');
 
 class Balance {
 
@@ -35,11 +36,43 @@ class Balance {
 		return false;
 	}
 
-	async topUpBalance(user = {}, 	) {
+	async confirmPayment(user = {}, confirmData = {}, callback = (data = {}) => {}) {
+		// tx_hash={transaction hash}
+		// address={address}
+		// invoice={invoice}
+		// code={payment code}
+		// amount={amount} # Satoshi
+		// confirmations={confirmations}
+		// payout_tx_hash={transaction hash} # payout transaction hash
+		// payout_miner_fee={amount}
+		// payout_service_fee={amount} 
+		Mongo.insert({ user: user, payment: confirmData }, CONSTANTS.PAYMENTS_COLLECTION, data => console.log(data, "PAYMENT SAVE"));
+		if(user.userId) {
+			user = { userId: user.userId };
 
+			let userData = await Mongo.syncSelect(user, CONSTANTS.USERS_COLLECTION);
+				// exchangeRates = await Bitaps.getExchangeRates();
+
+			if(userData.length && confirmData.invoice) {
+				userData = userData[0];	
+				let confirmAddress = confirmData.address,
+					confirmAmount = Number(confirmData.amount),
+					confirmValue = confirmAmount * bitaps.satoshi,
+					currentBalance = Number(userData.walletBalance),
+					udpatedBalance = currentBalance + confirmValue;
+				
+				if(confirmAddress === userData.walletAddress) {
+					let change = {
+						walletBalance: udpatedBalance
+					};
+					
+					await Mongo.syncUpdate(user, change, CONSTANTS.USERS_COLLECTION);
+				}
+			}
+		}
+
+		callback(confirmData.invoice);
 	}
-
-	// purch
 }
 
 module.exports = new Balance();
