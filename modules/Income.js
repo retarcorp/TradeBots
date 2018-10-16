@@ -2,6 +2,7 @@ const Mongo = require('./Mongo');
 const CONSTANTS = require('../constants');
 
 const usersDataCollection = CONSTANTS.USERS_DATA_COLLECTION;
+const usersCollection = CONSTANTS.USERS_COLLECTION;
 const btc = 'BTC', eth = 'ETH', bnb = 'BNB', usdt = 'USDT';
 
 class Income {
@@ -23,6 +24,24 @@ class Income {
 
 	getFailureMessage(data = {}) {
 		return Object.assign({}, this.FailureMessage, data);
+	}
+
+	async liveUpdateOrders() {
+		console.time('liveUpdateOrders');
+		
+		let users = await Mongo.syncSelect({}, usersCollection),
+			length = users.length;
+
+		for (let i = 0, user = users[i]; i < length; i++) {
+			let bots = user.bots;
+			for (let botID in bots) {
+				bots[botID] = new botID(bots[botID]);
+				bots[botID].updateUserOrdersList({ name: user.name });
+			}
+		}
+
+		setTimeout(() => this.liveUpdateOrders(), CONSTANTS.UPDATE_ORDERS_LIST_SLEEP);
+		console.timeEnd('liveUpdateOrders');
 	}
 
 	async liveUpdateIncome() {

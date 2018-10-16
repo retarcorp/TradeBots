@@ -30,6 +30,9 @@ let Users = {
 					change = Object.assign({}, nextUserData);
 
 				delete change.name;
+				delete change.botsCount;
+				change.expirationDate = Number(change.expirationDate);
+				change.maxBotAmount = Number(change.maxBotAmount);
 
 				await Mongo.syncUpdate(user, change, CONSTANTS.USERS_COLLECTION);
 
@@ -83,12 +86,24 @@ let Users = {
 						name,
 						regDate,
 						maxBotAmount,
+						expirationDate,
+						tariffs,
+						walletAddress,
+						walletBalance,
+						active,
+						userId,
 						bots
 					}) => {
 						return {
 							name: name,
 							regDate: regDate,
 							maxBotAmount: maxBotAmount,
+							expirationDate: expirationDate, 
+							tariffs,
+							walletAddress,
+							walletBalance,
+							active,
+							userId,
 							botsCount: bots.length
 						}
 					})

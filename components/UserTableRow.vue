@@ -2,10 +2,10 @@
     <tbody>
         <tr  class="table__tr">
             <td class="table__th"><p> {{getDate(user.regDate) }}</p></td>
-            <td class="table__th"><input :class="{active: isEdit, editable__input: true}" :value="getDate(user.expirationDate)" :disabled="disabled"></td>
+            <td class="table__th"><input :class="{active: isEdit, editable__input: true}" v-model="user.expirationDate" :disabled="disabled"></td>
             <td class="table__th"><p>{{ user.name }}</p></td>
             <td class="table__th"><p>{{ user.botsCount }}</p></td>
-            <td class="table__th"> <input :class="{active: isEdit, editable__input: true}" :value="user.maxBotAmount" :disabled="disabled"></td>
+            <td class="table__th"> <input :class="{active: isEdit, editable__input: true}" v-model="user.maxBotAmount" type="number" :disabled="disabled"></td>
             <td class="table__th red">
                 <button v-show="!isEdit" @click.prevent="activateEditor">Редактировать</button>
                 <button v-show="!isEdit" @click.prevent="signInAsUser(user.name)">Просмотр</button>

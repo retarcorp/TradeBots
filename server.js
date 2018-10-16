@@ -32,6 +32,7 @@ Mongo.init()
   Users.Bots.setBotsArray();
   // Statistics.updateUsersStatistic();
   Income.liveUpdateIncome();
+  Income.liveUpdateOrders();
 	Symbols.initClient();
 	Symbols.updateSymbolsPriceFilter();
 });
