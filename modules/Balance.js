@@ -10,13 +10,13 @@ class Balance {
 		if(user.name) {
 			user = { name: user.name };
 	
-			let user = await Mongo.syncSelect(user, CONSTANTS.USERS_COLLECTION);
-			if(user.length) {
-				user = user[0];
+			let userData = await Mongo.syncSelect(user, CONSTANTS.USERS_COLLECTION);
+			if(userData.length) {
+				userData = userData[0];
 
 				let walletInfo = {
-					walletBalance: user.walletBalance,
-					walletAddress: user.walletAddress
+					walletBalance: userData.walletBalance,
+					walletAddress: userData.walletAddress
 				}
 				callback(M.getSuccessfullyMessage({ data: walletInfo }));
 			} else callback(M.getFailureMessage({ message: 'Пользователь не найден!' }));
