@@ -36,7 +36,8 @@ export default {
     computed: {
         filteredBotList() {
             return this.botsList.filter(bot => {
-                return (bot.title.toLowerCase()).startsWith(this.search.toLowerCase())
+                let string = `${bot.title.toLowerCase()}${bot.pair.from.toLowerCase()}${bot.pair.to.toLowerCase()}`;
+                return string.indexOf(this.search.toLowerCase()) >= 0;
             })
         },
         botsList() {
@@ -58,9 +59,20 @@ export default {
     },
     methods: {
         onAddNewBot() {
-            let botAmount = this.botsList.length;
+            let botAmount = this.botsList.length,
+                binanceStatus = this.$store.getters.getBinanceAPIStatus,
+                amountB = (botAmount < this.maxBotAmount);
             console.log(botAmount, this.maxBotAmount)
-            if(this.$store.getters.getBinanceAPIStatus && (botAmount < this.maxBotAmount) ) this.$router.push('/Boty/Novy')
+            if(binanceStatus &&  amountB) {
+                this.$router.push('/Boty/Novy');
+            } else {
+                this.$store.commit('setStatus', 'info');
+                if(!binanceStatus) {
+                    this.$store.commit('setMessage', `Ключи бинанс не заданы`);
+                } else if(!amountB) {
+                    this.$store.commit('setMessage', `Достигнуто максимальное количество ботов, которое вы можете создать`);
+                }
+            }
         }
     },
     created() {

@@ -30,9 +30,9 @@ let Symbols = require('./modules/Symbols')
 Mongo.init()
 .then(data => {
   Users.Bots.setBotsArray();
+  Income.startLiveUpdate();
   // Statistics.updateUsersStatistic();
-  Income.liveUpdateIncome();
-  Income.liveUpdateOrders();
+  // Income.liveUpdateOrders();
 	Symbols.initClient();
 	Symbols.updateSymbolsPriceFilter();
 });

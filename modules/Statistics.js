@@ -30,8 +30,8 @@ class Statistics {
 					let bot = bots[j];
 					let processes = bot.processes;
 
-					for (let _id in processes) {
-						orders.push(...processes[_id].orders);
+					for (let processId in processes) {
+						orders.push(...processes[processId].orders);
 					}
 	
 				}

@@ -36,12 +36,18 @@
                         <div class="label">Подтверждение нового пароля</div>
                         <input v-model="confirmedNewPass" class="input" type="password">
                     </div>
-                    <div class="form__actions">
+                    <div class="form__actions d_flex">
                         <button 
                             @click.prevent="safePass" 
                             :class="{'button--disabled': !isFormValid}" 
                             :disabled="!isFormValid" 
                             class=" button button--success">Сохранить</button>
+                        <button 
+                            type='button'
+                            class="button"
+                            @mouseup="onClosePassword"
+                            @mousedown='onViewPassword'>Показать пароль
+                        </button>
                         <!-- <button class=" button button--danger">Удалить</button> -->
                     </div>
                 </form>
@@ -70,22 +76,26 @@ export default {
             return this.$store.getters.getClientAnswer;
         },
         isRightPassword() {
+            let regexp = /[а-яё]/gi;
             return this.newPass.length >= 6 
                 && this.newPass.length <= 20
                 && this.newPass.toUpperCase() !== this.newPass
                 && this.newPass.toLowerCase() !== this.newPass
                 && this.newPass.match(/[0-9]/) !== null
+                && !regexp.test(this.newPass)
                 ? true
                 : false;
         },
         isFormValid() {
+            let regexp = /[а-яё]/gi;
             return this.currentPass !== '' &&
                 this.newPass !== '' &&
                 this.newPass.length >= 6 &&
                 this.newPass.length <= 20 &&
                 this.newPass.toUpperCase() !== this.newPass &&
                 this.newPass.toLowerCase() !== this.newPass &&
-                this.newPass.match(/[0-9]/) !== null
+                this.newPass.match(/[0-9]/) !== null &&
+                !regexp.test(this.newPass) &&
                 this.confirmedNewPass !== '' &&
                 this.newPass === this.confirmedNewPass
         }
@@ -121,10 +131,20 @@ export default {
             this.onCancel();
             this.$store.commit('clearAnswer');
         },
+        onViewPassword() {
+                Array.from(document.querySelectorAll('input[type="password"]')).forEach(elem => {
+                    elem.setAttribute('type','text');
+                })
+            },
+        onClosePassword() {
+            Array.from(document.querySelectorAll('input[type="text"]')).forEach(elem => {
+                elem.setAttribute('type','password');
+            })
+        },
         closeInfoPopup() {
             if( !this.isRightPassword ) {
                 this.$store.commit('setStatus', 'info');
-                this.$store.commit('setMessage', 'Пароль должен содержать от 6 до 20 символов, включая минимум одну заглавную букву, прописную и цифру.');
+                this.$store.commit('setMessage', 'Пароль должен содержать от 6 до 20 символов, включая минимум одну заглавную букву, прописную и цифру и не содержать русские символы.');
             }
         }
     }

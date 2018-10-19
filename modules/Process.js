@@ -8,9 +8,15 @@ const uniqid = require('uniqid');
 const PRC = CONSTANTS.PRC;
 const DL = CONSTANTS.DL;
 
+var log = (...par) => {
+	console.log();
+	console.log(...par);
+	console.log();
+}
+
 module.exports = class Process {
 	constructor({
-		_id = uniqid(PRC),
+		processId = uniqid(PRC),
 		dealId = uniqid(DL),
 		symbol = '',
 		signal = {},
@@ -34,7 +40,7 @@ module.exports = class Process {
 		user = {},
 		botID = String(Date.now())
 	} = {}) {
-		this._id = this.JSONclone(_id);
+		this.processId = this.JSONclone(processId);
 		this.dealId = this.JSONclone(dealId);
 		this.symbol = this.JSONclone(symbol);
 		this.signal = this.JSONclone(signal);
@@ -71,6 +77,7 @@ module.exports = class Process {
 	}
 
 	async startTrade(user) {
+		log('Начало нового цикла торговли.')
 		await this._log('Начало нового цикла торговли.');
 		if(this.setClient(user)) {
 			this.currentOrder = {};
@@ -87,111 +94,164 @@ module.exports = class Process {
 				let profitPrice = this.getProfitPrice(price);
 				let newSellOrder = await this.newSellOrder(profitPrice, CONSTANTS.ORDER_TYPE.LIMIT, qty);
 				if(newSellOrder !== CONSTANTS.DISABLE_FLAG) await this.updateProcess(user);
-				// if(this.status === CONSTANTS.BOT_STATUS.ACTIVE) {
-					this.currentOrder = newSellOrder;
-					this.orders.push(newSellOrder);
-					this.dealOrders.push(newSellOrder);
-	
-					let safeOrders = await this.createSafeOrders(price, qty);
-					this.safeOrders.push(...safeOrders);
-					this.orders.push(...safeOrders);
-					this.dealOrders.push(...safeOrders);
-	
-					this.trade(user)
-						.catch(err => console.log(err));
-				// }
+
+				this.currentOrder = newSellOrder;
+				this.orders.push(newSellOrder);
+				this.dealOrders.push(newSellOrder);
+
+				let safeOrders = await this.createSafeOrders(price, qty);
+				this.safeOrders.push(...safeOrders);
+				this.orders.push(...safeOrders);
+				this.dealOrders.push(...safeOrders);
+
+				return new Promise( (resolve, reject) => {
+					this.trade(user, false, resolve, reject);
+				});
+
 			}
 			else {
 				await this.disableProcess('Неуспешная покупка начального ордера.', CONSTANTS.CONTINUE_FLAG)
 				await this.updateProcess(user) 
-				if(this.status === CONSTANTS.BOT_STATUS.ACTIVE) this.startTrade(user)
+				return new Promise( (resolve, reject) => {
+					resolve('finish');
+				});
+				// if(this.status === CONSTANTS.BOT_STATUS.ACTIVE) this.startTrade(user)
 			}
 		}
 	}
 
 	continueTrade(user = this.user) {
-		console.log('****************continueTrade****************  ' + this._id);
 		if(this.setClient(user)) {
-			this.trade(user)
-				.catch(err => console.log(err));
+			return new Promise( (resolve, reject) => {
+				this.trade(user, false, resolve, reject);
+			});
 		}
 	}
 
-	async trade(user = this.user, flag = false) {
-		console.log('----------- trade ------------' + this._id, flag, this.currentOrder.orderId);
-		if(this.currentOrder.orderId) {
-			this.currentOrder = await this.getOrder(this.currentOrder.orderId);
-			let currentOrderStatus = this.currentOrder.status;
-			
-			if(this.checkFilling(currentOrderStatus) && !this.isFreeze()) {
-				await this.disableProcess('Процесс удачно завершён.', CONSTANTS.CONTINUE_FLAG);
-				await this.updateProcess(user);
-				if(this.status === CONSTANTS.BOT_STATUS.ACTIVE && (this.isManual() || this.checkSignalStatus()) ) this.startTrade(user);
-			}
-			else if(this.checkFailing(currentOrderStatus) && !this.isFreeze()) {
-				await this.disableProcess('Процесс завершен, причина - выключение бота или ошибка.', CONSTANTS.CONTINUE_FLAG);
-				await this.updateProcess(user);
-				if(this.status === CONSTANTS.BOT_STATUS.ACTIVE && (this.isManual() || this.checkSignalStatus()) ) this.startTrade(user);
-			}
-			else {
-				// if(this.freeze === CONSTANTS.BOT_FREEZE_STATUS.INACTIVE) {
+	async trade(user = this.user, flag = false, resolve, reject) {
+		log('trade', this.currentOrder.orderId)
+		if(this.currentOrder.orderId) {	
+			console.log('оредер есть')
+
+			if(this.isOrderSell(this.currentOrder.side)) {
+				console.log('order is sell')
+				this.currentOrder = await this.getOrder(this.currentOrder.orderId);
+				let currentOrderStatus = this.currentOrder.status;
+				
+				if(this.checkFilling(currentOrderStatus) && !this.isFreeze()) {
+					await this.disableProcess('Процесс удачно завершён.', CONSTANTS.CONTINUE_FLAG);
+					await this.updateProcess(user);
+					resolve('finish');
+					// if(this.status === CONSTANTS.BOT_STATUS.ACTIVE && (this.isManual() || this.checkSignalStatus()) ) this.startTrade(user);
+				} else if(this.checkFailing(currentOrderStatus) && !this.isFreeze()) {
+					await this.disableProcess('Процесс завершен, причина - выключение бота или ошибка.', CONSTANTS.CONTINUE_FLAG);
+					await this.updateProcess(user);
+					resolve('finish');
+					// if(this.status === CONSTANTS.BOT_STATUS.ACTIVE && (this.isManual() || this.checkSignalStatus()) ) this.startTrade(user);
+				} else {
 					await this.process(user);
 					this.orders = await this.updateOrders(this.orders);
-				// }
-				if(this.status === CONSTANTS.BOT_STATUS.ACTIVE) {
-					this.checkFreezeStatus(user);
-				}
-				else if(this.status === CONSTANTS.BOT_STATUS.INACTIVE) {
-					if(this.currentOrder.orderId) {
-						console.log('------ wait for disabling bot');
-						this.checkFreezeStatus(user);
-					} else if(this.isFreeze()) {
-						await this._log('Ожидание разморозки бота');
-						this.checkFreezeStatus(user);
-					} else {
-						console.log('----- bot is disabled');
-						await this.disableProcess('нажали выкл -> бот завершил работу -> выключаем бота');
+					if(this.status === CONSTANTS.BOT_STATUS.ACTIVE) {
+						sleep(CONSTANTS.TIMEOUT);
+						this.trade(user, false, resolve, reject);
 					}
+					else if(this.status === CONSTANTS.BOT_STATUS.INACTIVE) {
+						if(this.currentOrder.orderId) {
+							sleep(CONSTANTS.TIMEOUT);
+							this.trade(user, false, resolve, reject);
+						} else if(this.isFreeze()) {
+							await this._log('Ожидание разморозки бота');
+							sleep(CONSTANTS.TIMEOUT);
+							this.trade(user, false, resolve, reject);
+						} else {
+							await this.disableProcess('нажали выкл -> бот завершил работу -> выключаем бота');
+							resolve('finish');
+						}
+					}
+				}
+			} else {
+				console.log('order is buy')
+				this.currentOrder = await this.getOrder(this.currentOrder.orderId);
+				let currentOrderStatus = this.currentOrder.status;
+				if(this.checkFilling(currentOrderStatus) && !this.isFreeze()) {
+					console.log('order are filling')
+					//create new buy order
+					let newBuyOrder = await this.getOrder(this.currentOrder.orderId);
+					let qty = this.setQuantity(null, Number(newBuyOrder.origQty));
+					let price = Number(newBuyOrder.price);
+		
+					while(this.isFreeze()) {
+						sleep(CONSTANTS.TIMEOUT);
+					};
+					
+					this.botSettings.firstBuyPrice = price;
+					let profitPrice = this.getProfitPrice(price);
+					let newSellOrder = await this.newSellOrder(profitPrice, CONSTANTS.ORDER_TYPE.LIMIT, qty);
+					if(newSellOrder !== CONSTANTS.DISABLE_FLAG) await this.updateProcess(user);
+
+					this.currentOrder = newSellOrder;
+					this.orders.push(newSellOrder);
+					this.dealOrders.push(newSellOrder);
+
+					let safeOrders = await this.createSafeOrders(price, qty);
+					this.safeOrders.push(...safeOrders);
+					this.orders.push(...safeOrders);
+					this.dealOrders.push(...safeOrders);
+
+					this.trade(user, false, resolve, reject);
+
+
+				} else if((this.checkFailing(currentOrderStatus) && !this.isFreeze())) {
+					console.log('order are failing')
+					// disable procces
+					await this.disableProcess('Неуспешная покупка начального ордера.');
+					await this.updateProcess(user);
+					resolve('finish');
+
+				} else {
+					console.log('order in procces, next step')
+					//trade
+					sleep(CONSTANTS.ORDER_TIMEOUT);
+					this.trade(user, false, resolve, reject);
 				}
 			}
 		} else if(this.isFreeze() && !flag) {
-			console.log("ТИПА МЫ УДАЛИЛИ КУРЕНТ ОРДЕР А БОТ БЫЛ ЗАМОРОЖЕН, ТАК ЧТО НАМ ПРОСТО НУЖно ЖДАТЬ ЕБАНАРОТ");
 			setTimeout(() => {
-				this.trade(user);
+				this.trade(user, false, resolve, reject);
 			}, CONSTANTS.BOT_SLEEP)
 		} else if(!flag) {
 			this.currentOrder = this.getSellOrder();
-			this.trade(user, true);
-		} else if(this.status === CONSTANTS.BOT_STATUS.ACTIVE) {
-			console.log('ТИПО НАД НЧАТЬ START TRADE');
-			this.startTrade(user);
+			this.trade(user, true, resolve, reject);
+		} else {
+			resolve('finish');
 		}
+		// else if(this.status === CONSTANTS.BOT_STATUS.ACTIVE) {
+		// 	this.startTrade(user);
+		// }
+		
 		await this.updateProcess(user);
 	}
 
 	nextTradeStep(user = this.user) {
 		sleep(CONSTANTS.TIMEOUT);
 		this.trade(user);
-		// setTimeout(() => this.trade(user), CONSTANTS.TIMEOUT);
 	}
 
 	async process(user = this.user) {
-		console.log('---- in PROCESS ' + this._id);
 		let orders = this.safeOrders || [],
 			length = orders.length,
 			nextSafeOrders = [];
-
+		console.log('process, ' + this.processId)
+		console.log(this.freeze, this.preFreeze)
 		if(length) {
+			console.log('проверка ордеров')
 			await this._log('Проверка состояния ордеров...');
-			console.log('----- checked safeorders');
 			for(let i = 0; i < length; i++) {
-				console.log(i + 'ордер есть ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
 				try {
 					let order = await this.getOrder(orders[i].orderId);
 					this.botSettings.quantityOfActiveSafeOrders --;
 
 					if(this.checkFilling(order.status)) {
-						console.log('ордер ФИЛИНГ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
 						await this.cancelOrder(this.currentOrder.orderId);
 						this.recountInitialOrder(order);
 						this.recountQuantity(order.origQty);
@@ -206,7 +266,6 @@ module.exports = class Process {
 						this.dealOrders.push(this.currentOrder);
 
 						if(!this.isFreeze()) {
-							console.log('ордер ФИЛИНГ НЕ ФРИЗ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
 							let newSafeOrder = await this.createSafeOrder(null);
 
 							if(newSafeOrder.orderId) {
@@ -217,9 +276,7 @@ module.exports = class Process {
 						}
 
 					} else if(this.checkCanceling(order.status)) {
-						console.log('ордер КАНСЕЛ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
 						if(!this.isFreeze()) {
-							console.log('ордер КАНСЕЛ НЕ ФРИЗ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
 							let newSafeOrder = await this.createSafeOrder(null);
 
 							if(newSafeOrder.orderId) {
@@ -230,7 +287,6 @@ module.exports = class Process {
 						}
 					}
 					else {
-						console.log('ордер ПРОСТО ЕСЛЕ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
 						nextSafeOrders.push(order);
 					}
 				}
@@ -241,11 +297,11 @@ module.exports = class Process {
 			this.safeOrders = nextSafeOrders;
 
 		} else if(this.isFreeze() && !this.isPreFreeze()) {
-			console.log('ТИП ВРОДЕ НИХУЯ ДЕЛАТЬ НЕ НАДО ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
 			//тип вроде нихуя делать не надо
+			console.log('нихкч')
 		} else if(!this.isFreeze() && this.isPreFreeze() && this.isNeedToOpenNewSafeOrders()) {
+			console.log('новый ордер')
 			//тип надо выставить некст сейв ордер, если еще можно
-			console.log('ВЫСТАВЛЯЕМ НОВЫЙ СЕЙВ ОРДЕР ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
 			let newSafeOrder = await this.createSafeOrder();
 
 			if(newSafeOrder.orderId) {
@@ -256,15 +312,13 @@ module.exports = class Process {
 			this.safeOrders = nextSafeOrders;
 
 		} else {
-			console.log('----- checked stoploss');
+			console.log('проверка SL')
 			let price = await this.getLastPrice(),
 				stopPrice = this.getStopPrice();
 			
 			await this._log(`Проверка stoploss. (${stopPrice})`);
-			console.log(`stopPrice - ${stopPrice}`);
 
 			if(stopPrice > price) {
-				console.log('------ stoploss is braked')
 				await this._log(`Stoploss пройден.`);
 				await this.cancelAllOrders(user);
 				await this.disableProcess('Все распродано по рынку, бот выключен', CONSTANTS.CONTINUE_FLAG);
@@ -275,9 +329,10 @@ module.exports = class Process {
 	}
 
 	async firstBuyOrder(user = this.user, orderId = 0) {
-		console.log('--- firstBuyOrder');
 		await this._log('первая закупка монет');
-		let order = {};
+		let order = {},
+			tickTime = 0;
+		const tenMin = 600000;
 		
 		if(!orderId) {
 			let price = await this.getLastPrice(),
@@ -288,6 +343,7 @@ module.exports = class Process {
 		
 		order = await this.getOrder(orderId);
 		this.orders.push(order);
+		this.currentOrder = order;
 		this.dealOrders.push(order);
 		await this.updateProcess(user);
 		await this._log('первый закупочный - ' + order.price + ', ' + order.origQty + ', (~total ' + (order.price * order.origQty) + ')...');
@@ -295,29 +351,28 @@ module.exports = class Process {
 		while(!(
 			this.checkFilling(order.status) ||
 			this.checkCanceling(order.status) || 
-			this.checkFailing(order.status)
+			this.checkFailing(order.status) ||
+			tickTime >= tenMin
 		)) { 
+			log('fbOrder')
 			order = await this.getOrder(orderId);
 			const ind = this.orders.findIndex(elem => elem.orderId === order.orderId);
 			if(ind === -1) this.orders.push(new Order(order));
 			if(ind === -1) this.dealOrders.push(new Order(order));
 			else this.orders[ind] = new Order(order);
 			await this.updateProcess(user);
-
+			tickTime += CONSTANTS.ORDER_TIMEOUT;
 			sleep(CONSTANTS.ORDER_TIMEOUT);
 		}
-
-
-		if(this.checkFilling(order.status)) {
-			return new Order(order);
-		}
-		else if(this.checkCanceling(order.status) || this.checkFailing(order.status)) {
+		if(tickTime > tenMin) {
+			await this.cancelOrder(order.orderId);
 			return {};
 		}
+		if(this.checkFilling(order.status)) return new Order(order);
+		if(this.checkCanceling(order.status) || this.checkFailing(order.status)) return {};
 	}
 
 	async newBuyOrder(price = 0, type = CONSTANTS.ORDER_TYPE.LIMIT, quantity = this.getQuantity(price), prevError = {}) {
-		console.log(`---| new BUY order (${price}) ${quantity} ${type}...`);
 		
 		let symbol = this.getSymbol(),
 			newOrderParams = {
@@ -354,7 +409,6 @@ module.exports = class Process {
 	}
 
 	async newSellOrder(price = 0, type = CONSTANTS.ORDER_TYPE.LIMIT, quantity = this.getQuantity(price), prevError = {}) {
-		console.log(`---| new SELL order (${price}) ${quantity} ${type}...`);
 		let pair = this.getSymbol(),
 			newOrderParams = {
 				symbol: pair,
@@ -382,7 +436,6 @@ module.exports = class Process {
 				) return await this.disableProcess('Невозможно продать монеты');
 				else if(await this.isError1013(error)) quantity += step;
 				else if(await this.isError2010(error)) quantity -= step;
-				console.log('newSell', price,  this.toDecimal(quantity));
 
 				let order = await this.newSellOrder(price, type, this.toDecimal(quantity), error);
 				return order;
@@ -392,7 +445,6 @@ module.exports = class Process {
 	}
 
 	async createSafeOrders(price = 0, quantity = 0) {
-		console.log('--- createSafeOrders');
 		price = Number(price);
 		let amount = this.getMaxOpenedAmount(),
 			safeOrders = [],
@@ -414,7 +466,6 @@ module.exports = class Process {
 	}
 
 	async createSafeOrder(price = this.botSettings.lastSafeOrderPrice, quantity = 0) {
-		console.log('---! createSafeOrder');
 		await this._log(`новый страховочный ордер (price - ${price}, qty - ${quantity})`);
 		price = Number(price);
 
@@ -513,9 +564,6 @@ module.exports = class Process {
 	}
 
 	async disableProcess(message, isContinue = false) {
-		console.log("---------------------DISABLEPROCESS IN PROCESS")
-		console.log('isContinue ' + isContinue);
-		console.log('[----- disableProcess ' + message);
 		await this._log(`завершение процесса, причина -> (${message})`);
 		if(this.symbol) await this.cancelOrders(this.safeOrders);
 
@@ -534,17 +582,15 @@ module.exports = class Process {
 		// this.runningProcess = false;
 		if(this.symbol) this.orders = await this.updateOrders(this.orders);
 
-		if(!isContinue) this.status = CONSTANTS.BOT_STATUS.INACTIVE;
+		// if(!isContinue) 
+		this.status = CONSTANTS.BOT_STATUS.INACTIVE;
 
-		console.log(']----- disableProcess ');
 		 
 		await this._log(`процесс завершен.`);
 		return 'disable';
 	}
 
 	async cancelAllOrders(user = this.user) {
-		console.log("---------------------CANCEL ALL ORDERS IN PROCESS");
-		console.log('----- cancel all orders and sell it');
 		await this._log('Завершение всех ордеров и продажа по рынку.');
 		try{
 			if(this.currentOrder.orderId) {
@@ -570,12 +616,41 @@ module.exports = class Process {
 			} else {
 				return {
 					status: 'error',
-					message: 'Невозможно продать монеты, так как первый закупочный ордер еще не завершился.'
+					message: 'Невозможно продать монеты, так как ордеров нет или первый закупочный ордер еще не завершился.'
 				};
 			}
 		}
 		catch(error) {
 			console.log(error);
+			await this._log(error);
+			return {
+				status: 'error',
+				message: `Ошибка процессе завершения всех ордеров и продажи по рынку (код ошибки ${this.errorCode(error)}) :: ${error}`
+			};
+		}
+	}
+
+	async cancelAllOrdersWithoutSell(user = this.user) {
+		await this._log('Завершение всех ордеров.');
+		try{
+			if(this.currentOrder.orderId) {
+				await this.cancelOrders(this.safeOrders);
+				await this.cancelOrder(this.currentOrder.orderId);
+
+				this.orders = await this.updateOrders(this.orders);
+				await this.updateProcess(user);
+				return {
+					status: 'info',
+					message: 'Все ордера отменены'
+				};
+			} else {
+				return {
+					status: 'error',
+					message: 'Невозможно продать монеты, так как ордеров нет или первый закупочный ордер еще не завершился.'
+				};
+			}
+		}
+		catch(error) {
 			await this._log(error);
 			return {
 				status: 'error',
@@ -719,7 +794,6 @@ module.exports = class Process {
 				secret = Crypto.decipher(user.binanceAPI.secret,  Crypto.getKey(user.regDate, user.name))
 			}
 			catch(err) {
-				console.log('ошибка с определением ключей бинанса');
 				if(flag) await this._log('ошибка с определением бинанс ключей!');
 				key = '';
 				secret = ''; 
@@ -889,12 +963,12 @@ module.exports = class Process {
 	}
 
 	getChangeUserKey(field = '', botInd = null) {
-		return field ? `bots.${botInd}.processes.${this._id}.${field}` : `bots.${botInd}.processes.${this._id}`;
+		return field ? `bots.${botInd}.processes.${this.processId}.${field}` : `bots.${botInd}.processes.${this.processId}`;
 	}
 
 	getChangeKey(field = '') {
 		// _userOrders_._user_._botID_._processId_
-		return field ? `bots.${this.botID}.processes.${this._id}.${field}` : `bots.${this.botID}.processes.${this._id}`;
+		return field ? `bots.${this.botID}.processes.${this.processId}.${field}` : `bots.${this.botID}.processes.${this.processId}`;
 	}
 
 	async getChangeUserObject(field = '', data = null) {
@@ -968,13 +1042,11 @@ module.exports = class Process {
 
 	async updateProcess(user = this.user, message = '') {
 		user = { name: user.name };
-		// console.log('[ updateProcess', message);
 		await this.updateProcessOrdersList(user);
 		let change = await this.getChangeUserObject('', this);
 		if(change !== -1) {
 			await Mongo.syncUpdate(user, change, 'users');
 		}
-		// console.log('] updateProcess');
 	}
 
 	// async updateProcessOrdersList(user = this.user) {
@@ -983,12 +1055,12 @@ module.exports = class Process {
 	// 	data = data[0];
 	// 	const botInd = await this.getBotIndex(user, data);
 	// 	if(botInd != -1) {
-	// 		let ordersList = data.bots[botInd].processes[this._id].ordersList;
+	// 		let ordersList = data.bots[botInd].processes[this.processId].ordersList;
 	// 		!ordersList && (ordersList = {});
 	
-	// 		let _id = `${this._id}${this.botID}-${this._id}`;
-	// 		!ordersList[_id] && (ordersList[_id] = []);
-	// 		ordersList[_id] = this.orders;
+	// 		let processId = `${this.processId}${this.botID}-${this.processId}`;
+	// 		!ordersList[processId] && (ordersList[processId] = []);
+	// 		ordersList[processId] = this.orders;
 	
 	// 		let change = await this.getChangeUserObject('ordersList', ordersList);
 	// 		if(change !== -1) {
@@ -1007,7 +1079,6 @@ module.exports = class Process {
 	}
 
 	async updateOrders(orders = []) {
-		console.log('------- updateOrders');
 		let nextOrders = [],
 			len = orders.length;
 		for(let i = 0; i < len; i++) {
@@ -1039,7 +1110,6 @@ module.exports = class Process {
 	//Timestamp for this request is outside of the recvWindow
 	async isError1021(error = new Error('default err')) {  	
 		let code = this.errorCode(error);
-		console.log(code);
 		// await this._log('ошибка code:' + code + ', Временная метка для этого запроса находится вне recvWindow');
 		return code === -1021;
 	}
@@ -1047,7 +1117,6 @@ module.exports = class Process {
 	//MIN_NOTATIAN
 	async isError1013(error = new Error('default err')) { 
 		let code = this.errorCode(error);
-		console.log(code);
 		// await this._log('ошибка code:' + code + ', Количество продоваемых монет ниже минимально-допустимого');
 		return code === -1013;
 	}
@@ -1055,7 +1124,6 @@ module.exports = class Process {
 	//insufficient balance
 	async isError2010(error = new Error('default err')) { 
 		let code = this.errorCode(error);
-		console.log(code);
 		// await this._log('ошибка code:' + code + ', Недостаточно средств на балансе валюты');
 		return code === -2010;
 	}
@@ -1063,7 +1131,6 @@ module.exports = class Process {
 	// Неверные бинанс ключи
 	async isError2014(error = new Error('default err')) {
 		let code = this.errorCode(error);
-		console.log(code);
 		// await this._log('ошибка code:' + code + ', Неверные бинанс ключи');
 		return code === -2014
 	}
@@ -1132,23 +1199,6 @@ module.exports = class Process {
 
 	isPreFreeze() {
 		return this.preFreeze === CONSTANTS.BOT_FREEZE_STATUS.ACTIVE;
-	}
-
-	async checkFreezeStatus(user = this.user) {
-		const activeF = CONSTANTS.BOT_FREEZE_STATUS.ACTIVE,
-			inactiveF = CONSTANTS.BOT_FREEZE_STATUS.INACTIVE;
-		// if(this.freeze === activeF && this.preFreeze === inactiveF) {
-		// 	await this.freezeProcess(user);
-		// 	this.nextTradeStep(user);
-		// }
-		// else if(this.freeze === inactiveF && this.preFreeze === activeF) {
-		// 	await this.unfreezeProcess(user);
-		// 	this.nextTradeStep(user);
-		// }
-		// else {
-		// 	console.warn('----- general trade');
-			this.nextTradeStep(user);
-		// }
 	}
 	//:: CHECK FUNC END
 }

@@ -133,8 +133,8 @@ module.exports = {
 			delete change._id
 			coll.update(key, { $set: change }, { upsert: true }, (err, data) => {
 				this.Assert.equal(err, null)
-				if (err) reject(err)
-				resolve(data)
+				if (err) reject(err);
+				resolve(data);
 			})
 		})
 	}

@@ -41,11 +41,6 @@
     export default {
         data() {
             return {
-                // binance: {
-                //     name: '',
-                //     key: '',
-                //     secret: ''
-                // },
                 isSaved: true
             }
         },
@@ -54,6 +49,7 @@
                 return this.$store.getters.getBinanceAPI;
             },
             isFormValid() {
+                console.log(this.binance)
                 return this.binance.name && this.binance.key && this.binance.secret;
             }
         },

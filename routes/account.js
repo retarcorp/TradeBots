@@ -28,7 +28,6 @@ router.post('/account/api', (req, res, next) => {
 });
 
 router.delete('/account/api', (req, res, next) => {
-	console.log(req.cookies.user)
 	if(req.cookies.user) {
 		let user = {name: req.cookies.user.name};
 		Users.setBinance(user, null, data => {

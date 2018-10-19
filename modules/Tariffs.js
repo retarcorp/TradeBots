@@ -49,14 +49,22 @@ class TariffList {
 						newUserWalletBalance = userWalletBalance - btcTariffPrice,
 						userMaxBotAmount = userData.maxBotAmount,
 						tariffMaxBotAmount = Number(currentTariff.maxBotAmount),
-						nextUserMaxBotAmount = userMaxBotAmount + tariffMaxBotAmount;
+						nextUserMaxBotAmount = userMaxBotAmount + tariffMaxBotAmount,
+						purchaseDate = Date.now(),
+						extraDate = this.translationDaysToMilliseconds(Number(currentTariff.termOfUse)),
+						tariffExpirationDate = purchaseDate + extraDate,
+						userExpirationDate = Number(userData.expirationDate),
+						nextExpirationDate = (userExpirationDate <= tariffExpirationDate) ? tariffExpirationDate : userExpirationDate;
 
+					currentTariff.purchaseDate = purchaseDate;
+					currentTariff.expirationDate = tariffExpirationDate;
 					userTariffs.push(currentTariff);
 
 					let change = {
 						tariffs: userTariffs,
 						walletBalance: newUserWalletBalance,
-						maxBotAmount: nextUserMaxBotAmount
+						maxBotAmount: nextUserMaxBotAmount,
+						expirationDate: nextExpirationDate
 					};
 	
 					await Mongo.syncUpdate(user, change, CONSTANTS.USERS_COLLECTION);
@@ -65,6 +73,11 @@ class TariffList {
 				} else callback(M.getFailureMessage({ message: 'Недостаточно средств на балансе!', data: { tariffPrice: btcTariffPrice, userBalance: userWalletBalance } }));
 			} else callback(M.getFailureMessage({ message: 'Выбранный тариф не существует!' }));
 		} else callback(M.getFailureMessage({ message: 'Пользователь не найден!' }));
+	}
+
+	translationDaysToMilliseconds(days = 0) {
+		const oneDay = 86400000;
+		return oneDay * days;
 	}
 
 	async setTariff(admin = {}, tariffData = {}, callback = (data = {}) => {}) {

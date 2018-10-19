@@ -176,7 +176,7 @@ let Users = {
 			admin = (user.admin) ? true : false,
 			regDate = Date.now(),
 			month = 2592000000,
-			expirationDate = regDate + month,
+			expirationDate = regDate/* + month*/,
 			walletAddress = await Balance.createWallet({userId: userId});
 
 			User = {
@@ -303,48 +303,52 @@ let Users = {
 	}
 
 	,setBinance(user, binanceData, callback) {
-		Mongo.select(user, 'users', (data) => {
-			data = data[0];
-			if(binanceData){
-				binanceData.data = data;
-				data.binanceAPI = new Binance(binanceData);
-			} else data.binanceAPI = {};
+		Mongo.select(user, 'users', (data) => { 
 
-			if(binanceData && binanceData.name) {
-				let c = binanceAPI({
-					apiKey: binanceData.key,
-					apiSecret: binanceData.secret
-				});
+			if(data.length) {
+				data = data[0];
+				if(!binanceData) binanceData = {};
 
-				c.accountInfo().then(d => {
-					if(d.balances) {
-						Mongo.update(user, {binanceAPI: data.binanceAPI}, 'users', (data) => {
+				if(binanceData && binanceData.name) {
+					let c = binanceAPI({
+						apiKey: binanceData.key,
+						apiSecret: binanceData.secret
+					});
+
+					c.accountInfo()
+						.then(result => {
+							if(result.balances) {
+								binanceData.data = {
+									name: data.name,
+									regDate: data.regDate
+								}
+								Mongo.update(user, { binanceAPI: new Binance(binanceData) }, CONSTANTS.USERS_COLLECTION, d => {
+									callback({status: 'ok', message: 'Ключи успешно сохранены.'});
+								});
+
+
+							} else callback({status: 'error', message: 'Невалидные ключи!'});
+						})
+						.catch(err => {
 							callback({
-								status: 'ok',
-								data: data.binanceAPI
+								status: 'error',
+								message: 'Произошла ошибка при проверке бинанс ключей',
+								error: err
 							});
 						});
-					}
-					else {
-						callback({status: 'error', message: 'Невалидные ключи!'});
-					}
-				}).catch(err => {
-					callback({status: 'error', message: 'Невалидные ключи!'});
-				});
-			} else {
-				Mongo.update(user, {binanceAPI: data.binanceAPI}, 'users', (data) => {
-					callback({
-						status: 'ok',
-						data: data.binanceAPI,
-						message: 'Невалидные ключи!'
+				} else {
+					Mongo.update(user, { binanceAPI: {} }, CONSTANTS.USERS_COLLECTION, d => {
+						callback({status: 'ok', message: 'Невалидные ключи!'});
 					});
+				}
+
+			} else {
+				callback({
+					status: 'error',
+					message: 'Пользователь не найден!'
 				});
 			}
-				
 		});
-
-
-			
 	}
 
 	,getBinance(user, callback) {
@@ -356,7 +360,7 @@ let Users = {
 					retData = {
 						name: data.binanceAPI.name,
 						key: Crypto.decipher(data.binanceAPI.key, Crypto.getKey(data.regDate, data.name)),
-						secret: '*******'
+						secret: '***'
 					}
 				}
 				if(callback) callback({
@@ -377,15 +381,15 @@ let Users = {
 	,Bots: {
 		Bots: []
 
-		,setBotsArray() {
-			Mongo.select({}, 'users', (users) => {
-				users.forEach(user => {
-					user.bots.forEach(bot => {
-						bot = new Bot(bot);
-						bot.continueTrade(user);
-						this.Bots.push(bot);
-					})
-				})
+		,async setBotsArray() {
+			let users = await Mongo.syncSelect({}, 'users');
+			users.forEach(user => {
+				for (let i = 0; i < user.bots.length; i++) {
+					let bot = Object.assign({}, user.bots[i]);
+					bot = new Bot(bot);
+					bot.continueTrade(user);
+					this.Bots.push(bot);
+				}
 			})
 		}
 
@@ -446,22 +450,34 @@ let Users = {
 						if(bot.botID !== botData) tempBots.push(bot);
 					});
 					data.bots = tempBots;
-
-					const index = this.Bots.findIndex(bot => bot.botID === botData)
-					this.Bots[index].deleteBot(user)
-						.then(res => {
-							if(res.status === 'ok') {
-								this.Bots.splice(index, 1);
-								Mongo.update(user, {bots: data.bots}, 'users', (data) => {
-									let res = {
-										status: 'ok',
-										message: `Бот ${botData.botID} успешно удален`,
-										data: botData
-									};
-									callback(res);
-								});
-							}
-						})
+					
+					const index = this.Bots.findIndex(bot => {
+						return bot.botID === botData
+					});
+					if(index >= 0) {
+						this.Bots[index].deleteBot(user)
+							.then(res => {
+								if(res.status === 'ok') {
+									this.Bots.splice(index, 1);
+									Mongo.update(user, {bots: data.bots}, 'users', (data) => {
+										let res = {
+											status: 'ok',
+											message: `Бот ${botData.botID} успешно удален`,
+											data: botData
+										};
+										callback(res);
+									});
+								}
+							})
+					} else {
+						let res = {
+							status: 'error',
+							message: `Ошибка при удалении бота`,
+							index: index,
+							data: botData
+						};
+						callback(res);
+					}
 				}
 			});
 		}
@@ -545,6 +561,36 @@ let Users = {
 				})
 			}
 			catch(error) {
+				callback({
+					status: 'error',
+					message: error
+				})
+			}
+		}
+
+		,cancelAllOrdersWithoutSell(user = {}, reqData = {}, callback = (data = {}) => {}) {
+			console.log('CANCEL ALL ORDERS WITHOUT SELL______________________________________________________________________');
+			try {
+				Mongo.select(user, CONSTANTS.USERS_COLLECTION, userData => {
+					if(userData.length) {
+						userData = userData[0];
+						const index = this.Bots.findIndex(bot => bot.botID === reqData.botID);
+						this.Bots[index].cancelAllOrdersWithoutSell(user, reqData.processeId)
+							.then(d => callback(d))
+							.catch(error =>
+								callback({
+									status: 'error',
+									error: error,
+									message: 'Завершение всех ордеров прошло неудачно'
+								}));
+					} else {
+						callback({
+							status: 'error',
+							message: 'Пользователь не найден.'
+						});
+					}
+				});
+			} catch(error) {
 				callback({
 					status: 'error',
 					message: error

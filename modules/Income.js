@@ -1,4 +1,5 @@
 const Mongo = require('./Mongo');
+const Tariffs = require('./Tariffs');
 const CONSTANTS = require('../constants');
 
 const usersDataCollection = CONSTANTS.USERS_DATA_COLLECTION;
@@ -26,6 +27,46 @@ class Income {
 		return Object.assign({}, this.FailureMessage, data);
 	}
 
+	startLiveUpdate() {
+		this.liveCheckUsersTariffs();
+		// this.liveUpdateOrders();
+		// this.liveUpdateIncome();
+	}
+
+	async liveCheckUsersTariffs() {
+		console.time('liveCheckUsersTariffs');
+		
+		let users = await Mongo.syncSelect({}, usersCollection),
+			dateNow = Date.now();
+		users.forEach(user => {
+			let tariffs = user.tariffs,
+				len = tariffs.length,
+				nextTariff = [],
+				userMaxBotAmount = user.maxBotAmount,
+				tariffHistory = user.tariffHistory || [];
+			tariffs.forEach(tariff => {
+				if(dateNow > tariff.expirationDate) {
+					tariffHistory.push(tariff);
+					userMaxBotAmount -= Number(tariff.maxBotAmount);
+				}
+				else nextTariff.push(tariff);	
+			});
+
+			if(nextTariff.length !== len) {
+				let change = {
+					tariffHistory: tariffHistory,
+					tariffs: nextTariff,
+					maxBotAmount: userMaxBotAmount
+				},
+					userKey = { userId: user.userId };
+				Mongo.update(userKey, change, usersCollection, data => console.log("CHANGE USER TARIFF DATA", userKey));
+			}
+		});
+
+		setTimeout(() => this.liveCheckUsersTariffs(), CONSTANTS.UPDATE_DAYLY);		
+		console.timeEnd('liveCheckUsersTariffs');
+	}
+
 	async liveUpdateOrders() {
 		console.time('liveUpdateOrders');
 		
@@ -35,7 +76,7 @@ class Income {
 		for (let i = 0, user = users[i]; i < length; i++) {
 			let bots = user.bots;
 			for (let botID in bots) {
-				bots[botID] = new botID(bots[botID]);
+				bots[botID] = new Bot(bots[botID]);
 				bots[botID].updateUserOrdersList({ name: user.name });
 			}
 		}

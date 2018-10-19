@@ -99,17 +99,19 @@ const CONSTANTS = {
 		MAX_NUM_ALGO_ORDERS: 'MAX_NUM_ALGO_ORDERS'
 	},
 
-	PRC: 'PRC-', //Process
+	PRC: 'PRC', //Process
 
-	BT: 'BOT-', //Bot
+	BT: 'BOT', //Bot
 
-	TF: 'TF-', //Tariff
+	TF: 'TF', //Tariff
 
-	US: 'US-', //User 
+	US: 'US', //User 
 
-	DL: 'DL-', //Deal
+	DL: 'DL', //Deal
 
-	PM: 'PM-', //Payment
+	PM: 'PM', //Payment
+
+	BK: 'BK', //Binance key
 
 	DISABLE_FLAG: 'disable',
 
@@ -119,11 +121,13 @@ const CONSTANTS = {
 
 	ORDER_TIMEOUT: 1000,
 
-	BOT_SLEEP: 5000,
+	BOT_SLEEP: 10000,
 
 	SLEEP: 5000,
 
 	UPDATE_ORDERS_LIST_SLEEP: 15000,
+
+	UPDATE_DAYLY: 86400000,
 
 	TRADING_SIGNALS_COLLECTION: 'tradingSignals',
 

@@ -69,6 +69,14 @@ router.post('/bots/orders/cancelAll', (req, res, next) => {
 	});
 });
 
+router.post('/bots/orders/cancelAllOrders', (req, res, next) => {
+	let user = {name: req.cookies.user.name}
+	Users.Bots.cancelAllOrdersWithoutSell(user, req.body, data => {
+		log(data);
+		res.json(data);
+	});
+});
+
 router.post('/bots/setFreeze', (req, res, next) => {
 	let user = {name: req.cookies.user.name}
 	Users.Bots.freezeBot(user, req.body, data => {

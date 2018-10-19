@@ -28,12 +28,12 @@
                 class="button button--success auth-form__button"
                 :class="{'button--disabled': !isFormValid}"
                 :disabled="!isFormValid">Регистрация</button>
-                <button 
-                    type='button'
-                    class="button auth-form__button"
-                    @mouseup="onClosePassword"
-                    @mousedown='onViewPassword'>Показать пароль
-                </button>
+            <button 
+                type='button'
+                class="button auth-form__button"
+                @mouseup="onClosePassword"
+                @mousedown='onViewPassword'>Показать пароль
+            </button>
         </div>
         <p class="form__question">Уже есть аккаунт? <nuxt-link to="/Vhod" class="link">Войти</nuxt-link></p>
     </form>
@@ -50,12 +50,14 @@
         },
         computed: {
             isRightPassword() {
+                let regexp = /[а-яё]/gi;
                 return this.password.length >= 6 
                     && this.password.length <= 20
                     && this.email.length !== 0
                     && this.password.toUpperCase() !== this.password
                     && this.password.toLowerCase() !== this.password
                     && this.password.match(/[0-9]/) !== null
+                    && !regexp.test(this.password)
                     ? true
                     : false;
             },
@@ -73,7 +75,6 @@
                         password: this.password
                     })
                     .then(res => {
-                        console.log(res.status)
                         if(res.status !== 'error') {
                             // this.$store.commit('setSpiner', false);
                             this.$router.push('/Vhod');
@@ -101,7 +102,7 @@
             closeInfoPopup() {
                 if( !this.isRightPassword ) {
                     this.$store.commit('setStatus', 'info');
-                    this.$store.commit('setMessage', 'Пароль должен содержать от 6 до 20 символов, включая минимум одну заглавную букву, прописную и цифру.');
+                    this.$store.commit('setMessage', 'Пароль должен содержать от 6 до 20 символов, включая минимум одну заглавную букву, прописную и цифру и не содержать русские символы.');
                 }
             }
         }

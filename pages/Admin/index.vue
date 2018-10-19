@@ -97,9 +97,9 @@ import UserTableRowVue from '../../components/UserTableRow.vue';
                 date = new Date(date);
                 let hh = String(date.getHours()),
                     ss = String(date.getSeconds()),
-                    DD = String(date.getDay()),
+                    DD = String(date.getDate()),
                     mm = String(date.getMinutes()),
-                    MM = String(date.getMonth()),
+                    MM = String(date.getMonth() + 1),
                     YYYY = date.getFullYear();
 
                 hh = hh.length < 2 ? '0' + hh : hh;

@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div v-if="getStatus === 'confirm' || getStatus === 'confirmCurrent' || getStatus === 'deleteBot'" class='confirm-block' @click="checkWindow">
+        <div v-if="getStatus === 'confirm' || getStatus === 'confirmOrders' || getStatus === 'confirmCurrent' || getStatus === 'deleteBot'" class='confirm-block' @click="checkWindow">
             <div class='confirm-block__content'>
                 <p>{{ statusAlert[getStatus] }}</p>
                 <div class='confirm-block__buttons-box'>
@@ -125,7 +125,7 @@
                 </div>
             </div>
             <div class='bots__log' v-if='Object.keys(this.bot.processes).length'>
-                <ul>
+                <ul class="procceses-list">
                     <li 
                         v-for='(log, index) in Object.keys(bot.processes)'
                         :id='index'
@@ -217,12 +217,21 @@
                             </tr>
                         </tbody>
                     </table>
-                    <div class="order__buttons" v-if='Object.keys(this.bot.processes).length'>
-                        <button 
-                            @click.prevent="cancelAll" 
-                            class="button button--primary"
-                            v-if='bot.processes[currentId].runningProcess'
-                        >Отменить и продать</button>
+                    <div class="btc-box"> 
+                        <div class="order__buttons" v-if='Object.keys(this.bot.processes).length'>
+                            <button 
+                                @click.prevent="cancelAll" 
+                                class="button button--primary"
+                                v-if='bot.processes[currentId].runningProcess'
+                            >Отменить и продать</button>
+                        </div>
+                        <div class="order__buttons" v-if='Object.keys(this.bot.processes).length'>
+                            <button 
+                                @click.prevent="cancelAllOrders" 
+                                class="button button--primary"
+                                v-if='bot.processes[currentId].runningProcess'
+                            >Отменить все ордера</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -258,6 +267,7 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
                 isActiveTabOrders: false,
                 statusAlert: {
                     confirm: 'Вы точно хотите отменить все ордера и продать все монеты по рыночной цене?',
+                    confirmOrders: 'Вы точно хотите отменить все ордера?',
                     confirmCurrent: 'Вы точно хотите отменить ордер?',
                     deleteBot: 'Вы точно хотите отменить все ордера, продать все монеты по рыночной цене и удалить бота?'
                 }
@@ -353,6 +363,9 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
                 if( this.getStatus === 'confirm') {
                     this.$store.commit('setClientAnswer', 'accept');
                     this.cancelAll();
+                } else if( this.getStatus === 'confirmOrders') {
+                    this.$store.commit('setClientAnswer', 'acceptOrders');
+                    this.cancelAllOrders();
                 } else if( this.getStatus === 'confirmCurrent' ) {
                     this.$store.commit('setClientAnswer', 'acceptCurrent');
                     this.refuseOrder();
@@ -372,6 +385,21 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
                     // this.$store.commit('setSpiner', true);
                     this.$axios
                         .$post('/bots/orders/cancelAll', {
+                            'botID': this.bot.botID,
+                            'processeId': this.currentId
+                        })
+                        .then( res => {
+                            // this.$store.commit('setSpiner', false)
+                            this.checkStatus(res);
+                        })
+                }
+            },
+            cancelAllOrders() {
+                this.$store.commit('setStatus', 'confirmOrders');
+                if(this.clientAnswer === 'acceptOrders') {
+                    // this.$store.commit('setSpiner', true);
+                    this.$axios
+                        .$post('/bots/orders/cancelAllOrders', {
                             'botID': this.bot.botID,
                             'processeId': this.currentId
                         })
@@ -466,8 +494,18 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
 
 <style scoped>
 
+.procceses-list {
+    /* display: flex;
+    flex-direction: row-reverse;
+    justify-content: flex-start; */
+}
 
-/*    */
+.btc-box {
+    display: flex;
+}
+.btc-box > div {
+    margin: 1rem;
+}
 
 .active {
     background-color: rgb(238, 238, 238) !important;
