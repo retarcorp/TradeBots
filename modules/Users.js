@@ -10,6 +10,7 @@ const uniqid = require('uniqid');
 const Templates = require('./Templates');
 let binanceAPI = require('binance-api-node').default;
 const config = require('../config/config');
+const Logger = require('./Logger');
 const US = CONSTANTS.US;
 
 let Users = {
@@ -404,6 +405,31 @@ let Users = {
 					})
 				}
 			})
+		}
+
+		,async getBotLog(user = {}, botData = '', callback = () => {}) {
+			if(user.name && botData.botID) {
+				let userId = await Mongo.syncSelect(user, CONSTANTS.USERS_COLLECTION);
+				if(userId.length) {
+					userId = userId[0].userId;
+					let processesLog = [];
+					for(let i = 0; i < botData.processes.length; i++) {
+						let path = Logger.getPath(`/Users/${user.name}(${userId})/${botData.botID}/${botData.processes[i]}/log.txt`);
+						let fileData = Logger.syncRead(path);
+						processesLog.push({
+							processeId: botData.processes[i],
+							log: fileData
+						});
+					}
+					callback({status: 'ok', data: processesLog});
+
+
+				} else {
+					callback({status: 'error', message: 'Пользователь не найден или неккоректный botID', botID: botID});
+				}
+			} else {
+				callback({status: 'error', message: 'Пользователь не найден или неккоректный botID', botID: botID});
+			}
 		}
 
 		,getBotList(user, callback) {

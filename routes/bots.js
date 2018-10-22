@@ -2,6 +2,8 @@ let express = require('express');
 let Users = require('../modules/Users');
 let HistoryLog = require('../modules/HistoryLog');
 var router = express.Router();
+const url = require('url');
+const qrs = require('querystring');
 
 let log = (data) => HistoryLog._log(data);
 
@@ -84,5 +86,12 @@ router.post('/bots/setFreeze', (req, res, next) => {
 		res.json(data);
 	});
 });
+
+router.post('/api/bots/getBotLog', (req, res, next) => {
+	let user = {name: req.cookies.user.name};
+	Users.Bots.getBotLog(user, req.body, data => {
+		res.send(data);
+	});
+})
 
 module.exports = router;

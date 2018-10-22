@@ -21,7 +21,7 @@ const ORDER_STATE = require('../constants').ORDER_STATE;
 module.exports = class Order {
 	constructor({
 		symbol = null,
-		orderId,
+		orderId = null,
 		clientOrderId = null,
 		transactTime = null,
 		price = null,

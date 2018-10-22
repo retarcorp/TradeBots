@@ -240,7 +240,9 @@
             class="log" 
             v-if='lines && isActiveTabOrders' 
         >
-            <div class="log-line" v-for="line in lines" :key="line">{{line}}</div>
+            <div class="log-line" 
+                v-for="line in lines" :key="line"
+                >{{line}}</div>
         </div>
     </div>
 </template>
@@ -270,7 +272,8 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
                     confirmOrders: 'Вы точно хотите отменить все ордера?',
                     confirmCurrent: 'Вы точно хотите отменить ордер?',
                     deleteBot: 'Вы точно хотите отменить все ордера, продать все монеты по рыночной цене и удалить бота?'
-                }
+                },
+                prcs: {}
             }
         },
         filters: {
@@ -314,14 +317,15 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
                 return this.$store.getters.getStatus;
             },
             lines() {
-                return this.currentId ? this.bot.processes[this.currentId].log : [];
+                return this.currentId && this.prcs[this.currentId] && this.prcs[this.currentId].log;
             }
+
         },
-        // watch: {
-        //     '$route'(to, from) {
-        //         console.log(`currentLogId - ${this.currentId}`)
-        //     }
-        // },
+        watch: {
+            // '$route'(to, from) {
+            //     console.log(`currentLogId - ${this.currentId}`)
+            // }
+        },
         methods: {
             fillingInfo(id, event) {
                 this.currentLogId = id;
@@ -484,10 +488,34 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
             onUpdated() {
                 this.isChanging = false;
                 this.currentComponent = null;
+            },
+            getLog() {
+                let data = {
+                    botID: this.bot.botID,
+                    processes: Object.keys(this.bot.processes)
+                }
+
+                this.$axios.post(`/api/bots/getBotLog`, data)
+                    .then(data => {
+                        data = data.data;
+                        if(data.status === 'ok') {
+                            data.data.forEach(elem => {
+                                let log = elem.log.split('\r\n');
+                                this.prcs[elem.processeId] || (this.prcs[elem.processeId] = { log: []});
+                                this.prcs[elem.processeId].log = log.reverse();
+                            });
+                            if(this.$route.params.id) {
+                                setTimeout(() => {
+                                    this.getLog();
+                                }, 5000);   
+                            }
+                        }
+                    })
+                    .catch(err => console.log(err));
             }
         },
         created() {
-            console.log(`currentLogId - ${this.currentId}`)
+            this.getLog();
         }
     }
 </script>

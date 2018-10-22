@@ -19,6 +19,7 @@ const url = require('url');
 const qrs = require('querystring');
 const Tariffs = require('../modules/Tariffs');
 const binanceAPI = require('binance-api-node').default;
+const Logger = require('../modules/Logger');
 // const uniqid = require('uniqid');
 
 router.use(account);
@@ -35,9 +36,14 @@ router.use(userActivation);
 
 router.get('/test', (req, res, next) => {
 	const query = qrs.parse(url.parse(req.url).query);
-	
-	rp({ uri: 'https://bitaps.com/api/ticker/average', method: 'GET' })
-		.then(data => res.json(JSON.parse(data)));
+	// Logger.append(undefined, '\nхелооо')
+	// 	.then(data => res.send(data))
+	// 	.catch(err => res.send(err));
+
+	Logger.read().then(data => res.send(data)).catch(err => res.send(err));
+
+	// rp({ uri: 'https://bitaps.com/api/ticker/average', method: 'GET' })
+	// 	.then(data => res.json(JSON.parse(data)));
 
 	// res.send(query);
 	// let admin = req.cookies.admin;
