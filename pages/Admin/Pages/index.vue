@@ -9,6 +9,7 @@
                 
                 <!-- <vue-ckeditor v-model="page.content" :config="config" /> -->
                 <button :class="{'button--disabled': !isValid}" :disabled="!isValid" @click="onCreatePage">{{ isEdit ? 'Изменить' : 'Создать' }}</button>
+                <button @click="clearData">Сбросить</button>
             </div>
             <div class="col-12">
                 <div v-for="page in pages" :key='page.id'>
@@ -60,6 +61,7 @@ export default {
     },
     methods: {
         clearData() {
+            this.isEdit = false;
             this.page = {
                 slug: '',
                 title: '',
@@ -67,7 +69,8 @@ export default {
             }
         },
         onCreatePage() {
-            this.$axios.post('/api/admin/pages/create', this.page)
+            let url = this.isEdit ? '/api/admin/pages/update' : '/api/admin/pages/create'
+            this.$axios.post(url, this.page)
                 .then(res => {
                     this.clearData()
                     this.isEdit = false;
@@ -80,8 +83,6 @@ export default {
         getAllPages() {
             this.$axios.$get('/api/admin/pages/getPages')
                 .then(res => {
-                    this.$store.commit('setMessage', res.data.message)
-                    this.$store.commit('setStatus', res.data.status)
                     this.pages = res.data
                 })
         },

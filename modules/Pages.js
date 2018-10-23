@@ -46,14 +46,11 @@ class Pages {
 		} else callback(M.getFailureMessage({ message: 'Недостаточно прав!' }));
 	}
 
-	async updatePage(admin = {}, nexPageData = {}, callback = (data = {}) => {}) {
+	async updatePage(admin = {}, nextPageData = {}, callback = (data = {}) => {}) {
 		if(await this.authenticationAdmin(admin)) {
-			if(await this.pageExists(pageData)) { 
-				let key = { pageId: nexPageData.pageId },
-					change = Object.assign({}, nexPageData);
-
-				change.slug = change.nextSlug;
-				delete change.nextSlug;
+			if (!(await this.pageExists(nextPageData))) { 
+				let key = { pageId: nextPageData.pageId },
+					change = Object.assign({}, nextPageData);
 				
 				Mongo.syncUpdate(key, change, pages.collection)
 					.then(result => {
