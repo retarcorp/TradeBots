@@ -1,3 +1,4 @@
 module.exports = {
-	collection: 'pages'
+	collection: 'pages',
+	id: 'PG'
 }

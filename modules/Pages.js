@@ -2,11 +2,13 @@ const Mongo = require('./Mongo');
 const M = require('./Message');
 const { pages } = require('../config/config');
 const CONSTANTS = require('../constants');
+const uniqid = require('uniqid');
 
 class Pages {
 	async createPage(admin = {}, pageData = {}, callback = (data = {}) => {}) {
 		if(await this.authenticationAdmin(admin)) {
 			if(!(await this.pageExists(pageData))) {
+				pageData.pageId = uniqid.time(pages.id);
 				Mongo.syncInsert(pageData, pages.collection)
 					.then(result => {
 						callback(M.getSuccessfullyMessage({ data: result }));
@@ -47,7 +49,7 @@ class Pages {
 	async updatePage(admin = {}, nexPageData = {}, callback = (data = {}) => {}) {
 		if(await this.authenticationAdmin(admin)) {
 			if(await this.pageExists(pageData)) { 
-				let key = { slug: nexPageData.slug },
+				let key = { pageId: nexPageData.pageId },
 					change = Object.assign({}, nexPageData);
 
 				change.slug = change.nextSlug;
