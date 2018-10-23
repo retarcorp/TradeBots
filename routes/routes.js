@@ -11,7 +11,7 @@ const income = require('./income');
 const tariffs = require('./tariffs');
 const userActivation = require('./userActivation');
 const bitaps = require('./bitaps');
-// const pages = require('./pages');
+const pages = require('./pages');
 const rp = require('request-promise');
 
 
@@ -29,7 +29,7 @@ router.use(admin);
 router.use(bitaps);
 router.use(bots);
 router.use(income);
-// router.use(pages);
+router.use(pages);
 router.use(signin);
 router.use(signup);
 router.use(statistics);
