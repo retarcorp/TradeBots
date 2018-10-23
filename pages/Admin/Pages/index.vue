@@ -18,6 +18,7 @@
 import VueCkeditor from 'vue-ckeditor2';
 export default {
     components: { VueCkeditor },
+    layout: 'admin',
     head: {
         script: [
             {
@@ -43,7 +44,7 @@ export default {
     },
     methods: {
         onCreatePage() {
-            this.$axios.post('/api/admin/pages/create/', this.page)
+            this.$axios.post('/api/admin/pages/create', this.page)
                 .then(res => {
                     console.log(res.data)
                 })
