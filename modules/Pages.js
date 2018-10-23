@@ -1,6 +1,7 @@
 const Mongo = require('./Mongo');
 const M = require('./Message');
 const { pages } = ('../config/config.js');
+const CONSTANTS = require('../constants');
 
 class Pages {
 	async createPage(admin = {}, pageData = {}, callback = (data = {}) => {}) {
