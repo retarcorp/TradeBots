@@ -75,7 +75,6 @@ class Logger {
 
 	syncRead(path = logger.trash_root) {
 		if(path === logger.trash_root) path += "/Trash.txt";
-		console.log(path)
 		try {
 			return fs.readFileSync(path, logger.utf8);
 		} catch(err) {

@@ -67,6 +67,10 @@
         },
         created() {
             this.$store.dispatch('setEmail');
+            this.$store.dispatch('setBotsList');
+            this.$store.dispatch('getSymbolsList');
+            // this.$store.dispatch('firstGetBinanceAPI');
+            this.$store.dispatch('getUserStatistics');
             this.$store.dispatch('getUserMaxBotAmount');
             this.$store.dispatch('firstGetBinanceAPI');
             // this.$store.dispatch('checkBinance');

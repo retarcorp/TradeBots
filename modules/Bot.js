@@ -65,7 +65,11 @@ module.exports = class Bot {
 								this.startManual(user);
 							}
 						})
-						.catch( err => console.log(err));	
+						.catch( async err => {
+							console.log(err);
+							this.disableBot(user);
+							await this.updateBot(user);
+						});	
 				}
 			}
 		} else if(this.isAuto()) {
@@ -79,15 +83,16 @@ module.exports = class Bot {
 							.then( result => {
 								this.processes[processId].setRunnigProcess();
 							})
-							.catch( err => console.log(err));
+							.catch( async err => {
+								console.log(err);
+								this.disableBot(user);
+								await this.updateBot(user);
+							});
 					}
 				}
 			}
-			//  else {
-				this.startAuto(user, CONSTANTS.CONTINUE_FLAG);
-			// }
+			this.startAuto(user, CONSTANTS.CONTINUE_FLAG);
 		}
-		// this.updateUserOrdersList(user);
 	}
 
 	async changeStatus(nextStatus, user = this.user) {
@@ -214,7 +219,11 @@ module.exports = class Bot {
 					this.startManual(user);
 				}
 			})
-			.catch(err => console.log(err));
+			.catch( async err => {
+				console.log(err)
+				this.disableBot(user);
+				await this.updateBot(user);
+			});
 	}
 
 	async startAuto(user = this.user, continueFlag = false) {
@@ -254,7 +263,11 @@ module.exports = class Bot {
 						.then( result => {
 							this.processes[newProcess.processId].setRunnigProcess();
 						})
-						.catch(err => console.log(err));
+						.catch( async err => {
+							console.log(err);
+							this.disableBot(user);
+							await this.updateBot(user);
+						});
 	
 					this.pair.from = '';
 				}
@@ -532,7 +545,7 @@ module.exports = class Bot {
 			await Mongo.syncUpdate(user, {ordersList:  ordersList}, CONSTANTS.USERS_COLLECTION);
 		}
 		
-		// // не вызывать когда бот выключен или удален
+		// не вызывать когда бот выключен или удален
 		if(this.workProcessesExist()) {
 			setTimeout(() => { this.updateUserOrdersList(user) }, CONSTANTS.UPDATE_ORDERS_LIST_SLEEP);
 		}

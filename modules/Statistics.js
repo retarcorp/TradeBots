@@ -2,6 +2,7 @@ const CONSTANTS = require('../constants');
 const Mongo = require('./Mongo');
 const STATISTICS_COLLECTION = CONSTANTS.STATISTICS_COLLECTION;
 const sleep = require('system-sleep')
+const M = require('./Message');
 
 class Statistics {
 	constructor() {
@@ -10,9 +11,43 @@ class Statistics {
 
 	async getUserStatistic(user = {}, callback = (data = {}) => {}) {
 
-	}
+		let userData = await Mongo.syncSelect(user, CONSTANTS.USERS_COLLECTION);
+		if(userData.length && (userData = userData[0]).name ) {
+			let resData = [],
+				bots = userData.bots;
 
-	async setUserStatistic(user = {}, userStatData = {}, callback = (data = {}) => {}) {
+			bots.forEach(bot => {
+				let botData = {
+					title: bot.title,
+					botID: bot.botID,
+					status: bot.status,
+					processes: []
+				},
+					processes = bot.processes;
+
+				for (let _id in processes) {
+					let prc = processes[_id],
+						prcData = {
+							botTitle: botData.title,
+							processId: prc.processId,
+							symbol: prc.symbol,
+							status: prc.status,
+							finallyStatus: prc.finallyStatus,
+							freeze: prc.freeze,
+							orders: prc.orders
+						};
+					
+					botData.processes.push(prcData);
+				}
+
+				resData.push(botData);
+			});
+
+			callback(M.getSuccessfullyMessage({ data: resData }));
+
+		} else {
+			callback(M.getFailureMessage({ message: `Пользователь не найден (${user.name})`}));
+		}
 
 	}
 

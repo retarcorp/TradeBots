@@ -68,7 +68,10 @@ export default {
         },
         onSelectTarif (id) {
             this.$axios.$post('/api/user/purchaseTariff', { id })
-                .then(res => alert(res.message))
+                .then(res => {
+                    alert(res.message);
+                    location.reload();
+                });
         },
         getRates () {
             this.$axios.$get('/api/admin/getTariffList')

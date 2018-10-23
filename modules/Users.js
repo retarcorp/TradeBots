@@ -763,31 +763,9 @@ let Users = {
 		},
 
 		coutDayIncome(ordersList = {}) {
-			const oneDay = 86400000;
-			let income = {
-					BTC: {
-						value: 0,
-						name: 'BTC'
-					},
-					USDT: {
-						value: 0,
-						name: 'USDT'
-					},
-					BNB: {
-						value: 0,
-						name: 'BNB'
-					},
-					ETH: {
-						value: 0,
-						name: 'ETH'
-					}
-				},
-				curDay = Date.now(),
-				prevDay = curDay - oneDay; 
-
-			for (bot in ordersList) {
-				let orders = ordersList[bot],
-					botIncome = {
+			try {
+				const oneDay = 86400000;
+				let income = {
 						BTC: {
 							value: 0,
 							name: 'BTC'
@@ -804,44 +782,76 @@ let Users = {
 							value: 0,
 							name: 'ETH'
 						}
-					};
-				orders.forEach(order => {
-					if(order.time - prevDay <= oneDay) {
-						botIncome = this.setSymbolIncome(botIncome, order);
+					},
+					curDay = Date.now(),
+					prevDay = curDay - oneDay; 
+
+				for (bot in ordersList) {
+					let orders = ordersList[bot],
+						botIncome = {
+							BTC: {
+								value: 0,
+								name: 'BTC'
+							},
+							USDT: {
+								value: 0,
+								name: 'USDT'
+							},
+							BNB: {
+								value: 0,
+								name: 'BNB'
+							},
+							ETH: {
+								value: 0,
+								name: 'ETH'
+							}
+						};
+					orders.forEach(order => {
+						if(order.time - prevDay <= oneDay) {
+							botIncome = this.setSymbolIncome(botIncome, order);
+						}
+					});
+
+					for (symbol in income) {
+						income[symbol].value += botIncome[symbol].value;
 					}
-				});
-
-				for (symbol in income) {
-					income[symbol].value += botIncome[symbol].value;
 				}
-			}
 
-			return income;
+				return income;
+			} catch(err) {
+				console.log(err);
+				return {};
+			}
 		},
 
 		setSymbolIncome(income = {}, order = {}) {
-			const symbols = ['BTC', 'BNB', 'ETH', 'USDT'],
+			try {
+				const symbols = ['BTC', 'BNB', 'ETH', 'USDT'],
 				l = symbols.length;
 
-			let curSymbol = '';
+				let curSymbol = '';
 
-			for(let i = 0; i < l; i++) {
-				let pos = order.symbol.indexOf(symbols[i]);
+				for(let i = 0; i < l; i++) {
+					let pos = order.symbol.indexOf(symbols[i]);
 
-				if(pos > 1) {
-					curSymbol = symbols[i];
-					break;
+					if(pos > 1) {
+						curSymbol = symbols[i];
+						break;
+					}
 				}
+				
+				if(order.side === CONSTANTS.ORDER_SIDE.BUY && order.status === CONSTANTS.ORDER_STATUS.FILLED) {
+					income[curSymbol].value -= Number(order.cummulativeQuoteQty);
+				}
+				else if(order.side === CONSTANTS.ORDER_SIDE.SELL && order.status === CONSTANTS.ORDER_STATUS.FILLED) {
+					income[curSymbol].value  += Number(order.cummulativeQuoteQty);
+				}
+
+				return income;
+			} catch(err) {
+				return {};
 			}
 			
-			if(order.side === CONSTANTS.ORDER_SIDE.BUY && order.status === CONSTANTS.ORDER_STATUS.FILLED) {
-				income[curSymbol].value -= Number(order.cummulativeQuoteQty);
-			}
-			else if(order.side === CONSTANTS.ORDER_SIDE.SELL && order.status === CONSTANTS.ORDER_STATUS.FILLED) {
-				income[curSymbol].value  += Number(order.cummulativeQuoteQty);
-			}
-
-			return income
 		}
 	}
 

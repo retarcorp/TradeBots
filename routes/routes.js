@@ -11,6 +11,7 @@ const income = require('./income');
 const tariffs = require('./tariffs');
 const userActivation = require('./userActivation');
 const bitaps = require('./bitaps');
+// const pages = require('./pages');
 const rp = require('request-promise');
 
 
@@ -20,6 +21,7 @@ const qrs = require('querystring');
 const Tariffs = require('../modules/Tariffs');
 const binanceAPI = require('binance-api-node').default;
 const Logger = require('../modules/Logger');
+const Statistics = require('../modules/Statistics');
 // const uniqid = require('uniqid');
 
 router.use(account);
@@ -27,6 +29,7 @@ router.use(admin);
 router.use(bitaps);
 router.use(bots);
 router.use(income);
+// router.use(pages);
 router.use(signin);
 router.use(signup);
 router.use(statistics);
@@ -35,45 +38,8 @@ router.use(tariffs);
 router.use(userActivation);
 
 router.get('/test', (req, res, next) => {
-	const query = qrs.parse(url.parse(req.url).query);
-	// Logger.append(undefined, '\nхелооо')
-	// 	.then(data => res.send(data))
-	// 	.catch(err => res.send(err));
-
-	Logger.read().then(data => res.send(data)).catch(err => res.send(err));
-
-	// rp({ uri: 'https://bitaps.com/api/ticker/average', method: 'GET' })
-	// 	.then(data => res.json(JSON.parse(data)));
-
-	// res.send(query);
-	// let admin = req.cookies.admin;
-	// Tariffs.setTariff(admin, {title: 'ЯЯЯ'}, data => res.json(data));
-	// Tariffs.removeTariff(admin, {title: 'aa'}, data => res.json(data));
-	// Tariffs.getTariffList(admin, data => res.json(data));
-	// let n = { title: 'untitled tariff',
-	// 	tariffId: 'TF-jmvxcyg6',
-	// 	price: 100,
-	// 	maxBotAmount: 1,
-	// 	expirationDate: 90 }
-	// Tariffs.editTariff(admin, n, data => res.json(data));
-	// let user = {name: req.cookies.user.name};
-
-	// Mongo.update(user, {'bots.0': -1}, 'users', d => res.json(d));
-	// let change = {},
-	// 	l = `binanceAPI.na${'m'}e`
-	// change[l] = 'asdasd';
-	// Mongo.update({name: 'q@q.q'}, change, 'users', data => res.json(data))
-
-	
-	// res.json({
-	// 	a: uniqid(),
-	// 	a1: uniqid('asd'),
-	// 	b: uniqid.process(),
-	// 	b1: uniqid.process('asd'),
-	// 	c: uniqid.time(),
-	// 	c1: uniqid.time('asd')
-	// });
-})
-
+	let user = { name: req.cookies.user.name };
+	Statistics.getUserStatistic(user, data => res.send(data));
+});
 
 module.exports = router;

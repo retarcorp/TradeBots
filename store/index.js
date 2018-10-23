@@ -209,6 +209,18 @@ const store = () =>
 		}
 	},
 	actions: {
+		getUserStatistics({ commit, dispatch }) {
+			this.$axios.$get('/api/user/getStatistics')
+            .then(res => {
+                if(res.status === 'ok') {
+					commit('setStatisticsList', res.data);
+					setTimeout( () => {
+						dispatch('getUserStatistics');
+					}, 5000);
+                } 
+            })
+            .catch( error => console.log(error))
+		},
 		getUserMaxBotAmount({ commit }) {
 			this.$axios
 				.$get('/api/account/getMaxBotAmount')
@@ -413,18 +425,12 @@ const store = () =>
 				.then(res => {
 					if (res.status === "ok") {
 						commit("setBotsList", res.data);
-						// commit('setSpiner', false);
-							// if(res.data.find(bot => bot.status === true)) {
-						// console.log('im here')
 						setTimeout(() => {
 							dispatch('setBotsList')
 						}, 5000);
-						// }
 					} else if(res.status === 'info') {
 						commit('setMessage', res.message);
 						commit('setStatus', 'info');
-					} else {
-						dispatch('lounchBadMutations');
 					}
 				})
 				.catch(e => console.log(e));
