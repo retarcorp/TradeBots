@@ -29,7 +29,7 @@ class Pages {
 
 	async removePage(admin = {}, pageSlug = {}, callback = (data = {}) => {}) {
 		if(await this.authenticationAdmin(admin)) {
-			if(await this.pageExists(pageData)) { 
+			if (await this.pageExists(pageSlug)) { 
 
 				Mongo.syncDelete({ slug: pageSlug.slug }, pages.collection)
 					.then(result => {
@@ -74,9 +74,14 @@ class Pages {
 
 	async authenticationAdmin(admin = {}) {
 		if(admin.name && admin.admin) {
-			admin = { name: admin.name };
-			let adminData = await Mongo.syncSelect(admin, CONSTANTS.USERS_COLLECTION);
-			return adminData.length;
+			try {
+				admin = { name: admin.name };
+				console.log("constants   ---" + CONSTANTS.USERS_COLLECTION);
+				let adminData = await Mongo.syncSelect(admin, CONSTANTS.USERS_COLLECTION);
+				return adminData.length;
+			} catch (e) {
+				console.error(e)
+			}
 
 		} else {
 			return false;

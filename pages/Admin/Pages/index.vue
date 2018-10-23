@@ -8,10 +8,16 @@
                 <input class="input" v-model="page.content">
                 
                 <!-- <vue-ckeditor v-model="page.content" :config="config" /> -->
-                <button :class="{'button--disabled': !isValid}" :disabled="isValid" @click="onCreatePage">Create</button>
+                <button :class="{'button--disabled': !isValid}" :disabled="!isValid" @click="onCreatePage">{{ isEdit ? 'Изменить' : 'Создать' }}</button>
             </div>
             <div class="col-12">
-                <div v-for="page in pages" :key='page.id'>{{ page }}</div>
+                <div v-for="page in pages" :key='page.id'>
+                    <div>{{ page.slug }}</div>
+                    <div>{{ page.title }}</div>
+                    <div>{{ page.content }}</div>
+                    <div><button @click="onEditPage(page)">edit</button></div>
+                    <div><button @click="onDeletePage(page.slug)">remove</button></div>
+                </div>
             </div>
         </div>
     </div>
@@ -32,6 +38,7 @@ export default {
     },
     data() {
         return {
+            isEdit: false,
             pages: [],
             page: {
                 slug: '',
@@ -52,19 +59,44 @@ export default {
         }
     },
     methods: {
+        clearData() {
+            this.page = {
+                slug: '',
+                title: '',
+                content: ''
+            }
+        },
         onCreatePage() {
             this.$axios.post('/api/admin/pages/create', this.page)
                 .then(res => {
+                    this.clearData()
+                    this.isEdit = false;
                     this.$store.commit('setMessage', res.data.message)
                     this.$store.commit('setStatus', res.data.status)
+                    this.getAllPages()
                 })
                 .catch(e => console.info(e))
         },
         getAllPages() {
             this.$axios.$get('/api/admin/pages/getPages')
                 .then(res => {
+                    this.$store.commit('setMessage', res.data.message)
+                    this.$store.commit('setStatus', res.data.status)
                     this.pages = res.data
                 })
+        },
+        onEditPage(page) {
+            this.isEdit = true
+            this.page = page
+        },
+        onDeletePage(slug) {
+            this.$axios.$post('/api/admin/pages/remove', { slug })
+                .then(res => {
+                    this.$store.commit('setMessage', res.data.message)
+                    this.$store.commit('setStatus', res.data.status)
+                    this.getAllPages()
+                })
+                .catch(e => console.info(e))
         }
     },
 
