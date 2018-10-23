@@ -1,13 +1,12 @@
 const Mongo = require('./Mongo');
 const M = require('./Message');
-const { pages } = ('../config/config.js');
+const { pages } = require('../config/config');
 const CONSTANTS = require('../constants');
 
 class Pages {
 	async createPage(admin = {}, pageData = {}, callback = (data = {}) => {}) {
 		if(await this.authenticationAdmin(admin)) {
-			if(await !this.pageExists(pageData)) {
-
+			if(!(await this.pageExists(pageData))) {
 				Mongo.syncInsert(pageData, pages.collection)
 					.then(result => {
 						callback(M.getSuccessfullyMessage({ data: result }));
@@ -69,8 +68,8 @@ class Pages {
 
 	async pageExists(page = {}) {
 		page = { slug: page.slug };
-		let pagesData = await Mongo.syncSelect(page, CONSTANTS.TARIFFS_COLLECTION);
-		return tariffsArray.length;
+		let pagesData = await Mongo.syncSelect(page, pages.collection);
+		return pagesData.length;
 	}
 
 	async authenticationAdmin(admin = {}) {
