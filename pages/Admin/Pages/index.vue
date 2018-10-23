@@ -8,7 +8,7 @@
                 <input class="input" v-model="page.content">
                 
                 <!-- <vue-ckeditor v-model="page.content" :config="config" /> -->
-                <button @click="onCreatePage">Create</button>
+                <button :class="{'button--disabled': !isValid}" :disabled="isValid" @click="onCreatePage">Create</button>
             </div>
         </div>
     </div>
@@ -40,6 +40,11 @@ export default {
                 ],
                 height: 300
             }
+        }
+    },
+    computed: {
+        isValid() {
+            return this.page.content && this.page.title && this.page.slug
         }
     },
     methods: {
