@@ -18,6 +18,7 @@
 import VueCkeditor from 'vue-ckeditor2';
 export default {
     components: { VueCkeditor },
+    layout: 'admin',
     head: {
         script: [
             {
