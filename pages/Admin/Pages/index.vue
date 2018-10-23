@@ -44,7 +44,7 @@ export default {
     },
     methods: {
         onCreatePage() {
-            this.$axios.post('/api/admin/pages/create/', this.page)
+            this.$axios.post('/api/admin/pages/create', this.page)
                 .then(res => {
                     console.log(res.data)
                 })
