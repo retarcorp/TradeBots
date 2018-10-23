@@ -22,8 +22,8 @@ class Pages {
 
 	async getPages(admin = {}, callback = (data = {}) => {}) {
 		if(await this.authenticationAdmin(admin)) {
-			let pages = await Mongo.syncSelect({}, pages.collection);
-			callback(M.getSuccessfullyMessage({ data: pages }));
+			let pagesList = await Mongo.syncSelect({}, pages.collection);
+			callback(M.getSuccessfullyMessage({ data: pagesList }));
 		} else callback(M.getFailureMessage({ message: 'Недостаточно прав!' }));
 	}
 
