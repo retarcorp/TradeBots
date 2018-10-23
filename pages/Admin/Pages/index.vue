@@ -1,7 +1,7 @@
 <template>
     <div class="container">
         <div class="row">
-            <div class="col">
+            <div class="col-12">
                 <label>Путь</label>
                 <input class="input" v-model="page.slug">
                 <input class="input" v-model="page.title">
@@ -9,6 +9,9 @@
                 
                 <!-- <vue-ckeditor v-model="page.content" :config="config" /> -->
                 <button :class="{'button--disabled': !isValid}" :disabled="isValid" @click="onCreatePage">Create</button>
+            </div>
+            <div class="col-12">
+                <div v-for="page in pages" :key='page.id'>{{ page }}</div>
             </div>
         </div>
     </div>
@@ -29,6 +32,7 @@ export default {
     },
     data() {
         return {
+            pages: [],
             page: {
                 slug: '',
                 title: '',
@@ -51,14 +55,21 @@ export default {
         onCreatePage() {
             this.$axios.post('/api/admin/pages/create', this.page)
                 .then(res => {
-                    console.log(res.data)
+                    this.$store.commit('setMessage', res.data.message)
+                    this.$store.commit('setStatus', res.data.status)
                 })
                 .catch(e => console.info(e))
+        },
+        getAllPages() {
+            this.$axios.$get('/api/admin/pages/getPages')
+                .then(res => {
+                    this.pages = res.data
+                })
         }
     },
 
     created() {
-        
+        this.getAllPages()
     }
 }
 </script>
