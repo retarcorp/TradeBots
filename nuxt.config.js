@@ -15,19 +15,17 @@ module.exports = {
   /*
   ** Customize the progress bar color
   */
- loading: true,
- loading: { color: "#3B8070" },
+  loading: true,
+  loading: { color: "#3B8070" },
 
   /* 
   ** Global css files
   */
-  css: [
-    "~/assets/css/main.css"
-  ],
+  css: ["~/assets/css/main.css"],
 
   /* Plugins */
   plugins: [
-    { ssr: false, src: '~plugins/wsSetup' },
+    { ssr: false, src: "~plugins/wsSetup" }
     // { ssr: false, src: '~plugins/routerCheck' }
   ],
 
@@ -35,16 +33,14 @@ module.exports = {
   ** Modules 
   */
 
-  modules: [
-    ["@nuxtjs/axios"]
-  ],
+  modules: [["@nuxtjs/axios"]],
   axios: {
     baseURL: "/",
     credentials: true,
     withCredentials: true
   },
   router: {
-    middleware: 'checkWsStatus'
+    middleware: "checkWsStatus"
   },
   /*
   ** Build configuration
