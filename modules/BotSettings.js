@@ -18,6 +18,8 @@ module.exports = class BotSettings {
 		takeProfit = null,
 		stopLoss = null,
 		currentOrder = initialOrder,
+		maxAmountPairsUsed = 0,
+		amountPairsUsed = 0,
 		lastSafeOrderPrice = 0,
 		firstBuyPrice = 0,
 		quantity = 0,
@@ -42,5 +44,7 @@ module.exports = class BotSettings {
 		this.quantityOfUsedSafeOrders = quantityOfUsedSafeOrders;
 		this.quantityOfActiveSafeOrders = quantityOfActiveSafeOrders;
 		this.decimalQty = decimalQty;
+		this.maxAmountPairsUsed = maxAmountPairsUsed;
+		this.amountPairsUsed = amountPairsUsed;
 	}
 }

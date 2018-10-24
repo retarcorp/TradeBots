@@ -31,6 +31,7 @@ module.exports = class Bot {
 		pair = {},
 		botSettings = {},
 		processes = {},
+		weight = 0,
 		isDeleted = false
 	} = {}, user = {}) {
 		this.title = title;
@@ -43,6 +44,11 @@ module.exports = class Bot {
 		this.botID = botID;
 		this.processes = processes;
 		this.user = user;
+		if(this.isManual()) {
+			this.weight = 1;
+		} else if(this.isAuto()) {
+			this.weight = this.pair.requested.length;
+		}
 		this.isDeleted = isDeleted;
 		this.ALL = 'all';
 	}
@@ -52,7 +58,7 @@ module.exports = class Bot {
 		
 		this.user = user;
 		
-		this.updateUserOrdersList(user);
+		// this.updateUserOrdersList(user);
 		if(this.isManual()) {
 			log('continueTrade in manual')
 
@@ -141,6 +147,9 @@ module.exports = class Bot {
 				this.processes[processId].setStatus(nextStatus);
 			}
 			status = 'ok';
+			if(this.isAuto()) {
+				this.startAuto(user);
+			}
 			// message = "Возможно вы пытаетесь включить бота, который не завершил свой последний цикл.";
 			await this.updateBot(user);
 		} else {
@@ -148,7 +157,7 @@ module.exports = class Bot {
 			message = `Неверный статус(${nextStatus}).`;
 			await this.updateBot(user);
 		}
-		this.updateUserOrdersList(user);
+		// this.updateUserOrdersList(user);
 
 		return {
 			status: status,
@@ -237,7 +246,7 @@ module.exports = class Bot {
 		let signal = await this.checkSignals(user, signals);
 		console.log(signal)
 
-		if(signal.flag && ( this.status === CONSTANTS.BOT_STATUS.ACTIVE || this.workProcessesExist() )) {
+		if(signal.flag && ( this.status === CONSTANTS.BOT_STATUS.ACTIVE/* || this.workProcessesExist()*/ ) && (this.botSettings.amountPairsUsed < this.botSettings.maxAmountPairsUsed)) {
 			signal = signal.signal;
 			if(signal) {
 				log('find signal complite')
@@ -259,7 +268,7 @@ module.exports = class Bot {
 					
 					this.processes[newProcess.processId] = newProcess;
 					await this.updateBot(user);
-	
+					this.botSettings.amountPairsUsed++;
 					this.processes[newProcess.processId]
 						.startTrade(user)
 						.then( result => {
@@ -433,7 +442,6 @@ module.exports = class Bot {
 				flag: false,
 				signal: {}
 			};
-		
 		signals.forEach(signal => {
 			this.isCurrentSignal(signal);
 		});
@@ -471,7 +479,7 @@ module.exports = class Bot {
 		await Mongo.syncUpdate(user, changeObj, CONSTANTS.USERS_COLLECTION);
 	}
 	
-	updateLocalBot(next = this, callback = (data = {}) => {}) {
+	async updateLocalBot(next = this, callback = (data = {}) => {}) {
 		try {
 			this.title = next.title;
 			this.pair = next.pair;
@@ -484,11 +492,17 @@ module.exports = class Bot {
 			this.botSettings.maxOpenSafetyOrders = next.botSettings.maxOpenSafetyOrders;
 			this.botSettings.deviation = next.botSettings.deviation;
 			this.botSettings.martingale = next.botSettings.martingale;
+			this.botSettings.maxAmountPairsUsed = next.botSettings.maxAmountPairsUsed;
 	
 			for (let processId in this.processes) {
 				if(this.processes[processId].updateProcess) {
 					this.processes[processId].updateLocalProcess(this, this.getPair());
 				}
+			}
+
+			if(this.isAuto() && this.status === CONSTANTS.BOT_STATUS.ACTIVE) {
+				await this.clearTradingSignals();
+				await this.pushTradingSignals();
 			}
 	
 			callback({

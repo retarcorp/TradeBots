@@ -78,6 +78,9 @@
                         <!-- <p class="settings__item">Дневной объем(BTC): 
                             <span>{{ bot.botSettings.dailyVolumeBTC }}</span>
                         </p> -->
+                        <p class="settings__item">Макс кол-во используемых пар: 
+                            <span>{{ bot.botSettings.maxAmountPairsUsed }}</span>
+                        </p>
                         <p class="settings__item">Начальный ордер: 
                             <span>{{ bot.botSettings.initialOrder }}</span>
                         </p>
@@ -95,14 +98,14 @@
                         <div class="table_container">
                             <table class="table">
                                 <tbody v-if="bot.botSettings.curTradingSignals.length === 0">
-                                    <tr class="table__tr" v-for="(signal,index) in bot.botSettings.tradingSignals" :key="signal.id">
+                                    <tr class="table__tr" v-for="(signal,index) in bot.botSettings.tradingSignals" :key="index">
                                         <td class="table__td">{{ index + 1 }}. {{ signal.signal }}</td>
                                         <td class="table__td">{{ signal.timeframe }}</td>
                                         <td class="table__td">{{ signal.checkRating }}</td>
                                     </tr>
                                 </tbody>
                                 <tbody v-else>
-                                    <tr class="table__tr" v-for="(signal,index) in bot.botSettings.curTradingSignals" :key="signal.id">
+                                    <tr class="table__tr" v-for="(signal,index) in bot.botSettings.curTradingSignals" :key="index">
                                         <td class="table__td">{{ index + 1 }}. {{ signal.signal }}</td>
                                         <td class="table__td">{{ signal.symbol }}</td>
                                         <td class="table__td">{{ signal.timeframe }}</td>
@@ -127,10 +130,11 @@
             <div class='bots__log' v-if='Object.keys(this.bot.processes).length'>
                 <ul class="procceses-list">
                     <li 
-                        v-for='(log, index) in Object.keys(bot.processes)'
+                        v-for='(log, index) in Object.keys(this.bot.processes)'
                         :id='index'
                         :key='index'
                         class="processes_tab"
+                        v-show="bot.processes[log].runningProcess"
                         :class='{active: currentLogId === log, isNotActive: !bot.processes[log].runningProcess }'
                         @click='fillingInfo(log, $event)'
                     >{{bot.processes[log].symbol}}</li>
@@ -160,8 +164,8 @@
                             class='overflow'  
                             v-if='Object.keys(this.bot.processes).length'
                         >
-                            <tr v-for="order in openedOrders"
-                                :key="order.id"
+                            <tr v-for="(order, i) in openedOrders"
+                                :key="i"
                                 class="table__tr"
                             >
                                 <td class="table__td date">{{ order.time | date }}</td>
@@ -198,8 +202,8 @@
                         </tr>
                         <tbody class='overflow' v-if='Object.keys(this.bot.processes).length'>
                             <tr 
-                                v-for="order in closedOrders" 
-                                :key="order.id" 
+                                v-for="(order, i) in closedOrders" 
+                                :key="i" 
                                 class="table__tr"
                             >
                                 <td class="table__td date">{{ order.time | date }}</td>
@@ -241,7 +245,7 @@
             v-if='lines && isActiveTabOrders' 
         >
             <div class="log-line" 
-                v-for="line in lines" :key="line"
+                v-for="(line, i) in lines" :key="i"
                 >{{line}}</div>
         </div>
     </div>
@@ -285,8 +289,10 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
         },
         computed: {
             currentId() {
-                if( Object.keys(this.bot.processes).length ) return Object.keys(this.bot.processes)[this.currentSpecId];
-                else {
+                if( Object.keys(this.bot.processes).length ) {
+                    return Object.keys(this.bot.processes)[this.currentSpecId];
+                } else {
+                
                     this.isActiveProcesses = false;
                     return '';
                 }
@@ -329,7 +335,7 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
         methods: {
             fillingInfo(id, event) {
                 this.currentLogId = id;
-                this.currentSpecId = +event.target.getAttribute('id');
+                this.currentSpecId = event.target.getAttribute('id');
                 // this.lines = this.bot.processes[id].log;
                 this.isActiveTabOrders = true;
             },  
@@ -457,7 +463,6 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
                     : this.currentComponent = "SettingsAutomatic"
             },
             onSaveSettings() {
-                console.log('ОЛЯЛЯ')
                 // this.$store.commit('setSpiner', true);
                 // let nextBotSettings = {
                 //     botID: this.bot.botID,

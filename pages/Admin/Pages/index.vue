@@ -2,9 +2,11 @@
     <div class="container">
         <div class="row">
             <div class="col-12">
-                <label>Путь</label>
+                <label>Путь (может содержать только символы английского алфавита и цифры)</label>
                 <input class="input" v-model="page.slug">
+                <label>Title</label>
                 <input class="input" v-model="page.title">
+                <label>Контент</label>
                 <input class="input" v-model="page.content">
                 
                 <!-- <vue-ckeditor v-model="page.content" :config="config" /> -->
@@ -56,7 +58,9 @@ export default {
     },
     computed: {
         isValid() {
-            return this.page.content && this.page.title && this.page.slug
+            let regex = /[^a-z0-9]/gi;
+            let isValidSlug = regex.test(this.page.slug);
+            return this.page.content && this.page.title && !isValidSlug;
         }
     },
     methods: {

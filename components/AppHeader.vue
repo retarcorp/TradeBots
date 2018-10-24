@@ -9,6 +9,15 @@
                             <nuxt-link to="/Statistika" class="nav__link">Статистика</nuxt-link>
                             <nuxt-link to="/Dohod" class="nav__link">Доход</nuxt-link>
                             <nuxt-link to="/Akaunt" class="nav__link">Аккаунт</nuxt-link>
+
+                            <div v-for="page in pagesSlug" :key="'/pages' + page.pageId">
+                                <nuxt-link  
+                                    class="nav__link new_pages"
+                                    :to="page.slug"    
+                                >{{ page.title }}</nuxt-link>
+                            </div>
+
+
                         </div>
                         <div class="nav__right">
                             <p v-if="isAuth" class="nav__link nav__accaunt" :class="{'varning_red': !binanceStatus}">{{ email }}{{ !binanceStatus ? ' (ключи бинанс не заданы!)' : '' }}</p>
@@ -42,6 +51,20 @@
             },
             maxBotAmount() {
                 return this.$store.getters.getMaxBotAmount;
+            },
+            pagesSlug() {
+                let pages = this.$store.getters.getPagesList,
+                    ret = [];
+
+                pages.forEach(page => {
+                    ret.push({
+                        pageId: page.pageId,
+                        slug: `/pages?page=${page.slug}`,
+                        title: page.title
+                    });
+                });
+
+                return ret;
             }
         },
         methods: {
@@ -66,6 +89,8 @@
             }
         },
         created() {
+            this.$store.dispatch('getPagesList');
+            this.$store.dispatch('getUserPayments');
             this.$store.dispatch('setEmail');
             this.$store.dispatch('setBotsList');
             this.$store.dispatch('getSymbolsList');
@@ -142,5 +167,9 @@
 
 .varning_red {
     color: red !important;
+}
+
+.new_pages {
+    padding: 0 1rem 0 1rem;
 }
 </style>

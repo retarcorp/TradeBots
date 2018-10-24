@@ -36,7 +36,10 @@ export default {
     computed: {
         filteredBotList() {
             return this.botsList.filter(bot => {
-                let string = `${bot.title.toLowerCase()}${bot.pair.from.toLowerCase()}${bot.pair.to.toLowerCase()}`;
+                let a = bot.title ? bot.title : '',
+                    b = bot.pair.from ? bot.pair.from : '',
+                    c = bot.pair.to ? bot.pair.to : '';
+                let string = `${a.toLowerCase()}${b.toLowerCase()}${c.toLowerCase()}`;
                 return string.indexOf(this.search.toLowerCase()) >= 0;
             })
         },
@@ -45,6 +48,9 @@ export default {
         },
         maxBotAmount() {
             return this.$store.getters.getMaxBotAmount;
+        },
+        currentBotsAmount() {
+            return this.$store.getters.getCurrentBotsAmount;
         }
     },
     data() {
@@ -61,7 +67,7 @@ export default {
         onAddNewBot() {
             let botAmount = this.botsList.length,
                 binanceStatus = this.$store.getters.getBinanceAPIStatus,
-                amountB = (botAmount < this.maxBotAmount);
+                amountB = (this.currentBotsAmount < this.maxBotAmount);
             console.log(botAmount, this.maxBotAmount)
             if(binanceStatus &&  amountB) {
                 this.$router.push('/Boty/Novy');

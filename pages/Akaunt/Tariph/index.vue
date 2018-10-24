@@ -70,7 +70,7 @@ export default {
             this.$axios.$post('/api/user/purchaseTariff', { id })
                 .then(res => {
                     alert(res.message);
-                    location.reload();
+                    location.reload(); 
                 });
         },
         getRates () {

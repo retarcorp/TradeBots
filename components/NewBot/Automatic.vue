@@ -70,6 +70,20 @@
                 <input v-model="bot.botSettings.dailyVolumeBTC" min="0" @change="checkValue('dailyVolumeBTC')" type="number" class="input">
             </div> -->
             <div class="form-control newBot__settings-control">
+                <label class="label" for="start__order">Макс кол-во используемых пар:</label>
+                <input 
+                    v-model="bot.botSettings.maxAmountPairsUsed" 
+                    @change="checkValue('maxAmountPairsUsed'); checkMaxAmountPairsUsed()" 
+                    min="0"
+                    :max="bot.pair.requested.length" 
+                    step="1" 
+                    id="max__pairsUsed" 
+                    type="number" 
+                    class="input settings__input"
+                    @blur='checkContent'
+                >
+            </div>
+            <div class="form-control newBot__settings-control">
                 <label class="label" for="start__order">Начальный ордер:</label>
                 <input 
                     v-model="bot.botSettings.initialOrder" 
@@ -191,6 +205,7 @@ export default {
                     },
                     title: '',
                     botSettings: {
+                        maxAmountPairsUsed: 0,
                         initialOrder: 0,
                         // dailyVolumeBTC: 0,
                         stopLoss: 0,
@@ -213,11 +228,11 @@ export default {
                 checkRating: 'default'
             },
             timefraims: [
-                // { id:"1m", name: '1m' },
-                // { id:"5m", name: '5m' },
-                // { id:"15m", name: '15m' },
-                // { id:"1h", name: '1h' },
-                // { id:"4h", name: '4h' },
+                { id:"1m", name: '1m' },
+                { id:"5m", name: '5m' },
+                { id:"15m", name: '15m' },
+                { id:"1h", name: '1h' },
+                { id:"4h", name: '4h' },
                 { id:"1d", name: '1d' },
                 { id:"1w", name: '1w' },
                 { id:"1M", name: '1M' }
@@ -253,6 +268,12 @@ export default {
         },
         filteredPairs() {
             return this.$store.state.pairs[this.bot.pair.to]
+        },
+        currentBotsAmount() {
+            return this.$store.getters.getCurrentBotsAmount;
+        },
+        maxBotAmount() {
+            return this.$store.getters.getMaxBotAmount;
         }
     },
     watch: {
@@ -278,14 +299,21 @@ export default {
             let bs = this.bot.botSettings;
             const takeProfit = 'takeProfit',
                 initialOrder = 'initialOrder',
-                stopLoss = 'stopLoss';
+                stopLoss = 'stopLoss',
+                maxAmountPairsUsed = 'maxAmountPairsUsed';
                 // dailyVolumeBTC = 'dailyVolumeBTC';
             switch(state) {
                 case takeProfit: bs.takeProfit = bs.takeProfit < 0 ? 0 : bs.takeProfit; break;
                 case initialOrder: bs.initialOrder = bs.initialOrder < 0 ? 0 : bs.initialOrder; break;
                 case stopLoss: bs.stopLoss = bs.stopLoss < 0 ? 0 : bs.stopLoss; break;
+                case maxAmountPairsUsed: bs.maxAmountPairsUsed = bs.maxAmountPairsUsed < 0 ? this.bot.pair.requested.length : bs.maxAmountPairsUsed; break;
                 // case dailyVolumeBTC: bs.dailyVolumeBTC = bs.dailyVolumeBTC < 0 ? 0 : bs.dailyVolumeBTC; break;
             }
+        },
+        checkMaxAmountPairsUsed() {
+            this.bot.botSettings.maxAmountPairsUsed = this.bot.botSettings.maxAmountPairsUsed >= this.bot.pair.requested.length 
+                ? this.bot.pair.requested.length 
+                : this.bot.botSettings.maxAmountPairsUsed;
         },
         checkInitialOrder() {
             this.bot.botSettings.initialOrder = this.bot.botSettings.initialOrder <= this.minNotional 
@@ -321,7 +349,16 @@ export default {
             }
         },
         addPair() {
-            this.bot.pair.requested.push(this.bot.pair.from)
+            console.log(this.currentBotsAmount + this.bot.pair.requested.length);
+            console.log(this.maxBotAmount);
+            if((this.currentBotsAmount + this.bot.pair.requested.length) < this.maxBotAmount) {
+                if((this.bot.pair.requested.indexOf(this.bot.pair.from)) === -1) {
+                    this.bot.pair.requested.push(this.bot.pair.from);
+                }
+            } else {
+                this.$store.commit('setStatus', 'info');
+                this.$store.commit('setMessage', 'Максимальное кол-во ботов/пар достигнуто, вы больше не можете добавлять пары.');
+            }
             this.bot.pair.from = 'default'
         },
         onDeletePair(i) {

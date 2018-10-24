@@ -63,4 +63,9 @@ router.get('/api/account/getMaxBotAmount', (req, res, next) => {
 	Users.getMaxBotAmount(user, data => res.json(data));
 });
 
+router.get('/api/user/getUserPayments', (req, res, next) => {
+	let user = req.cookies.user && {name: req.cookies.user.name};
+	Users.getUserPayments(user, data => res.json(data));
+});
+
 module.exports = router;

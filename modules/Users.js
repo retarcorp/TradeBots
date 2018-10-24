@@ -12,6 +12,7 @@ let binanceAPI = require('binance-api-node').default;
 const config = require('../config/config');
 const Logger = require('./Logger');
 const US = CONSTANTS.US;
+const M = require('./Message');
 
 let Users = {
 
@@ -58,6 +59,16 @@ let Users = {
 			status: 'error',
 			message: 'Недостаточно прав'
 		});
+	}
+
+	,async getUserPayments(user = {}, callback = (data = {}) => {}) {
+		if(user.name) {
+			let userData = await Mongo.syncSelect(user, CONSTANTS.USERS_COLLECTION);
+			if(userData.length && (userData = userData[0])) {
+				let payments = userData.payments;
+				callback(M.getSuccessfullyMessage({ data: payments }));
+			} else callback(M.getFailureMessage({ message: 'Пользователь не найден! '}));
+		} else callback(M.getFailureMessage({ message: 'Пользователь не найден! '}));
 	}
 
 	,async changeUserData(admin = {}, nextUserData = {}, callback = (data = 0) => {}) {
@@ -149,7 +160,7 @@ let Users = {
 							walletBalance,
 							active,
 							userId,
-							botsCount: bots.length
+							botsCount: bots.filter(bot => !bot.isDeleted).length
 						}
 					})
 					if(callback) callback({

@@ -19,6 +19,7 @@ const store = () =>
 		statisticsList: [],
 		clientAnswer: false,
 		pairs: {},
+		currentBotsAmount: 0,
 		maxBotAmount: 0,
 		minNotionals: {
 			USDT: 10,
@@ -31,9 +32,20 @@ const store = () =>
 		binanceAPI: {},
 		users: [],
 		tariffList: [],
-		walletAddress: ''
+		pagesList: [],
+		walletAddress: '',
+		userPayments: []
 	},
 	getters: {
+		getUserPayments(state) {
+			return state.userPayments;
+		},
+		getCurrentBotsAmount(state) {
+			return state.currentBotsAmount;
+		},
+		getPagesList(state) {
+			return state.pagesList;
+		},
 		getUser(state, payload) {
 			return (index) => {
 				return index >= 0 ? state.users[index] : {};
@@ -99,6 +111,9 @@ const store = () =>
 		}
 	},
 	mutations: {
+		setUserPayments(state, payload) {
+			state.userPayments = payload;
+		},
 		setAuthorizedAdmin(state, payload) {
 			state.isAuthorizedAdmin = payload;
 		},
@@ -133,6 +148,12 @@ const store = () =>
 		setBotsList(state, payload) {
 			if(!state.isСonfigurationProcess) {
 				state.botsList = payload;
+
+				let amount = 0;
+				for(let i = 0; i < payload.length; i++) {
+					if(!payload[i].isDeleted) amount += Number(payload[i].weight);
+				}
+				state.currentBotsAmount = amount;
 			}
 		},
 		deleteBot(state, payload) {
@@ -206,9 +227,32 @@ const store = () =>
 		},
 		setMaxBotAmount(state, payload) {
 			state.maxBotAmount = payload;
+		},
+		setPagesList(state, payload) {
+			state.pagesList = payload;
 		}
 	},
 	actions: {
+		getUserPayments({ commit }) {
+			this.$axios
+				.$get('/api/user/getUserPayments')
+				.then(res => {
+					if(res.status === 'ok') {
+						commit('setUserPayments', res.data);
+					}
+				})
+				.catch(err => console.log(err));
+		},
+		getPagesList({ commit }) {
+			this.$axios.
+				$get('/api/admin/pages/getPages')
+				.then(res => {
+					if(res.status === 'ok') {
+						commit('setPagesList', res.data);
+					}
+				})
+				.catch(err => console.log(err)); 
+		},
 		getUserStatistics({ commit, dispatch }) {
 			this.$axios.$get('/api/user/getStatistics')
             .then(res => {

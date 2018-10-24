@@ -48,7 +48,7 @@ class Pages {
 
 	async updatePage(admin = {}, nextPageData = {}, callback = (data = {}) => {}) {
 		if(await this.authenticationAdmin(admin)) {
-			if (!(await this.pageExists(nextPageData))) { 
+			if (await this.pageExists(nextPageData)) { 
 				let key = { pageId: nextPageData.pageId },
 					change = Object.assign({}, nextPageData);
 				

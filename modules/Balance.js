@@ -63,11 +63,14 @@ class Balance {
 					confirmAmount = Number(confirmData.amount) - confirmFee,
 					confirmValue = confirmAmount * bitaps.satoshi,
 					currentBalance = Number(userData.walletBalance),
-					udpatedBalance = currentBalance + confirmValue;
+					udpatedBalance = currentBalance + confirmValue,
+					newPaymentData = Object.assign({}, confirmData, { time: Date.now }),
+					updatePayments = userData.payments.push(newPaymentData);
 				
 				if(confirmAddress === userData.walletAddress) {
 					let change = {
-						walletBalance: udpatedBalance
+						walletBalance: udpatedBalance,
+						payments: updatePayments
 					};
 					
 					await Mongo.syncUpdate(user, change, CONSTANTS.USERS_COLLECTION);
