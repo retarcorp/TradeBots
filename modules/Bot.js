@@ -30,7 +30,8 @@ module.exports = class Bot {
 		botID = uniqid(BT),
 		pair = {},
 		botSettings = {},
-		processes = {}
+		processes = {},
+		isDeleted = false
 	} = {}, user = {}) {
 		this.title = title;
 		this.state = state;
@@ -42,6 +43,7 @@ module.exports = class Bot {
 		this.botID = botID;
 		this.processes = processes;
 		this.user = user;
+		this.isDeleted = isDeleted;
 		this.ALL = 'all';
 	}
 
@@ -682,6 +684,8 @@ module.exports = class Bot {
 			try {
 				this.disableBot(user);
 				await this.cancelAllOrders(user, this.ALL);
+				this.isDeleted = true;
+				await this.updateBot(user);
 				resolve({ 
 					status: 'ok', 
 					data: {

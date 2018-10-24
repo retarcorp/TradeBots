@@ -432,15 +432,18 @@ let Users = {
 			}
 		}
 
-		,getBotList(user, callback) {
+		,getBotList(user, callback = (data = {}) => {}) {
 			Mongo.select(user, 'users', (data) => {
 				if(data.length) {
 					data = data[0];
-					if(callback)
-						callback({
-							status: 'ok',
-							data: data.bots || []
-						})
+					let bots = [];
+					data.bots.forEach(bot => {
+						if(!bot.isDeleted) bots.push(bot);
+					});
+					callback({
+						status: 'ok',
+						data: bots
+					});
 				}
 				else {
 					if(callback) 
@@ -485,14 +488,14 @@ let Users = {
 							.then(res => {
 								if(res.status === 'ok') {
 									this.Bots.splice(index, 1);
-									Mongo.update(user, {bots: data.bots}, 'users', (data) => {
-										let res = {
-											status: 'ok',
-											message: `Бот ${botData.botID} успешно удален`,
-											data: botData
-										};
-										callback(res);
-									});
+									// Mongo.update(user, {bots: data.bots}, 'users', (data) => {
+									// 	let res = {
+									// 		status: 'ok',
+									// 		message: `Бот ${botData.botID} успешно удален`,
+									// 		data: botData
+									// 	};
+									// 	callback(res);
+									// });
 								}
 							})
 					} else {
