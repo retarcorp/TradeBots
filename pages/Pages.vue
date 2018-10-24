@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div class="wrapper">
 		{{ this.curentPage.content }}
     </div>
 </template>
@@ -22,5 +22,10 @@ export default {
 </script>
 
 <style scoped>
+.wrapper {
+	width: 100%;
+	height: 100%;
+	padding: 5rem 20% 5rem 20%;
+}
 
 </style>
