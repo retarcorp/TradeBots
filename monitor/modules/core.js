@@ -31,7 +31,18 @@ module.exports = Core = {
 
     ,getFromApi(timeframe) {
         return new Promise( (res, rej) => {
-            (timeframe.indexOf('D') >= 0) ? (timeframe = "") : timeframe = "|"+timeframe;
+            // (timeframe.indexOf('D') >= 0) ? (timeframe = "") : timeframe = "|"+timeframe;
+
+            (timeframe.indexOf('1m') >= 0) && (timeframe = "|1");
+            (timeframe.indexOf('5m') >= 0) && (timeframe = "|5");
+            (timeframe.indexOf('15m') >= 0) && (timeframe = "|15");
+            // (timeframe.indexOf('30m') >= 0) && (timeframe = "|30");
+            (timeframe.indexOf('1h') >= 0) && (timeframe = "|60");
+            (timeframe.indexOf('4h') >= 0) && (timeframe = "|240");
+            (timeframe.indexOf('1d') >= 0) && (timeframe = "");
+            (timeframe.indexOf('1w') >= 0) && (timeframe = "|W");
+            (timeframe.indexOf('1M') >= 0) && (timeframe = "|M");
+
 
             request({
                 method: "POST"
@@ -51,7 +62,7 @@ module.exports = Core = {
     	});
 
     	for (let tmf of tmfs) {
-    		response = await this.getFromApi(tmf.toLocaleUpperCase());
+    		response = await this.getFromApi(tmf);
 
     		binance = response;
 
