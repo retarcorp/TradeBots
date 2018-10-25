@@ -64,8 +64,10 @@ class Balance {
 				currentBalance = Number(userData.walletBalance),
 				udpatedBalance = currentBalance + confirmValue,
 				newPaymentData = Object.assign({}, confirmData, { time: Date.now() }),
-				updatePayments = userData.payments.push(newPaymentData);
-			
+				updatePayments = userData.payments ? userData.payments : [];
+
+			updatePayments.push(newPaymentData);
+		
 			if(confirmAddress === userData.walletAddress) {
 				let change = {
 					walletBalance: udpatedBalance,
