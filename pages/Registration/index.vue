@@ -75,13 +75,13 @@
                         password: this.password
                     })
                     .then(res => {
-                        if(res.status !== 'error') {
-                            // this.$store.commit('setSpiner', false);
+                        if(res.status === 'ok') {
                             this.$router.push('/SignIn');
-                        } else {
+                            this.$store.commit('setStatus', 'ok');
+                            this.$store.commit('setMessage', "Регистрация прошла успешно, на почту было выслано письмо с сылкой на активацию аккаунта!");
+                        } else if(res.status === 'error') {
                             this.$store.commit('setStatus', 'error');
                             this.$store.commit('setMessage', res.message);
-                            // this.$store.commit('setSpiner', false);
                         }
                     })
                     .catch(e => {

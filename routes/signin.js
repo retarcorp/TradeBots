@@ -28,7 +28,7 @@ router.post('/api/signin', (req, res, next) => {
 						res.send({status: 'ok', data: { email: data.name, maxBotAmount: data.maxBotAmount }});
 					});
 				} else {
-					res.send({status: 'info', message: 'Акаунт не активирован, на почту было выслано письмо юникальной ссылкой для активации.'});
+					res.send({status: 'info', message: 'Акаунт не активирован, на почту было выслано письмо уникальной ссылкой для активации.'});
 				}
 			} else {
 				res.send({status: 'error', message: 'Ошибка: введен неверный логин или пароль.'});
