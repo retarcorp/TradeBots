@@ -316,7 +316,7 @@ const store = () =>
 			this.$axios.$get('/api/admin/api/signout')
 				.then(res => {
 					if(res.status === 'ok') {
-						this.$router.push('/admin/api/signin');
+						this.$router.push('/api/admin/signin');
 						// commit('setSpiner', false);
 						dispatch('setAuthorizedAdmin', false);
 					} else {
@@ -328,7 +328,7 @@ const store = () =>
 		},
 		adminSignin({ commit }, payload) {
 			this.$axios
-				.$post('/api/admin/api/signin', payload)
+				.$post('/api/admin/signin', payload)
 				.then(res => {
 					if(res.status === 'ok') {
 						this.$router.push('/admin')

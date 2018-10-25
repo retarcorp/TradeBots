@@ -13,7 +13,7 @@ router.get('/api/admin/api/signout', (req, res, next) => {
     });
 });
 
-router.post('/api/admin/api/signin', (req, res, next) => {
+router.post('/api/admin/signin', (req, res, next) => {
 	let admin = req.body;
 	Users.find(admin, 'users', data => {
 		if (data.length) {
