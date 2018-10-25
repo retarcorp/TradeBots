@@ -2,7 +2,7 @@ var express = require('express');
 var router = express.Router();
 let Users = require('../modules/Users');
 
-router.get('/api/admin/api/signout', (req, res, next) => {
+router.get('/api/admin/signout', (req, res, next) => {
 	Users.closeSession(req, res, (err) => {
         if (err) console.log(err);
 

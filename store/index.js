@@ -313,10 +313,10 @@ const store = () =>
 				.catch(e => console.log(e));
 		},
 		adminSignout({ commit, dispatch }) {
-			this.$axios.$get('/api/admin/api/signout')
+			this.$axios.$get('/api/admin/signout')
 				.then(res => {
 					if(res.status === 'ok') {
-						this.$router.push('/api/admin/signin');
+						this.$router.push('/Admin/Signin');
 						// commit('setSpiner', false);
 						dispatch('setAuthorizedAdmin', false);
 					} else {
