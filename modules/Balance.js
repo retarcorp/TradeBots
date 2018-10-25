@@ -49,33 +49,31 @@ class Balance {
 		// payout_tx_hash={transaction hash} # payout transaction hash
 		// payout_miner_fee={amount}
 		// payout_service_fee={amount} 
-		Mongo.insert({ user: user, payment: confirmData }, CONSTANTS.PAYMENTS_COLLECTION, data => console.log(data, "PAYMENT SAVE"));
-		if(user.userId) {
-			user = { userId: user.userId };
+		Mongo.insert({ user: user, payment: confirmData, step: 1 }, CONSTANTS.PAYMENTS_COLLECTION, data => console.log(data, "PAYMENT SAVE"));
 
-			let userData = await Mongo.syncSelect(user, CONSTANTS.USERS_COLLECTION);
-				// exchangeRates = await Bitaps.getExchangeRates();
+		let userData = await Mongo.syncSelect(user, CONSTANTS.USERS_COLLECTION);
+			// exchangeRates = await Bitaps.getExchangeRates();
 
-			if(userData.length && confirmData.invoice && (Number(confirmData.confirmations) == bitaps.confirmations) ) {
-				userData = userData[0];	
-				let confirmAddress = confirmData.address,
-					confirmFee = Number(confirmData.payout_miner_fee),
-					confirmAmount = Number(confirmData.amount) - confirmFee,
-					confirmValue = confirmAmount * bitaps.satoshi,
-					currentBalance = Number(userData.walletBalance),
-					udpatedBalance = currentBalance + confirmValue,
-					newPaymentData = Object.assign({}, confirmData, { time: Date.now() }),
-					updatePayments = userData.payments.push(newPaymentData);
+		if(userData.length && confirmData.invoice && (Number(confirmData.confirmations) == bitaps.confirmations) ) {
+			Mongo.insert({ user: user, payment: confirmData, step: 2 }, CONSTANTS.PAYMENTS_COLLECTION, data => console.log(data, "PAYMENT SAVE"));
+			userData = userData[0];	
+			let confirmAddress = confirmData.address,
+				confirmFee = Number(confirmData.payout_miner_fee),
+				confirmAmount = Number(confirmData.amount) - confirmFee,
+				confirmValue = confirmAmount * bitaps.satoshi,
+				currentBalance = Number(userData.walletBalance),
+				udpatedBalance = currentBalance + confirmValue,
+				newPaymentData = Object.assign({}, confirmData, { time: Date.now() }),
+				updatePayments = userData.payments.push(newPaymentData);
+			
+			if(confirmAddress === userData.walletAddress) {
+				let change = {
+					walletBalance: udpatedBalance,
+					payments: updatePayments
+				};
 				
-				if(confirmAddress === userData.walletAddress) {
-					let change = {
-						walletBalance: udpatedBalance,
-						payments: updatePayments
-					};
-					
-					Mongo.insert({ user: user, change: change }, CONSTANTS.PAYMENTS_COLLECTION, data => console.log(data, "PAYMENT SAVE"));
-					await Mongo.syncUpdate(user, change, CONSTANTS.USERS_COLLECTION);
-				}
+				Mongo.insert({ user: user, change: change, step: 3 }, CONSTANTS.PAYMENTS_COLLECTION, data => console.log(data, "PAYMENT SAVE"));
+				await Mongo.syncUpdate(user, change, CONSTANTS.USERS_COLLECTION);
 			}
 		}
 

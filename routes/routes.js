@@ -38,8 +38,11 @@ router.use(tariffs);
 router.use(userActivation);
 
 router.get('/test', (req, res, next) => {
-	let user = { name: req.cookies.user.name };
-	Statistics.getUserStatistic(user, data => res.send(data));
+	const query = qrs.parse(url.parse(req.url).query);
+	console.log(query.userId)
+	res.json(query);
+	// let user = { name: req.cookies.user.name };
+	// Statistics.getUserStatistic(user, data => res.send(data));
 });
 
 module.exports = router;
