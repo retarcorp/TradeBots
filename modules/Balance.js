@@ -49,13 +49,12 @@ class Balance {
 		// payout_tx_hash={transaction hash} # payout transaction hash
 		// payout_miner_fee={amount}
 		// payout_service_fee={amount} 
-		Mongo.insert({ user: user, payment: confirmData, step: 1 }, CONSTANTS.PAYMENTS_COLLECTION, data => console.log(data, "PAYMENT SAVE"));
+		Mongo.insert({ user: user, payment: confirmData }, CONSTANTS.PAYMENTS_COLLECTION, data => console.log(data, "PAYMENT SAVE"));
 
 		let userData = await Mongo.syncSelect(user, CONSTANTS.USERS_COLLECTION);
 			// exchangeRates = await Bitaps.getExchangeRates();
 
 		if(userData.length && confirmData.invoice && (Number(confirmData.confirmations) == bitaps.confirmations) ) {
-			Mongo.insert({ user: user, payment: confirmData, step: 2 }, CONSTANTS.PAYMENTS_COLLECTION, data => console.log(data, "PAYMENT SAVE"));
 			userData = userData[0];	
 			let confirmAddress = confirmData.address,
 				confirmFee = Number(confirmData.payout_miner_fee),
@@ -74,7 +73,6 @@ class Balance {
 					payments: updatePayments
 				};
 				
-				Mongo.insert({ user: user, change: change, step: 3 }, CONSTANTS.PAYMENTS_COLLECTION, data => console.log(data, "PAYMENT SAVE"));
 				await Mongo.syncUpdate(user, change, CONSTANTS.USERS_COLLECTION);
 			}
 		}
