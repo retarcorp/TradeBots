@@ -24,12 +24,14 @@ const Mongo = require('./modules/Mongo');
 const Users = require('./modules/Users');
 
 let Symbols = require('./modules/Symbols')
+let Income = require('./modules/Income');
 Mongo.init()
 	.then(data => {
 		Users.Bots.setBotsArray();
 		Symbols.initClient();
 		Symbols.updateSymbolsPriceFilter();
 		Symbols.updateSymbolsList();
+		Income.startLiveUpdate();
 	});
 
 //Routers
