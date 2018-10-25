@@ -1,6 +1,7 @@
 const Mongo = require('./Mongo');
 const Tariffs = require('./Tariffs');
 const CONSTANTS = require('../constants');
+const Users = require('./Users');
 
 const usersDataCollection = CONSTANTS.USERS_DATA_COLLECTION;
 const usersCollection = CONSTANTS.USERS_COLLECTION;
@@ -52,18 +53,23 @@ class Income {
 				else nextTariff.push(tariff);	
 			});
 
-			if(nextTariff.length !== len) {
+			if(nextTariff.length < len) {
 				let change = {
 					tariffHistory: tariffHistory,
 					tariffs: nextTariff,
 					maxBotAmount: userMaxBotAmount
 				},
 					userKey = { userId: user.userId };
+
+				if(nextTariff.length === 0) {
+					Users.Bots.deactivateAllUserBots(userKey);
+				}
+
 				Mongo.update(userKey, change, usersCollection, data => console.log("CHANGE USER TARIFF DATA", userKey));
 			}
 		});
 
-		setTimeout(() => this.liveCheckUsersTariffs(), CONSTANTS.UPDATE_DAYLY);		
+		setTimeout(() => this.liveCheckUsersTariffs(), CONSTANTS.UPDATE_8H);		
 		console.timeEnd('liveCheckUsersTariffs');
 	}
 

@@ -70,7 +70,7 @@ export default {
                 amountB = (this.currentBotsAmount < this.maxBotAmount);
             console.log(botAmount, this.maxBotAmount)
             if(binanceStatus &&  amountB) {
-                this.$router.push('/Boty/Novy');
+                this.$router.push('/Bots/New');
             } else {
                 this.$store.commit('setStatus', 'info');
                 if(!binanceStatus) {

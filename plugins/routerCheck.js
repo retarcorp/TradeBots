@@ -5,12 +5,12 @@ export default ({ app }) => {
             app.store.commit("setAuthorized", true);
         }
        console.log(to);
-       if(to.path === '/Vhod' || to.path === '/Registratsia') {
+       if(to.path === '/SignIn' || to.path === '/Registration') {
            console.log('here');
            next()
        } else {
             if(!(~document.cookie.indexOf('user'))) {
-                next('/Vhod')
+                next('/SignIn')
             } else {
                 next()
             }

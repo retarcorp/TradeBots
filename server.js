@@ -27,11 +27,12 @@ let Symbols = require('./modules/Symbols')
 let Income = require('./modules/Income');
 Mongo.init()
 	.then(data => {
-		Users.Bots.setBotsArray();
+		Users.Bots.setBotsArray().then(result => {
+			Income.startLiveUpdate();
+		})
 		Symbols.initClient();
 		Symbols.updateSymbolsPriceFilter();
 		Symbols.updateSymbolsList();
-		Income.startLiveUpdate();
 	});
 
 //Routers

@@ -5,32 +5,32 @@
                 <div class="account__menu">
                     <!-- <div class="account__menu-item">
                         Баланс: 0.124 BTC
-                        <nuxt-link to="/Akaunt/Balans" class="account__menu-link">Пополнить</nuxt-link>
+                        <nuxt-link to="/Account/Balans" class="account__menu-link">Пополнить</nuxt-link>
                     </div> -->
                     <div class="account__menu-item">
                         Тариф: {{ selectedTariffs.length ? 'Задано' : 'Не задано' }}
                         <nuxt-link 
-                            to="/Akaunt/Tariph" 
+                            to="/Account/Tariff" 
                             class="account__menu-link">Изменить</nuxt-link>
                     </div>
                 
                     <div class="account__menu-item">
                         Аккаунт Binance: {{ getBinance ? 'задано' : 'не задано' }} 
                         <nuxt-link 
-                            to="/Akaunt/Binans" 
+                            to="/Account/Binans" 
                             class="account__menu-link">{{ getBinance ? 'Изменить' : 'Задать' }}</nuxt-link>
                     </div>
 
                     <div class="account__menu-item">
                         Баланс: {{ walletBalance ? walletBalance : 0 }} 
                         <nuxt-link 
-                            to="/Akaunt/Balance"
+                            to="/Account/Balance"
                             class="account__menu-link">Пополнить</nuxt-link>
                     </div>
 
                 </div>
                 <nuxt-link 
-                    to="/Akaunt/Nastroyki" 
+                    to="/Account/Settings" 
                     tag="button" 
                     class="button button--primary account__button">Изменить пароль</nuxt-link>
             </div>

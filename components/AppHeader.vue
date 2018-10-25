@@ -5,10 +5,10 @@
                 <div class="col-12">
                     <nav class="nav">
                         <div v-if="isAuth" class="nav__left">
-                            <nuxt-link to="/Boty" class="nav__link">Боты</nuxt-link>
-                            <nuxt-link to="/Statistika" class="nav__link">Статистика</nuxt-link>
-                            <nuxt-link to="/Dohod" class="nav__link">Доход</nuxt-link>
-                            <nuxt-link to="/Akaunt" class="nav__link">Аккаунт</nuxt-link>
+                            <nuxt-link to="/Bots" class="nav__link">Боты</nuxt-link>
+                            <nuxt-link to="/Statistics" class="nav__link">Статистика</nuxt-link>
+                            <nuxt-link to="/Income" class="nav__link">Доход</nuxt-link>
+                            <nuxt-link to="/Account" class="nav__link">Аккаунт</nuxt-link>
 
                             <div v-for="page in pagesSlug" :key="'/pages' + page.pageId">
                                 <nuxt-link  
@@ -69,14 +69,14 @@
         },
         methods: {
             onSignIn() {
-                this.$router.push('/Vhod')
+                this.$router.push('/SignIn')
             },
             onSignOut() {
                 // this.$store.commit('setSpiner', true);
-                this.$axios.$get('/signout')
+                this.$axios.$get('/api/signout')
                     .then(res => {
                         if(res.status === 'ok') {
-                            this.$router.push('/Registratsia')
+                            this.$router.push('/Registration')
                             // this.$store.commit('setSpiner', false);
                             this.$store.dispatch('setAuthorizedStatus', false)
                             this.$store.commit('setEmail', '');

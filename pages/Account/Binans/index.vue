@@ -57,13 +57,13 @@
             onSettingsSave() {
                 // this.$store.commit('setSpiner', true);
                 this.$store.dispatch('setBinanceAPI', this.binance);
-                this.$router.push('/Akaunt');
+                this.$router.push('/Account');
             },
             onSettingsDelete() {
                 this.$store.dispatch('deleteBinanceAPI');
                 this.binance = {};
                 this.isSaved = true;
-                this.$router.push('/Akaunt');
+                this.$router.push('/Account');
             }
         }
     }

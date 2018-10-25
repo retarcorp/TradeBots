@@ -341,7 +341,7 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
             },  
             setStatus(value) {
                 this.$axios
-                    .$post('/bots/setStatus', {
+                    .$post('/api/bots/setStatus', {
                         'botID': this.bot.botID,
                         'status': value,
                         'userID': this.$store.getters.getWsId
@@ -394,7 +394,7 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
                 if(this.clientAnswer === 'accept') {
                     // this.$store.commit('setSpiner', true);
                     this.$axios
-                        .$post('/bots/orders/cancelAll', {
+                        .$post('/api/bots/orders/cancelAll', {
                             'botID': this.bot.botID,
                             'processeId': this.currentId
                         })
@@ -409,7 +409,7 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
                 if(this.clientAnswer === 'acceptOrders') {
                     // this.$store.commit('setSpiner', true);
                     this.$axios
-                        .$post('/bots/orders/cancelAllOrders', {
+                        .$post('/api/bots/orders/cancelAllOrders', {
                             'botID': this.bot.botID,
                             'processeId': this.currentId
                         })
@@ -434,7 +434,7 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
                 this.$store.commit('setStatus', 'confirmCurrent');
                 if(this.clientAnswer === 'acceptCurrent') {
                     this.$axios
-                        .$post('/bots/orders/cancel', {
+                        .$post('/api/bots/orders/cancel', {
                             'botID': this.tmpBotId,
                             'orderId': this.tmpOrd,
                             'processeId': this.currentId
@@ -447,7 +447,7 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
                     ? this.bot.freeze = '1'
                     : this.bot.freeze = '0'
                 this.$axios
-                    .$post('/bots/setFreeze', {
+                    .$post('/api/bots/setFreeze', {
                         botID: this.bot.botID,
                         freeze: this.bot.freeze
                     })
@@ -478,7 +478,7 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
                 // };
                 // console.log(nextBotSettings)
                 // this.$axios
-                //     .$post('/bots/update', nextBotSettings)
+                //     .$post('/api/bots/update', nextBotSettings)
                 //     .then(res => {
                 //         if(res.data.status === 'ok') {
                 //             this.isSaved = true;

@@ -3,7 +3,7 @@ var router = express.Router();
 
 var Users = require('../modules/Users');
 
-router.post('/signup', (req, res, next) => {
+router.post('/api/signup', (req, res, next) => {
 	let user = {
 		password: req.body.password,
 		name: req.body.name

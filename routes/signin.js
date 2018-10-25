@@ -4,7 +4,7 @@ var router = express.Router();
 var Users = require('../modules/Users');
 
 
-router.get('/signout', (req, res, next) => {
+router.get('/api/signout', (req, res, next) => {
 	Users.closeSession(req, res, (err) => {
         if (err) console.log(err);
 
@@ -15,7 +15,7 @@ router.get('/signout', (req, res, next) => {
     });
 });
 
-router.post('/signin', (req, res, next) => {
+router.post('/api/signin', (req, res, next) => {
 	let user = {
 		password: req.body.password,
 		name: req.body.email
@@ -23,9 +23,13 @@ router.post('/signin', (req, res, next) => {
 	Users.find(user, 'users', (data) => {
 		if (data.length) {
 			if (Users.checkCredentials(data[0], user)) {
-				Users.createSession(req, res, next, data[0], (data) => {
-					res.send({status: 'ok', data: { email: data.name, maxBotAmount: data.maxBotAmount }});
-				});
+				if(data[0].active) {
+					Users.createSession(req, res, next, data[0], (data) => {
+						res.send({status: 'ok', data: { email: data.name, maxBotAmount: data.maxBotAmount }});
+					});
+				} else {
+					res.send({status: 'info', message: 'Акаунт не активирован, на почту было выслано письмо юникальной ссылкой для активации.'});
+				}
 			} else {
 				res.send({status: 'error', message: 'Ошибка: введен неверный логин или пароль.'});
 			}

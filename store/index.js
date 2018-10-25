@@ -38,7 +38,7 @@ const store = () =>
 	},
 	getters: {
 		getUserPayments(state) {
-			return state.userPayments;
+			return state.userPayments.reverse();
 		},
 		getCurrentBotsAmount(state) {
 			return state.currentBotsAmount;
@@ -90,7 +90,7 @@ const store = () =>
 			return state.status;
 		},
 		getStatisticsList(state) {
-			return state.statisticsList;
+			return state.statisticsList.reverse();
 		},
 		getClientAnswer(state) {
 			return state.clientAnswer;
@@ -238,7 +238,8 @@ const store = () =>
 				.$get('/api/user/getUserPayments')
 				.then(res => {
 					if(res.status === 'ok') {
-						commit('setUserPayments', res.data);
+						let payments = res.data || [];
+						commit('setUserPayments', payments);
 					}
 				})
 				.catch(err => console.log(err));
@@ -312,10 +313,10 @@ const store = () =>
 				.catch(e => console.log(e));
 		},
 		adminSignout({ commit, dispatch }) {
-			this.$axios.$get('/api/admin/signout')
+			this.$axios.$get('/api/admin/api/signout')
 				.then(res => {
 					if(res.status === 'ok') {
-						this.$router.push('/admin/signin');
+						this.$router.push('/admin/api/signin');
 						// commit('setSpiner', false);
 						dispatch('setAuthorizedAdmin', false);
 					} else {
@@ -327,7 +328,7 @@ const store = () =>
 		},
 		adminSignin({ commit }, payload) {
 			this.$axios
-				.$post('/api/admin/signin', payload)
+				.$post('/api/admin/api/signin', payload)
 				.then(res => {
 					if(res.status === 'ok') {
 						this.$router.push('/admin')
@@ -360,7 +361,7 @@ const store = () =>
 		},
 		deleteBinanceAPI({ commit }) {
 			this.$axios
-				.$delete('/account/api')
+				.$delete('/api/account/api')
 				.then(res => {
 					if(res.status === 'ok') {
 						commit('deleteBinanceAPI');
@@ -371,7 +372,7 @@ const store = () =>
 		},
 		firstGetBinanceAPI({ commit, getters }) {
 			this.$axios
-				.$get('/account/api')
+				.$get('/api/account/api')
 				.then(res => {
 					if(res.status === 'ok') {
 						commit('setBinanceAPI', res.data);
@@ -388,7 +389,7 @@ const store = () =>
 		},
 		setBinanceAPI({ commit }, payload) {
 			this.$axios
-				.$post('/account/api', payload)
+				.$post('/api/account/api', payload)
 				.then(res => {
 					if(res.status === 'ok') {
 						commit('setBinanceAPIStatus', true);
@@ -445,12 +446,12 @@ const store = () =>
 		addBot({ commit, dispatch }, payload) {
 			// commit('setSpiner', true);
 			this.$axios
-				.$post("/bots/add", payload)
+				.$post("/api/bots/add", payload)
 				.then(res => {
 					if (res.status === "ok") {
 						commit("addBot", res.data);
 						commit('setMessage', 'Бот успешно создан');
-						this.$router.push("/Boty");
+						this.$router.push("/Bots");
 						commit('setStatus', 'ok');
 						// commit('setSpiner', false);
 					} else {
@@ -465,7 +466,7 @@ const store = () =>
 		setBotsList({ commit, dispatch }) {
 			// commit('setSpiner', true);
 			this.$axios
-				.$get("/bots/getBotsList") 
+				.$get("/api/bots/getBotsList") 
 				.then(res => {
 					if (res.status === "ok") {
 						commit("setBotsList", res.data);
@@ -482,12 +483,12 @@ const store = () =>
 		deleteBot({ commit, dispatch }, payload) {
 			// commit('setSpiner', true);
 			this.$axios
-				.$post("/bots/delete", {
+				.$post("/api/bots/delete", {
 				botID: payload
 				})
 				.then(res => {
 				if (res.status === "ok") {
-					this.$router.push('/Boty')
+					this.$router.push('/Bots')
 					commit("deleteBot", res.data.botID);
 					commit('setMessage', 'Бот успешно удален');
 					commit('setStatus', 'ok');
@@ -501,7 +502,7 @@ const store = () =>
 		updateBot({ commit, dispatch }, payload) {
 			// commit('setSpiner', true);
 			this.$axios
-				.$post("/bots/update", payload)
+				.$post("/api/bots/update", payload)
 				.then(res => {
 					if (res.status === "ok") {
 						dispatch('lounchGoodMutations', res.data);

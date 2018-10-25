@@ -35,7 +35,7 @@
                 @mousedown='onViewPassword'>Показать пароль
             </button>
         </div>
-        <p class="form__question">Уже есть аккаунт? <nuxt-link to="/Vhod" class="link">Войти</nuxt-link></p>
+        <p class="form__question">Уже есть аккаунт? <nuxt-link to="/SignIn" class="link">Войти</nuxt-link></p>
     </form>
 </template>
 
@@ -70,14 +70,14 @@
             onSignUp() {
                 // this.$store.commit('setSpiner', true);
                 if(this.isFormValid) {
-                    this.$axios.$post('/signup',{
+                    this.$axios.$post('/api/signup',{
                         name: this.email,
                         password: this.password
                     })
                     .then(res => {
                         if(res.status !== 'error') {
                             // this.$store.commit('setSpiner', false);
-                            this.$router.push('/Vhod');
+                            this.$router.push('/SignIn');
                         } else {
                             this.$store.commit('setStatus', 'error');
                             this.$store.commit('setMessage', res.message);

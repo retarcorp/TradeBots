@@ -3,11 +3,11 @@ const nodemailer = require('nodemailer');
 const Mailer = {
     init() {
         this.smtp = nodemailer.createTransport({
-            service: 'mail.ru'
+            service: 'gmail.com'
             ,secure: true
             ,auth: {
-                user: 'potato_1234@mail.ru',
-                pass: '123456q'
+                user: 'trade.bots.info@gmail.com',
+                pass: '?bXRk#TqZN7#k%1'
             }
         });
 

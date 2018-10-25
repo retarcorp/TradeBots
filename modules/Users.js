@@ -207,6 +207,7 @@ let Users = {
 				,active: false
 				,walletAddress: walletAddress || ''
 				,walletBalance: 0
+				,payments: []
 				,binanceAPI: {
 					name: null,
 					key: null,
@@ -228,9 +229,9 @@ let Users = {
 				// });
 
 				Mailer.send({
-					from: 'potato_1234@mail.ru'
+					from: 'trade.bots.info@gmail.com'
 					,to: user.name
-					,subject: 'Testing'
+					,subject: 'Авторизация аккаунта'
 					,html: Templates.getUserActivationHtml(User.regKey)
 				});
 
@@ -397,19 +398,39 @@ let Users = {
 			let users = await Mongo.syncSelect({}, 'users');
 			users.forEach(user => {
 				for (let i = 0; i < user.bots.length; i++) {
-					let bot = Object.assign({}, user.bots[i]);
-					bot = new Bot(bot);
-					bot.continueTrade(user);
-					this.Bots.push(bot);
+					if(!user.bots[i].isDeleted) {
+						let bot = Object.assign({}, user.bots[i]);
+						bot = new Bot(bot);
+						bot.continueTrade(user);
+						this.Bots.push(bot);
+					}
 				}
 			})
+		}
+
+		,async deactivateAllUserBots(user = {}) {
+			let userData = await Mongo.syncSelect(user, CONSTANTS.USERS_COLLECTION);
+			if(userData.length && (userData = userData[0])) {
+				let userBots = userData.bots;
+
+				userBots.forEach(bot => {
+					let indexBot = this.Bots.findIndex(b => b.botID === bot.botID);
+					if(indexBot >= 0) {
+	
+						if(this.Bots[indexBot].status === CONSTANTS.BOT_STATUS.ACTIVE) {
+							console.log('вырубаем бота');
+							this.Bots[indexBot].changeStatus(CONSTANTS.BOT_STATUS.INACTIVE, { name: userData.name });
+						}
+					}
+				});
+			}
 		}
 
 		,get(user, botID, callback) {
 			Mongo.select(user, 'users', (data) => {
 				data = data[0];
 				if(callback) {
-					const i = data.bots.findIndex(bot => Number(bot.botID) === Number(botID))
+					const i = data.bots.findIndex(bot => bot.botID === botID)
 					callback({
 						status: 'ok',
 						data: data.bots[i] || {}
@@ -471,17 +492,27 @@ let Users = {
 				data = data[0];
 				let tempBot;
 				if(typeof botData === 'object'){
-					tempBot = new Bot(botData);
-					data.bots.push(tempBot);
-					this.Bots.push(tempBot)
-					Mongo.update(user, {bots: data.bots}, 'users', (data) => {
-						let res = {
-							status: 'ok',
-							message: `Новый бот успешно создан (${tempBot.botID})`,
-							data: tempBot
-						};
-						callback(res);
+
+					let curBotsAmount = 0;
+					data.bots.forEach(bot => {
+						if(!bot.isDeleted) curBotsAmount++;
 					});
+
+					if(data.maxBotAmount > curBotsAmount) {
+						tempBot = new Bot(botData);
+						data.bots.push(tempBot);
+						this.Bots.push(tempBot)
+						Mongo.update(user, {bots: data.bots}, 'users', (data) => {
+							let res = {
+								status: 'ok',
+								message: `Новый бот успешно создан (${tempBot.botID})`,
+								data: tempBot
+							};
+							callback(res);
+						});
+					} else {
+						callback(M.getFailureMessage({message: "Лимит в кол-ве ботов превышен"}));
+					}
 				}
 				else {
 					console.log("---------------------DELTEBOT");
@@ -499,14 +530,6 @@ let Users = {
 							.then(res => {
 								if(res.status === 'ok') {
 									this.Bots.splice(index, 1);
-									// Mongo.update(user, {bots: data.bots}, 'users', (data) => {
-									// 	let res = {
-									// 		status: 'ok',
-									// 		message: `Бот ${botData.botID} успешно удален`,
-									// 		data: botData
-									// 	};
-									// 	callback(res);
-									// });
 								}
 							})
 					} else {
@@ -523,10 +546,6 @@ let Users = {
 		}
 
 		,updateBot(user, botData, callback) {
-			// if(callback) callback({
-			// 	status: 'error',
-			// 	message: 'на данный момент этот функционал не работает.'
-			// })
 			Mongo.select(user, 'users', (data) => {
 				if(data.length) {
 					data = data[0];
@@ -559,21 +578,17 @@ let Users = {
 		,setStatus(user, botData, callback) {
 			try {
 				Mongo.select(user, 'users', (data) => {
-					data = data[0]
+					if(data.length && (data = data[0])) {
 
-					const index = this.Bots.findIndex(bot => bot.botID === botData.botID)
-					this.Bots[index].changeStatus(botData.status, data)
-						.then( d => callback(d));
+						if(data.tariffs.length > 0) {
+							const index = this.Bots.findIndex(bot => bot.botID === botData.botID)
+	
+							this.Bots[index].changeStatus(botData.status, data)
+								.then( d => callback(d))
+								.catch( err => callback({status:'error', error: err}));
+						} else callback(M.getFailureMessage({message: 'Срок действия активных тарифов окончен.'}));
 
-					// const index = data.bots.findIndex(bot => bot.botID === botData.botID)
-					// let newBot = new Bot(data.bots[index])
-					// data.bots[index] = newBot
-					// data.bots[index].changeStatus(botData.status, data)
-					// .then((d) => {
-					// 	Mongo.update({name: data.name}, data, 'users', (data) => {
-					// 		callback(d)
-					// 	})
-					// })
+					} else callback(M.getFailureMessage({message: 'Пользователь не найден!'}));
 				})
 			}
 			catch(error) {

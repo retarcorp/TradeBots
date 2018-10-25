@@ -37,7 +37,7 @@
         },
         methods: {
             onSignIn() {
-                this.$router.push('/Vhod')
+                this.$router.push('/SignIn')
             },
             onSignOut() {
                 this.$store.commit('setSpiner', true);

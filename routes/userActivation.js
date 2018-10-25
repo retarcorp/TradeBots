@@ -4,7 +4,7 @@ var Mongo = require('../modules/Mongo');
 var qrs = require("querystring");
 var url = require("url");
 
-router.get('/user/activate', (req, res, next) => {
+router.get('/api/user/activate', (req, res, next) => {
     console.log('something');
     const query = qrs.parse(url.parse(req.url).query),
         response = {

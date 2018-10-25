@@ -5,7 +5,7 @@ var router = express.Router();
 let HistoryLog = require('../modules/HistoryLog');
 let log = (data) => HistoryLog._log(data);
 
-router.get('/account/api', (req, res, next) => {
+router.get('/api/account/api', (req, res, next) => {
 	console.log(req.cookies.user)
 	if(req.cookies.user) {
 		let user = {name: req.cookies.user.name};
@@ -16,7 +16,7 @@ router.get('/account/api', (req, res, next) => {
 	} else res.send({status: 'error'});
 });
 
-router.post('/account/api', (req, res, next) => {
+router.post('/api/account/api', (req, res, next) => {
 	console.log(req.cookies.user)
 	if(req.cookies.user) {
 		let user = {name: req.cookies.user.name};
@@ -27,7 +27,7 @@ router.post('/account/api', (req, res, next) => {
 	} else res.send({status: 'error'});
 });
 
-router.delete('/account/api', (req, res, next) => {
+router.delete('/api/account/api', (req, res, next) => {
 	if(req.cookies.user) {
 		let user = {name: req.cookies.user.name};
 		Users.setBinance(user, null, data => {

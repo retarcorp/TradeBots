@@ -1,11 +1,11 @@
 export default function ({ store, route, redirect }) {
-	if(route.path === '/admin/signin' && ~document.cookie.indexOf('admin')) {
+	if(route.path === '/admin/api/signin' && ~document.cookie.indexOf('admin')) {
 		redirect('/admin')
 	}
 	if(route.path === '/') {
-		redirect('/Boty')
+		redirect('/Bots')
 	}
-	if(route.path === '/Vhod' || route.path === '/Registratsia' || route.path.toLowerCase() === '/admin/signin') {
+	if(route.path === '/SignIn' || route.path === '/Registration' || route.path.toLowerCase() === '/admin/api/signin') {
 	} else {
 	if (route.path.toLowerCase() === '/admin' || route.path.toLowerCase() === '/admin/' || 
 		route.path.toLowerCase() === '/admin/rates' || route.path.toLowerCase() === '/admin/rates/' || 
@@ -14,7 +14,7 @@ export default function ({ store, route, redirect }) {
 	) {
 		if(!((document.cookie.indexOf('admin') >= 0) && document.cookie.indexOf('true') && (document.cookie.indexOf('admin') < document.cookie.indexOf('true')))) {
 			store.commit('setAuthorizedAdmin', false);
-			redirect('/admin/signin');
+			redirect('/admin/api/signin');
 		} else {
 			store.commit('setAuthorizedAdmin', true);
 		}
@@ -22,13 +22,13 @@ export default function ({ store, route, redirect }) {
 	else {
 		if(!(~document.cookie.indexOf('user'))) {
 			store.commit('setAuthorized', false)
-			redirect('/Vhod')
+			redirect('/SignIn')
 		} else {
 			store.commit("setAuthorized", true);
 		}
 	}
 	}
-	if( route.path === `/Boty/${route.params.id}` && store.state.botsList.length === 0 ) {
-		redirect('/Boty');
+	if( route.path === `/Bots/${route.params.id}` && store.state.botsList.length === 0 ) {
+		redirect('/Bots');
 	}
 }

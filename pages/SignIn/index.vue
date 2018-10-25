@@ -8,7 +8,7 @@
         </div>
         <div class="d-flex">
             <span class="auth-form__forgot-password">Забыли пароль?</span>
-            <p class="auth-form__not-have-account"><nuxt-link to="/Registratsia" class="link">Регистрация</nuxt-link></p>
+            <p class="auth-form__not-have-account"><nuxt-link to="/Registration" class="link">Регистрация</nuxt-link></p>
         </div>
     </form>
 </template>
@@ -31,7 +31,7 @@
         methods: {
             onSignIn() {
                 this.$store.commit('setSpiner', true)
-                this.$axios.$post('/signin', {
+                this.$axios.$post('/api/signin', {
                     email: this.email,
                     password: this.password
                 })
@@ -41,7 +41,7 @@
                         this.$store.commit('setSpiner', false)
                         this.$store.commit('setEmail', res.data.email); 
                         this.$store.commit('setMaxBotAmount', res.data.maxBotAmount);
-                        this.$router.push('/Boty')
+                        this.$router.push('/Bots')
                     } else {
                         this.$store.commit('setSpiner', false);
                         this.$store.commit('setStatus', 'error');
