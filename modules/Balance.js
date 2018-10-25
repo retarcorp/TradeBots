@@ -56,7 +56,7 @@ class Balance {
 			let userData = await Mongo.syncSelect(user, CONSTANTS.USERS_COLLECTION);
 				// exchangeRates = await Bitaps.getExchangeRates();
 
-			if(userData.length && confirmData.invoice && (Number(confirmData.confirmations) === bitaps.confirmations) ) {
+			if(userData.length && confirmData.invoice && (Number(confirmData.confirmations) == bitaps.confirmations) ) {
 				userData = userData[0];	
 				let confirmAddress = confirmData.address,
 					confirmFee = Number(confirmData.payout_miner_fee),
@@ -64,7 +64,7 @@ class Balance {
 					confirmValue = confirmAmount * bitaps.satoshi,
 					currentBalance = Number(userData.walletBalance),
 					udpatedBalance = currentBalance + confirmValue,
-					newPaymentData = Object.assign({}, confirmData, { time: Date.now }),
+					newPaymentData = Object.assign({}, confirmData, { time: Date.now() }),
 					updatePayments = userData.payments.push(newPaymentData);
 				
 				if(confirmAddress === userData.walletAddress) {
@@ -73,6 +73,7 @@ class Balance {
 						payments: updatePayments
 					};
 					
+					Mongo.insert({ user: user, change: change }, CONSTANTS.PAYMENTS_COLLECTION, data => console.log(data, "PAYMENT SAVE"));
 					await Mongo.syncUpdate(user, change, CONSTANTS.USERS_COLLECTION);
 				}
 			}
