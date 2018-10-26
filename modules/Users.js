@@ -475,12 +475,12 @@ let Users = {
 					data.bots.forEach(bot => {
 						if(!bot.isDeleted) {
 							let nextBot = Object.assign({}, bot);
-							nextBot.processes = {};
-							for (let prcId in bot.processes) {
-								if(bot.processes[prcId].finallyStatus) {
-									nextBot.processes[prcId] = bot.processes[prcId];
-								}
-							}
+							// nextBot.processes = {};
+							// for (let prcId in bot.processes) {
+							// 	if(bot.processes[prcId].finallyStatus) {
+							// 		nextBot.processes[prcId] = bot.processes[prcId];
+							// 	}
+							// }
 							bots.push(nextBot);
 						}
 					});
