@@ -401,7 +401,7 @@ let Users = {
 					if(!user.bots[i].isDeleted) {
 						let bot = Object.assign({}, user.bots[i]);
 						bot = new Bot(bot);
-						// bot.continueTrade(user);
+						bot.continueTrade(user);
 						this.Bots.push(bot);
 					}
 				}

@@ -38,20 +38,20 @@ router.use(tariffs);
 router.use(userActivation);
 
 router.get('/test', (req, res, next) => {
-	let user = { name: req.cookies.user.name };
+	// let user = { name: req.cookies.user.name };
 
 
 
-	Mongo.select(user, 'users', userData => {
+	// Mongo.select(user, 'users', userData => {
 
-		userData = userData[0];
+	// 	userData = userData[0];
 
-		let bots = userData.bots.filter(bot => !bot.isDeleted);
+	// 	let bots = userData.bots.filter(bot => !bot.isDeleted);
 
-		Mongo.update(user, {bots: bots}, 'users', data => res.json({d: data, bots: bots}));
+	// 	Mongo.update(user, {bots: bots}, 'users', data => res.json({d: data, bots: bots}));
 
 
-	});
+	// });
 
 	// Users.Bots.getBotList(user, data => {
 	// 	// log(data);
@@ -59,7 +59,7 @@ router.get('/test', (req, res, next) => {
 	// });
 	// const query = qrs.parse(url.parse(req.url).query);
 	// console.log(query.userId)
-	// res.json(query);
+	res.json(query);
 	// let user = { name: req.cookies.user.name };
 	// Statistics.getUserStatistic(user, data => res.send(data));
 });
