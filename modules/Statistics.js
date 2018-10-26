@@ -10,7 +10,8 @@ class Statistics {
 	}
 
 	async getUserStatistic(user = {}, callback = (data = {}) => {}) {
-
+		console.log(user);
+		console.log(CONSTANTS.USERS_COLLECTION);
 		let userData = await Mongo.syncSelect(user, CONSTANTS.USERS_COLLECTION);
 		if(userData.length && (userData = userData[0]).name ) {
 			let resData = [],

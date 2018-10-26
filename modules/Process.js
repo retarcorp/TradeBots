@@ -119,12 +119,17 @@ module.exports = class Process {
 						resolve('finish');
 					});
 				}
-			}
-			else {
+			} else if(newBuyOrder === 'error') {
 				await this.disableProcess('Неуспешная покупка начального ордера.');
 				await this.updateProcess(user);
 				return new Promise( (resolve, reject) => {
 					reject('finish');
+				});
+			} else {
+				await this.disableProcess('Неуспешная покупка начального ордера.');
+				await this.updateProcess(user);
+				return new Promise( (resolve, reject) => {
+					resolve('finish');
 				});
 			}
 		}
@@ -405,7 +410,7 @@ module.exports = class Process {
 			}
 			if(this.checkFilling(order.status)) return new Order(order);
 			if(this.checkCanceling(order.status) || this.checkFailing(order.status)) return {};
-		} else return {};
+		} else return 'error';
 	}
 
 	async newBuyOrder(price = 0, type = CONSTANTS.ORDER_TYPE.LIMIT, quantity = this.getQuantity(price), prevError = {}) {
@@ -649,7 +654,6 @@ module.exports = class Process {
 						qty = this.getQuantity(),
 						newOrder = await this.newSellOrder(lastPrice, CONSTANTS.ORDER_TYPE.MARKET, qty);
 					
-					if(newOrder !== CONSTANTS.DISABLE_FLAG) await this.updateProcess(user);
 					this.orders.push(newOrder);
 					// this.dealOrders.push(newOrder);
 				}

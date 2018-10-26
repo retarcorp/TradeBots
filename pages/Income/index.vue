@@ -15,28 +15,41 @@
             </div>
         </div>
 
-        <p class="bots-income-title">Доход по процессам:</p>
+        <p class="bots-income-title">Доход по сделкам:</p>
 
         <div class="bot-income-box">
-            <div v-for="prcIncome in processesIncome" :key="prcIncome.botID" class="bot-income tabs">
+            <div class="bot-tabs jsc">
                 <div class="bot-income-block tabs__item">
-                    <p>Бот - {{ prcIncome.botTitle }} ({{ prcIncome.botID }})</p>
-                    <p>Процесс - {{ prcIncome.processId }}</p>
-                    <p>Пара - {{ prcIncome.symbol }}</p>
+                    <p>Бот / Пара: </p>
                 </div> 
                 <div class="bot-income-block tabs__item">
                     <p>Объемы: </p>
-                    <p>{{ prcIncome.volumeBTC }} BTC</p>
-                    <p>{{ prcIncome.volumeCur }} {{ prcIncome.curSymbol }}</p>
                 </div>
                 <div class="bot-income-block tabs__item">
                     <p>Прибыль: </p>
+                </div>
+                <div class="bot-income-block tabs__item">
+                    <p>Дата:</p>
+                </div>
+            </div>
+            <div v-for="prcIncome in processesIncome" :key="prcIncome.botID" class="bot-income bot-tabs jsc">
+                <div class="bot-income-block tabs__item">
+                    <p>{{ prcIncome.botTitle }} / {{ prcIncome.symbol }}</p>
+                    <!-- <p>Бот - {{ prcIncome.botTitle }} ({{ prcIncome.botID }})</p> -->
+                    <!-- <p>Процесс - {{ prcIncome.processId }}</p>
+                    <p>Пара - {{ prcIncome.symbol }}</p> -->
+                </div> 
+                <div class="bot-income-block tabs__item">
+                    <p>{{ prcIncome.volumeCur }} {{ prcIncome.curSymbol }}</p>
+                    <p>{{ prcIncome.volumeBTC }} BTC</p>
+                </div>
+                <div class="bot-income-block tabs__item">
                     <p v-for="(inc, _key) in prcIncome.income" :key="_key">
                         {{ _key }}: {{ Math.round(inc * 100000) / 100000 }}
                     </p>
                 </div>
                 <div class="bot-income-block tabs__item">
-                    <p>Дата: {{ getDate(prcIncome.endTime) }}</p>
+                    <p>{{ getDate(prcIncome.endTime) }}</p>
                 </div>
             </div>
         </div>
@@ -90,12 +103,16 @@ export default {
             this.statisticsList.forEach(bot => {
                 bot.processes.forEach(prc => {
                     if(!prc.finallyStatus) {
-                        let curSymbol = '';
+                        let curSymbol = '',
+                            sCurSymbol = '';
                         for(let i = 0; i < this.symbolsA.length; i++) {
                             let p = prc.symbol.indexOf(this.symbolsA[i]);
                             if(p > 1) {
                                 curSymbol = this.symbolsA[i];
+                            } else if(p == 0) {
+                                sCurSymbol = this.symbolsA[i];
                             }
+                            
                         }
 
                         let prcIncome = {
@@ -106,6 +123,7 @@ export default {
                             volumeBTC: Number(prc.orders[prc.orders.length - 1].origQty),
                             volumeCur: Number(prc.orders[prc.orders.length - 1].cummulativeQuoteQty),
                             curSymbol: curSymbol,
+                            sCurSymbol: sCurSymbol,
                             symbol: prc.symbol,
                             income: {}
                         }
@@ -113,14 +131,25 @@ export default {
                         if(!prcIncome.income[curSymbol]) {
                             prcIncome.income[curSymbol] = 0;
                         }
+                        if(!prcIncome.income[sCurSymbol]) {
+                            prcIncome.income[sCurSymbol] = 0;
+                        }
 
                         prc.orders.forEach(order => {
                             if(order.side === BUY && order.status === FILLED) {
                                 prcIncome.income[curSymbol] -= Number(order.cummulativeQuoteQty);
+                                prcIncome.income[sCurSymbol] -= Number(order.executedQty);
                             } else if(order.side === SELL && order.status === FILLED) {
                                 prcIncome.income[curSymbol] += Number(order.cummulativeQuoteQty);
+                                prcIncome.income[sCurSymbol] += Number(order.executedQty);
                             }
                         });
+                        
+                        if(curSymbol === 'USDT') prcIncome.income[curSymbol] = Number(prcIncome.income[curSymbol].toFixed(2)); 
+                        else prcIncome.income[curSymbol] = Number(prcIncome.income[curSymbol].toFixed(5));
+
+                        if(sCurSymbol === 'USDT') prcIncome.income[sCurSymbol] = Number(prcIncome.income[sCurSymbol].toFixed(2)); 
+                        else prcIncome.income[sCurSymbol] = Number(prcIncome.income[sCurSymbol].toFixed(5));
                         arr.push(prcIncome);
                     }
                 });
@@ -140,12 +169,15 @@ export default {
 
                 bot.processes.forEach(prc => {
                     if(!prc.finallyStatus) {
-                        let curSymbol = '';
+                        let curSymbol = '',
+                            sCurSymbol = '';
 
                         for(let i = 0; i < this.symbolsA.length; i++) {
                             let p = prc.symbol.indexOf(this.symbolsA[i]);
                             if(p > 1) {
                                 curSymbol = this.symbolsA[i];
+                            } else if(p == 0) {
+                                sCurSymbol = this.symbolsA[i];
                             }
                         }
                         if(!botIncome.income[curSymbol]) {
@@ -155,10 +187,16 @@ export default {
                         prc.orders.forEach(order => {
                             if(order.side === BUY && order.status === FILLED) {
                                 botIncome.income[curSymbol] -= Number(order.cummulativeQuoteQty);
+                                botIncome.income[sCurSymbol] -= Number(order.executedQty);
                             } else if(order.side === SELL && order.status === FILLED) {
                                 botIncome.income[curSymbol] += Number(order.cummulativeQuoteQty);
+                                botIncome.income[sCurSymbol] += Number(order.executedQty);
                             }
                         });
+                        if(curSymbol === 'USDT') botIncome.income[curSymbol] = Number(botIncome.income[curSymbol].toFixed(2)); 
+                        else botIncome.income[curSymbol] = Number(botIncome.income[curSymbol].toFixed(5));
+                        if(sCurSymbol === 'USDT') botIncome.income[sCurSymbol] = Number(botIncome.income[sCurSymbol].toFixed(2)); 
+                        else botIncome.income[sCurSymbol] = Number(botIncome.income[sCurSymbol].toFixed(5));
                     }
                 });
                 
@@ -183,7 +221,7 @@ export default {
                             if(p > 1) {
                                 curSymbol = this.symbolsA[i];
                             }
-                        }
+                                                    }
                         if(!income[curSymbol]) {
                             income[curSymbol] = 0;
                         }
@@ -197,6 +235,8 @@ export default {
                                 }
                             }
                         });
+                        if(curSymbol === 'USDT') income[curSymbol] = Number(income[curSymbol].toFixed(2)); 
+                        else income[curSymbol] = Number(income[curSymbol].toFixed(5));
                     }
                 });
             });
@@ -228,6 +268,8 @@ export default {
                                 income[curSymbol] += Number(order.cummulativeQuoteQty);
                             }
                         });
+                        if(curSymbol === 'USDT') income[curSymbol] = Number(income[curSymbol].toFixed(2));
+                        else income[curSymbol] = Number(income[curSymbol].toFixed(5));
                     }
                 });
             });
@@ -277,6 +319,15 @@ export default {
     margin-top: 2rem;
     padding: 1rem;
     border: 1px solid black;
+}
+
+.jsc {
+    justify-content: space-between;
+    display: flex;
+}
+.jsc > div {
+    width: 100%;
+    text-align: left;
 }
 .bots-income-title {
 
