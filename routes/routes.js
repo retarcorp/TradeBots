@@ -38,9 +38,17 @@ router.use(tariffs);
 router.use(userActivation);
 
 router.get('/test', (req, res, next) => {
-	const query = qrs.parse(url.parse(req.url).query);
-	console.log(query.userId)
-	res.json(query);
+	let user = { name: req.cookies.user.name };
+
+	Mongo.select(user, 'users', data => res.json(data));
+
+	// Users.Bots.getBotList(user, data => {
+	// 	// log(data);
+	// 	res.json(data);
+	// });
+	// const query = qrs.parse(url.parse(req.url).query);
+	// console.log(query.userId)
+	// res.json(query);
 	// let user = { name: req.cookies.user.name };
 	// Statistics.getUserStatistic(user, data => res.send(data));
 });

@@ -119,9 +119,10 @@ export default {
                             botTitle: prc.botTitle,
                             botID: bot.botID,
                             processId: prc.processId,
-                            endTime: prc.orders[prc.orders.length - 1].time,
-                            volumeBTC: Number(prc.orders[prc.orders.length - 1].origQty),
-                            volumeCur: Number(prc.orders[prc.orders.length - 1].cummulativeQuoteQty),
+                            endTime: prc.orders.length && prc.orders[prc.orders.length - 1].time,
+                            // volumeBTC: Number(prc.orders[prc.orders.length - 1].origQty),
+                            // volumeCur: Number(prc.orders[prc.orders.length - 1].cummulativeQuoteQty),
+                            volume: {},
                             curSymbol: curSymbol,
                             sCurSymbol: sCurSymbol,
                             symbol: prc.symbol,
@@ -134,14 +135,24 @@ export default {
                         if(!prcIncome.income[sCurSymbol]) {
                             prcIncome.income[sCurSymbol] = 0;
                         }
+                        if(!prcIncome.volume[curSymbol]) {
+                            prcIncome.volume[curSymbol] = 0;
+                        }
+                        if(!prcIncome.volume[sCurSymbol]) {
+                            prcIncome.volume[sCurSymbol] = 0;
+                        }
 
                         prc.orders.forEach(order => {
                             if(order.side === BUY && order.status === FILLED) {
                                 prcIncome.income[curSymbol] -= Number(order.cummulativeQuoteQty);
                                 prcIncome.income[sCurSymbol] -= Number(order.executedQty);
+                                prcIncome.volume[curSymbol] -= Number(order.cummulativeQuoteQty);
+                                prcIncome.volume[sCurSymbol] -= Number(order.executedQty);
                             } else if(order.side === SELL && order.status === FILLED) {
                                 prcIncome.income[curSymbol] += Number(order.cummulativeQuoteQty);
                                 prcIncome.income[sCurSymbol] += Number(order.executedQty);
+                                prcIncome.volume[curSymbol] += Number(order.cummulativeQuoteQty);
+                                prcIncome.volume[sCurSymbol] += Number(order.executedQty);
                             }
                         });
                         
@@ -150,6 +161,12 @@ export default {
 
                         if(sCurSymbol === 'USDT') prcIncome.income[sCurSymbol] = Number(prcIncome.income[sCurSymbol].toFixed(2)); 
                         else prcIncome.income[sCurSymbol] = Number(prcIncome.income[sCurSymbol].toFixed(5));
+
+                        if(curSymbol === 'USDT') prcIncome.volume[curSymbol] = Number(prcIncome.volume[curSymbol].toFixed(2)); 
+                        else prcIncome.volume[curSymbol] = Number(prcIncome.volume[curSymbol].toFixed(5));
+
+                        if(sCurSymbol === 'USDT') prcIncome.volume[sCurSymbol] = Number(prcIncome.volume[sCurSymbol].toFixed(2)); 
+                        else prcIncome.volume[sCurSymbol] = Number(prcIncome.volume[sCurSymbol].toFixed(5));
                         arr.push(prcIncome);
                     }
                 });
