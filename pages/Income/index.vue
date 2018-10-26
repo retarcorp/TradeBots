@@ -109,10 +109,8 @@ export default {
                             let p = prc.symbol.indexOf(this.symbolsA[i]);
                             if(p > 1) {
                                 curSymbol = this.symbolsA[i];
-                            } else if(p == 0) {
-                                sCurSymbol = this.symbolsA[i];
-                            }
-                            
+                                sCurSymbol = this.symbolsA[i].replace(curSymbol, '');
+                            } 
                         }
 
                         let prcIncome = {
@@ -193,8 +191,7 @@ export default {
                             let p = prc.symbol.indexOf(this.symbolsA[i]);
                             if(p > 1) {
                                 curSymbol = this.symbolsA[i];
-                            } else if(p == 0) {
-                                sCurSymbol = this.symbolsA[i];
+                                sCurSymbol = this.symbolsA[i].replace(curSymbol, '');
                             }
                         }
                         if(!botIncome.income[curSymbol]) {
