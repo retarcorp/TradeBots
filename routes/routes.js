@@ -40,7 +40,18 @@ router.use(userActivation);
 router.get('/test', (req, res, next) => {
 	let user = { name: req.cookies.user.name };
 
-	Mongo.select(user, 'users', data => res.json(data));
+
+
+	Mongo.select(user, 'users', userData => {
+
+		userData = userData[0];
+
+		let bots = userData.bots.filter(bot => !bot.isDeleted);
+
+		Mongo.update(user, {bots: bots}, 'users', data => res.json({d: data, bots: bots}));
+
+
+	});
 
 	// Users.Bots.getBotList(user, data => {
 	// 	// log(data);
