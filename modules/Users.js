@@ -473,7 +473,13 @@ let Users = {
 					data = data[0];
 					let bots = [];
 					data.bots.forEach(bot => {
-						if(!bot.isDeleted) bots.push(bot);
+						if(!bot.isDeleted) {
+							for (let prcId in bot.processes) {
+								if(bot.processes[prcId].finallyStatus) {
+									bots.push(bot);
+								}
+							}
+						}
 					});
 					callback({
 						status: 'ok',
