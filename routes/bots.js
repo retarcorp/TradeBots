@@ -35,6 +35,7 @@ router.post('/api/bots/delete', (req, res, next) => {
 	let user = {name: req.cookies.user.name}
 	Users.Bots.setBot(user, req.body.botID, data => {
 		log(data);
+		console.log(data);
 		res.json(data);
 	});
 });

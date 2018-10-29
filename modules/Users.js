@@ -394,6 +394,10 @@ let Users = {
 	,Bots: {
 		Bots: []
 
+		,getSendUserData(user = {}) {
+			return { name: user.name, userId: user.userId, binanceAPI: user.binanceAPI, regDate: user.regDate };
+		}
+
 		,async setBotsArray() {
 			let users = await Mongo.syncSelect({}, 'users');
 			users.forEach(user => {
@@ -401,7 +405,7 @@ let Users = {
 					if(!user.bots[i].isDeleted) {
 						let bot = Object.assign({}, user.bots[i]);
 						bot = new Bot(bot);
-						bot.continueTrade(user);
+						bot.continueTrade(this.getSendUserData(user));
 						this.Bots.push(bot);
 					}
 				}
@@ -419,7 +423,7 @@ let Users = {
 	
 						if(this.Bots[indexBot].status === CONSTANTS.BOT_STATUS.ACTIVE) {
 							console.log('вырубаем бота');
-							this.Bots[indexBot].changeStatus(CONSTANTS.BOT_STATUS.INACTIVE, { name: userData.name });
+							this.Bots[indexBot].changeStatus(CONSTANTS.BOT_STATUS.INACTIVE, this.getSendUserData(user));
 						}
 					}
 				});
@@ -456,14 +460,14 @@ let Users = {
 						}
 						callback({status: 'ok', data: processesLog});
 					} else {
-						callback({status: 'error', message: 'Пользователь не найден или неккоректный botID', botID: botID});
+						callback({status: 'error', message: 'Пользователь не найден или неккоректный botID', botID: botData.botID});
 					}
 				} catch(err) {
 					console.log(err);
-					callback({status: 'error', message: 'Пользователь не найден или неккоректный botID', botID: botID});
+					callback({status: 'error', message: 'Пользователь не найден или неккоректный botID', botID: botData.botID});
 				}
 			} else {
-				callback({status: 'error', message: 'Пользователь не найден или неккоректный botID', botID: botID});
+				callback({status: 'error', message: 'Пользователь не найден или неккоректный botID', botID: botData.botID});
 			}
 		}
 
@@ -528,20 +532,21 @@ let Users = {
 				}
 				else {
 					console.log("---------------------DELTEBOT");
-					let tempBots = [];
-					data.bots.forEach(bot => {
-						if(bot.botID !== botData) tempBots.push(bot);
-					});
-					data.bots = tempBots;
+					// let tempBots = [];
+					// data.bots.forEach(bot => {
+					// 	if(bot.botID !== botData) tempBots.push(bot);
+					// });
+					// data.bots = tempBots;
 					
 					const index = this.Bots.findIndex(bot => {
 						return bot.botID === botData
 					});
 					if(index >= 0) {
-						this.Bots[index].deleteBot(user)
+						this.Bots[index].deleteBot(this.getSendUserData(user))
 							.then(res => {
 								if(res.status === 'ok') {
 									this.Bots.splice(index, 1);
+									callback(res);
 								}
 							})
 					} else {
@@ -642,7 +647,7 @@ let Users = {
 					if(userData.length) {
 						userData = userData[0];
 						const index = this.Bots.findIndex(bot => bot.botID === reqData.botID);
-						this.Bots[index].cancelAllOrdersWithoutSell(user, reqData.processeId)
+						this.Bots[index].cancelAllOrdersWithoutSell(this.getSendUserData(user), reqData.processeId)
 							.then(d => callback(d))
 							.catch(error =>
 								callback({
@@ -673,7 +678,7 @@ let Users = {
 					// const index = data.bots.findIndex(bot => bot.botID === reqData.botID)
 					// let bot = new Bot(data.bots[index], data)
 					const index = this.Bots.findIndex(bot => bot.botID === reqData.botID)
-					this.Bots[index].cancelAllOrders(user, reqData.processeId)
+					this.Bots[index].cancelAllOrders(this.getSendUserData(user), reqData.processeId)
 						.then(d => {
 							callback(d);
 						})

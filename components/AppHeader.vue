@@ -20,6 +20,7 @@
 
                         </div>
                         <div class="nav__right">
+                            <p v-if="isAuth" class="nav__link nav__accaunt">{{currentBotsAmount}}/{{maxBotAmount}}</p>
                             <p v-if="isAuth" class="nav__link nav__accaunt" :class="{'varning_red': !binanceStatus}">{{ email }}{{ !binanceStatus ? ' (ключи бинанс не заданы!)' : '' }}</p>
                             <button 
                                 v-if="isAuth" 
@@ -40,6 +41,12 @@
 <script>
     export default {
         computed: {
+            currentBotsAmount() {
+                return this.$store.getters.getCurrentBotsAmount;
+            },
+            maxBotAmount() {
+                return this.$store.getters.getMaxBotAmount;
+            },
             isAuth() {
                 return this.$store.getters.getAuthorizedStatus;
             },
@@ -89,16 +96,17 @@
             }
         },
         created() {
-            this.$store.dispatch('getPagesList');
-            this.$store.dispatch('getUserPayments');
-            this.$store.dispatch('setEmail');
-            this.$store.dispatch('setBotsList');
-            this.$store.dispatch('getSymbolsList');
+            this.$store.dispatch('getUserData');
+            // this.$store.dispatch('getPagesList');
+            // this.$store.dispatch('getUserPayments');
+            // this.$store.dispatch('setEmail');
+            // this.$store.dispatch('setBotsList');
+            // this.$store.dispatch('getSymbolsList');
+            // // this.$store.dispatch('firstGetBinanceAPI');
+            // this.$store.dispatch('getUserStatistics');
+            // this.$store.dispatch('getUserMaxBotAmount');
             // this.$store.dispatch('firstGetBinanceAPI');
-            this.$store.dispatch('getUserStatistics');
-            this.$store.dispatch('getUserMaxBotAmount');
-            this.$store.dispatch('firstGetBinanceAPI');
-            // this.$store.dispatch('checkBinance');
+            // // this.$store.dispatch('checkBinance');
         }
     }
 </script>

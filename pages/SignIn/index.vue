@@ -7,7 +7,7 @@
             <button :class="{'button--disabled': !isFormValid}" :disabled="!isFormValid" type="submit" class="button button--success auth-form__button">Войти</button>
         </div>
         <div class="d-flex">
-            <span class="auth-form__forgot-password">Забыли пароль?</span>
+            <!-- <span class="auth-form__forgot-password">Забыли пароль?</span> -->
             <p class="auth-form__not-have-account"><nuxt-link to="/Registration" class="link">Регистрация</nuxt-link></p>
         </div>
     </form>
@@ -41,7 +41,8 @@
                         this.$store.commit('setSpiner', false)
                         this.$store.commit('setEmail', res.data.email); 
                         this.$store.commit('setMaxBotAmount', res.data.maxBotAmount);
-                        this.$router.push('/Bots')
+                        this.$router.push('/Bots');
+                        this.$store.dispatch('getUserData');
                     } else {
                         this.$store.commit('setSpiner', false);
                         this.$store.commit('setStatus', 'error');

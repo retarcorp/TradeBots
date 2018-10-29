@@ -233,6 +233,16 @@ const store = () =>
 		}
 	},
 	actions: {
+		getUserData({ dispatch }) {
+			dispatch('getPagesList');
+            dispatch('getUserPayments');
+            dispatch('setEmail');
+            dispatch('setBotsList');
+            dispatch('getSymbolsList');
+            dispatch('getUserStatistics');
+            dispatch('getUserMaxBotAmount');
+            dispatch('firstGetBinanceAPI');
+		},
 		getUserPayments({ commit }) {
 			this.$axios
 				.$get('/api/user/getUserPayments')
@@ -451,6 +461,8 @@ const store = () =>
 					if (res.status === "ok") {
 						commit("addBot", res.data);
 						commit('setMessage', 'Бот успешно создан');
+						dispatch('setBotsList', true);
+						dispatch('getUserMaxBotAmount');
 						this.$router.push("/Bots");
 						commit('setStatus', 'ok');
 						// commit('setSpiner', false);
@@ -463,16 +475,19 @@ const store = () =>
 		addNewBot({ commit }, payload) {
 			commit("addNewBot", payload);
 		},
-		setBotsList({ commit, dispatch }) {
+		setBotsList({ commit, dispatch, getters }, payload) {
 			// commit('setSpiner', true);
+			console.log(getters.getMaxBotAmount, '/', getters.getCurrentBotsAmount);
 			this.$axios
 				.$get("/api/bots/getBotsList") 
 				.then(res => {
 					if (res.status === "ok") {
 						commit("setBotsList", res.data);
-						setTimeout(() => {
-							dispatch('setBotsList')
-						}, 5000);
+						if(!payload) {
+							setTimeout(() => {
+								dispatch('setBotsList')
+							}, 5000);
+						}
 					} else if(res.status === 'info') {
 						commit('setMessage', res.message);
 						commit('setStatus', 'info');
@@ -488,7 +503,8 @@ const store = () =>
 				})
 				.then(res => {
 				if (res.status === "ok") {
-					this.$router.push('/Bots')
+					this.$router.push('/Bots');
+					dispatch("setBotsList", true); 
 					commit("deleteBot", res.data.botID);
 					commit('setMessage', 'Бот успешно удален');
 					commit('setStatus', 'ok');

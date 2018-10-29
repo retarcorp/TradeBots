@@ -112,7 +112,7 @@ import UserTableRowVue from '../../components/UserTableRow.vue';
             }
         },
         created() {
-            this.$store.dispatch('setUsers');
+            // this.$store.dispatch('setUsers');
         }
     }
 </script>

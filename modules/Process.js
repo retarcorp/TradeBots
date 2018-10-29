@@ -297,10 +297,11 @@ module.exports = class Process {
 						let newProfitPrice = this.recountProfitPrice(order),
 							newSellOrder = await this.newSellOrder(newProfitPrice, CONSTANTS.ORDER_TYPE.LIMIT, this.getQuantity());
 
-						if(newSellOrder !== CONSTANTS.DISABLE_FLAG) await this.updateProcess(user);
-
-						this.currentOrder = newSellOrder;
-						this.orders.push(this.currentOrder);
+						// if(newSellOrder !== CONSTANTS.DISABLE_FLAG) await this.updateProcess(user);
+						if(newSellOrder.orderId) {
+							this.currentOrder = newSellOrder;
+							this.orders.push(this.currentOrder);
+						}
 						// this.dealOrders.push(this.currentOrder);
 
 						if(!this.isFreeze()) {
@@ -310,6 +311,8 @@ module.exports = class Process {
 								this.orders.push(newSafeOrder);
 								// this.dealOrders.push(newSafeOrder);
 								nextSafeOrders.push(newSafeOrder);
+							} else {
+								this._log("Невозможно выставить страховочный ордер (вероятнее всего из-за недостатка баланса)");
 							}
 						}
 
@@ -321,6 +324,8 @@ module.exports = class Process {
 								this.orders.push(newSafeOrder);
 								// this.dealOrders.push(newSafeOrder);
 								nextSafeOrders.push(newSafeOrder);
+							} else {
+								this._log("Невозможно выставить страховочный ордер (вероятнее всего из-за недостатка баланса)");
 							}
 						}
 					}
@@ -346,6 +351,8 @@ module.exports = class Process {
 				this.orders.push(newSafeOrder);
 				// this.dealOrders.push(newSafeOrder);
 				nextSafeOrders.push(newSafeOrder);
+			} else {
+				this._log("Невозможно выставить страховочный ордер (вероятнее всего из-за недостатка баланса)");
 			}
 			this.safeOrders = nextSafeOrders;
 
@@ -413,7 +420,7 @@ module.exports = class Process {
 		} else return 'error';
 	}
 
-	async newBuyOrder(price = 0, type = CONSTANTS.ORDER_TYPE.LIMIT, quantity = this.getQuantity(price), prevError = {}) {
+	async newBuyOrder(price = 0, type = CONSTANTS.ORDER_TYPE.LIMIT, quantity = this.getQuantity(price), prevError = {}, isSave = false) {
 		
 		let symbol = this.getSymbol(),
 			newOrderParams = {
@@ -432,17 +439,23 @@ module.exports = class Process {
 			return new Order(newBuyOrder);
 		}
 		catch(error) {
-			await this._log(this.errorCode(error));
+			// await this._log(this.errorCode(error));
 			if(quantity > 0) {
 				let step = this.botSettings.decimalQty;
 				if(
 					(await this.isError1013(error) && await this.isError2010(prevError)) ||
 					(await this.isError1013(prevError) && await this.isError2010(error))
-				) return await this.disableProcess('Невозможно купить монеты');
+				) {
+					if(!isSave) {
+						return await this.disableProcess('Невозможно купить монеты');
+					} else {
+						return {};
+					}
+				}
 				else if(await this.isError1013(error)) quantity += step;
 				else if(await this.isError2010(error)) quantity -= step;
 				
-				let order = await this.newBuyOrder(price, type, this.toDecimal(quantity), error);
+				let order = await this.newBuyOrder(price, type, this.toDecimal(quantity), error, isSave);
 				return order;
 			}
 			else return {};
@@ -470,7 +483,7 @@ module.exports = class Process {
 		}
 		catch(error) {
 			log(error);
-			await this._log(this.errorCode(error));
+			// await this._log(this.errorCode(error));
 			if(quantity > 0) {
 				let step = this.botSettings.decimalQty;
 				if(
@@ -507,7 +520,10 @@ module.exports = class Process {
 				safeOrders.push(newOrder);
 			} else {
 				errQty++;
-				this._log(errQty + ' страховочный ордер не создался');
+				await this._log(errQty + 'й страховочный ордер не создался');
+				if(this.getAmount() > errQty) {
+					amount++;
+				}
 			}
 		}
 		return safeOrders;
@@ -536,9 +552,9 @@ module.exports = class Process {
 			else qty = this.getQuantity(newPrice, 1);
 
 			
-			await this._log(`новый страховочный ордер (price - ${newPrice}, qty - ${quantity})`);
+			await this._log(`новый страховочный ордер (price - ${newPrice})`);
 			try {
-				newOrder = await this.newBuyOrder(newPrice, CONSTANTS.ORDER_TYPE.LIMIT, qty);
+				newOrder = await this.newBuyOrder(newPrice, CONSTANTS.ORDER_TYPE.LIMIT, qty, {}, true);
 				if(newOrder.orderId) this.botSettings.lastSafeOrderPrice = Number(newOrder.price);
 			}
 			catch(error) {
@@ -654,7 +670,7 @@ module.exports = class Process {
 						qty = this.getQuantity(),
 						newOrder = await this.newSellOrder(lastPrice, CONSTANTS.ORDER_TYPE.MARKET, qty);
 					
-					this.orders.push(newOrder);
+					if(newOrder.orderId) this.orders.push(newOrder);
 					// this.dealOrders.push(newOrder);
 				}
 				
@@ -803,8 +819,7 @@ module.exports = class Process {
 
 		for(let i = 0; i < length; i++) {
 			let order = await this.createOrder(orders[i]);
-			if(order.orderId)
-				newOrders.push(order);
+			if(order.orderId) newOrders.push(order);
 		}
 
 		return newOrders
@@ -1144,8 +1159,10 @@ module.exports = class Process {
 			try{
 				if(!orders[i].isUpdate) {
 					let order = await this.getOrder(orders[i].orderId);
-					if(this.checkFailing(order.status) || this.checkFilling(order.status)) order.isUpdate = true;
-					nextOrders.push(order);
+					if(order.orderId) {
+						if(this.checkFailing(order.status) || this.checkFilling(order.status)) order.isUpdate = true;
+						nextOrders.push(order);
+					}
 				}
 				else {
 					nextOrders.push(orders[i]);

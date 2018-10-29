@@ -134,7 +134,6 @@
                         :id='index'
                         :key='index'
                         class="processes_tab"
-                        v-show="bot.processes[log].runningProcess"
                         :class='{active: currentLogId === log, isNotActive: !bot.processes[log].runningProcess }'
                         @click='fillingInfo(log, $event)'
                     >{{bot.processes[log].symbol}}</li>
@@ -422,7 +421,7 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
             onDeleteBot() {
                 this.$store.commit('setStatus', 'deleteBot');
                 if(this.clientAnswer === 'acceptDeleteBot') {
-                    this.$store.dispatch('deleteBot', this.bot.botID)
+                    this.$store.dispatch('deleteBot', this.bot.botID);
                 }
             },
             refuseCurrentOrder(ordId, botId) {
@@ -554,11 +553,12 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
 }
 
 .bots__log {
+    margin-top: 1rem;
+    height: 100%;
     width: 100%;
-    height: 5rem;
     overflow-x: auto;
     display: flex;
-    align-items: center;
+    /* align-items: center; */
     margin-bottom: 2rem;
 }
 

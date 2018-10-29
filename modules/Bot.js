@@ -104,6 +104,9 @@ module.exports = class Bot {
 	}
 
 	async changeStatus(nextStatus, user = this.user) {
+		user = { name: user.name, userId: user.userId, binanceAPI: user.binanceAPI, regDate: user.regDate };
+		this.user = user;
+
 		let message = '',
 			status = '';
 		

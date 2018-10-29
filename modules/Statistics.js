@@ -29,6 +29,7 @@ class Statistics {
 				for (let _id in processes) {
 					let prc = processes[_id],
 						prcData = {
+							botID: botData.botID,
 							botTitle: botData.title,
 							processId: prc.processId,
 							symbol: prc.symbol,

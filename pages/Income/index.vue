@@ -40,8 +40,9 @@
                     <p>Пара - {{ prcIncome.symbol }}</p> -->
                 </div> 
                 <div class="bot-income-block tabs__item">
-                    <p>{{ prcIncome.volumeCur }} {{ prcIncome.curSymbol }}</p>
-                    <p>{{ prcIncome.volumeBTC }} BTC</p>
+                    <p v-for="(inc, _key) in prcIncome.volume" :key="_key">
+                        {{ _key }}: {{ Math.round(inc * 100000) / 100000 }}
+                    </p>
                 </div>
                 <div class="bot-income-block tabs__item">
                     <p v-for="(inc, _key) in prcIncome.income" :key="_key">
@@ -109,7 +110,7 @@ export default {
                             let p = prc.symbol.indexOf(this.symbolsA[i]);
                             if(p > 1) {
                                 curSymbol = this.symbolsA[i];
-                                sCurSymbol = this.symbolsA[i].replace(curSymbol, '');
+                                sCurSymbol = prc.symbol.replace(curSymbol, '');
                             } 
                         }
 
@@ -118,8 +119,6 @@ export default {
                             botID: bot.botID,
                             processId: prc.processId,
                             endTime: prc.orders.length && prc.orders[prc.orders.length - 1].time,
-                            // volumeBTC: Number(prc.orders[prc.orders.length - 1].origQty),
-                            // volumeCur: Number(prc.orders[prc.orders.length - 1].cummulativeQuoteQty),
                             volume: {},
                             curSymbol: curSymbol,
                             sCurSymbol: sCurSymbol,
@@ -144,8 +143,8 @@ export default {
                             if(order.side === BUY && order.status === FILLED) {
                                 prcIncome.income[curSymbol] -= Number(order.cummulativeQuoteQty);
                                 prcIncome.income[sCurSymbol] -= Number(order.executedQty);
-                                prcIncome.volume[curSymbol] -= Number(order.cummulativeQuoteQty);
-                                prcIncome.volume[sCurSymbol] -= Number(order.executedQty);
+                                prcIncome.volume[curSymbol] += Number(order.cummulativeQuoteQty);
+                                prcIncome.volume[sCurSymbol] += Number(order.executedQty);
                             } else if(order.side === SELL && order.status === FILLED) {
                                 prcIncome.income[curSymbol] += Number(order.cummulativeQuoteQty);
                                 prcIncome.income[sCurSymbol] += Number(order.executedQty);
@@ -191,7 +190,8 @@ export default {
                             let p = prc.symbol.indexOf(this.symbolsA[i]);
                             if(p > 1) {
                                 curSymbol = this.symbolsA[i];
-                                sCurSymbol = this.symbolsA[i].replace(curSymbol, '');
+                                sCurSymbol = prc.symbol.replace(curSymbol, '');
+                                // sCurSymbol = this.symbolsA[i].replace(curSymbol, '');
                             }
                         }
                         if(!botIncome.income[curSymbol]) {

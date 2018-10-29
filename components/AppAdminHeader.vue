@@ -43,6 +43,9 @@
                 this.$store.commit('setSpiner', true);
                 this.$store.dispatch('adminSignout');
             }
+        },
+        created() {
+            this.$store.dispatch('setUsers');
         }
     }
 </script>

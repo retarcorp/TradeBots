@@ -21,7 +21,8 @@
 
             <div v-show="currentTab === 'opened'">
                 <div v-for="deal in openedDeals" :key="deal.processId" class="deal-box">
-                    <p>Бот - {{ deal.botTitle }} | {{ deal.symbol }} {{ deal.processId }} {{ deal.freeze === '1' ? "заморожен" : "" }}</p>
+                    <nuxt-link :to="'/Bots/' + deal.botID" class="nav__link">Бот - {{ deal.botTitle }} | {{ deal.symbol }} {{ deal.processId }} {{ deal.freeze === '1' ? "заморожен" : "" }}</nuxt-link>
+                    <!-- <p>Бот - {{ deal.botTitle }} | {{ deal.symbol }} {{ deal.processId }} {{ deal.freeze === '1' ? "заморожен" : "" }}</p> -->
                     <table class="table">
                         <tr class="table__tr">
                             <th class="table__th date">Дата</th>
@@ -58,7 +59,9 @@
 
             <div v-show="currentTab === 'closed'">
                 <div v-for="deal in closedDeals" :key="deal.processId" class="deal-box">
-                    <p>Бот - {{ deal.botTitle }} | {{ deal.symbol }} {{ deal.processId }} {{ deal.freeze === '1' ? "заморожен" : "" }}</p>
+                    <nuxt-link :to="'/Bots/' + deal.botID" class="nav__link">Бот - {{ deal.botTitle }} | {{ deal.symbol }} {{ deal.processId }} {{ deal.freeze === '1' ? "заморожен" : "" }}</nuxt-link>
+
+                    <!-- <p>Бот - {{ deal.botTitle }} | {{ deal.symbol }} {{ deal.processId }} {{ deal.freeze === '1' ? "заморожен" : "" }}</p> -->
                     <table class="table">
                         <tr class="table__tr">
                             <th class="table__th date">Дата</th>

@@ -14,7 +14,8 @@
                         </div>
                         <div class="form-control">
                             <label class="label">Дата истечения подписки</label>
-                            <input class="input" :class="{active: isEdit, editable__input: true}" type="text" v-model='user.expirationDate' :disabled="disabled">
+                            <!-- <input class="input" :class="{active: isEdit, editable__input: true}" type="text" v-model='user.expirationDate' :disabled="disabled"> -->
+                            <p>{{getDate(user.expirationDate)}}</p>
 						</div>
                         <div class="form-control">
                             <label class="label">Баланс кошелька (BTC)</label>
@@ -35,6 +36,11 @@
                         <div class="form-control">
                             <label class="label">Макс. кол-во ботов</label>
                             <input class="input" :class="{active: isEdit, editable__input: true}" type="number" v-model='user.maxBotAmount' :disabled="disabled">
+                        </div>
+                        <div class="form-control">
+                            <label class="label">Подтверждение эмайла</label>
+                            <!-- <input class="input" :class="{active: isEdit, editable__input: true}" type="number" v-model='user.active' :disabled="disabled"> -->
+                            <input class="input" :class="{active: isEdit, editable__input: true}" :disabled="disabled" type="checkbox" name="active" v-model="user.active">
                         </div>
                     </div>
                     <div class="col">
@@ -90,6 +96,9 @@
 			changeStatus(event) {
                 if( event.target.classList.contains('modal-wrapper') ) {
                     this.$emit('changeStatus', false);
+                    this.isEdit = false;
+                    this.disabled = true;
+                    this.$store.dispatch('setUsers');
                 }
             },
             getDate(date = Date.now()) {
@@ -136,7 +145,7 @@
             }
         },
         created() {
-			this.$store.dispatch('setUsers');
+			// this.$store.dispatch('setUsers');
         }
         
     }
