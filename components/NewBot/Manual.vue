@@ -259,8 +259,8 @@
                     this.bot.botSettings.deviation = 10;
                     this.templateMessage(10);
                 }
-                if( this.bot.botSettings.stopLoss > 10 ) {
-                    this.bot.botSettings.stopLoss = 10;
+                if( this.bot.botSettings.stopLoss > 99 ) {
+                    this.bot.botSettings.stopLoss = 99;
                     this.templateMessage(10);
                 }
                 if( this.bot.botSettings.takeProfit > 10 ) {

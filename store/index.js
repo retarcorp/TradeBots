@@ -376,6 +376,11 @@ const store = () =>
 					if(res.status === 'ok') {
 						commit('deleteBinanceAPI');
 						commit('setBinanceAPIStatus', false);
+						commit('setStatus', 'ok');
+						commit('setMessage', res.message);
+					} else {
+						commit('setStatus', res.status);
+						commit('setMessage', res.message);
 					}
 				})
 				.catch(e => console.log(e))
@@ -403,9 +408,13 @@ const store = () =>
 				.then(res => {
 					if(res.status === 'ok') {
 						commit('setBinanceAPIStatus', true);
+						commit('setStatus', 'ok');
+						commit('setMessage', res.message);
 						// commit('setSpiner', false);
 					} else {
 						commit('setBinanceAPIStatus', false);
+						commit('setStatus', 'error');
+						commit('setMessage', res.message);
 						// commit('setSpiner', false)
 					}
 				})

@@ -288,8 +288,8 @@ export default {
             this.$store.commit('setMessage', `Максимальное значение данного поля - ${number}`);
         },
         checkValue(state) {
-            if( this.bot.botSettings.stopLoss > 10 ) {
-                this.bot.botSettings.stopLoss = 10;
+            if( this.bot.botSettings.stopLoss > 99 ) {
+                this.bot.botSettings.stopLoss = 99;
                 this.templateMessage(10);
             }
             if( this.bot.botSettings.takeProfit > 10 ) {

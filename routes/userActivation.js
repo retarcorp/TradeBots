@@ -8,25 +8,27 @@ router.get('/api/user/activate', (req, res, next) => {
     console.log('something');
     const query = qrs.parse(url.parse(req.url).query),
         response = {
-            status: 'ok'
+            status: 'ok',
+            message: 'Активация прошла успешно!'
         };
     
     Mongo.select({ regKey: query.key }, 'users', (response_db) => {
         const user = response_db[0];
 
         if (!user) {
-            res.send('Activation Failed!');
+            res.send('Упс, пользователь не найден!');
             return;
         }
 
         if (user.active == true) {
-            res.send('User already activated!');
+            res.send('Пользователь уже активирован!');
             return;
         }
 
         user.active = true;
         Mongo.update({ name: user.name }, user, "users", () => {
-            res.send(response);
+            // res.send(response);
+            res.redirect('/Signin');
         });
     });
 });
