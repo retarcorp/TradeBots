@@ -56,7 +56,7 @@
             }
         },
         created() {
-            if(this.$router.params.Auth) {
+            if(this.$router.history.current.query.Auth) {
                 this.$store.commit('setStatus', 'ok');
                 this.$store.commit('setMessage', "Активация прошла успешно!");
             }
