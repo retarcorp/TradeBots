@@ -28,7 +28,7 @@ router.get('/api/user/activate', (req, res, next) => {
         user.active = true;
         Mongo.update({ name: user.name }, user, "users", () => {
             // res.send(response);
-            res.redirect('/Signin');
+            res.redirect('/Signin?Auth=true');
         });
     });
 });

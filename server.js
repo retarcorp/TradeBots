@@ -15,6 +15,9 @@ var SSL = {
   key: fs.readFileSync("./SSL/td-key.pem")
 };
 
+
+const Core = require('./monitor/modules/core');
+
 const bodyParser = require('body-parser');
 const expressSession = require('express-session');
 const cookieParser = require('cookie-parser');
@@ -33,6 +36,8 @@ Mongo.init()
 		Symbols.initClient();
 		Symbols.updateSymbolsPriceFilter();
 		Symbols.updateSymbolsList();
+		
+		Core.init();
 	});
 
 //Routers
@@ -62,3 +67,4 @@ app.use(nuxt.render);
 // https.createServer(SSL, app).listen(8072);
 
 app.listen(process.env.PORT || 8072);
+

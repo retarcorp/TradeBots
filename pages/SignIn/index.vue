@@ -54,6 +54,12 @@
                     this.$store.commit('setSpiner', false);
                 })
             }
+        },
+        created() {
+            if(this.$router.params.Auth) {
+                this.$store.commit('setStatus', 'ok');
+                this.$store.commit('setMessage', "Активация прошла успешно!");
+            }
         }
     }
 </script>
