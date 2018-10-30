@@ -176,7 +176,7 @@
         <div class="text-right">
             <button
                 @click.prevent="addAutomaticBot"
-                :disabled="!isAllFormValid"
+                :disabled="!isAllFormValid && isAlreadyPushed"
                 class="button button--success"
                 :class="{'button--disabled': !isAllFormValid}"
                 >{{ (bot && bot.botID) ? 'Сохранить' : 'Добавить' }}</button>
@@ -219,6 +219,7 @@ export default {
     },
     data() {
         return {
+            isAlreadyPushed: false,
             signals: [
                 { id: 'Tradingview', name: 'Tradingview'}
             ],
@@ -368,31 +369,36 @@ export default {
             this.bot.botSettings.tradingSignals.splice(i, 1)
         },
         addAutomaticBot() {
-
-            let path = '';
-            let nextData = {};
-            let nextBotSettings = {
-                botID: this.bot.botID,
-                title: this.bot.title,
-                pair: this.bot.pair,
-                botSettings: this.bot.botSettings
-                // initialOrder: this.bot.botSettings.initialOrder,
-                // safeOrder: this.bot.botSettings.safeOrder,
-                // stopLoss: this.bot.botSettings.stopLoss,
-                // takeProfit: this.bot.botSettings.takeProfit,
-                // tradingSignals: this.bot.botSettings.tradingSignals,
-                // maxOpenSafetyOrders: this.bot.botSettings.maxOpenSafetyOrders,
-                // deviation: this.bot.botSettings.deviation
-            };
-            console.log('onAddManualBot')
-            this.$store.commit('setСonfigurationProcess', false);
-            (this.bot && this.bot.botID) 
-                ? (path = 'updateBot', nextData = nextBotSettings) 
-                : (path = 'addBot', nextData = this.bot);
-            this.$store.dispatch(path, nextData)
-                .then(() => {
-                    this.$emit('changed')
-                })
+            if(!this.isAlreadyPushed) {
+                this.isAlreadyPushed = true;
+                let path = '';
+                let nextData = {};
+                let nextBotSettings = {
+                    botID: this.bot.botID,
+                    title: this.bot.title,
+                    pair: this.bot.pair,
+                    botSettings: this.bot.botSettings
+                    // initialOrder: this.bot.botSettings.initialOrder,
+                    // safeOrder: this.bot.botSettings.safeOrder,
+                    // stopLoss: this.bot.botSettings.stopLoss,
+                    // takeProfit: this.bot.botSettings.takeProfit,
+                    // tradingSignals: this.bot.botSettings.tradingSignals,
+                    // maxOpenSafetyOrders: this.bot.botSettings.maxOpenSafetyOrders,
+                    // deviation: this.bot.botSettings.deviation
+                };
+                console.log('onAddManualBot')
+                this.$store.commit('setСonfigurationProcess', false);
+                (this.bot && this.bot.botID) 
+                    ? (path = 'updateBot', nextData = nextBotSettings) 
+                    : (path = 'addBot', nextData = this.bot);
+                this.$store.dispatch(path, nextData)
+                    .then(() => {
+                        this.$emit('changed');
+                        setTimeout(()=> {
+                            this.isAlreadyPushed = false;
+                        }, 1000)
+                    })
+            }
         }
     }
 }

@@ -34,9 +34,13 @@ const store = () =>
 		tariffList: [],
 		pagesList: [],
 		walletAddress: '',
-		userPayments: []
+		userPayments: [],
+		usdExh: 0
 	},
 	getters: {
+		getUsdExh(state) {
+			return state.usdExh;
+		},
 		getUserPayments(state) {
 			return state.userPayments.reverse();
 		},
@@ -177,6 +181,9 @@ const store = () =>
 				}, 2000);
 			}
 		},
+		setUsdExh(state, payload) {
+			state.usdExh = payload;
+		},
 		setStatisticsList(state, payload) {
 			state.statisticsList = payload;
 		},
@@ -269,6 +276,7 @@ const store = () =>
             .then(res => {
                 if(res.status === 'ok') {
 					commit('setStatisticsList', res.data);
+					commit('setUsdExh', res.usdExh);
 					setTimeout( () => {
 						dispatch('getUserStatistics');
 					}, 5000);
@@ -486,7 +494,6 @@ const store = () =>
 		},
 		setBotsList({ commit, dispatch, getters }, payload) {
 			// commit('setSpiner', true);
-			console.log(getters.getMaxBotAmount, '/', getters.getCurrentBotsAmount);
 			this.$axios
 				.$get("/api/bots/getBotsList") 
 				.then(res => {

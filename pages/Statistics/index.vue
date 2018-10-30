@@ -229,7 +229,7 @@ export default {
 
                 this.statisticsList.forEach(bot => {
                     bot.processes.forEach(prc => {
-                        if(prc.finallyStatus === flag) {
+                        if(prc.finallyStatus === flag && prc.orders.length) {
                             arr.push(prc);
                         }
                     });

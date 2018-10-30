@@ -125,6 +125,12 @@ module.exports = class Process {
 				return new Promise( (resolve, reject) => {
 					reject('finish');
 				});
+			} else if(newBuyOrder === '2010') {
+				await this.disableProcess('Недостаточно средств для покупки начального ордера.');
+				await this.updateProcess(user);
+				return new Promise( (resolve, reject) => {
+					reject('finish');
+				});
 			} else {
 				await this.disableProcess('Неуспешная покупка начального ордера.');
 				await this.updateProcess(user);
@@ -379,45 +385,50 @@ module.exports = class Process {
 			tickTime = 0;
 		const tenMin = 600000;
 		
-		if(!orderId) {
-			let price = await this.getLastPrice(),
-				quantity = this.setQuantity(price), 
-				newBuyOrder = await this.newBuyOrder(price, CONSTANTS.ORDER_TYPE.LIMIT, quantity);
-			orderId = newBuyOrder.orderId;
-		}
-		
-		order = await this.getOrder(orderId);
+		// if(!orderId) {
+		let price = await this.getLastPrice(),
+			quantity = this.setQuantity(price), 
+			newBuyOrder = await this.newBuyOrder(price, CONSTANTS.ORDER_TYPE.LIMIT, quantity);
 
-		if(order.orderId) {
-			this.orders.push(order);
-			this.currentOrder = order;
-			// this.dealOrders.push(order);
-			await this.updateProcess(user);
-			await this._log('первый закупочный - ' + order.price + ', ' + order.origQty + ', (~total ' + (order.price * order.origQty) + ')...');
+		if(newBuyOrder === '2010') {
+			return newBuyOrder;
+		} else {
+			orderId = newBuyOrder.orderId;
+			// }
 			
-			while(!(
-				this.checkFilling(order.status) ||
-				this.checkCanceling(order.status) || 
-				this.checkFailing(order.status) ||
-				tickTime >= tenMin
-			)) { 
-				log('fbOrder')
-				order = await this.getOrder(orderId);
-				const ind = this.orders.findIndex(elem => elem.orderId === order.orderId);
-				if(ind === -1) this.orders.push(new Order(order));
-				// if(ind === -1) this.dealOrders.push(new Order(order));
-				else this.orders[ind] = new Order(order);
+			order = await this.getOrder(orderId);
+	
+			if(order.orderId) {
+				this.orders.push(order);
+				this.currentOrder = order;
+				// this.dealOrders.push(order);
 				await this.updateProcess(user);
-				tickTime += CONSTANTS.ORDER_TIMEOUT;
-				sleep(CONSTANTS.ORDER_TIMEOUT);
-			}
-			if(tickTime > tenMin) {
-				await this.cancelOrder(order.orderId);
-				return {};
-			}
-			if(this.checkFilling(order.status)) return new Order(order);
-			if(this.checkCanceling(order.status) || this.checkFailing(order.status)) return {};
-		} else return 'error';
+				await this._log('первый закупочный - ' + order.price + ', ' + order.origQty + ', (~total ' + (order.price * order.origQty) + ')...');
+				
+				while(!(
+					this.checkFilling(order.status) ||
+					this.checkCanceling(order.status) || 
+					this.checkFailing(order.status) ||
+					tickTime >= tenMin
+				)) { 
+					log('fbOrder')
+					order = await this.getOrder(orderId);
+					const ind = this.orders.findIndex(elem => elem.orderId === order.orderId);
+					if(ind === -1) this.orders.push(new Order(order));
+					// if(ind === -1) this.dealOrders.push(new Order(order));
+					else this.orders[ind] = new Order(order);
+					await this.updateProcess(user);
+					tickTime += CONSTANTS.ORDER_TIMEOUT;
+					sleep(CONSTANTS.ORDER_TIMEOUT);
+				}
+				if(tickTime > tenMin) {
+					await this.cancelOrder(order.orderId);
+					return {};
+				}
+				if(this.checkFilling(order.status)) return new Order(order);
+				if(this.checkCanceling(order.status) || this.checkFailing(order.status)) return {};
+			} else return 'error';
+		}
 	}
 
 	async newBuyOrder(price = 0, type = CONSTANTS.ORDER_TYPE.LIMIT, quantity = this.getQuantity(price), prevError = {}, isSave = false) {
@@ -449,7 +460,7 @@ module.exports = class Process {
 					if(!isSave) {
 						return await this.disableProcess('Невозможно купить монеты');
 					} else {
-						return {};
+						return '2010';
 					}
 				}
 				else if(await this.isError1013(error)) quantity += step;
@@ -905,8 +916,8 @@ module.exports = class Process {
 		let stopLoss = this.getStopLoss(),
 			price = this.botSettings.firstBuyPrice,
 			decimal = this.getDecimal(price),
-			stopPrice = price - price * stopLoss
-		return this.toDecimal(stopPrice, decimal)
+			stopPrice = stopLoss ? price - price * stopLoss : 0;
+		return this.toDecimal(stopPrice, decimal);
 	}
 
 	getLastSafeOrder() {

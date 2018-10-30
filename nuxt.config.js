@@ -10,13 +10,16 @@ module.exports = {
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { hid: "description", name: "description", content: "tradebots project" }
     ],
-    link: [{ rel: "icon", type: "image/x-icon", href: "/favicon.ico" }]
+    link: [{ rel: "icon", type: "image/x-icon", href: "/favicon.ico" }],
+    script: [
+      { src: 'https://www.google.com/recaptcha/api.js' }
+    ]
   },
   /*
   ** Customize the progress bar color
   */
-  loading: true,
-  loading: { color: "#3B8070" },
+  loading: false,
+  // loading: { color: "#3B8070" },
 
   /* 
   ** Global css files

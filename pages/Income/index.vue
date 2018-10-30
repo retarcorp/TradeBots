@@ -97,20 +97,23 @@ export default {
         statisticsList() {
             return this.$store.getters.getStatisticsList || [];
         },
+        usdExh() {
+            return this.$store.getters.getUsdExh();
+        },
         processesIncome() {
             let arr = [];
             const BUY = 'BUY', SELL = 'SELL', FILLED = 'FILLED';
 
             this.statisticsList.forEach(bot => {
                 bot.processes.forEach(prc => {
-                    if(!prc.finallyStatus) {
+                    if(!prc.finallyStatus && prc.orders.length) {
                         let curSymbol = '',
-                            sCurSymbol = '';
+                            sCurSymbol = 'USDT';
                         for(let i = 0; i < this.symbolsA.length; i++) {
                             let p = prc.symbol.indexOf(this.symbolsA[i]);
                             if(p > 1) {
                                 curSymbol = this.symbolsA[i];
-                                sCurSymbol = prc.symbol.replace(curSymbol, '');
+                                // sCurSymbol = prc.symbol.replace(curSymbol, '');
                             } 
                         }
 
@@ -129,41 +132,44 @@ export default {
                         if(!prcIncome.income[curSymbol]) {
                             prcIncome.income[curSymbol] = 0;
                         }
-                        if(!prcIncome.income[sCurSymbol]) {
-                            prcIncome.income[sCurSymbol] = 0;
-                        }
                         if(!prcIncome.volume[curSymbol]) {
                             prcIncome.volume[curSymbol] = 0;
                         }
-                        if(!prcIncome.volume[sCurSymbol]) {
-                            prcIncome.volume[sCurSymbol] = 0;
-                        }
+
+                        // if(!prcIncome.income[sCurSymbol]) {
+                        //     prcIncome.income[sCurSymbol] = 0;
+                        // }
+                        // if(!prcIncome.volume[sCurSymbol]) {
+                        //     prcIncome.volume[sCurSymbol] = 0;
+                        // }
 
                         prc.orders.forEach(order => {
                             if(order.side === BUY && order.status === FILLED) {
                                 prcIncome.income[curSymbol] -= Number(order.cummulativeQuoteQty);
-                                prcIncome.income[sCurSymbol] -= Number(order.executedQty);
                                 prcIncome.volume[curSymbol] += Number(order.cummulativeQuoteQty);
-                                prcIncome.volume[sCurSymbol] += Number(order.executedQty);
+
+
+                                // prcIncome.income[sCurSymbol] -= Number(order.executedQty);
+                                // prcIncome.volume[sCurSymbol] += Number(order.executedQty);
+
                             } else if(order.side === SELL && order.status === FILLED) {
                                 prcIncome.income[curSymbol] += Number(order.cummulativeQuoteQty);
-                                prcIncome.income[sCurSymbol] += Number(order.executedQty);
-                                prcIncome.volume[curSymbol] += Number(order.cummulativeQuoteQty);
-                                prcIncome.volume[sCurSymbol] += Number(order.executedQty);
+                                // prcIncome.income[sCurSymbol] += Number(order.executedQty);
                             }
+                                
                         });
                         
                         if(curSymbol === 'USDT') prcIncome.income[curSymbol] = Number(prcIncome.income[curSymbol].toFixed(2)); 
                         else prcIncome.income[curSymbol] = Number(prcIncome.income[curSymbol].toFixed(5));
 
-                        if(sCurSymbol === 'USDT') prcIncome.income[sCurSymbol] = Number(prcIncome.income[sCurSymbol].toFixed(2)); 
-                        else prcIncome.income[sCurSymbol] = Number(prcIncome.income[sCurSymbol].toFixed(5));
+                        // if(sCurSymbol === 'USDT') prcIncome.income[sCurSymbol] = Number(prcIncome.income[sCurSymbol].toFixed(2)); 
+                        // else prcIncome.income[sCurSymbol] = Number(prcIncome.income[sCurSymbol].toFixed(5));
 
                         if(curSymbol === 'USDT') prcIncome.volume[curSymbol] = Number(prcIncome.volume[curSymbol].toFixed(2)); 
                         else prcIncome.volume[curSymbol] = Number(prcIncome.volume[curSymbol].toFixed(5));
 
-                        if(sCurSymbol === 'USDT') prcIncome.volume[sCurSymbol] = Number(prcIncome.volume[sCurSymbol].toFixed(2)); 
-                        else prcIncome.volume[sCurSymbol] = Number(prcIncome.volume[sCurSymbol].toFixed(5));
+                        // if(sCurSymbol === 'USDT') prcIncome.volume[sCurSymbol] = Number(prcIncome.volume[sCurSymbol].toFixed(2)); 
+                        // else prcIncome.volume[sCurSymbol] = Number(prcIncome.volume[sCurSymbol].toFixed(5));
                         arr.push(prcIncome);
                     }
                 });
@@ -182,7 +188,7 @@ export default {
                 };
 
                 bot.processes.forEach(prc => {
-                    if(!prc.finallyStatus) {
+                    if(!prc.finallyStatus && prc.orders.length) {
                         let curSymbol = '',
                             sCurSymbol = '';
 
@@ -227,7 +233,7 @@ export default {
             
             this.statisticsList.forEach(bot => {
                 bot.processes.forEach(prc => {
-                    if(!prc.finallyStatus) {
+                    if(!prc.finallyStatus && prc.orders.length) {
                         let curSymbol = '';
 
                         for(let i = 0; i < this.symbolsA.length; i++) {
@@ -262,7 +268,7 @@ export default {
             
             this.statisticsList.forEach(bot => {
                 bot.processes.forEach(prc => {
-                    if(!prc.finallyStatus) {
+                    if(!prc.finallyStatus && prc.orders.length) {
                         let curSymbol = '';
 
                         for(let i = 0; i < this.symbolsA.length; i++) {

@@ -3,6 +3,7 @@ const Mongo = require('./Mongo');
 const STATISTICS_COLLECTION = CONSTANTS.STATISTICS_COLLECTION;
 const sleep = require('system-sleep')
 const M = require('./Message');
+const Bitaps = require('./Bitaps');
 
 class Statistics {
 	constructor() {
@@ -10,8 +11,6 @@ class Statistics {
 	}
 
 	async getUserStatistic(user = {}, callback = (data = {}) => {}) {
-		console.log(user);
-		console.log(CONSTANTS.USERS_COLLECTION);
 		let userData = await Mongo.syncSelect(user, CONSTANTS.USERS_COLLECTION);
 		if(userData.length && (userData = userData[0]).name ) {
 			let resData = [],
@@ -45,7 +44,10 @@ class Statistics {
 				resData.push(botData);
 			});
 
-			callback(M.getSuccessfullyMessage({ data: resData }));
+			// let exhr = await Bitaps.getExchangeRates(),
+			// 	usdExh = Number(exhr.usd);
+
+			callback(M.getSuccessfullyMessage({ data: resData/*, usdExh: usdExh*/ }));
 
 		} else {
 			callback(M.getFailureMessage({ message: `Пользователь не найден (${user.name})`}));

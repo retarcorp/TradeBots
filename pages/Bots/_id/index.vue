@@ -134,7 +134,7 @@
                         :id='index'
                         :key='index'
                         class="processes_tab"
-                        :class='{active: currentLogId === log, isNotActive: !bot.processes[log].runningProcess }'
+                        :class='{active: currentLogId === log, isNotActive: (bot.processes[log] && !bot.processes[log].runningProcess) }'
                         @click='fillingInfo(log, $event)'
                     >{{bot.processes[log].symbol}}</li>
                 </ul>                
@@ -182,7 +182,7 @@
                                 <td class="table__td">
                                     <button 
                                         @click.prevent="refuseCurrentOrder(order.orderId, bot.botID)"
-                                        v-if='bot.processes[currentId].runningProcess'
+                                        v-if='bot.processes[currentId] && bot.processes[currentId].runningProcess'
                                         class="button table__button button--primary"
                                     >Отменить</button>
                                 </td>
@@ -225,14 +225,14 @@
                             <button 
                                 @click.prevent="cancelAll" 
                                 class="button button--primary"
-                                v-if='bot.processes[currentId].runningProcess'
+                                v-if='bot.processes[currentId] && bot.processes[currentId].runningProcess'
                             >Отменить и продать</button>
                         </div>
                         <div class="order__buttons" v-if='Object.keys(this.bot.processes).length'>
                             <button 
                                 @click.prevent="cancelAllOrders" 
                                 class="button button--primary"
-                                v-if='bot.processes[currentId].runningProcess'
+                                v-if='bot.processes[currentId] && bot.processes[currentId].runningProcess'
                             >Отменить все ордера</button>
                         </div>
                     </div>

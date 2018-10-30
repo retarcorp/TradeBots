@@ -112,6 +112,11 @@ a.nuxt-link-exact-active {
     border-radius: 100%
 }
 
+.bot__name {
+    width: 100%;
+    max-width: 215px;
+}
+
 .bot__signal--disabled {
     background-color: inherit;
 }

@@ -178,7 +178,7 @@
                 @click.prevent="onAddManualBot" 
                 class="button button--success" 
                 :class="{'button--disabled': !isFormValid}" 
-                :disabled="!isFormValid">{{ bot.botID ? 'Сохранить' : 'Добавить' }}
+                :disabled="!isFormValid && isAlreadyPushed">{{ bot.botID ? 'Сохранить' : 'Добавить' }}
             </button>
         </div>
     </div>
@@ -220,6 +220,7 @@
         },
         data() {
             return {
+                isAlreadyPushed: false,
                 minNotional: 0
             }
         },
@@ -240,6 +241,9 @@
             'bot.pair.to'() {
                 this.bot.pair.from = ''
             }
+        },
+        created() {
+            console.log('МАНУАЛ')
         },
         methods: {
             templateMessage(number) {
@@ -339,35 +343,48 @@
                 }
                 if(this.bot.botSettings.stopLoss < 0) this.bot.botSettings.stopLoss = 0;
             },
-            checkContent(event) {
-                if( !event.target.value ) {
-                    this.$store.commit('setStatus', 'info');
-                    this.$store.commit('setMessage', 'Это поле является обязательным');
-                }
-            },
+            // checkContent(event) {
+            //     if( !event.target.value ) {
+            //         this.$store.commit('setStatus', 'info');
+            //         this.$store.commit('setMessage', 'Это поле является обязательным');
+            //     }
+            // },
             onAddManualBot() {
-                this.$store.commit('setСonfigurationProcess', false);
-                if(this.bot.botID) {
-                    let nextBotSettings = {
-                        botID: this.bot.botID,
-                        title: this.bot.title,
-                        pair: this.bot.pair,
-                        botSettings: this.bot.botSettings
-                        // initialOrder: this.bot.botSettings.initialOrder,
-                        // safeOrder: this.bot.botSettings.safeOrder,
-                        // stopLoss: this.bot.botSettings.stopLoss,
-                        // takeProfit: this.bot.botSettings.takeProfit,
-                        // tradingSignals: this.bot.botSettings.tradingSignals,
-                        // maxOpenSafetyOrders: this.bot.botSettings.maxOpenSafetyOrders,
-                        // deviation: this.bot.botSettings.deviation
-                    };
-                    console.log('onAddManualBot')
-                    this.$store.dispatch('updateBot', nextBotSettings)
-                        .then(() => {
-                            this.$emit('changed')
-                        })
-                } else {
-                    this.$store.dispatch('addBot', this.bot)
+                if(!this.isAlreadyPushed) {
+                    this.isAlreadyPushed = true;
+                    this.$store.commit('setСonfigurationProcess', false);
+                    if(this.bot.botID) {
+                        let nextBotSettings = {
+                            botID: this.bot.botID,
+                            title: this.bot.title,
+                            pair: this.bot.pair,
+                            botSettings: this.bot.botSettings
+                            // initialOrder: this.bot.botSettings.initialOrder,
+                            // safeOrder: this.bot.botSettings.safeOrder,
+                            // stopLoss: this.bot.botSettings.stopLoss,
+                            // takeProfit: this.bot.botSettings.takeProfit,
+                            // tradingSignals: this.bot.botSettings.tradingSignals,
+                            // maxOpenSafetyOrders: this.bot.botSettings.maxOpenSafetyOrders,
+                            // deviation: this.bot.botSettings.deviation
+                        };
+                        console.log('onAddManualBot')
+                        this.$store.dispatch('updateBot', nextBotSettings)
+                            .then(() => {
+                                this.$emit('changed');
+                                setTimeout(()=> {
+                                    this.isAlreadyPushed = false;
+                                }, 1000)
+                            })
+                    } else {
+                        this.$store.dispatch('addBot', this.bot)
+                            .then( () => {
+                                console.log('tralala')
+                                this.$emit('changed');
+                                setTimeout(()=> {
+                                    this.isAlreadyPushed = false;
+                                }, 1000)
+                            })
+                    }
                 }
             }
         }
