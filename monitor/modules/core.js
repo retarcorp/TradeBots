@@ -10,7 +10,6 @@ module.exports = Core = {
         }, (err, response, body) => {
             let data = [];
             body = JSON.parse(body);
-
             if (err) {
                 console.log(err);
                 return;
