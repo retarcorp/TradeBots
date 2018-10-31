@@ -61,6 +61,11 @@
         components: {
             'vue-recaptcha': null
         },
+        mounted: function() {
+            if (grecaptcha) {
+                grecaptcha.render('g-recaptcha-placeholder');
+            }
+        },
         computed: {
             isRightPassword() {
                 let regexp = /[а-яё]/gi;
