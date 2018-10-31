@@ -10,7 +10,6 @@ module.exports = Core = {
         }, (err, response, body) => {
             let data = [];
             body = JSON.parse(body);
-            console.log(body, typeof body);
 
             if (err) {
                 console.log(err);
@@ -40,8 +39,8 @@ module.exports = Core = {
             (timeframe.indexOf('1h') >= 0) && (timeframe = "|60");
             (timeframe.indexOf('4h') >= 0) && (timeframe = "|240");
             (timeframe.indexOf('1d') >= 0) && (timeframe = "");
-            (timeframe.indexOf('1w') >= 0) && (timeframe = "|W");
-            (timeframe.indexOf('1M') >= 0) && (timeframe = "|M");
+            (timeframe.indexOf('1w') >= 0) && (timeframe = "|1W");
+            (timeframe.indexOf('1M') >= 0) && (timeframe = "|1M");
 
 
             request({

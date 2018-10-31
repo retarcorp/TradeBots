@@ -47,6 +47,13 @@ const store = () =>
 		getCurrentBotsAmount(state) {
 			return state.currentBotsAmount;
 		},
+		getCurrentBotsWeight(state) {
+			let res = 0;
+			state.botsList.forEach(bot => {
+				res += bot.weight;
+			});
+			return res;
+		},
 		getPagesList(state) {
 			return state.pagesList;
 		},
@@ -410,7 +417,7 @@ const store = () =>
 				})
 				.catch(e => console.log(e))
 		},
-		setBinanceAPI({ commit }, payload) {
+		setBinanceAPI({ commit, dispatch }, payload) {
 			this.$axios
 				.$post('/api/account/api', payload)
 				.then(res => {
@@ -418,11 +425,13 @@ const store = () =>
 						commit('setBinanceAPIStatus', true);
 						commit('setStatus', 'ok');
 						commit('setMessage', res.message);
+						dispatch('firstGetBinanceAPI');
 						// commit('setSpiner', false);
 					} else {
 						commit('setBinanceAPIStatus', false);
 						commit('setStatus', 'error');
 						commit('setMessage', res.message);
+						dispatch('firstGetBinanceAPI');
 						// commit('setSpiner', false)
 					}
 				})

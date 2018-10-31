@@ -20,7 +20,6 @@ module.exports = class Process {
 		processId = uniqid(PRC),
 		// dealId = uniqid(DL),
 		symbol = '',
-		signal = {},
 		runningProcess = true,
 		status = CONSTANTS.BOT_STATUS.INACTIVE,
 		finallyStatus = CONSTANTS.BOT_STATUS.ACTIVE,
@@ -45,7 +44,6 @@ module.exports = class Process {
 		this.processId = this.JSONclone(processId);
 		// this.dealId = this.JSONclone(dealId);
 		this.symbol = this.JSONclone(symbol);
-		this.signal = this.JSONclone(signal);
 		this.updateStatus = this.JSONclone(updateStatus);
 		this.runningProcess = this.JSONclone(runningProcess);
 		this.state = this.JSONclone(state);
@@ -658,7 +656,8 @@ module.exports = class Process {
 		this.botSettings.currentOrder = this.botSettings.initialOrder;
 		this.botSettings.firstBuyPrice = 0;
 		// this.runningProcess = false;
-		if(this.symbol) this.orders = await this.updateOrders(this.orders);
+		// if(this.symbol) 
+		this.orders = await this.updateOrders(this.orders);
 
 		// if(!isContinue) 
 		this.status = CONSTANTS.BOT_STATUS.INACTIVE;
@@ -1269,15 +1268,6 @@ module.exports = class Process {
 			status === CONSTANTS.ORDER_STATUS.PENDING_CANCEL ||
 			status === CONSTANTS.ORDER_STATUS.REJECTED || 
 			status === CONSTANTS.ORDER_STATUS.EXPIRED;
-	}
-
-	async checkSignalStatus() {
-		if(this.isAuto()) {
-			let key = { id: this.signal.id },
-				signal = await Mongo.syncSelect(key, CONSTANTS.TRADING_SIGNALS_COLLECTION);
-	
-			return ( signal && ( signal.rating === signal.checkRating || (signal.checkRating === CONSTANTS.TRANSACTION_TERMS.BUY && signal.rating === CONSTANTS.TRANSACTION_TERMS.STRONG_BUY) ));
-		} else return false;
 	}
 
 	isFreeze() {

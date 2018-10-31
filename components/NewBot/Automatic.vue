@@ -210,7 +210,11 @@ export default {
                         // dailyVolumeBTC: 0,
                         stopLoss: 0,
                         takeProfit: 0,
-                        tradingSignals: []
+                        tradingSignals: [],
+                        martingale: {
+                            value: 1.01,
+                            active: '0'
+                        }
                     }
 
                 }
@@ -270,8 +274,8 @@ export default {
         filteredPairs() {
             return this.$store.state.pairs[this.bot.pair.to]
         },
-        currentBotsAmount() {
-            return this.$store.getters.getCurrentBotsAmount;
+        currentBotsWeight() {
+            return this.$store.getters.getCurrentBotsWeight;
         },
         maxBotAmount() {
             return this.$store.getters.getMaxBotAmount;
@@ -326,7 +330,7 @@ export default {
             else return this.minNotional;
         },
         checkContent(event) {
-            if( !event.target.value ) {
+            if( event.target && !event.target.value ) {
                 this.$store.commit('setStatus', 'info');
                 this.$store.commit('setMessage', 'Это поле является обязательным');
             }
@@ -350,9 +354,7 @@ export default {
             }
         },
         addPair() {
-            console.log(this.currentBotsAmount + this.bot.pair.requested.length);
-            console.log(this.maxBotAmount);
-            if((this.currentBotsAmount + this.bot.pair.requested.length) < this.maxBotAmount) {
+            if((this.currentBotsWeight - this.bot.weight + this.bot.pair.requested.length) < this.maxBotAmount) {
                 if((this.bot.pair.requested.indexOf(this.bot.pair.from)) === -1) {
                     this.bot.pair.requested.push(this.bot.pair.from);
                 }
@@ -373,11 +375,12 @@ export default {
                 this.isAlreadyPushed = true;
                 let path = '';
                 let nextData = {};
-                let nextBotSettings = {
+                let nextBotSettings = { 
                     botID: this.bot.botID,
                     title: this.bot.title,
                     pair: this.bot.pair,
-                    botSettings: this.bot.botSettings
+                    botSettings: this.bot.botSettings,
+                    weight: this.bot.pair.requested.length
                     // initialOrder: this.bot.botSettings.initialOrder,
                     // safeOrder: this.bot.botSettings.safeOrder,
                     // stopLoss: this.bot.botSettings.stopLoss,
@@ -386,7 +389,6 @@ export default {
                     // maxOpenSafetyOrders: this.bot.botSettings.maxOpenSafetyOrders,
                     // deviation: this.bot.botSettings.deviation
                 };
-                console.log('onAddManualBot')
                 this.$store.commit('setСonfigurationProcess', false);
                 (this.bot && this.bot.botID) 
                     ? (path = 'updateBot', nextData = nextBotSettings) 
@@ -394,6 +396,7 @@ export default {
                 this.$store.dispatch(path, nextData)
                     .then(() => {
                         this.$emit('changed');
+                        this.$store.dispatch('setBotsList', true);
                         setTimeout(()=> {
                             this.isAlreadyPushed = false;
                         }, 1000)

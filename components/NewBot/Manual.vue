@@ -136,7 +136,7 @@
             <div class="form-control newBot__settings-control">
                 <label class="label">Мартингейл</label>
                 <div class="checkbox__container">
-                    <label class="martingeil__mode">
+                    <label class="martingeil__mode" v-if="bot.botSettings.martingale">
                         <input 
                             v-model="bot.botSettings.martingale.active" 
                             id="martingale-on" 
@@ -145,7 +145,7 @@
                             value="1"
                         >Вкл
                     </label>
-                    <label class="martingeil__mode">
+                    <label class="martingeil__mode"  v-if="bot.botSettings.martingale">
                         <input 
                             v-model="bot.botSettings.martingale.active" 
                             id="martingale-off" 
@@ -158,11 +158,12 @@
                 </div>
             </div>
             <div 
-                v-show="bot.botSettings.martingale.active === '1'" 
+                v-show="(bot.botSettings.martingale && bot.botSettings.martingale.active === '1')" 
                 class="form-control newBot__settings-control">
                 <label class="label label__double-row" for="save__order-up">Увеличение страховочного ордера: </label>
-                <span class="range__value">{{ bot.botSettings.martingale.value }}</span>
+                <span v-if="bot.botSettings.martingale" class="range__value">{{ bot.botSettings.martingale.value }}</span>
                 <input 
+                    v-if="bot.botSettings.martingale"
                     v-model="bot.botSettings.martingale.value"
                     @blur='checkContent' 
                     id="save__order-up"
@@ -243,7 +244,6 @@
             }
         },
         created() {
-            console.log('МАНУАЛ')
         },
         methods: {
             templateMessage(number) {
@@ -295,7 +295,7 @@
                     : this.bot.botSettings.safeOrder.size;
             },
             checkContent(event) {
-                if( !event.target.value ) {
+                if( event.target && !event.target.value ) {
                     this.$store.commit('setStatus', 'info');
                     this.$store.commit('setMessage', 'Это поле является обязательным');
                 }
@@ -367,9 +367,9 @@
                             // maxOpenSafetyOrders: this.bot.botSettings.maxOpenSafetyOrders,
                             // deviation: this.bot.botSettings.deviation
                         };
-                        console.log('onAddManualBot')
                         this.$store.dispatch('updateBot', nextBotSettings)
                             .then(() => {
+                                this.$store.dispatch('setBotsList', true);
                                 this.$emit('changed');
                                 setTimeout(()=> {
                                     this.isAlreadyPushed = false;
@@ -378,7 +378,7 @@
                     } else {
                         this.$store.dispatch('addBot', this.bot)
                             .then( () => {
-                                console.log('tralala')
+                                this.$store.dispatch('setBotsList', true);
                                 this.$emit('changed');
                                 setTimeout(()=> {
                                     this.isAlreadyPushed = false;

@@ -323,6 +323,10 @@ let Users = {
 				if(!binanceData) binanceData = {};
 
 				if(binanceData && binanceData.name) {
+					if(binanceData.secret.indexOf('*') >= 0) {
+						binanceData.secret = data.binanceAPI.secret ? Crypto.decipher(data.binanceAPI.secret, Crypto.getKey(data.regDate, data.name)) : '123';
+					}
+
 					let c = binanceAPI({
 						apiKey: binanceData.key,
 						apiSecret: binanceData.secret
@@ -335,7 +339,10 @@ let Users = {
 									name: data.name,
 									regDate: data.regDate
 								}
-								Mongo.update(user, { binanceAPI: new Binance(binanceData) }, CONSTANTS.USERS_COLLECTION, d => {
+
+								let nextBinanceAPI = new Binance(binanceData);
+								
+								Mongo.update(user, { binanceAPI: nextBinanceAPI }, CONSTANTS.USERS_COLLECTION, d => {
 									callback({status: 'ok', message: 'Ключи успешно сохранены.'});
 								});
 
@@ -575,6 +582,7 @@ let Users = {
 							change = `bots.${index}`;
 						
 						changeObj[change] = d.data;
+						
 						if(d.status === 'ok') {
 							Mongo.update(user, changeObj, 'users', (data) => {
 								if(callback) callback(d);

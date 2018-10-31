@@ -59,8 +59,8 @@ class Income {
 					tariffs: nextTariff,
 					maxBotAmount: userMaxBotAmount
 				},
-					userKey = { userId: user.userId };
-
+					userKey = { userId: user.userId, name: user.name };
+				
 				if(nextTariff.length === 0) {
 					Users.Bots.deactivateAllUserBots(userKey);
 				}

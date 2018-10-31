@@ -67,10 +67,10 @@
                         <p class="settings__item">Тейк профит: <span>{{ bot.botSettings.takeProfit }}%</span></p>
 
                         <p class="settings__item">Мартингейл:
-                            <span>{{ bot.botSettings.martingale.active === '0' ? 'Выкл': 'Вкл' }}</span>
+                            <span>{{ (bot.botSettings.martingale && bot.botSettings.martingale.active === '0') ? 'Выкл': 'Вкл' }}</span>
                         </p>
 
-                        <p v-if="bot.botSettings.martingale.active !== '0'" class="settings__item">Увеличение страховочного ордера: <span>{{ bot.botSettings.martingale.value }}</span></p>
+                        <p v-if="(bot.botSettings.martingale && bot.botSettings.martingale.active !== '0')" class="settings__item">Увеличение страховочного ордера: <span v-if="bot.botSettings.martingale">{{ bot.botSettings.martingale.value }}</span></p>
 
                     </template>
 

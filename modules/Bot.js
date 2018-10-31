@@ -44,7 +44,9 @@ module.exports = class Bot {
 		this.botID = botID;
 		this.processes = processes;
 		this.user = user;
-		if(this.isManual()) {
+		if(weight) {
+			this.weight = weight;
+		} else if(this.isManual()) {
 			this.weight = 1;
 		} else if(this.isAuto()) {
 			this.weight = this.pair.requested.length;
@@ -248,8 +250,8 @@ module.exports = class Bot {
 
 		let signal = await this.checkSignals(user, signals);
 		console.log(signal)
-
-		if(signal.flag && ( this.status === CONSTANTS.BOT_STATUS.ACTIVE/* || this.workProcessesExist()*/ ) && (this.botSettings.amountPairsUsed < this.botSettings.maxAmountPairsUsed)) {
+		console.log(this.botSettings.amountPairsUsed, this.botSettings.maxAmountPairsUsed)
+		if(signal.flag && ( this.status === CONSTANTS.BOT_STATUS.ACTIVE/* || this.workProcessesExist()*/ ) && (this.botSettings.amountPairsUsed < Number(this.botSettings.maxAmountPairsUsed))) {
 			signal = signal.signal;
 			if(signal) {
 				log('find signal complite')
@@ -259,13 +261,12 @@ module.exports = class Bot {
 				if(this.pair.from) {
 					this.botSettings.decimalQty = await Symbols.getLotSize(this.getPair());
 					let resObj = {
-							symbol: this.getPair(),
+							symbol: signal.symbol,//this.getPair(),
 							botSettings: this.botSettings,
 							botID: this.botID,
 							user: user,
 							state: this.state,
-							status: this.status,
-							signal: signal
+							status: this.status
 						},
 						newProcess = new Process(resObj);
 					
@@ -276,6 +277,7 @@ module.exports = class Bot {
 						.startTrade(user)
 						.then( result => {
 							this.processes[newProcess.processId].setRunnigProcess();
+							this.botSettings.amountPairsUsed--;
 						})
 						.catch( async err => {
 							console.log(err);
@@ -424,6 +426,20 @@ module.exports = class Bot {
 		return ret;
 	}
 
+	isUnusedSymbol(symbol) {
+		let ret = true;
+
+		for (let processId in this.processes) {
+			console.log(this.processes[processId].status)
+			if(this.processes[processId].symbol === symbol && this.processes[processId].status === CONSTANTS.BOT_STATUS.ACTIVE) {
+				ret = false;
+				break;
+			}
+		}
+		
+		return ret;
+	}
+
 	isEqualSignals(signal) {
 		return signal.checkRating === signal.rating || (signal.checkRating === CONSTANTS.TRANSACTION_TERMS.BUY && signal.rating === CONSTANTS.TRANSACTION_TERMS.STRONG_BUY);
 	}
@@ -450,16 +466,32 @@ module.exports = class Bot {
 		});
 		
 		await this.updateSignals(user);
+		
+		let monitorStatus = {};
+
 		for(let i = 0; i < this.botSettings.curTradingSignals.length; i++) {
 			let signal = this.botSettings.curTradingSignals[i];
-			if(this.isEqualSignals(signal) && this.isUnusedSignal(signal)) {
+
+			(monitorStatus[signal.symbol] === undefined) && (monitorStatus[signal.symbol] = true);
+			if( !(this.isEqualSignals(signal) && this.isUnusedSignal(signal)) ) {
+				monitorStatus[signal.symbol] = false;
+				// ret = {
+				// 	flag: true,
+				// 	signal: signal
+				// };
+				// break;
+			}
+		}
+		for (let symbol in monitorStatus) {
+			if(monitorStatus[symbol]) {
 				ret = {
 					flag: true,
-					signal: signal
+					signal: { symbol: symbol}
 				};
 				break;
 			}
 		}
+
 		return ret;
 	}
 	//:: CHECK FUNC END
@@ -486,6 +518,7 @@ module.exports = class Bot {
 		try {
 			this.title = next.title;
 			this.pair = next.pair;
+			this.weight = next.weight;
 			this.botSettings.initialOrder = next.botSettings.initialOrder;
 			this.botSettings.currentOrder = this.botSettings.initialOrder;
 			this.botSettings.safeOrder = next.botSettings.safeOrder;

@@ -50,7 +50,7 @@
             },
             isFormValid() {
                 console.log(this.binance)
-                return this.binance.name && this.binance.key && this.binance.secret;
+                return this.binance.name && this.binance.key && this.binance.secret; /* && this.binance.key.indexOf('*') === -1 && (this.binance.secret.indexOf('*') === -1 || this.binance.secret.indexOf('***') === 0);*/
             }
         },
         methods: {
