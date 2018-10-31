@@ -36,6 +36,7 @@
             </button>
         </div>
         <p class="form__question">Уже есть аккаунт? <nuxt-link to="/SignIn" class="link">Войти</nuxt-link></p>
+        <div class="g-recaptcha" data-sitekey="6Le_9HcUAAAAADuYPBK5e7NQzw1V3_IH29iOQivV"></div>
     </form>
 </template>
 
