@@ -44,7 +44,7 @@
                             <!-- <input v-for="(tariff, i) in user.tariffs" :key="i" class="input" type="number" v-model='tariff.title' :disabled="disabledAllTime"> -->
 							<div v-for="(tariff, i) in user.tariffs" :key="i" class="input_p">
 								<p>{{tariff.title}}</p>
-                                <datetimepicker :class="{active: isEdit, editable__input: true}" format="MM/DD/YYYY H:i:s" v-model="tariff.expirationDatePattern" placeholder="Select Date"></datetimepicker>
+                                <datetimepicker class="next" :class="{active: isEdit, editable__input: true}" format="MM/DD/YYYY H:i:s" v-model="tariff.expirationDatePattern" placeholder="Select Date"></datetimepicker>
 							</div>
                         </div>
                     </div>
@@ -179,6 +179,10 @@ import datetimepicker from 'vuejs-datetimepicker';
 }
 .form-control > input {
 	padding: 0.5rem;
+}
+
+.next input + div {
+    z-index: 564;
 }
 
 .input_p {

@@ -46,7 +46,7 @@ class Income {
 				userMaxBotAmount = user.maxBotAmount,
 				tariffHistory = user.tariffHistory || [];
 			tariffs.forEach(tariff => {
-				if(dateNow > tariff.expirationDate) {
+				if(dateNow > tariff.expirationDate && tariff.isCurent) {
 					tariffHistory.push(tariff);
 					userMaxBotAmount -= Number(tariff.maxBotAmount);
 				} else nextTariff.push(tariff);	
@@ -63,7 +63,9 @@ class Income {
 					nextTariff[0].isCurent = true;
 					nextTariff[0].expirationDate = Date.now() + this.translationDaysToMilliseconds(Number(nextTariff[0].termOfUse));
 					nextTariff[0].expirationDatePattern = this.toPattern(nextTariff[0].expirationDate);
+					console.log(userMaxBotAmount, nextTariff[0].maxBotAmount);
 					userMaxBotAmount += Number(nextTariff[0].maxBotAmount);
+					console.log(userMaxBotAmount, nextTariff[0].maxBotAmount);
 				}
 
 				let change = {

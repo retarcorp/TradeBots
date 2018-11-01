@@ -79,7 +79,7 @@ class TariffList {
 
 					currentTariff.purchaseDate = purchaseDate;
 					currentTariff.expirationDate = tariffExpirationDate;
-					currentTariff.expirationDatePattern = this.toPattern(nextExpirationDate);
+					currentTariff.expirationDatePattern = this.toPattern(tariffExpirationDate);
 					currentTariff.isCurent = isCurent;
 					userTariffs.push(currentTariff);
 
