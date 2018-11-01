@@ -227,7 +227,8 @@
         },
         computed: {
             isFormValid() {
-                return this.bot.title.length !== 0 &&
+                return this.bot.title.length !== 0 && 
+                        this.bot.pair.from !== undefined &&
                         this.bot.pair.from !== '' &&
                         this.bot.pair.to !== '' &&
                         this.bot.botSettings.initialOrder > 0 &&
@@ -239,9 +240,6 @@
             }
         },
         watch: {
-            'bot.pair.to'() {
-                this.bot.pair.from = ''
-            }
         },
         created() {
         },
@@ -312,14 +310,13 @@
                 return (Math.floor(this.minNotional) >= 1) ? 1 : this.minNotional;
             },
             setMinNotional() {
-                console.log('1--' + this.minNotional)
                 if(this.bot.pair.to !== '') {
                     let symbol = this.bot.pair.to;
                     this.minNotional = this.$store.getters.getMinNotional(symbol);
                 } else {
                     this.minNotional = 0;
                 }
-                console.log('___ ' + this.minNotional)
+                this.bot.pair.from = '';
                 this.bot.botSettings.initialOrder = this.minNotional
                 this.bot.botSettings.safeOrder.size = this.minNotional
             },

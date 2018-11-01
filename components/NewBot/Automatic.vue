@@ -192,7 +192,6 @@ export default {
         AutomaticItem
     },
     props: {
-        minNotional: 0,
         bot: {
             required: false,
             default() {
@@ -223,6 +222,7 @@ export default {
     },
     data() {
         return {
+            minNotional: 0,
             isAlreadyPushed: false,
             signals: [
                 { id: 'Tradingview', name: 'Tradingview'}
@@ -326,8 +326,7 @@ export default {
                 : this.bot.botSettings.initialOrder;
         },
         getStep() {
-            if(Math.floor(this.minNotional) >= 1) return 1;
-            else return this.minNotional;
+            return (Math.floor(this.minNotional) >= 1) ? 1 : this.minNotional;
         },
         checkContent(event) {
             if( event.target && !event.target.value ) {
@@ -343,7 +342,7 @@ export default {
             else {
                 this.minNotional = 0;
             }
-            this.bot.botSettings.initialOrder = this.minNotional
+            this.bot.botSettings.initialOrder = this.minNotional;
         },
         addItem() {
             this.bot.botSettings.tradingSignals.push(this.autoItem)
@@ -354,7 +353,8 @@ export default {
             }
         },
         addPair() {
-            if((this.currentBotsWeight - this.bot.weight + this.bot.pair.requested.length) < this.maxBotAmount) {
+            let w = this.bot.weight ? this.bot.weight : 0;
+            if((this.currentBotsWeight - w + this.bot.pair.requested.length) < this.maxBotAmount) {
                 if((this.bot.pair.requested.indexOf(this.bot.pair.from)) === -1) {
                     this.bot.pair.requested.push(this.bot.pair.from);
                 }
