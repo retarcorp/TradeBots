@@ -64,7 +64,8 @@ class TariffList {
 						tariffs: userTariffs,
 						walletBalance: newUserWalletBalance,
 						maxBotAmount: nextUserMaxBotAmount,
-						expirationDate: nextExpirationDate
+						expirationDate: nextExpirationDate,
+						expirationDatePattern: this.toPattern(nextExpirationDate)
 					};
 	
 					await Mongo.syncUpdate(user, change, CONSTANTS.USERS_COLLECTION);
@@ -166,6 +167,24 @@ class TariffList {
 		tariff = { title: tariff.title };
 		let tariffsArray = await Mongo.syncSelect(tariff, CONSTANTS.TARIFFS_COLLECTION);
 		return tariffsArray.length;
+	}
+
+	toPattern(date = Date.now()) {
+		date = new Date(date);
+		let hh = String(date.getHours()),
+			ss = String(date.getSeconds()),
+			DD = String(date.getDate()),
+			mm = String(date.getMinutes()),
+			MM = String(date.getMonth() + 1),
+			YYYY = date.getFullYear();
+
+		hh = hh.length < 2 ? '0' + hh : hh;
+		mm = mm.length < 2 ? '0' + mm : mm;
+		ss = ss.length < 2 ? '0' + ss : ss;
+		DD = DD.length < 2 ? '0' + DD : DD;
+		MM = MM.length < 2 ? '0' + MM : MM;
+
+		return `${DD}/${MM}/${YYYY} ${hh}:${mm}:${ss}`;
 	}
 }
 

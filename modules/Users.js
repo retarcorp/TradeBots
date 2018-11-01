@@ -85,6 +85,13 @@ let Users = {
 				change.expirationDate = Number(change.expirationDate);
 				change.maxBotAmount = Number(change.maxBotAmount);
 
+				change.tariffs = change.tariffs.map(elem => {
+					if (elem.expirationDate && elem.expirationDatePattern) {
+						elem.expirationDate = new Date(elem.expirationDatePattern).getTime();
+					}
+					return elem;
+				})
+
 				await Mongo.syncUpdate(user, change, CONSTANTS.USERS_COLLECTION);
 
 				callback({

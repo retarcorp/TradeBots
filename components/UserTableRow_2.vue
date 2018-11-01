@@ -1,5 +1,5 @@
 <template>
-	<div class="modal-wrapper" v-if='open'  @click='changeStatus'>
+	<div class="modal-wrapper" v-show='open'  @click='changeStatus'>
         <div class="modal">
             <form class="container-fluid">
                 <h1 class="title title--big modal__title">{{user.name}} ({{user.userId}}, Email {{user.active ? "подтвержден" : "не подтвержден"}})</h1>
@@ -12,11 +12,6 @@
                             	<p>{{getDate(user.regDate)}}</p>
 							</div>
                         </div>
-                        <div class="form-control">
-                            <label class="label">Дата истечения подписки</label>
-                            <!-- <input class="input" :class="{active: isEdit, editable__input: true}" type="text" v-model='user.expirationDate' :disabled="disabled"> -->
-                            <p>{{getDate(user.expirationDate)}}</p>
-						</div>
                         <div class="form-control">
                             <label class="label">Баланс кошелька (BTC)</label>
                             <input class="input" :class="{active: isEdit, editable__input: true}" type="text" v-model='user.walletBalance' :disabled="disabled">
@@ -49,6 +44,7 @@
                             <!-- <input v-for="(tariff, i) in user.tariffs" :key="i" class="input" type="number" v-model='tariff.title' :disabled="disabledAllTime"> -->
 							<div v-for="(tariff, i) in user.tariffs" :key="i" class="input_p">
 								<p>{{tariff.title}}</p>
+                                <datetimepicker :class="{active: isEdit, editable__input: true}" format="MM/DD/YYYY H:i:s" v-model="tariff.expirationDatePattern" placeholder="Select Date"></datetimepicker>
 							</div>
                         </div>
                     </div>
@@ -57,13 +53,18 @@
                 <!-- <button class="button button--success" @click.prevent='onSaveTariff'>Редактировать</button> -->
 				<button class="button button--success" v-show="isEdit" @click.prevent="editUser(userIndex)">Сохранить</button>
 				<button class="button button--danger" v-show="isEdit" @click.prevent="deleteUser(userIndex)">Удалить</button>
+                <button class="button button--danger" @click='refreshPage'>Обновить</button>
             </form>
         </div>
     </div>
 </template>
 
 <script>
+import datetimepicker from 'vuejs-datetimepicker';
     export default {
+        components: {
+            datetimepicker
+        },
 		props: {
             open: {
                 type: Boolean,
@@ -80,19 +81,28 @@
                 type: String
             }
 		},
-        computed: {
-            users() {
-                return this.$store.getters.getUsers;
-            }
-        },
         data() {
-            return {
+            return { 
                 isEdit: false,
 				disabled: true,
 				disabledAllTime: true
             }
         },
+        watch: {
+            // 'user.tariffs': {
+            //     handler: function (val) {
+            //         val.forEach((el, i, arr)=> {
+            //             arr[i].expirationDate = new Date(el.expirationDate).getTime()
+            //         })
+            //         console.log(val)
+            //     },
+            //     deep: true
+            // }
+        },
         methods: {
+            refreshPage () {
+                location.reload()
+            },
 			changeStatus(event) {
                 if( event.target.classList.contains('modal-wrapper') ) {
                     this.$emit('changeStatus', false);
@@ -116,7 +126,7 @@
                 DD = DD.length < 2 ? '0' + DD : DD;
                 MM = MM.length < 2 ? '0' + MM : MM;
 
-                return `${hh}:${mm}:${ss} ${DD}.${MM}.${YYYY}`;
+                return `${DD}/${MM}/${YYYY} ${hh}:${mm}:${ss}`;
             },
             saveUser() {
                 this.isEdit = false;
@@ -144,7 +154,17 @@
                 this.disabled = false;
             }
         },
-        created() {
+        mounted() {
+            // document.querySelector('.okButton').addEventListener('click', () => {
+            //     let date = document.getElementById('tj-datetime-input').value;
+            //     let initialDate = document.getElementById('hiddenExpDate').value;
+            //     date = new Date(date).getTime();
+            //     this.user.tariffs.forEach((el, i, arr) => {
+            //         if (el.expirationDate == date) {
+
+            //         }
+            //     })
+            // })
 			// this.$store.dispatch('setUsers');
         }
         
@@ -194,9 +214,11 @@
     border: 1px solid transparent;
     background-color: #fff;
     font-size: 1.6rem;
+    pointer-events: none;
 }
 .editable__input.active{
     border: 1px solid #000;
+    pointer-events: inherit;
 }
 
 </style>

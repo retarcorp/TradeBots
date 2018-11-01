@@ -301,7 +301,7 @@ const store = () =>
 				})
 				.catch(err => console.log(err));
 		},
-		editUser({ commit, getters }, payload){
+		editUser({ dispath, commit, getters }, payload){
 			let user =  getters.getUser(payload); 
 
 			this.$axios
@@ -310,6 +310,7 @@ const store = () =>
 					console.log(res);
 					// if(res.status === 'ok') 
 					// commit('editUser', res.data);
+					dispatch('setUsers')
 					commit('setStatus', res.status);
 					commit('setMessage', res.message);
 				})

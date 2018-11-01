@@ -23,7 +23,7 @@
                             <th class="table__th">ID</th>
                             <th class="table__th">Email</th>
                             <th class="table__th">Дата регистрации</th>
-                            <th class="table__th">Истечение тарифа</th>
+                            
                             <th class="table__th"></th>
                         </tr>
                     </thead>
