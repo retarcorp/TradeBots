@@ -22,6 +22,15 @@
             placeholder="Подтверждение пароля"
             name='password'
         >
+
+        <vue-recaptcha 
+            ref="recaptcha" 
+            @verify="onCaptchaVerified"
+            data-callback="onCaptchaVerified"
+            class="g-recaptcha" 
+            data-sitekey="6Le_9HcUAAAAADuYPBK5e7NQzw1V3_IH29iOQivV">
+        </vue-recaptcha>
+
         <div class="d-flex">
             <button
                 type="submit"
@@ -36,7 +45,6 @@
             </button>
         </div>
         <p class="form__question">Уже есть аккаунт? <nuxt-link to="/SignIn" class="link">Войти</nuxt-link></p>
-        <div class="g-recaptcha" data-sitekey="6Le_9HcUAAAAADuYPBK5e7NQzw1V3_IH29iOQivV"></div>
     </form>
 </template>
 
@@ -46,7 +54,16 @@
             return {
                 email: '',
                 password: '',
-                confirmPassword: ''
+                confirmPassword: '',
+                captchaToken: ''
+            }
+        },
+        components: {
+            'vue-recaptcha': null
+        },
+        mounted: function() {
+            if (grecaptcha) {
+                grecaptcha.render('g-recaptcha-placeholder');
             }
         },
         computed: {
@@ -70,16 +87,28 @@
         methods: {
             onSignUp() {
                 // this.$store.commit('setSpiner', true);
+                // console.log(this.$refs.recaptcha.value);
+                if (!((this.captchaToken = grecaptcha.getResponse(0)).length)) {
+                    //@TODO Add handler
+                    
+                    return null; 
+                }
+                
                 if(this.isFormValid) {
                     this.$axios.$post('/api/signup',{
                         name: this.email,
-                        password: this.password
+                        password: this.password,
+                        'g-recaptcha-response': this.captchaToken
                     })
                     .then(res => {
+                        console.log(res);
+
                         if(res.status === 'ok') {
                             this.$router.push('/SignIn');
                             this.$store.commit('setStatus', 'ok');
                             this.$store.commit('setMessage', "Регистрация прошла успешно, на почту было выслано письмо с сылкой на активацию аккаунта!");
+                        
+                        
                         } else if(res.status === 'error') {
                             this.$store.commit('setStatus', 'error');
                             this.$store.commit('setMessage', res.message);
@@ -89,6 +118,9 @@
                         // this.$store.commit('setSpiner', false);
                     })
                 }
+            },
+            onCaptchaVerified(captcha){
+                console.log(captcha);
             },
             onViewPassword() {
                 Array.from(document.querySelectorAll('input[type="password"]')).forEach(elem => {
