@@ -150,6 +150,13 @@ let Users = {
 						userId,
 						bots
 					}) => {
+						let botsW = 0,
+							bts = bots.filter(bot => !bot.isDeleted);
+
+						bts.forEach(bot => {
+							botsW += bot.weight;
+						});
+						
 						return {
 							name: name,
 							regDate: regDate,
@@ -160,7 +167,7 @@ let Users = {
 							walletBalance,
 							active,
 							userId,
-							botsCount: bots.filter(bot => !bot.isDeleted).length
+							botsCount: botsW
 						}
 					})
 					if(callback) callback({
