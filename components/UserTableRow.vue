@@ -4,7 +4,7 @@
                 <td class="table__th"><p> {{user.userId}}</p></td>
                 <td class="table__th"><p>{{ user.name }}</p></td>
                 <td class="table__th"><p> {{getDate(user.regDate) }}</p></td>
-                <td class="table__th"><p> {{getDate(user.expirationDate) }}</p></td>
+                <!-- <td class="table__th"><p> {{getDate(user.expirationDate) }}</p></td> -->
                 <td class="table__th red">
                     <button v-show="!isEdit" @click.prevent="activateEditor">Просмотр</button>
                 </td>

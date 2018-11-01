@@ -62,9 +62,9 @@
             'vue-recaptcha': null
         },
         mounted: function() {
-            // if (window.grecaptcha) {
-            //     window.grecaptcha.render('g-recaptcha-placeholder');
-            // } 
+            // if (grecaptcha) {
+            //     grecaptcha.render('g-recaptcha-placeholder');
+            // }
         },
         computed: {
             isRightPassword() {
