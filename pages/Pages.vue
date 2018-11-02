@@ -19,7 +19,6 @@ export default {
 		let curPage = this.pagesList.find(page => page.slug === curPageSlug);
 		let doc = document.getElementById('wrapper_id');
 		// doc.innerHTML = curPage.content;
-		console.log(doc, curPage)
 		return curPage || {};
 	}
 	},
