@@ -53,7 +53,7 @@ class Income {
 			});
 
 			if(nextTariff.length < len) {
-
+				let userKey = { userId: user.userId, name: user.name };
 				if(nextTariff.length === 0) {
 					Users.Bots.deactivateAllUserBots(userKey);
 				} else {
@@ -72,8 +72,8 @@ class Income {
 					tariffHistory: tariffHistory,
 					tariffs: nextTariff,
 					maxBotAmount: userMaxBotAmount
-				},
-					userKey = { userId: user.userId, name: user.name };
+				};
+					
 
 				Mongo.update(userKey, change, usersCollection, data => console.log("CHANGE USER TARIFF DATA", userKey));
 			}
