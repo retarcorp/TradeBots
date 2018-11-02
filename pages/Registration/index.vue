@@ -88,7 +88,7 @@
             onSignUp() {
                 // this.$store.commit('setSpiner', true);
                 // console.log(this.$refs.recaptcha.value);
-                if (!((this.captchaToken = grecaptcha.getResponse(0)).length)) {
+                if (!((this.captchaToken = window.grecaptcha.getResponse(0)).length)) {
                     //@TODO Add handler
                     
                     return null; 

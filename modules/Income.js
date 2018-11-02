@@ -46,24 +46,34 @@ class Income {
 				userMaxBotAmount = user.maxBotAmount,
 				tariffHistory = user.tariffHistory || [];
 			tariffs.forEach(tariff => {
-				if(dateNow > tariff.expirationDate) {
+				if(dateNow > tariff.expirationDate && tariff.isCurent) {
 					tariffHistory.push(tariff);
 					userMaxBotAmount -= Number(tariff.maxBotAmount);
-				}
-				else nextTariff.push(tariff);	
+				} else nextTariff.push(tariff);	
 			});
 
 			if(nextTariff.length < len) {
+
+				if(nextTariff.length === 0) {
+					Users.Bots.deactivateAllUserBots(userKey);
+				} else {
+					nextTariff.sort( (a, b) => {
+						return a.purchaseDate - b.purchaseDate;
+					});
+					nextTariff[0].isCurent = true;
+					nextTariff[0].expirationDate = Date.now() + this.translationDaysToMilliseconds(Number(nextTariff[0].termOfUse));
+					nextTariff[0].expirationDatePattern = this.toPattern(nextTariff[0].expirationDate);
+					console.log(userMaxBotAmount, nextTariff[0].maxBotAmount);
+					userMaxBotAmount += Number(nextTariff[0].maxBotAmount);
+					console.log(userMaxBotAmount, nextTariff[0].maxBotAmount);
+				}
+
 				let change = {
 					tariffHistory: tariffHistory,
 					tariffs: nextTariff,
 					maxBotAmount: userMaxBotAmount
 				},
 					userKey = { userId: user.userId, name: user.name };
-				
-				if(nextTariff.length === 0) {
-					Users.Bots.deactivateAllUserBots(userKey);
-				}
 
 				Mongo.update(userKey, change, usersCollection, data => console.log("CHANGE USER TARIFF DATA", userKey));
 			}
@@ -71,6 +81,29 @@ class Income {
 
 		setTimeout(() => this.liveCheckUsersTariffs(), CONSTANTS.UPDATE_8H);		
 		console.timeEnd('liveCheckUsersTariffs');
+	}
+
+	toPattern(date = Date.now()) {
+		date = new Date(date);
+		let hh = String(date.getHours()),
+			ss = String(date.getSeconds()),
+			DD = String(date.getDate()),
+			mm = String(date.getMinutes()),
+			MM = String(date.getMonth() + 1),
+			YYYY = date.getFullYear();
+
+		hh = hh.length < 2 ? '0' + hh : hh;
+		mm = mm.length < 2 ? '0' + mm : mm;
+		ss = ss.length < 2 ? '0' + ss : ss;
+		DD = DD.length < 2 ? '0' + DD : DD;
+		MM = MM.length < 2 ? '0' + MM : MM;
+
+		return `${DD}/${MM}/${YYYY} ${hh}:${mm}:${ss}`;
+	}
+
+	translationDaysToMilliseconds(days = 0) {
+		const oneDay = 86400000;
+		return oneDay * days;
 	}
 
 	async liveUpdateOrders() {

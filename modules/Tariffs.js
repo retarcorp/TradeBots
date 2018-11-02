@@ -29,6 +29,74 @@ class Tariff {
 
 class TariffList {
 	async purchaseTariff(user = {}, tariffId = Number(), callback = (data = {}) => {}) {
+
+		// @TODO 
+		// мы покупаем тариф, если баланса хватает, то 
+		// провеяем есть ли у нас уже тариф:
+		// если есть
+		// 		помечаем его как текущий и выставляем ему время завершения
+		// если нету
+		// 		помечаем его как будущий не выставляя ему время завершения
+		// 
+		// добавляем в тарифы юзера этот тариф, вычитаем баланс
+
+		user = { name: user.name };
+		let userData = {};
+		
+		if(userData = await this.userExists(user)) {
+			userData = userData[0];
+
+			let tariffList = await this.getTariffList(),
+				currentTariff = tariffList.find(tariff => tariff.tariffId === tariffId);
+
+			if(currentTariff) {
+				let exhrs = await Bitaps.getExchangeRates(), // цены валют
+					tariffPrice = Number(currentTariff.price),
+					btcTariffPrice = tariffPrice / Number(exhrs.usd), 
+					userWalletBalance = Number(userData.walletBalance);
+
+				if(userWalletBalance >= btcTariffPrice) {
+
+					let userTariffs = userData.tariffs || [],
+						newUserWalletBalance = userWalletBalance - btcTariffPrice,
+						userMaxBotAmount = userData.maxBotAmount,
+						nextUserMaxBotAmount = userMaxBotAmount,
+						purchaseDate = Date.now(),
+						tariffExpirationDate = purchaseDate,
+						isCurent = false;
+
+					if(userTariffs.length) { // тарифы есть
+						isCurent = false;
+
+					} else { // тарифов нету
+						let tariffMaxBotAmount = Number(currentTariff.maxBotAmount),
+							extraDate = this.translationDaysToMilliseconds(Number(currentTariff.termOfUse));
+
+						nextUserMaxBotAmount += tariffMaxBotAmount;
+						tariffExpirationDate = purchaseDate + extraDate;
+						isCurent = true;
+					}
+
+					currentTariff.purchaseDate = purchaseDate;
+					currentTariff.expirationDate = tariffExpirationDate;
+					currentTariff.expirationDatePattern = this.toPattern(tariffExpirationDate);
+					currentTariff.isCurent = isCurent;
+					userTariffs.push(currentTariff);
+
+					let change = {
+						tariffs: userTariffs,
+						walletBalance: newUserWalletBalance,
+						maxBotAmount: nextUserMaxBotAmount
+					};
+
+					await Mongo.syncUpdate(user, change, CONSTANTS.USERS_COLLECTION);
+					callback(M.getSuccessfullyMessage({ data: { walletBalance: newUserWalletBalance, purchasedTariff: currentTariff } }));
+
+				} else callback(M.getFailureMessage({ message: 'Недостаточно средств на балансе!', data: { tariffPrice: btcTariffPrice, userBalance: userWalletBalance } }));
+			} else callback(M.getFailureMessage({ message: 'Выбранный тариф не существует!' }));
+		} else callback(M.getFailureMessage({ message: 'Пользователь не найден!' }));
+
+		/*
 		user = { name: user.name };
 		let userData = {};
 
@@ -74,6 +142,7 @@ class TariffList {
 				} else callback(M.getFailureMessage({ message: 'Недостаточно средств на балансе!', data: { tariffPrice: btcTariffPrice, userBalance: userWalletBalance } }));
 			} else callback(M.getFailureMessage({ message: 'Выбранный тариф не существует!' }));
 		} else callback(M.getFailureMessage({ message: 'Пользователь не найден!' }));
+		*/
 	}
 
 	translationDaysToMilliseconds(days = 0) {

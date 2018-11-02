@@ -174,6 +174,11 @@ export default {
                     }
                 });
             });
+
+            arr.sort( (a, b) => {
+                return b.endTime - a.endTime;
+            })
+
             return arr;
         },
         botsIncome() {
