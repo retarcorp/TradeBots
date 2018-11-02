@@ -213,7 +213,8 @@ module.exports = class Bot {
 			botID: this.botID,
 			user: user,
 			state: this.state,
-			status: this.status
+			status: this.status,
+			botTitle: this.title
 		},
 			newProcess = new Process(resObj);
 			
