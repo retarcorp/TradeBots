@@ -29,8 +29,8 @@
                                 class="table__tr">
                                 <td class="table__td">{{ page.slug }}</td>
                                 <td class="table__td">{{ page.title }}</td>
-                                <td class="table__td"><button @click="onEditPage(page)" class="button button--primary">edit</button></td>
-                                <td class="table__td"><button @click="onDeletePage(page.slug)" class="button button--danger">remove</button></td>
+                                <td class="table__td"><button @click="onEditPage(page)" class="button button--primary">редактировать</button></td>
+                                <td class="table__td"><button @click="onDeletePage(page.slug)" class="button button--danger">удалить</button></td>
                             </tr>
                         </tbody>
                 </table>

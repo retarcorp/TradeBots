@@ -22,13 +22,13 @@
                 <th class="table__th">Название</th>
                 <th class="table__th">Максимальное количество ботов</th>
                 <th class="table__th">Дата истечения</th>
-                <!-- <th class="table__th">Действующий</th> -->
+                <th class="table__th">Статус</th>
             </tr>
             <tr v-for="tariff in tariffs" :key="tariff._id" class="table__tr">
                 <td class="table__td">{{ tariff.title }}</td>
                 <td class="table__td">{{ tariff.maxBotAmount }}</td>
-                <td class="table__td">{{ /*tariff.isNextTariff ? '-' : */getDate(tariff.expirationDate) }}</td>
-                <!-- <td class="table__td">{{ tariff.isNextTariff ? '-' : 'Текущий' }}</td> -->
+                <td class="table__td">{{ !tariff.isCurent ? '-' : getDate(tariff.expirationDate) }}</td>
+                <td class="table__td">{{ !tariff.isCurent ? 'Приобретенный' : 'Текущий' }}</td>
             </tr>
         </table>
         <h2>Тарифы на выбор</h2>

@@ -253,7 +253,7 @@ class TariffList {
 		DD = DD.length < 2 ? '0' + DD : DD;
 		MM = MM.length < 2 ? '0' + MM : MM;
 
-		return `${DD}/${MM}/${YYYY} ${hh}:${mm}:${ss}`;
+		return `${MM}/${DD}/${YYYY} ${hh}:${mm}:${ss}`;
 	}
 }
 
