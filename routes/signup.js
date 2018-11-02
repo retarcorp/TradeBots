@@ -12,14 +12,14 @@ router.post('/api/signup', recaptcha.middleware.verify, (req, res, next) => {
 		name: req.body.name
 	}
 
-	if (req.recaptcha.error) {
-		res.send({
-			status: 'error',
-			message: "Recaptcha didn't verified"
-		});
+	// if (req.recaptcha.error) {
+	// 	res.send({
+	// 		status: 'error',
+	// 		message: "Recaptcha didn't verified"
+	// 	});
 
-		return null;
-	}
+	// 	return null;
+	// }
 	
 	Users.create(user, 'users', (data) => {
 		// data.captcha = req.recaptcha;
