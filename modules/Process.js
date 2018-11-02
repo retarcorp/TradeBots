@@ -39,7 +39,8 @@ module.exports = class Process {
 		botSettings = {},
 		nextProcessSettings = {},
 		user = {},
-		botID = String(Date.now())
+		botID = String(Date.now()),
+		title = String()
 	} = {}) {
 		this.processId = this.JSONclone(processId);
 		// this.dealId = this.JSONclone(dealId);
@@ -62,6 +63,7 @@ module.exports = class Process {
 		if(user.name) this.setClient(user, true);
 		this.user = user;
 		this.botID = this.JSONclone(botID);
+		this.title = this.JSONclone(title);
 	}
 
 	JSONclone(object) {
@@ -1101,7 +1103,7 @@ module.exports = class Process {
 		// 	console.log(err);
 		// }
 		nextMessage = '\r\n' + nextMessage;
-		let path = Logger.getPath(`/Users/${this.user.name}(${this.user.userId})/${this.botID}/${this.processId}`);
+		let path = Logger.getPath(`/Users/${this.user.name}(${this.user.userId})/${this.title}(${this.botID})/${this.processId}`);
 		await Logger.append(path, '/log.txt', nextMessage);
 
 

@@ -72,9 +72,9 @@ module.exports = Core = {
      			}
 
      			curr.d[7] < 0.5 && curr.d[7] > 0 && (elm.rating = "Buy");
-     			curr.d[7] >= 0.5 && (elm.rating = "Active Buy");
+     			curr.d[7] >= 0.5 && (elm.rating = "Strong Buy");
      			curr.d[7] > -0.5 && curr.d[7] < 0 && (elm.rating = "Sell");
-     			curr.d[7] <= -0.5 && (elm.rating = "Active Sell");
+     			curr.d[7] <= -0.5 && (elm.rating = "Strong Sell");
      			curr.d[7] == 0 && (elm.rating = "Neutral");
      			curr.d[7] === null && (elm.rating = "-");
 
