@@ -37,7 +37,7 @@ Mongo.init()
 		Symbols.updateSymbolsPriceFilter();
 		Symbols.updateSymbolsList();
 		
-		// Core.init();
+		Core.init();
 	});
 
 //Routers
