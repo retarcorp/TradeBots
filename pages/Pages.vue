@@ -1,23 +1,30 @@
 <template>
-    <div class="wrapper">
-		{{ this.curentPage.content }}
+    <div id="wrapper_id" class="wrapper" v-html="currentPage.content">
     </div>
 </template>
 
 <script>
 export default {
-    computed: {
-		pagesList() {
-			return this.$store.getters.getPagesList;
-		},
-		curentPage() {
-			let curPageSlug = this.$route.query.page || {};
-			let curPage = this.pagesList.find(page => page.slug === curPageSlug);
-			return curPage || {};
+	data() {
+		return {
+			curPage: {}
 		}
-    },
-    created() {
-    }
+	},
+	computed: {
+	pagesList() {
+		return this.$store.getters.getPagesList;
+	},
+	currentPage() {
+		let curPageSlug = this.$route.query.page || {};
+		let curPage = this.pagesList.find(page => page.slug === curPageSlug);
+		let doc = document.getElementById('wrapper_id');
+		// doc.innerHTML = curPage.content;
+		console.log(doc, curPage)
+		return curPage || {};
+	}
+	},
+	created() {
+	}
 }
 </script>
 
