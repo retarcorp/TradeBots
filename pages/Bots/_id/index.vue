@@ -496,6 +496,7 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
             getLog() {
                 let data = {
                     botID: this.bot.botID,
+                    botTitle: this.bot.title,
                     processes: Object.keys(this.bot.processes)
                 }
 

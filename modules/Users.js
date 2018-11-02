@@ -472,7 +472,7 @@ let Users = {
 						userId = userId[0].userId;
 						let processesLog = [];
 						for(let i = 0; i < botData.processes.length; i++) {
-							let path = Logger.getPath(`/Users/${user.name}(${userId})/${botData.processes[i].botTitle}(${botData.botID})/${botData.processes[i]}/log.txt`);
+							let path = Logger.getPath(`/Users/${user.name}(${userId})/${botData.botTitle}(${botData.botID})/${botData.processes[i]}/log.txt`);
 							let fileData = Logger.syncRead(path);
 							processesLog.push({
 								processeId: botData.processes[i],
