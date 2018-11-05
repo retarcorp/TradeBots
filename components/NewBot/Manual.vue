@@ -219,6 +219,9 @@
                 }
             }
         },
+        mounted: function() {
+            this.setMinNotional();
+        },
         data() {
             return {
                 isAlreadyPushed: false,

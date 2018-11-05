@@ -183,7 +183,9 @@ export default {
         },
         botsIncome() {
             let arr = [];
-            const BUY = 'BUY', SELL = 'SELL', FILLED = 'FILLED';
+            const BUY = 'BUY', SELL = 'SELL', FILLED = 'FILLED',
+                fixedUSD = 2,
+                fixed = 6;
 
             this.statisticsList.forEach(bot => {
                 let botIncome = {
@@ -218,10 +220,10 @@ export default {
                                 botIncome.income[sCurSymbol] += Number(order.executedQty);
                             }
                         });
-                        if(curSymbol === 'USDT') botIncome.income[curSymbol] = Number(botIncome.income[curSymbol].toFixed(2)); 
-                        else botIncome.income[curSymbol] = Number(botIncome.income[curSymbol].toFixed(5));
-                        if(sCurSymbol === 'USDT') botIncome.income[sCurSymbol] = Number(botIncome.income[sCurSymbol].toFixed(2)); 
-                        else botIncome.income[sCurSymbol] = Number(botIncome.income[sCurSymbol].toFixed(5));
+                        if(curSymbol === 'USDT') botIncome.income[curSymbol] = Number(botIncome.income[curSymbol].toFixed(fixedUSD)); 
+                        else botIncome.income[curSymbol] = Number(botIncome.income[curSymbol].toFixed(fixed));
+                        if(sCurSymbol === 'USDT') botIncome.income[sCurSymbol] = Number(botIncome.income[sCurSymbol].toFixed(fixedUSD)); 
+                        else botIncome.income[sCurSymbol] = Number(botIncome.income[sCurSymbol].toFixed(fixed));
                     }
                 });
                 

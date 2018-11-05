@@ -23,13 +23,14 @@
             name='password'
         >
 
-        <!-- <vue-recaptcha 
+        <vue-recaptcha 
             ref="recaptcha" 
             @verify="onCaptchaVerified"
             data-callback="onCaptchaVerified"
             class="g-recaptcha" 
+            id="g-recaptcha-placeholder"
             data-sitekey="6Le_9HcUAAAAADuYPBK5e7NQzw1V3_IH29iOQivV">
-        </vue-recaptcha> -->
+        </vue-recaptcha>
 
         <div class="d-flex">
             <button
@@ -62,9 +63,9 @@
             'vue-recaptcha': null
         },
         mounted: function() {
-            // if (grecaptcha) {
-            //     grecaptcha.render('g-recaptcha-placeholder');
-            // }
+            if (window.grecaptcha && window.grecaptcha.render) {
+                window.grecaptcha.render('g-recaptcha-placeholder');
+            }
         },
         computed: {
             isRightPassword() {
@@ -88,18 +89,19 @@
             onSignUp() {
                 // this.$store.commit('setSpiner', true);
                 // console.log(this.$refs.recaptcha.value);
-                // if (!((this.captchaToken = grecaptcha.getResponse(0)).length)) {
-                //     //@TODO Add handler
-                    
-                //     return null; 
-                // }
+                if (!((this.captchaToken = window.grecaptcha.getResponse(0)).length)) {
+                    //@TODO Add handler
+                    this.$store.commit('setStatus', 'info');
+                    this.$store.commit('setMessage', "Для регистрации нужно подтвердить капчу");
+                    return null; 
+                }
                 
                 if(this.isFormValid) {
                     this.$axios.$post('/api/signup',{
                         name: this.email,
                         password: this.password
-                        // ,
-                        // 'g-recaptcha-response': this.captchaToken
+                        ,
+                        'g-recaptcha-response': this.captchaToken
                     })
                     .then(res => {
                         console.log(res);

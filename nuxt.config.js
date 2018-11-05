@@ -12,7 +12,7 @@ module.exports = {
     ],
     link: [{ rel: "icon", type: "image/x-icon", href: "/favicon.ico" }],
     script: [
-      { src: 'https://www.google.com/recaptcha/api.js', defer: true },
+      { src: 'https://www.google.com/recaptcha/api.js'},
       { src: 'https://cdn.ckeditor.com/4.10.1/standard/ckeditor.js', defer: true}
     ]
   },

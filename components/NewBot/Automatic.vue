@@ -220,6 +220,9 @@ export default {
             }
         }
     },
+    mounted: function() {
+        this.setMinNotional();
+    },
     data() {
         return {
             minNotional: 0,
@@ -258,9 +261,9 @@ export default {
             return this.bot.pair.requested.length !== 0 &&
                 this.bot.pair.to !== '' &&
                 this.bot.title.length !== 0 &&
-                this.bot.botSettings.initialOrder > 0 &&
-                this.bot.botSettings.stopLoss >= 0 &&
-                this.bot.botSettings.takeProfit > 0 &&
+                Number(this.bot.botSettings.initialOrder) > 0 &&
+                Number(this.bot.botSettings.stopLoss) >= 0 &&
+                Number(this.bot.botSettings.takeProfit) > 0 &&
                 this.bot.botSettings.tradingSignals.length > 0 
                 // this.bot.botSettings.dailyVolumeBTC !== ''
         },

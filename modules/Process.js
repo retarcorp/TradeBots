@@ -126,6 +126,7 @@ module.exports = class Process {
 					reject('finish');
 				});
 			} else if(newBuyOrder === '2010') {
+				console.log('TRALALAL')
 				await this.disableProcess('Недостаточно средств для покупки начального ордера.');
 				await this.updateProcess(user);
 				return new Promise( (resolve, reject) => {
@@ -431,7 +432,7 @@ module.exports = class Process {
 		}
 	}
 
-	async newBuyOrder(price = 0, type = CONSTANTS.ORDER_TYPE.LIMIT, quantity = this.getQuantity(price), prevError = {}, isSave = false) {
+	async newBuyOrder(price = 0, type = CONSTANTS.ORDER_TYPE.LIMIT, quantity = this.getQuantity(price), prevError = {}, isSave = false, amount = 0) {
 		
 		let symbol = this.getSymbol(),
 			newOrderParams = {
@@ -459,14 +460,15 @@ module.exports = class Process {
 				) {
 					if(!isSave) {
 						return await this.disableProcess('Невозможно купить монеты');
-					} else {
+					} else if(await this.isError2010(error)) {
 						return '2010';
 					}
 				}
+				else if(amount >= 3 && await this.isError2010(error)) return '2010'
 				else if(await this.isError1013(error)) quantity += step;
 				else if(await this.isError2010(error)) quantity -= step;
 				
-				let order = await this.newBuyOrder(price, type, this.toDecimal(quantity), error, isSave);
+				let order = await this.newBuyOrder(price, type, this.toDecimal(quantity), error, isSave, ++amount);
 				return order;
 			}
 			else return {};
@@ -1112,7 +1114,7 @@ module.exports = class Process {
 	async updateLocalProcess(next = this, nextSymbol = this.symbol) {
 		this.updateStatus = true;
 		let nextProcessSettings = {
-			symbol: nextSymbol,
+			symbol: (this.isAuto()) ? this.symbol : nextSymbol,
 			initialOrder: Number(next.botSettings.initialOrder),
 			safeOrder: next.botSettings.safeOrder,
 			stopLoss: next.botSettings.stopLoss,
