@@ -36,7 +36,6 @@
                     id="main__pair" 
                     type="text" 
                     class="input settings__input"
-                    :class="{ warn: !(bot.pair.from !== '' && bot.pair.from !== undefined) }"
                     @blur='checkContent'>
                     <option 
                         v-for="pair in filteredPairs" 
