@@ -286,7 +286,7 @@ const store = () =>
 					commit('setUsdExh', res.usdExh);
 					setTimeout( () => {
 						dispatch('getUserStatistics');
-					}, 5000);
+					}, 2000);
                 } 
             })
             .catch( error => console.log(error))
@@ -512,7 +512,7 @@ const store = () =>
 						if(!payload) {
 							setTimeout(() => {
 								dispatch('setBotsList')
-							}, 5000);
+							}, 1500);
 						}
 					} else if(res.status === 'info') {
 						commit('setMessage', res.message);

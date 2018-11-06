@@ -9,6 +9,7 @@
                     maxlength="20" 
                     type="text" 
                     class="input settings__input"
+                    :class="{ warn: !bot.title.length }"
                     @blur='checkContent'
                 >
             </div>
@@ -20,7 +21,9 @@
                     type="text" 
                     @change="setMinNotional()"
                     @blur='checkContent'
-                    class="input settings__input">
+                    class="input settings__input"
+                    :class="{ warn: !(bot.pair.to !== '' && bot.pair.to !== undefined) }"
+                    >
                     <option value="ETH">ETH</option>
                     <option value="BNB">BNB</option>
                     <option value="BTC">BTC</option>
@@ -34,6 +37,7 @@
                     id="main__pair" 
                     type="text" 
                     class="input settings__input"
+                    :class="{ warn: !(bot.pair.from !== '' && bot.pair.from !== undefined) }"
                     @blur='checkContent'
                 >
                     <option 
@@ -52,6 +56,7 @@
                     id="start__order" 
                     type="number" 
                     class="input settings__input"
+                    :class="{ warn: !(bot.botSettings.initialOrder >= minNotional) }"
                     @blur='checkContent'
                 >
             </div>
@@ -64,7 +69,9 @@
                     :min="minNotional" 
                     id="save__order" 
                     type="number" 
-                    class="input settings__input">
+                    class="input settings__input"
+                    :class="{ warn: !(bot.botSettings.safeOrder.size >= minNotional) }"
+                    >
             </div>
             <div class="form-control newBot__settings-control">
                 <label class="label" for="count__save-order">Кол-во страховочных ордеров:</label>
@@ -78,6 +85,7 @@
                     id="count__save-order" 
                     type="number" 
                     class="input settings__input"
+                    :class="{ warn: !(bot.botSettings.safeOrder.amount > 0) }"
                 >
             </div>
             <div class="form-control newBot__settings-control">
@@ -92,6 +100,7 @@
                     id="count__max-save-order" 
                     type="number" 
                     class="input settings__input"
+                    :class="{ warn: !(bot.botSettings.maxOpenSafetyOrders > 0) }"
                 >
             </div>
             <div class="form-control newBot__settings-control" style="margin-top: 9px;">
@@ -104,6 +113,7 @@
                     step='0.1'
                     max='10' 
                     class="input settings__input"
+                    :class="{ warn: !(bot.botSettings.deviation > 0) }"
                     @blur='checkContent'
                 >
             </div>
@@ -117,7 +127,9 @@
                     min="0"
                     max='10'
                     step='0.1'
-                    class="input settings__input">
+                    class="input settings__input"
+                    :class="{ warn: !(bot.botSettings.stopLoss >= 0) }"
+                    >
             </div>
             <div class="form-control newBot__settings-control">
                 <label class="label" for="take__profit">Тейк профит %</label>
@@ -130,6 +142,7 @@
                     max='10' 
                     step='0.1' 
                     class="input settings__input"
+                    :class="{ warn: !(bot.botSettings.takeProfit > 0) }"
                     @blur='checkContent'
                 >
             </div>
@@ -220,7 +233,7 @@
             }
         },
         mounted: function() {
-            this.setMinNotional();
+            this.setMinNotional(true);
         },
         data() {
             return {
@@ -234,9 +247,11 @@
                         this.bot.pair.from !== undefined &&
                         this.bot.pair.from !== '' &&
                         this.bot.pair.to !== '' &&
-                        this.bot.botSettings.initialOrder > 0 &&
-                        this.bot.botSettings.stopLoss >= 0 &&
-                        this.bot.botSettings.takeProfit > 0
+                        Number(this.bot.botSettings.initialOrder) > 0 &&
+                        Number(this.bot.botSettings.stopLoss) >= 0 &&
+                        Number(this.bot.botSettings.takeProfit) > 0 &&
+                        Number(this.bot.botSettings.safeOrder.size) > 0 &&
+                        Number(this.bot.botSettings.safeOrder.amount) > 0
             },
             filteredPairs() {
                 return this.$store.state.pairs[this.bot.pair.to]
@@ -312,16 +327,16 @@
             getStep() {
                 return (Math.floor(this.minNotional) >= 1) ? 1 : this.minNotional;
             },
-            setMinNotional() {
+            setMinNotional(flag = false) {
                 if(this.bot.pair.to !== '') {
                     let symbol = this.bot.pair.to;
                     this.minNotional = this.$store.getters.getMinNotional(symbol);
                 } else {
                     this.minNotional = 0;
                 }
-                this.bot.pair.from = '';
-                this.bot.botSettings.initialOrder = this.minNotional
-                this.bot.botSettings.safeOrder.size = this.minNotional
+                !flag && (this.bot.pair.from = '');
+                this.bot.botSettings.initialOrder = this.minNotional;
+                this.bot.botSettings.safeOrder.size = this.minNotional;
             },
             checkMaxOrders(flag) {
                 let bs = this.bot.botSettings;
@@ -503,6 +518,12 @@ input[type='range']::-ms-thumb {
     display: flex;
     flex-direction: column;
     min-height: 4.5rem;
+}
+
+.warn {
+    outline: none;
+    /* border: 1px solid red; */
+    box-shadow: inset 0 0 3px red;
 }
 </style>
 

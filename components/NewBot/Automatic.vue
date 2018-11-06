@@ -8,6 +8,7 @@
                     maxlength="20" 
                     type="text" 
                     class="input"
+                    :class="{ warn: !bot.title.length }"
                     @blur='checkContent'
                 >
             </div>
@@ -19,7 +20,9 @@
                     type="text" 
                     @change="setMinNotional()"
                     @blur='checkContent'
-                    class="input settings__input">
+                    class="input settings__input"
+                    :class="{ warn: !(bot.pair.to !== '' && bot.pair.to !== undefined) }"
+                    >
                     <option value="ETH">ETH</option>
                     <option value="BNB">BNB</option>
                     <option value="BTC">BTC</option>
@@ -33,6 +36,7 @@
                     id="main__pair" 
                     type="text" 
                     class="input settings__input"
+                    :class="{ warn: !(bot.pair.from !== '' && bot.pair.from !== undefined) }"
                     @blur='checkContent'>
                     <option 
                         v-for="pair in filteredPairs" 
@@ -42,7 +46,7 @@
                 </select>
             </div>
             <div class="form-control newBot__settings-control"> Список пар: </div>
-            <div class="newBot__list botPairsList">
+            <div class="newBot__list botPairsList" :class="{ warn: !bot.pair.requested.length }">
                 <div
                     v-for="(item, i) in bot.pair.requested"
                     :key="item"
@@ -93,6 +97,7 @@
                     id="start__order" 
                     type="number" 
                     class="input settings__input"
+                    :class="{ warn: !(bot.botSettings.initialOrder >= minNotional) }"
                     @blur='checkContent'
                 >
             </div>
@@ -106,7 +111,9 @@
                     step='0.1'
                     min="0"
                     max='10'
-                    class="input settings__input">
+                    class="input settings__input"
+                    :class="{ warn: !(bot.botSettings.stopLoss >= 0) }"
+                    >
             </div>
             <div class="form-control newBot__settings-control">
                 <label class="label" for="take__profit">Тейк профит %</label>
@@ -119,6 +126,7 @@
                     type="number" 
                     step='0.1' 
                     class="input settings__input"
+                    :class="{ warn: !(bot.botSettings.takeProfit > 0) }"
                     @blur='checkContent'
                 >
             </div>
@@ -498,5 +506,11 @@ export default {
 
 .pair_btn {
     margin-left: 2rem; 
+}
+
+.warn {
+    outline: none;
+    /* border: 1px solid red; */
+    box-shadow: inset 0 0 3px red;
 }
 </style>

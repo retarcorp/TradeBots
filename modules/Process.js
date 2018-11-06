@@ -79,67 +79,154 @@ module.exports = class Process {
 		this.status = CONSTANTS.BOT_STATUS.INACTIVE;
 	}
 
-	async startTrade(user) {
-		log('Начало нового цикла торговли.')
-		await this._log('Начало нового цикла торговли.');
-		if(this.setClient(user)) {
-			this.currentOrder = {};
-			// this.setDealId();
-			let newBuyOrder = await this.firstBuyOrder(user);
-			if(newBuyOrder.orderId) {
-				log(newBuyOrder)
-				let qty = this.setQuantity(null, Number(newBuyOrder.origQty));
-				let price = Number(newBuyOrder.price);
-	
-				while(this.isFreeze()) {
-					log('freeze in startTrade')
-					sleep(CONSTANTS.TIMEOUT);
-				};
-				this.botSettings.firstBuyPrice = price;
-				let profitPrice = this.getProfitPrice(price);
-				let newSellOrder = await this.newSellOrder(profitPrice, CONSTANTS.ORDER_TYPE.LIMIT, qty);
-				if(newSellOrder !== CONSTANTS.DISABLE_FLAG || newSellOrder.orderId) {
-					await this.updateProcess(user);
-					this.currentOrder = newSellOrder;
-					this.orders.push(newSellOrder);
-					// this.dealOrders.push(newSellOrder);
-
-					let safeOrders = await this.createSafeOrders(price, qty);
-					this.safeOrders.push(...safeOrders);
-					this.orders.push(...safeOrders);
-					// this.dealOrders.push(...safeOrders);
-
-					return new Promise( (resolve, reject) => {
-						this.trade(user, false, resolve, reject);
-					});
-				} else {
-					await this.disableProcess('Неуспешная продажа монет. Ошибка при выставлении sell ордера.');
-					await this.updateProcess(user);
-					return new Promise( (resolve, reject) => {
-						resolve('finish');
-					});
-				}
-			} else if(newBuyOrder === 'error') {
-				await this.disableProcess('Неуспешная покупка начального ордера.');
-				await this.updateProcess(user);
-				return new Promise( (resolve, reject) => {
-					reject('finish');
-				});
-			} else if(newBuyOrder === '2010') {
-				console.log('TRALALAL')
-				await this.disableProcess('Недостаточно средств для покупки начального ордера.');
-				await this.updateProcess(user);
-				return new Promise( (resolve, reject) => {
-					reject('finish');
-				});
+	async awaitFreeze(flag = false, resolve = () => {}, reject = () => {}) {
+		log('freeze in startTrade');
+		if(flag) {
+			if(this.isFreeze()) {
+				setTimeout( () => {
+					this.awaitFreeze(flag, resolve, reject);
+				}, CONSTANTS.TIMEOUT);
 			} else {
-				await this.disableProcess('Неуспешная покупка начального ордера.');
-				await this.updateProcess(user);
-				return new Promise( (resolve, reject) => {
-					resolve('finish');
-				});
+				resolve(true);
 			}
+		} else {
+			return new Promise( (resolve, reject ) => {
+				this.awaitFreeze(true, resolve, reject);
+			});
 		}
+	}
+
+	async startTrade(user) {
+		return new Promise( async (resolve, reject) => {
+			log('Начало нового цикла торговли.')
+			await this._log('Начало нового цикла торговли.');
+			if(this.setClient(user)) {
+				this.currentOrder = {};
+				this._firstBuyOrder(user)
+					.then( async newBuyOrder => {
+						if(newBuyOrder.orderId) {
+							
+							console.log(newBuyOrder)
+
+							let qty = this.setQuantity(null, Number(newBuyOrder.origQty));
+							let price = Number(newBuyOrder.price);
+				
+							await this.awaitFreeze();
+
+							this.botSettings.firstBuyPrice = price;
+							let profitPrice = this.getProfitPrice(price);
+							let newSellOrder = await this.newSellOrder(profitPrice, CONSTANTS.ORDER_TYPE.LIMIT, qty);
+
+							if(newSellOrder !== CONSTANTS.DISABLE_FLAG || newSellOrder.orderId) {
+								await this.updateProcess(user);
+								this.currentOrder = newSellOrder;
+								this.orders.push(newSellOrder);
+
+								let safeOrders = await this.createSafeOrders(price, qty);
+								this.safeOrders.push(...safeOrders);
+								this.orders.push(...safeOrders);
+
+								this.trade(user, false, resolve, reject);
+							} else {
+								await this.disableProcess('Неуспешная продажа монет. Ошибка при выставлении sell ордера.');
+								await this.updateProcess(user);
+								resolve('finish');
+							}
+
+						} else {
+							await this.disableProcess('Неуспешная покупка начального ордера.');
+							await this.updateProcess(user);
+							resolve('finish');
+						}
+					})
+					.catch( async error => {
+							if(error === 'error') {
+								await this.disableProcess('Неуспешная покупка начального ордера.');
+								await this.updateProcess(user);
+								reject('finish');
+							} else if(error === 'time_limit') {
+								await this.disableProcess('Превышено ожидание покупки начального ордера.');
+								await this.updateProcess(user);
+								resolve('finish');
+							} else if(error === '2010') {
+								await this.disableProcess('Недостаточно средств для покупки начального ордера.');
+								await this.updateProcess(user);
+								reject('finish');
+							}
+					});
+			} else {
+				await this.disableProcess('Невозможно начать работу с бинансом, проверьте ключи');
+				await this.updateProcess(user);
+				reject('finish');
+			}
+		});
+
+
+
+			// if(newBuyOrder.orderId) {
+			// 	log(newBuyOrder)
+			// 	let qty = this.setQuantity(null, Number(newBuyOrder.origQty));
+			// 	let price = Number(newBuyOrder.price);
+	
+			// 	while(this.isFreeze()) {
+			// 		log('freeze in startTrade')
+			// 		sleep(CONSTANTS.TIMEOUT);
+			// 	};
+			// 	this.botSettings.firstBuyPrice = price;
+			// 	let profitPrice = this.getProfitPrice(price);
+			// 	let newSellOrder = await this.newSellOrder(profitPrice, CONSTANTS.ORDER_TYPE.LIMIT, qty);
+			// 	if(newSellOrder !== CONSTANTS.DISABLE_FLAG || newSellOrder.orderId) {
+			// 		await this.updateProcess(user);
+			// 		this.currentOrder = newSellOrder;
+			// 		this.orders.push(newSellOrder);
+			// 		// this.dealOrders.push(newSellOrder);
+
+			// 		let safeOrders = await this.createSafeOrders(price, qty);
+			// 		this.safeOrders.push(...safeOrders);
+			// 		this.orders.push(...safeOrders);
+			// 		// this.dealOrders.push(...safeOrders);
+
+			// 		return new Promise( (resolve, reject) => {
+			// 			this.trade(user, false, resolve, reject);
+			// 		});
+			// 	} else {
+			// 		await this.disableProcess('Неуспешная продажа монет. Ошибка при выставлении sell ордера.');
+			// 		await this.updateProcess(user);
+			// 		return new Promise( (resolve, reject) => {
+			// 			resolve('finish');
+			// 		});
+			// 	}
+			// } else if(newBuyOrder === 'error') {
+			// 	await this.disableProcess('Неуспешная покупка начального ордера.');
+			// 	await this.updateProcess(user);
+			// 	return new Promise( (resolve, reject) => {
+			// 		reject('finish');
+			// 	});
+			// } else if(newBuyOrder === '2010') {
+			// 	console.log('TRALALAL')
+			// 	await this.disableProcess('Недостаточно средств для покупки начального ордера.');
+			// 	await this.updateProcess(user);
+			// 	return new Promise( (resolve, reject) => {
+			// 		reject('finish');
+			// 	});
+			// } else if(newBuyOrder === 'time_limit') {
+			// 	await this.disableProcess('Превышено ожидание покупки начального ордера.');
+			// 	await this.updateProcess(user);
+			// 	return new Promise( (resolve, reject) => {
+			// 		resolve('finish');
+			// 	});
+			// } else {
+			// 	await this.disableProcess('Неуспешная покупка начального ордера.');
+			// 	await this.updateProcess(user);
+			// 	return new Promise( (resolve, reject) => {
+			// 		resolve('finish');
+			// 	});
+			// }
+		// } else {
+		// 	return new Promise( (resolve, reject) => {
+		// 		reject('finish');
+		// 	});
+		// }
 	}
 
 	continueTrade(user = this.user) {
@@ -150,7 +237,7 @@ module.exports = class Process {
 		}
 	}
 
-	async trade(user = this.user, flag = false, resolve, reject) {
+	async trade(user = this.user, flag = false, resolve, reject, tickTime = 0) {
 		log('trade', this.currentOrder.orderId)
 		if(this.currentOrder.orderId) {	
 			log('оредер есть')
@@ -203,6 +290,7 @@ module.exports = class Process {
 				}
 			} else {
 				log('order is buy');
+				const tenMin = 600000;
 				this.currentOrder = await this.getOrder(this.currentOrder.orderId);
 				let currentOrderStatus = this.currentOrder.status;
 
@@ -257,11 +345,15 @@ module.exports = class Process {
 					await this.updateProcess(user);
 					resolve('finish');
 
-				} else {
+				} else if(tickTime < tenMin) {
 					log('order in procces, next step');
 					//trade
 					sleep(CONSTANTS.ORDER_TIMEOUT);
-					this.trade(user, false, resolve, reject);
+					tickTime += CONSTANTS.ORDER_TIMEOUT;
+					this.trade(user, false, resolve, reject, tickTime);
+				} else {
+					await this.cancelOrder(this.currentOrder.orderId);
+					resolve('time_limit');
 				}
 			}
 		} else if(this.isFreeze() && !flag) {
@@ -380,6 +472,67 @@ module.exports = class Process {
 		sleep(CONSTANTS.TIMEOUT);
 	}
 
+	async checkOrder(user = this.user, orderId = 0, tickTime = 0, resolve = () => {}, reject = () => {}) {
+		console.log('checkOrder', orderId);
+		const tenMin = 600000,
+			timeout = CONSTANTS.ORDER_TIMEOUT;
+
+		let order = await this.getOrder(orderId);
+
+		if(order.orderId) {
+			const ind = this.orders.findIndex(elem => elem.orderId === order.orderId);
+
+			if(ind === -1) this.orders.push(new Order(order));
+			else this.orders[ind] = new Order(order);
+
+			await this.updateProcess(user);
+
+			if(this.checkFilling(order.status)) { // если оредер заполнен
+				resolve(new Order(order));
+			} else if(this.checkCanceling(order.status) || this.checkFailing(order.status)) { // если ордер отменили или произошла ошибка
+				resolve({});
+			} else if(tickTime >= tenMin) { // если время ожидания прошло
+				await this.cancelOrder(order.orderId);
+				reject('time_limit');
+			} else { 
+				tickTime += timeout;
+				setTimeout( () => {
+					this.checkOrder(user, orderId, tickTime, resolve, reject);
+				}, timeout);
+			}
+
+		} else {
+			reject('error');
+		}
+	}
+
+	async _firstBuyOrder(user = this.user, orderId = 0) {
+		return new Promise( async (resolve, reject) => {
+
+			await this._log('первая закупка монет');
+			let price = await this.getLastPrice(),
+				quantity = this.setQuantity(price), 
+				newBuyOrder = await this.newBuyOrder(price, CONSTANTS.ORDER_TYPE.LIMIT, quantity);
+
+			if(newBuyOrder === '2010') {
+				console.log('2010')
+				reject(newBuyOrder);
+			} else {
+				let orderId = newBuyOrder.orderId,
+					order = await this.getOrder(orderId);
+					
+				this.orders.push(order);
+				this.currentOrder = order;
+
+				await this.updateProcess(user);
+				await this._log('первый закупочный - ' + order.price + ', ' + order.origQty + ', (~total ' + (order.price * order.origQty) + ')...');
+				
+				this.checkOrder(user, orderId, 0, resolve, reject);
+			}
+
+		});
+	}
+
 	async firstBuyOrder(user = this.user, orderId = 0) {
 		await this._log('первая закупка монет');
 		let order = {},
@@ -422,9 +575,9 @@ module.exports = class Process {
 					tickTime += CONSTANTS.ORDER_TIMEOUT;
 					sleep(CONSTANTS.ORDER_TIMEOUT);
 				}
-				if(tickTime > tenMin) {
+				if(tickTime >= tenMin) {
 					await this.cancelOrder(order.orderId);
-					return {};
+					return 'time_limit';
 				}
 				if(this.checkFilling(order.status)) return new Order(order);
 				if(this.checkCanceling(order.status) || this.checkFailing(order.status)) return {};

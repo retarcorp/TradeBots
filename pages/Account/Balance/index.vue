@@ -1,14 +1,14 @@
 <template>
     <div class="balance">
         <div class="binance__sub-title title--small">Для пополнения баланса перечислите средства на кошелек - {{walletAddress}}</div>
-        <div class="binance__sub-title title--small">(коммисия 0.0002 BTC, минимальная сумма без учета коммисии - 30000 сатоши)</div>
+        <div class="binance__sub-title title--small">(коммисия 0.0002 BTC, минимальная сумма без учета коммисии - {{fee}} BTC)</div>
 
         <div>
 
             <div v-for="(payment, i) in payments" :key="i" class="tabs">
 
                 <div class="tabs__item">{{ getDate(payment.time) }}</div>
-                <div class="tabs__item">{{ payment.amount }} Satoshi</div>
+                <div class="tabs__item">{{ getBTCAmount(payment.amount) }} BTC</div>
 
             </div>
 
@@ -22,7 +22,8 @@
     export default {
         data() {
             return {
-                
+                satoshi: 0.00000001,
+                fee: 0.0003
             }
         },
         computed: {
@@ -34,6 +35,9 @@
             }
         },
         methods: {
+            getBTCAmountWithFee(amount = this.fee) {
+                return (amount * this.satoshi - this.fee).toFixed(6);
+            },
             getDate(date = Date.now()) {
                 date = new Date(date);
                 let hh = String(date.getHours()),

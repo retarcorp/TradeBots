@@ -275,6 +275,7 @@ module.exports = class Bot {
 					this.processes[newProcess.processId] = newProcess;
 					await this.updateBot(user);
 					this.botSettings.amountPairsUsed++;
+						
 					this.processes[newProcess.processId]
 						.startTrade(user)
 						.then( result => {
