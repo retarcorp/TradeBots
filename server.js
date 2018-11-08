@@ -35,6 +35,7 @@ Mongo.init()
 		})
 		Symbols.initClient();
 		Symbols.updateSymbolsPriceFilter();
+		// Symbols.updateSymbolsPricesList();
 		Symbols.updateSymbolsList();
 		
 		Core.init();

@@ -1,6 +1,8 @@
 const Mongo = require('./Mongo');
 const CONSTANTS = require('../constants');
-const binanceAPI = require('binance-api-node').default
+const binanceAPI = require('binance-api-node').default;
+const HistoryLog = require('./HistoryLog');
+const _log = (data) => HistoryLog._log(data);
 
 var Symbols = {
 	Client: null,
@@ -43,6 +45,23 @@ var Symbols = {
 				resolve(data[0].symbols)
 			}) 
 		})
+	},
+
+	updateSymbolsPricesList: function() {
+		console.log('update SymbolsPriceList');
+		return new Promise( (resolve, reject) => {
+
+			this.Client.prices()
+				.then(prices => {
+					Mongo.update({}, { prices , id: 123 }, CONSTANTS.SYMBOLS_PRICES_COLLECTION);
+				})
+				.catch(error => {
+					_log({ name: 'updateSymbolsPricesList', error: error});
+				})
+			setTimeout( () => {
+				this.updateSymbolsPricesList();
+			}, CONSTANTS.UPDATE_DAYLY);
+		});
 	},
 	
 	updateSymbolsPriceFilter: function() {

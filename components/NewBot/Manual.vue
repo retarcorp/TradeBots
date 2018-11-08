@@ -106,7 +106,7 @@
             <div class="form-control newBot__settings-control" style="margin-top: 9px;">
                 <label class="label label__double-row" for="deviation">Отклонение от начального ордера %</label>
                 <input 
-                    @change="checkValue('deviation'); checkStopLoss()" 
+                    @change="checkValue('deviation'); checkStopLoss(true)" 
                     v-model="bot.botSettings.deviation" 
                     id="deviation" 
                     type="number" 
@@ -251,10 +251,14 @@
                         Number(this.bot.botSettings.stopLoss) >= 0 &&
                         Number(this.bot.botSettings.takeProfit) > 0 &&
                         Number(this.bot.botSettings.safeOrder.size) > 0 &&
-                        Number(this.bot.botSettings.safeOrder.amount) > 0
+                        Number(this.bot.botSettings.safeOrder.amount) > 0 &&
+                        Number(this.bot.botSettings.maxOpenSafetyOrders) > 0 &&
+                        Number(this.bot.botSettings.deviation) > 0
             },
             filteredPairs() {
-                return this.$store.state.pairs[this.bot.pair.to]
+                if(this.bot.pair.to && this.$store.getters.getPairs) {
+                    return this.$store.getters.getPairs[this.bot.pair.to].sort();
+                } else return [];
             }
         },
         watch: {
@@ -352,11 +356,12 @@
                     }
                 }
             },
-            checkStopLoss() {
-                if(this.bot.botSettings.stopLoss < (this.bot.botSettings.deviation * this.bot.botSettings.safeOrder.amount)) {
-                    this.bot.botSettings.stopLoss = (this.bot.botSettings.deviation * this.bot.botSettings.safeOrder.amount * 1.1).toFixed(2)
+            checkStopLoss(flag = false) {
+                let bs = this.bot.botSettings;
+                if(Number(bs.stopLoss) < 0) bs.stopLoss = 0;
+                if(flag || (Number(bs.stopLoss) < (bs.deviation * bs.safeOrder.amount + 0.1) && Number(bs.stopLoss) !== 0)) {
+                    bs.stopLoss = (bs.deviation * bs.safeOrder.amount + 0.1).toFixed(2)
                 }
-                if(this.bot.botSettings.stopLoss < 0) this.bot.botSettings.stopLoss = 0;
             },
             // checkContent(event) {
             //     if( !event.target.value ) {

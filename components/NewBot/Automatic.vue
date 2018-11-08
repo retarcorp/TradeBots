@@ -282,7 +282,9 @@ export default {
             return this.bot.pair.from === 'default' || this.bot.pair.from === ''
         },
         filteredPairs() {
-            return this.$store.state.pairs[this.bot.pair.to]
+            if(this.bot.pair.to && this.$store.getters.getPairs) {
+                    return this.$store.getters.getPairs[this.bot.pair.to].sort();
+                } else return [];
         },
         currentBotsWeight() {
             return this.$store.getters.getCurrentBotsWeight;

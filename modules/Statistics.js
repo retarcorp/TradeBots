@@ -15,6 +15,9 @@ class Statistics {
 		if(userData.length && (userData = userData[0]).name ) {
 			let resData = [],
 				bots = userData.bots;
+			// 	pricesList = await Mongo.syncSelect({id: 123}, CONSTANTS.SYMBOLS_PRICES_COLLECTION);
+
+			// pricesList = pricesList[0].prices;
 
 			bots.forEach(bot => {
 				let botData = {
@@ -44,7 +47,7 @@ class Statistics {
 				resData.push(botData);
 			});
 
-			// let exhr = await Bitaps.getExchangeRates(),
+			// let exhr = await Bitaps.getExchangeRates(), // цены валют
 			// 	usdExh = Number(exhr.usd);
 
 			callback(M.getSuccessfullyMessage({ data: resData/*, usdExh: usdExh*/ }));

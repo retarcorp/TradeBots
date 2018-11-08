@@ -97,9 +97,9 @@ export default {
         statisticsList() {
             return this.$store.getters.getStatisticsList || [];
         },
-        usdExh() {
-            return this.$store.getters.getUsdExh();
-        },
+        // usdExh() {
+        //     return this.$store.getters.getUsdExh || 0;
+        // },
         processesIncome() {
             let arr = [];
             const BUY = 'BUY', SELL = 'SELL', FILLED = 'FILLED';
@@ -159,16 +159,16 @@ export default {
                                 
                         });
                         
-                        if(curSymbol === 'USDT') prcIncome.income[curSymbol] = Number(prcIncome.income[curSymbol].toFixed(2)); 
-                        else prcIncome.income[curSymbol] = Number(prcIncome.income[curSymbol].toFixed(5));
+                        if(curSymbol === 'USDT') prcIncome.income[curSymbol] = Number(prcIncome.income[curSymbol].toFixed(4)); 
+                        // else prcIncome.income[curSymbol] = Number(prcIncome.income[curSymbol].toFixed(5));
 
-                        // if(sCurSymbol === 'USDT') prcIncome.income[sCurSymbol] = Number(prcIncome.income[sCurSymbol].toFixed(2)); 
+                        // if(sCurSymbol === 'USDT') prcIncome.income[sCurSymbol] = Number(prcIncome.income[sCurSymbol].toFixed(4)); 
                         // else prcIncome.income[sCurSymbol] = Number(prcIncome.income[sCurSymbol].toFixed(5));
 
-                        if(curSymbol === 'USDT') prcIncome.volume[curSymbol] = Number(prcIncome.volume[curSymbol].toFixed(2)); 
-                        else prcIncome.volume[curSymbol] = Number(prcIncome.volume[curSymbol].toFixed(5));
+                        if(curSymbol === 'USDT') prcIncome.volume[curSymbol] = Number(prcIncome.volume[curSymbol].toFixed(4)); 
+                        // else prcIncome.volume[curSymbol] = Number(prcIncome.volume[curSymbol].toFixed(5));
 
-                        // if(sCurSymbol === 'USDT') prcIncome.volume[sCurSymbol] = Number(prcIncome.volume[sCurSymbol].toFixed(2)); 
+                        // if(sCurSymbol === 'USDT') prcIncome.volume[sCurSymbol] = Number(prcIncome.volume[sCurSymbol].toFixed(4)); 
                         // else prcIncome.volume[sCurSymbol] = Number(prcIncome.volume[sCurSymbol].toFixed(5));
                         arr.push(prcIncome);
                     }
@@ -184,7 +184,7 @@ export default {
         botsIncome() {
             let arr = [];
             const BUY = 'BUY', SELL = 'SELL', FILLED = 'FILLED',
-                fixedUSD = 2,
+                fixedUSD = 4,
                 fixed = 6;
 
             this.statisticsList.forEach(bot => {
@@ -221,9 +221,9 @@ export default {
                             }
                         });
                         if(curSymbol === 'USDT') botIncome.income[curSymbol] = Number(botIncome.income[curSymbol].toFixed(fixedUSD)); 
-                        else botIncome.income[curSymbol] = Number(botIncome.income[curSymbol].toFixed(fixed));
+                        // else botIncome.income[curSymbol] = Number(botIncome.income[curSymbol].toFixed(fixed));
                         if(sCurSymbol === 'USDT') botIncome.income[sCurSymbol] = Number(botIncome.income[sCurSymbol].toFixed(fixedUSD)); 
-                        else botIncome.income[sCurSymbol] = Number(botIncome.income[sCurSymbol].toFixed(fixed));
+                        // else botIncome.income[sCurSymbol] = Number(botIncome.income[sCurSymbol].toFixed(fixed));
                     }
                 });
                 
@@ -262,8 +262,8 @@ export default {
                                 }
                             }
                         });
-                        if(curSymbol === 'USDT') income[curSymbol] = Number(income[curSymbol].toFixed(2)); 
-                        else income[curSymbol] = Number(income[curSymbol].toFixed(5));
+                        if(curSymbol === 'USDT') income[curSymbol] = Number(income[curSymbol].toFixed(4)); 
+                        // else income[curSymbol] = Number(income[curSymbol].toFixed(5));
                     }
                 });
             });
@@ -295,8 +295,8 @@ export default {
                                 income[curSymbol] += Number(order.cummulativeQuoteQty);
                             }
                         });
-                        if(curSymbol === 'USDT') income[curSymbol] = Number(income[curSymbol].toFixed(2));
-                        else income[curSymbol] = Number(income[curSymbol].toFixed(5));
+                        if(curSymbol === 'USDT') income[curSymbol] = Number(income[curSymbol].toFixed(4));
+                        // else income[curSymbol] = Number(income[curSymbol].toFixed(5));
                     }
                 });
             });

@@ -8,7 +8,7 @@
             <div v-for="(payment, i) in payments" :key="i" class="tabs">
 
                 <div class="tabs__item">{{ getDate(payment.time) }}</div>
-                <div class="tabs__item">{{ getBTCAmount(payment.amount) }} BTC</div>
+                <div class="tabs__item">{{ getBTCAmountWithFee(payment.amount) }} BTC</div>
 
             </div>
 

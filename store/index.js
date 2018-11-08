@@ -38,6 +38,9 @@ const store = () =>
 		usdExh: 0
 	},
 	getters: {
+		getPairs(state) {
+			return state.pairs;
+		},
 		getUsdExh(state) {
 			return state.usdExh;
 		},
@@ -283,7 +286,7 @@ const store = () =>
             .then(res => {
                 if(res.status === 'ok') {
 					commit('setStatisticsList', res.data);
-					commit('setUsdExh', res.usdExh);
+					// commit('setUsdExh', res.usdExh);
 					setTimeout( () => {
 						dispatch('getUserStatistics');
 					}, 2000);
