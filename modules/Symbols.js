@@ -89,6 +89,13 @@ var Symbols = {
 		}
 	},
 
+	getTickSize: async function(_symbol) {
+		let symbols = await this.getSymbolsPriceFilter(),
+			symbol = symbols.find(elem => elem.symbol === _symbol),
+			lotSize = symbol.filters.find(elem => elem.filterType === CONSTANTS.SYMBOLS_FILTERS.PRICE_FILTER)
+		return Number(lotSize.tickSize);
+	},
+
 	getMinNotional: async function(_symbol) {
 		if(_symbol.length > 4) {
 			let symbols = await this.getSymbolsPriceFilter(),

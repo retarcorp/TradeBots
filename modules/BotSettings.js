@@ -23,7 +23,8 @@ module.exports = class BotSettings {
 		lastSafeOrderPrice = 0,
 		firstBuyPrice = 0,
 		quantity = 0,
-		decimalQty = 0
+		decimalQty = 0,
+		tickSize = 0
 	}) {
 		this.tradingSignals = tradingSignals.map(elem => new TradingSignals(elem));
 		this.curTradingSignals = curTradingSignals;
@@ -44,6 +45,7 @@ module.exports = class BotSettings {
 		this.quantityOfUsedSafeOrders = quantityOfUsedSafeOrders;
 		this.quantityOfActiveSafeOrders = quantityOfActiveSafeOrders;
 		this.decimalQty = decimalQty;
+		this.tickSize = tickSize;
 		this.maxAmountPairsUsed = maxAmountPairsUsed;
 		this.amountPairsUsed = amountPairsUsed;
 	}

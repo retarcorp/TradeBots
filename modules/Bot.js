@@ -117,6 +117,7 @@ module.exports = class Bot {
 			
 			if(this.isManual()) {
 				this.botSettings.decimalQty = await Symbols.getLotSize(this.getPair());
+				this.botSettings.tickSize = await Symbols.getTickSize(this.getPair());
 				status = 'ok';
 				message = 'Бот запущен (РУЧНОЙ)';
 				await this.updateBot(user);
@@ -261,6 +262,7 @@ module.exports = class Bot {
 	
 				if(this.pair.from) {
 					this.botSettings.decimalQty = await Symbols.getLotSize(this.getPair());
+					this.botSettings.tickSize = await Symbols.getTickSize(this.getPair());
 					let resObj = {
 							symbol: signal.symbol,//this.getPair(),
 							botSettings: this.botSettings,

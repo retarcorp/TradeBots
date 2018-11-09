@@ -8,6 +8,14 @@ const uniqid = require('uniqid');
 const PRC = CONSTANTS.PRC;
 const DL = CONSTANTS.DL;
 const Logger = require('./Logger');
+const winston = require('winston');
+const logger = winston.createLogger({
+	transports: [
+		new winston.transports.File({ filename: './logger.txt' })
+	]
+});
+
+// logger.info({ a: 12 });
 // const winston = require('winston');
 // const files = new winston.transports.File({ filename: '/combined.txt' });
 // const console = new winston.transports.Console();
@@ -85,6 +93,7 @@ module.exports = class Process {
 	}
 
 	async awaitFreeze(flag = false, resolve = () => {}, reject = () => {}) {
+		console.log('1000')
 		if(flag) {
 			if(this.isFreeze()) {
 				setTimeout( () => {
@@ -104,22 +113,23 @@ module.exports = class Process {
 		// winston.log('debug', 'startTrade');
 		return new Promise( async (resolve, reject) => {
 			await this._log('Начало нового цикла торговли.');
+			logger.info({botId: this.botId, ts: Date.now(), botTitle: this.botTitle, statusText: 'startTrade'});
 			if(this.setClient(user)) {
 				this.currentOrder = {};
 				this._firstBuyOrder(user)
 					.then( async newBuyOrder => {
+						
 						if(newBuyOrder.orderId) {
-							
 							let qty = this.setQuantity(null, Number(newBuyOrder.origQty));
 							// let price = Number(newBuyOrder.price);
 							let price = newBuyOrder.price;
-				
+							
 							await this.awaitFreeze();
-
 							this.botSettings.firstBuyPrice = price;
 							let profitPrice = this.getProfitPrice(price);
 							let newSellOrder = await this.newSellOrder(profitPrice, CONSTANTS.ORDER_TYPE.LIMIT, qty);
-
+							
+							logger.info({botId: this.botId, ts: Date.now(), botTitle: this.botTitle, newSellOrder: newSellOrder, statusText: 'newSellOrder'});
 							if(newSellOrder !== CONSTANTS.DISABLE_FLAG || newSellOrder.orderId) {
 								this.currentOrder = newSellOrder;
 								this.orders.push(newSellOrder);
@@ -163,73 +173,6 @@ module.exports = class Process {
 				reject('finish');
 			}
 		});
-
-
-
-			// if(newBuyOrder.orderId) {
-			// 	log(newBuyOrder)
-			// 	let qty = this.setQuantity(null, Number(newBuyOrder.origQty));
-			// 	let price = Number(newBuyOrder.price);
-	
-			// 	while(this.isFreeze()) {
-			// 		log('freeze in startTrade')
-			// 		sleep(CONSTANTS.TIMEOUT);
-			// 	};
-			// 	this.botSettings.firstBuyPrice = price;
-			// 	let profitPrice = this.getProfitPrice(price);
-			// 	let newSellOrder = await this.newSellOrder(profitPrice, CONSTANTS.ORDER_TYPE.LIMIT, qty);
-			// 	if(newSellOrder !== CONSTANTS.DISABLE_FLAG || newSellOrder.orderId) {
-			// 		await this.updateProcess(user);
-			// 		this.currentOrder = newSellOrder;
-			// 		this.orders.push(newSellOrder);
-			// 		// this.dealOrders.push(newSellOrder);
-
-			// 		let safeOrders = await this.createSafeOrders(price, qty);
-			// 		this.safeOrders.push(...safeOrders);
-			// 		this.orders.push(...safeOrders);
-			// 		// this.dealOrders.push(...safeOrders);
-
-			// 		return new Promise( (resolve, reject) => {
-			// 			this.trade(user, false, resolve, reject);
-			// 		});
-			// 	} else {
-			// 		await this.disableProcess('Неуспешная продажа монет. Ошибка при выставлении sell ордера.');
-			// 		await this.updateProcess(user);
-			// 		return new Promise( (resolve, reject) => {
-			// 			resolve('finish');
-			// 		});
-			// 	}
-			// } else if(newBuyOrder === 'error') {
-			// 	await this.disableProcess('Неуспешная покупка начального ордера.');
-			// 	await this.updateProcess(user);
-			// 	return new Promise( (resolve, reject) => {
-			// 		reject('finish');
-			// 	});
-			// } else if(newBuyOrder === '2010') {
-			// 	console.log('TRALALAL')
-			// 	await this.disableProcess('Недостаточно средств для покупки начального ордера.');
-			// 	await this.updateProcess(user);
-			// 	return new Promise( (resolve, reject) => {
-			// 		reject('finish');
-			// 	});
-			// } else if(newBuyOrder === 'time_limit') {
-			// 	await this.disableProcess('Превышено ожидание покупки начального ордера.');
-			// 	await this.updateProcess(user);
-			// 	return new Promise( (resolve, reject) => {
-			// 		resolve('finish');
-			// 	});
-			// } else {
-			// 	await this.disableProcess('Неуспешная покупка начального ордера.');
-			// 	await this.updateProcess(user);
-			// 	return new Promise( (resolve, reject) => {
-			// 		resolve('finish');
-			// 	});
-			// }
-		// } else {
-		// 	return new Promise( (resolve, reject) => {
-		// 		reject('finish');
-		// 	});
-		// }
 	}
 
 	continueTrade(user = this.user) {
@@ -244,6 +187,7 @@ module.exports = class Process {
 		if(this.currentOrder.orderId) {	
 
 			if(this.isOrderSell(this.currentOrder.side)) {
+				logger.info({botId: this.botId, ts: Date.now(), botTitle: this.botTitle, statusText: 'orderSell', currentOrder: this.currentOrder});
 				let tmpCurOrd = await this.getOrder(this.currentOrder.orderId);
 				
 				if(tmpCurOrd.orderId) {
@@ -382,6 +326,7 @@ module.exports = class Process {
 			nextSafeOrders = [];
 		
 		if(length) {
+			logger.info({botId: this.botId, ts: Date.now(), botTitle: this.botTitle, statusText: 'process, safeOrders'});
 			await this._log(`Проверка состояния страховочных ордеров (${orders[length - 1].price}).`);
 			for(let i = 0; i < length; i++) {
 				try {
@@ -400,6 +345,7 @@ module.exports = class Process {
 							this.orders.push(this.currentOrder);
 						} else {
 							await this._log(`невозможно выставить sell ордер (${newSellOrder})`);
+							logger.error({botId: this.botId, ts: Date.now(), botTitle: this.botTitle, statusText: 'error in newSellOrder', errorOrder: newSellOrder});
 							await this.disableProcess("Ошибка при выставлении нового sell ордера после покупки страховочного!");
 							await this.updateProcess(user);
 							return 'finish';
@@ -436,16 +382,19 @@ module.exports = class Process {
 				}
 				catch(error) {
 					console.log(error);
+					logger.error({botId: this.botId, ts: Date.now(), botTitle: this.botTitle, statusText: '385, catch', error: error});
 				}
 			}
 			this.safeOrders = nextSafeOrders;
 
 		} else if(this.isFreeze() && !this.isPreFreeze()) {
+			logger.info({botId: this.botId, ts: Date.now(), botTitle: this.botTitle, statusText: 'wait'});
 			//тип вроде нихуя делать не надо
 		} else if(!this.isFreeze() && this.isPreFreeze() && this.isNeedToOpenNewSafeOrders()) {
 			//тип надо выставить некст сейв ордер, если еще можно
+			logger.info({botId: this.botId, ts: Date.now(), botTitle: this.botTitle, statusText: 'need to send newSafeOrders if is needed'});
 			let newSafeOrder = await this.createSafeOrder();
-
+			
 			if(newSafeOrder.orderId) {
 				this.orders.push(newSafeOrder);
 				nextSafeOrders.push(newSafeOrder);
@@ -459,6 +408,7 @@ module.exports = class Process {
 				stopPrice = this.getStopPrice();
 			
 			await this._log(`Проверка stoploss. (${stopPrice})`);
+			logger.info({botId: this.botId, ts: Date.now(), botTitle: this.botTitle, statusText: `check stopLoss ${price} ${stopPrice}`});
 
 			if(stopPrice > price) {
 				await this._log(`Stoploss пройден.`);
@@ -468,43 +418,36 @@ module.exports = class Process {
 		}
 		await this.updateProcess(user);
 		sleep(CONSTANTS.TIMEOUT);
+		return '';
 	}
 
 	async checkOrder(user = this.user, orderId = 0, resolve = () => {}, reject = () => {}, time = Date.now()) {
 		const tenMin = 600000,
 			timeout = CONSTANTS.ORDER_TIMEOUT;
-
 			
 		let order = await this.getOrder(orderId);
 			
-		await Logger.append(undefined, undefined, `${time} ${timeMin} ${JSON.stringify(order)}`);
 		if(order.orderId) {
 			const ind = this.orders.findIndex(elem => elem.orderId === order.orderId);
-
 			if(ind === -1) this.orders.push(new Order(order));
 			else this.orders[ind] = new Order(order);
 
 			await this.updateProcess(user);
 
 			if(this.checkFilling(order.status)) { // если оредер заполнен
-				await Logger.append(undefined, undefined, `если оредер заполнен`);
 				resolve(new Order(order));
 			} else if(this.checkCanceling(order.status) || this.checkFailing(order.status)) { // если ордер отменили или произошла ошибка
-				await Logger.append(undefined, undefined, `если ордер отменили или произошла ошибка`);
 				resolve({});
 			} else if( (Date.now() - time) >= tenMin) { // если время ожидания прошло
-				await Logger.append(undefined, undefined, `время ожидания прошло`);
 				await this.cancelOrder(order.orderId);
 				reject('time_limit');
 			} else { 
-				await Logger.append(undefined, undefined, `settimeout`);
 				setTimeout( () => {
 					this.checkOrder(user, orderId, resolve, reject, time);
 				}, timeout);
 			}
 
 		} else {
-			await Logger.append(undefined, undefined, `reject('error');`);
 			reject('error');
 		}
 	}
@@ -512,11 +455,12 @@ module.exports = class Process {
 	async _firstBuyOrder(user = this.user, orderId = 0) {
 		return new Promise( async (resolve, reject) => {
 
+			logger.info({botId: this.botId, ts: Date.now(), botTitle: this.botTitle, statusText: 'firstBuyOrder'});
 			await this._log('первая закупка монет');
 			let price = await this.getLastPrice(),
 				quantity = this.setQuantity(price), 
 				newBuyOrder = await this.newBuyOrder(price, CONSTANTS.ORDER_TYPE.LIMIT, quantity);
-
+			
 			if(newBuyOrder === '2010') {
 				console.log('2010')
 				reject(newBuyOrder);
@@ -602,6 +546,7 @@ module.exports = class Process {
 			newOrderParams.type = type;
 
 		try{
+			logger.info({botId: this.botId, ts: Date.now(), botTitle: this.botTitle, orderParmas: newOrderParams, statusText: 'newBuyOrder'});
 			let newBuyOrder = await this.Client.order(newOrderParams);
 			await this._log('попытка создать ордер - ' + newBuyOrder.price + ', ' + newBuyOrder.origQty);
 			return new Order(newBuyOrder);
@@ -631,6 +576,7 @@ module.exports = class Process {
 	}
 
 	async newSellOrder(price = 0, type = CONSTANTS.ORDER_TYPE.LIMIT, quantity = this.getQuantity(price), prevError = {}) {
+		console.log(price)
 		let pair = this.getSymbol(),
 			newOrderParams = {
 				symbol: pair,
@@ -644,12 +590,14 @@ module.exports = class Process {
 			newOrderParams.type = type;
 
 		try{
+			logger.info({botId: this.botId, ts: Date.now(), botTitle: this.botTitle, orderParmas: newOrderParams, statusText: 'newSellOrder'});
 			let newSellOrder = await this.Client.order(newOrderParams);
 			this.recountQuantity(newSellOrder.origQty, 1);
 			await this._log('создан оредер - цена: ' + newSellOrder.price + ', кол-во: ' + newSellOrder.origQty);
 			return new Order(newSellOrder);
 		}
 		catch(error) {
+			console.log(this.errorCode(error), this.errorCode(prevError))
 			// await this._log(this.errorCode(error));
 			if(quantity > 0) {
 				let step = this.botSettings.decimalQty;
@@ -721,6 +669,7 @@ module.exports = class Process {
 			await this._log(`новый страховочный ордер (price - ${newPrice})`);
 			try {
 				newOrder = await this.newBuyOrder(newPrice, CONSTANTS.ORDER_TYPE.LIMIT, qty, {}, true);
+				logger.info({botId: this.botId, ts: Date.now(), botTitle: this.botTitle, statusText: 'newSafeOrder', order: newOrder});
 				if(newOrder.orderId) this.botSettings.lastSafeOrderPrice = newOrder.price;
 			}
 			catch(error) {
@@ -741,7 +690,7 @@ module.exports = class Process {
 		await this.updateLog(nextMessage);
 	}
 
-	toDecimal(value = 0, decimal = this.getDecimal()) {
+	toDecimal(value = 0, decimal = this.getDecimal(0, false)) {
 		return Number(Number(value).toFixed(decimal));
 	}
 
@@ -797,6 +746,8 @@ module.exports = class Process {
 	}
 
 	async disableProcess(message = '') {
+		
+		logger.info({botId: this.botId, ts: Date.now(), botTitle: this.botTitle, statusText: `disable process (${message})`});
 		await this._log(`завершение процесса, причина -> (${message})`);
 		if(this.symbol) await this.cancelOrders(this.safeOrders);
 
@@ -826,6 +777,7 @@ module.exports = class Process {
 
 	async cancelAllOrders(user = this.user) {
 		await this._log('Завершение всех ордеров и продажа по рынку.');
+		logger.info({botId: this.botId, ts: Date.now(), botTitle: this.botTitle, statusText: 'cancelAllOrders'});
 		try{
 			if(this.currentOrder.orderId) {
 				await this.cancelOrders(this.safeOrders);
@@ -836,6 +788,7 @@ module.exports = class Process {
 						qty = this.getQuantity(),
 						newOrder = await this.newSellOrder(lastPrice, CONSTANTS.ORDER_TYPE.MARKET, qty);
 					
+					logger.info({botId: this.botId, ts: Date.now(), botTitle: this.botTitle, statusText: 'newOrder', order: newOrder});
 					if(newOrder.orderId) {
 						this.orders.push(newOrder);
 					} else {
@@ -1055,6 +1008,7 @@ module.exports = class Process {
 	}
 
 	setQuantity(price = 0, quantity = 0) {
+		console.log(price, this.botSettings.currentOrder)
 		this.botSettings.quantity = price ? this.toDecimal(Number(this.botSettings.currentOrder)/ price) : Number(quantity);
 		return Number(this.botSettings.quantity);
 	}
@@ -1150,6 +1104,7 @@ module.exports = class Process {
 	}
 
 	async getOrder(orderId = 0) {
+		logger.info({botId: this.botId, ts: Date.now(), botTitle: this.botTitle, statusText: 'getOrder', orderId: orderId});
 		orderId = Number(orderId);
 		let pair = this.getSymbol(),
 			order = {};
@@ -1162,6 +1117,7 @@ module.exports = class Process {
 		}
 		catch(error) {
 			
+			logger.error({botId: this.botId, ts: Date.now(), botTitle: this.botTitle, statusText: 'getOrder', error: error});
 			console.log(error)
 			if(await this.isError1021(error)) {
 				console.log('ошибочка с меткой времени и окном', orderId);
@@ -1194,9 +1150,13 @@ module.exports = class Process {
 			return this.toDecimal(Number(this.botSettings.safeOrder.size) / price);
 	}
 
-	getDecimal(price = 0) {
-		price = price ? price : this.botSettings.decimalQty;
+	getDecimal(price = 0, flag = true) {
+		price = flag ? Number(this.botSettings.tickSize) : this.botSettings.decimalQty;
+		// console.log(this.botSettings.tickSize)
+		// price = Number(this.botSettings.tickSize);
+		// console.log(price)
 		let ret = this.countDecimalNumber(price);
+		// console.log(ret)
 		return ret;
 	}
 
@@ -1295,6 +1255,7 @@ module.exports = class Process {
 	}
 
 	async updateProcess(user = this.user, message = '') {
+		logger.info({botId: this.botId, ts: Date.now(), botTitle: this.botTitle, statusText: 'updateProcess', process: this});
 		user = { name: user.name };
 		// await this.updateProcessOrdersList(user);
 		let change = await this.getChangeUserObject('', this);
@@ -1333,12 +1294,14 @@ module.exports = class Process {
 	}
 
 	async updateOrders(orders = []) {
+		logger.info({botId: this.botId, ts: Date.now(), botTitle: this.botTitle, statusText: 'updateOrders'});
 		let nextOrders = [],
 			len = orders.length;
 		for(let i = 0; i < len; i++) {
 			try{
 				if(!orders[i].isUpdate) {
 					let order = await this.getOrder(orders[i].orderId);
+					logger.info({botId: this.botId, ts: Date.now(), botTitle: this.botTitle, statusText: 'getOrder in updateOrders', order: order});
 					if(order.orderId) {
 						if(this.checkFailing(order.status) || this.checkFilling(order.status)) order.isUpdate = true;
 						nextOrders.push(order);
@@ -1365,6 +1328,8 @@ module.exports = class Process {
 
 	//Timestamp for this request is outside of the recvWindow
 	async isError1021(error = new Error('default err')) {  	
+		
+		logger.error({botId: this.botId, ts: Date.now(), botTitle: this.botTitle, error: error, statusText: 'recvWindow'});
 		let code = this.errorCode(error);
 		// await this._log('ошибка code:' + code + ', Временная метка для этого запроса находится вне recvWindow');
 		return code === -1021;
@@ -1372,6 +1337,7 @@ module.exports = class Process {
 
 	//MIN_NOTATIAN
 	async isError1013(error = new Error('default err')) { 
+		logger.error({botId: this.botId, ts: Date.now(), botTitle: this.botTitle, error: error, statusText: 'minNotatian'});
 		let code = this.errorCode(error);
 		// await this._log('ошибка code:' + code + ', Количество продоваемых монет ниже минимально-допустимого');
 		return code === -1013;
@@ -1379,6 +1345,8 @@ module.exports = class Process {
 
 	//insufficient balance
 	async isError2010(error = new Error('default err')) { 
+		
+		logger.error({botId: this.botId, ts: Date.now(), ts: Date.now(), botTitle: this.botTitle, error: error, statusText: 'insufficient balance'});
 		let code = this.errorCode(error);
 		// await this._log('ошибка code:' + code + ', Недостаточно средств на балансе валюты');
 		return code === -2010;
@@ -1386,6 +1354,8 @@ module.exports = class Process {
 
 	// Неверные бинанс ключи
 	async isError2014(error = new Error('default err')) {
+		
+		logger.error({botId: this.botId, ts: Date.now(), botTitle: this.botTitle, error: error, statusText: 'invalid binance key'});
 		let code = this.errorCode(error);
 		// await this._log('ошибка code:' + code + ', Неверные бинанс ключи');
 		return code === -2014
