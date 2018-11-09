@@ -446,7 +446,7 @@ module.exports = class Process {
 			let price = await this.getLastPrice(),
 				stopPrice = this.getStopPrice();
 			
-			await this._log(`Проверка stoploss. (${price}/${stopPrice})`);
+			await this._log(`Проверка stoploss. (${stopPrice})`);
 
 			if(stopPrice > price) {
 				await this._log(`Stoploss пройден.`);
@@ -596,7 +596,7 @@ module.exports = class Process {
 					(await this.isError1013(prevError) && await this.isError2010(error))
 				) {
 					if(!isSave) {
-						return await this.disableProcess('Невозможно купить монеты');
+						return await this.disableProcess('Невозможно купить монеты (Недостаточно средств на балансе)');
 					} else if(await this.isError2010(error)) {
 						return '2010';
 					}
@@ -607,8 +607,7 @@ module.exports = class Process {
 				
 				let order = await this.newBuyOrder(price, type, this.toDecimal(quantity), error, isSave, ++amount);
 				return order;
-			}
-			else return {};
+			} else return {};
 		}
 	}
 
@@ -1148,6 +1147,8 @@ module.exports = class Process {
 			if(await this.isError1021(error)) {
 				console.log('ошибочка с меткой времени и окном', orderId);
 				return await this.getOrder(orderId);
+			} else {
+				await this._log( 'произошла ошибка при getOrder ' + this.errorCode(error) );
 			}
 		}
 		return new Order(order);
