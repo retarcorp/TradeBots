@@ -8,7 +8,16 @@ const uniqid = require('uniqid');
 const PRC = CONSTANTS.PRC;
 const DL = CONSTANTS.DL;
 const Logger = require('./Logger');
+// const winston = require('winston');
+// const files = new winston.transports.File({ filename: '/combined.txt' });
+// const console = new winston.transports.Console();
+ 
+// winston.add(console);
+// winston.add(files);
+// winston.level = 'debug';
 
+// console.log(winston)
+ 
 module.exports = class Process {
 	constructor({
 		processId = uniqid(PRC),
@@ -58,6 +67,8 @@ module.exports = class Process {
 		this.user = user;
 		this.botID = this.JSONclone(botID);
 		this.botTitle = this.JSONclone(botTitle);
+		
+		// winston.log('debug', 'process contructor');
 	}
 
 	JSONclone(object) {
@@ -90,6 +101,7 @@ module.exports = class Process {
 	}
 
 	async startTrade(user) {
+		// winston.log('debug', 'startTrade');
 		return new Promise( async (resolve, reject) => {
 			await this._log('Начало нового цикла торговли.');
 			if(this.setClient(user)) {
@@ -462,8 +474,10 @@ module.exports = class Process {
 		const tenMin = 600000,
 			timeout = CONSTANTS.ORDER_TIMEOUT;
 
+			
 		let order = await this.getOrder(orderId);
-
+			
+		await Logger.append(undefined, undefined, `${time} ${timeMin} ${JSON.stringify(order)}`);
 		if(order.orderId) {
 			const ind = this.orders.findIndex(elem => elem.orderId === order.orderId);
 
@@ -473,19 +487,24 @@ module.exports = class Process {
 			await this.updateProcess(user);
 
 			if(this.checkFilling(order.status)) { // если оредер заполнен
+				await Logger.append(undefined, undefined, `если оредер заполнен`);
 				resolve(new Order(order));
 			} else if(this.checkCanceling(order.status) || this.checkFailing(order.status)) { // если ордер отменили или произошла ошибка
+				await Logger.append(undefined, undefined, `если ордер отменили или произошла ошибка`);
 				resolve({});
 			} else if( (Date.now() - time) >= tenMin) { // если время ожидания прошло
+				await Logger.append(undefined, undefined, `время ожидания прошло`);
 				await this.cancelOrder(order.orderId);
 				reject('time_limit');
 			} else { 
+				await Logger.append(undefined, undefined, `settimeout`);
 				setTimeout( () => {
 					this.checkOrder(user, orderId, resolve, reject, time);
 				}, timeout);
 			}
 
 		} else {
+			await Logger.append(undefined, undefined, `reject('error');`);
 			reject('error');
 		}
 	}
