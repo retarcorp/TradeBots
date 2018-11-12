@@ -113,7 +113,7 @@ module.exports = class Process {
 		// winston.log('debug', 'startTrade');
 		return new Promise( async (resolve, reject) => {
 			await this._log('Начало нового цикла торговли.');
-			//--??logger.info({botId: this.botId, ts: Date.now(), processId: this.processId,  botTitle: this.botTitle, statusText: 'startTrade'});
+			//--??logger.info({botID: this.botID, ts: Date.now(), processId: this.processId,  botTitle: this.botTitle, statusText: 'startTrade'});
 			if(this.setClient(user)) {
 				this.currentOrder = {};
 				this._firstBuyOrder(user)
@@ -125,19 +125,11 @@ module.exports = class Process {
 							let price = newBuyOrder.price;
 							
 							await this.awaitFreeze();
-							console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAaa")
-							console.log()
-							console.log()
-							console.log()
-							console.log()
-							console.log()
 							this.botSettings.firstBuyPrice = price;
 							let profitPrice = this.getProfitPrice(price);
-							console.log(price, profitPrice);
-							console.log('_________________________-')
 							let newSellOrder = await this.newSellOrder(profitPrice, CONSTANTS.ORDER_TYPE.LIMIT, qty);
 							
-							//--??logger.info({botId: this.botId, ts: Date.now(), processId: this.processId,  botTitle: this.botTitle, newSellOrder: newSellOrder, statusText: 'newSellOrder'});
+							//--??logger.info({botID: this.botID, ts: Date.now(), processId: this.processId,  botTitle: this.botTitle, newSellOrder: newSellOrder, statusText: 'newSellOrder'});
 							if(newSellOrder !== CONSTANTS.DISABLE_FLAG && newSellOrder.orderId) {
 								this.currentOrder = newSellOrder;
 								this.orders.push(newSellOrder);
@@ -195,7 +187,7 @@ module.exports = class Process {
 		if(this.currentOrder.orderId) {	
 
 			if(this.isOrderSell(this.currentOrder.side)) {
-				//--??logger.info({botId: this.botId, ts: Date.now(), processId: this.processId,  botTitle: this.botTitle, statusText: 'orderSell', currentOrder: this.currentOrder});
+				//--??logger.info({botID: this.botID, ts: Date.now(), processId: this.processId,  botTitle: this.botTitle, statusText: 'orderSell', currentOrder: this.currentOrder});
 				let tmpCurOrd = await this.getOrder(this.currentOrder.orderId);
 				
 				if(tmpCurOrd.orderId) {
@@ -337,7 +329,7 @@ module.exports = class Process {
 			nextSafeOrders = [];
 		
 		if(length) {
-			//--??logger.info({botId: this.botId, ts: Date.now(), processId: this.processId,  botTitle: this.botTitle, statusText: 'process, safeOrders'});
+			//--??logger.info({botID: this.botID, ts: Date.now(), processId: this.processId,  botTitle: this.botTitle, statusText: 'process, safeOrders'});
 			await this._log(`Проверка состояния страховочных ордеров (${orders[length - 1].price}).`);
 			for(let i = 0; i < length; i++) {
 				try {
@@ -356,7 +348,7 @@ module.exports = class Process {
 							this.orders.push(this.currentOrder);
 						} else {
 							await this._log(`невозможно выставить sell ордер (${newSellOrder})`);
-							//--??logger.error({botId: this.botId, ts: Date.now(), processId: this.processId,  botTitle: this.botTitle, statusText: 'error in newSellOrder', errorOrder: newSellOrder});
+							//--??logger.error({botID: this.botID, ts: Date.now(), processId: this.processId,  botTitle: this.botTitle, statusText: 'error in newSellOrder', errorOrder: newSellOrder});
 							await this.disableProcess("Ошибка при выставлении нового sell ордера после покупки страховочного!");
 							await this.updateProcess(user);
 							return 'finish';
@@ -393,17 +385,17 @@ module.exports = class Process {
 				}
 				catch(error) {
 					console.log(error);
-					//--??logger.error({botId: this.botId, ts: Date.now(), processId: this.processId,  botTitle: this.botTitle, statusText: '385, catch', error: error});
+					//--??logger.error({botID: this.botID, ts: Date.now(), processId: this.processId,  botTitle: this.botTitle, statusText: '385, catch', error: error});
 				}
 			}
 			this.safeOrders = nextSafeOrders;
 
 		} else if(this.isFreeze() && !this.isPreFreeze()) {
-			//--??logger.info({botId: this.botId, ts: Date.now(), processId: this.processId,  botTitle: this.botTitle, statusText: 'wait'});
+			//--??logger.info({botID: this.botID, ts: Date.now(), processId: this.processId,  botTitle: this.botTitle, statusText: 'wait'});
 			//тип вроде нихуя делать не надо
 		} else if(!this.isFreeze() && this.isPreFreeze() && this.isNeedToOpenNewSafeOrders()) {
 			//тип надо выставить некст сейв ордер, если еще можно
-			//--??logger.info({botId: this.botId, ts: Date.now(), processId: this.processId,  botTitle: this.botTitle, statusText: 'need to send newSafeOrders if is needed'});
+			//--??logger.info({botID: this.botID, ts: Date.now(), processId: this.processId,  botTitle: this.botTitle, statusText: 'need to send newSafeOrders if is needed'});
 			let newSafeOrder = await this.createSafeOrder();
 			
 			if(newSafeOrder.orderId) {
@@ -419,7 +411,7 @@ module.exports = class Process {
 				stopPrice = this.getStopPrice();
 			
 			await this._log(`Проверка stoploss. (${stopPrice})`);
-			//--??logger.info({botId: this.botId, ts: Date.now(), processId: this.processId,  botTitle: this.botTitle, statusText: `check stopLoss ${price} ${stopPrice}`});
+			//--??logger.info({botID: this.botID, ts: Date.now(), processId: this.processId,  botTitle: this.botTitle, statusText: `check stopLoss ${price} ${stopPrice}`});
 
 			if(stopPrice > price) {
 				await this._log(`Stoploss пройден.`);
@@ -466,7 +458,7 @@ module.exports = class Process {
 	async _firstBuyOrder(user = this.user, orderId = 0) {
 		return new Promise( async (resolve, reject) => {
 
-			//--??logger.info({botId: this.botId, ts: Date.now(), processId: this.processId,  botTitle: this.botTitle, statusText: 'firstBuyOrder'});
+			//--??logger.info({botID: this.botID, ts: Date.now(), processId: this.processId,  botTitle: this.botTitle, statusText: 'firstBuyOrder'});
 			await this._log('первая закупка монет');
 			let price = await this.getLastPrice(),
 				quantity = this.setQuantity(price), 
@@ -557,7 +549,7 @@ module.exports = class Process {
 			newOrderParams.type = type;
 
 		try{
-			//--??logger.info({botId: this.botId, ts: Date.now(), processId: this.processId,  botTitle: this.botTitle, orderParmas: newOrderParams, statusText: 'newBuyOrder'});
+			//--??logger.info({botID: this.botID, ts: Date.now(), processId: this.processId,  botTitle: this.botTitle, orderParmas: newOrderParams, statusText: 'newBuyOrder'});
 			let newBuyOrder = await this.Client.order(newOrderParams);
 			await this._log('попытка создать ордер - ' + newBuyOrder.price + ', ' + newBuyOrder.origQty);
 			return new Order(newBuyOrder);
@@ -601,7 +593,7 @@ module.exports = class Process {
 			newOrderParams.type = type;
 
 		try{
-			//--??logger.info({botId: this.botId, ts: Date.now(), processId: this.processId,  botTitle: this.botTitle, orderParmas: newOrderParams, statusText: 'newSellOrder'});
+			//--??logger.info({botID: this.botID, ts: Date.now(), processId: this.processId,  botTitle: this.botTitle, orderParmas: newOrderParams, statusText: 'newSellOrder'});
 			let newSellOrder = await this.Client.order(newOrderParams);
 			this.recountQuantity(newSellOrder.origQty, 1);
 			await this._log('создан оредер - цена: ' + newSellOrder.price + ', кол-во: ' + newSellOrder.origQty);
@@ -681,7 +673,7 @@ module.exports = class Process {
 			await this._log(`новый страховочный ордер (price - ${newPrice})`);
 			try {
 				newOrder = await this.newBuyOrder(newPrice, CONSTANTS.ORDER_TYPE.LIMIT, qty, {}, true);
-				//--??logger.info({botId: this.botId, ts: Date.now(), processId: this.processId,  botTitle: this.botTitle, statusText: 'newSafeOrder', order: newOrder});
+				//--??logger.info({botID: this.botID, ts: Date.now(), processId: this.processId,  botTitle: this.botTitle, statusText: 'newSafeOrder', order: newOrder});
 				if(newOrder.orderId) this.botSettings.lastSafeOrderPrice = newOrder.price;
 			}
 			catch(error) {
@@ -764,7 +756,7 @@ module.exports = class Process {
 
 	async disableProcess(message = '') {
 		
-		//--??logger.info({botId: this.botId, ts: Date.now(), processId: this.processId,  botTitle: this.botTitle, statusText: `disable process (${message})`});
+		//--??logger.info({botID: this.botID, ts: Date.now(), processId: this.processId,  botTitle: this.botTitle, statusText: `disable process (${message})`});
 		await this._log(`завершение процесса, причина -> (${message})`);
 		if(this.symbol) await this.cancelOrders(this.safeOrders);
 
@@ -794,7 +786,7 @@ module.exports = class Process {
 
 	async cancelAllOrders(user = this.user) {
 		await this._log('Завершение всех ордеров и продажа по рынку.');
-		//--??logger.info({botId: this.botId, ts: Date.now(), processId: this.processId,  botTitle: this.botTitle, statusText: 'cancelAllOrders'});
+		//--??logger.info({botID: this.botID, ts: Date.now(), processId: this.processId,  botTitle: this.botTitle, statusText: 'cancelAllOrders'});
 		try{
 			if(this.currentOrder.orderId) {
 				await this.cancelOrders(this.safeOrders);
@@ -805,7 +797,7 @@ module.exports = class Process {
 						qty = this.getQuantity(),
 						newOrder = await this.newSellOrder(lastPrice, CONSTANTS.ORDER_TYPE.MARKET, qty);
 					
-					//--??logger.info({botId: this.botId, ts: Date.now(), processId: this.processId,  botTitle: this.botTitle, statusText: 'newOrder', order: newOrder});
+					//--??logger.info({botID: this.botID, ts: Date.now(), processId: this.processId,  botTitle: this.botTitle, statusText: 'newOrder', order: newOrder});
 					if(newOrder.orderId) {
 						this.orders.push(newOrder);
 					} else {
@@ -1122,7 +1114,7 @@ module.exports = class Process {
 	}
 
 	async getOrder(orderId = 0) {
-		//--??logger.info({botId: this.botId, ts: Date.now(), processId: this.processId,  botTitle: this.botTitle, statusText: 'getOrder', orderId: orderId});
+		//--??logger.info({botID: this.botID, ts: Date.now(), processId: this.processId,  botTitle: this.botTitle, statusText: 'getOrder', orderId: orderId});
 		orderId = Number(orderId);
 		let pair = this.getSymbol(),
 			order = {};
@@ -1135,7 +1127,7 @@ module.exports = class Process {
 		}
 		catch(error) {
 			
-			//--??logger.error({botId: this.botId, ts: Date.now(), processId: this.processId,  botTitle: this.botTitle, statusText: 'getOrder', error: error});
+			//--??logger.error({botID: this.botID, ts: Date.now(), processId: this.processId,  botTitle: this.botTitle, statusText: 'getOrder', error: error});
 			console.log(error)
 			if(await this.isError1021(error)) {
 				console.log('ошибочка с меткой времени и окном', orderId);
@@ -1273,7 +1265,7 @@ module.exports = class Process {
 	}
 
 	async updateProcess(user = this.user, message = '') {
-		//--??logger.info({botId: this.botId, ts: Date.now(), processId: this.processId,  botTitle: this.botTitle, statusText: 'updateProcess', process: this});
+		//--??logger.info({botID: this.botID, ts: Date.now(), processId: this.processId,  botTitle: this.botTitle, statusText: 'updateProcess', process: this});
 		user = { name: user.name };
 		// await this.updateProcessOrdersList(user);
 		let change = await this.getChangeUserObject('', this);
@@ -1312,14 +1304,14 @@ module.exports = class Process {
 	}
 
 	async updateOrders(orders = []) {
-		//--??logger.info({botId: this.botId, ts: Date.now(), processId: this.processId,  botTitle: this.botTitle, statusText: 'updateOrders'});
+		//--??logger.info({botID: this.botID, ts: Date.now(), processId: this.processId,  botTitle: this.botTitle, statusText: 'updateOrders'});
 		let nextOrders = [],
 			len = orders.length;
 		for(let i = 0; i < len; i++) {
 			try{
 				if(!orders[i].isUpdate) {
 					let order = await this.getOrder(orders[i].orderId);
-					//--??logger.info({botId: this.botId, ts: Date.now(), processId: this.processId,  botTitle: this.botTitle, statusText: 'getOrder in updateOrders', order: order});
+					//--??logger.info({botID: this.botID, ts: Date.now(), processId: this.processId,  botTitle: this.botTitle, statusText: 'getOrder in updateOrders', order: order});
 					if(order.orderId) {
 						if(this.checkFailing(order.status) || this.checkFilling(order.status)) order.isUpdate = true;
 						nextOrders.push(order);
@@ -1347,7 +1339,7 @@ module.exports = class Process {
 	//Timestamp for this request is outside of the recvWindow
 	async isError1021(error = new Error('default err')) {  	
 		
-		//--??logger.error({botId: this.botId, ts: Date.now(), processId: this.processId,  botTitle: this.botTitle, error: error, statusText: 'recvWindow'});
+		//--??logger.error({botID: this.botID, ts: Date.now(), processId: this.processId,  botTitle: this.botTitle, error: error, statusText: 'recvWindow'});
 		let code = this.errorCode(error);
 		// await this._log('ошибка code:' + code + ', Временная метка для этого запроса находится вне recvWindow');
 		return code === -1021;
@@ -1355,7 +1347,7 @@ module.exports = class Process {
 
 	//MIN_NOTATIAN
 	async isError1013(error = new Error('default err')) { 
-		//--??logger.error({botId: this.botId, ts: Date.now(), processId: this.processId,  botTitle: this.botTitle, error: error, statusText: 'minNotatian'});
+		//--??logger.error({botID: this.botID, ts: Date.now(), processId: this.processId,  botTitle: this.botTitle, error: error, statusText: 'minNotatian'});
 		let code = this.errorCode(error);
 		// await this._log('ошибка code:' + code + ', Количество продоваемых монет ниже минимально-допустимого');
 		return code === -1013;
@@ -1364,7 +1356,7 @@ module.exports = class Process {
 	//insufficient balance
 	async isError2010(error = new Error('default err')) { 
 		
-		//--??logger.error({botId: this.botId, ts: Date.now(), processId: this.processId,  ts: Date.now(), botTitle: this.botTitle, error: error, statusText: 'insufficient balance'});
+		//--??logger.error({botID: this.botID, ts: Date.now(), processId: this.processId,  ts: Date.now(), botTitle: this.botTitle, error: error, statusText: 'insufficient balance'});
 		let code = this.errorCode(error);
 		// await this._log('ошибка code:' + code + ', Недостаточно средств на балансе валюты');
 		return code === -2010;
@@ -1373,7 +1365,7 @@ module.exports = class Process {
 	// Неверные бинанс ключи
 	async isError2014(error = new Error('default err')) {
 		
-		//--??logger.error({botId: this.botId, ts: Date.now(), processId: this.processId,  botTitle: this.botTitle, error: error, statusText: 'invalid binance key'});
+		//--??logger.error({botID: this.botID, ts: Date.now(), processId: this.processId,  botTitle: this.botTitle, error: error, statusText: 'invalid binance key'});
 		let code = this.errorCode(error);
 		// await this._log('ошибка code:' + code + ', Неверные бинанс ключи');
 		return code === -2014
