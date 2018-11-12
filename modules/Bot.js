@@ -122,14 +122,14 @@ module.exports = class Bot {
 				message = 'Бот запущен (РУЧНОЙ)';
 				await this.updateBot(user);
 				this.startManual(user);
-			}
-			else if(this.isAuto()) {
+			} else if(this.isAuto()) {
+				this.botSettings.decimalQty = await Symbols.getLotSize(this.getPair());
+				this.botSettings.tickSize = await Symbols.getTickSize(this.getPair());
 				status = 'ok';
 				message = 'Бот запущен (АВТО)';
 				await this.updateBot(user);
 				this.startAuto(user);
-			}
-			else {
+			} else {
 				status = 'error';	
 				message = "Ошибка (НЕИЗВЕСТНЫЙ ТИП БОТА)";
 				this.status = CONSTANTS.BOT_STATUS.INACTIVE;
@@ -534,6 +534,8 @@ module.exports = class Bot {
 			this.botSettings.deviation = next.botSettings.deviation;
 			this.botSettings.martingale = next.botSettings.martingale;
 			this.botSettings.maxAmountPairsUsed = next.botSettings.maxAmountPairsUsed;
+			this.botSettings.decimalQty = await Symbols.getLotSize(this.getPair());
+			this.botSettings.tickSize = await Symbols.getTickSize(this.getPair());
 	
 			for (let processId in this.processes) {
 				if(this.processes[processId].updateProcess) {

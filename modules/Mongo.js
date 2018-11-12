@@ -69,7 +69,7 @@ module.exports = {
 
 				if (callback) callback({ status: 'ok' });
 
-				console.log('Data inserted');
+				// console.log('Data inserted');
 
                 //client.close();
 			});

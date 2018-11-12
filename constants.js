@@ -151,6 +151,8 @@ const CONSTANTS = {
 
 	USERS_DATA_COLLECTION: 'usersData',
 
-	PAYMENTS_COLLECTION: 'payments'
+	PAYMENTS_COLLECTION: 'payments',
+
+	LOGS_COLLECTIONS: 'logs'
 }
 module.exports = CONSTANTS

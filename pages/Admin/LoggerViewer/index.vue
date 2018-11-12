@@ -39,7 +39,8 @@ export default {
 	},
 	methods: {
 		getLogData() {
-			this.$axios.get('/api/admin/loggerViewer')
+			this.$axios
+				.$post('/api/admin/loggerViewer', {})
 				.then(data => {
 					data = data.data;
 					if(data.status === 'ok') {
