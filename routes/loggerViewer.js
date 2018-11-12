@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const LoggerViewer = require('../modules/LoggerViewer');
+// const LoggerViewer = require('../modules/LoggerViewer');
 const Mongo = require('../modules/Mongo');
 const LOGS = require('../constants').LOGS_COLLECTIONS;
 

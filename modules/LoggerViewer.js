@@ -1,5 +1,5 @@
 const Mongo = require('./Mongo');
-const file = './logger.txt';
+// const file = './logger.txt';
 const fs = require('fs');
 
 var lineReader = require('readline').createInterface({
