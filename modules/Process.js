@@ -125,8 +125,16 @@ module.exports = class Process {
 							let price = newBuyOrder.price;
 							
 							await this.awaitFreeze();
+							console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAaa")
+							console.log()
+							console.log()
+							console.log()
+							console.log()
+							console.log()
 							this.botSettings.firstBuyPrice = price;
 							let profitPrice = this.getProfitPrice(price);
+							console.log(price, profitPrice);
+							console.log('_________________________-')
 							let newSellOrder = await this.newSellOrder(profitPrice, CONSTANTS.ORDER_TYPE.LIMIT, qty);
 							
 							//--??logger.info({botId: this.botId, ts: Date.now(), processId: this.processId,  botTitle: this.botTitle, newSellOrder: newSellOrder, statusText: 'newSellOrder'});
@@ -141,7 +149,7 @@ module.exports = class Process {
 								await this.updateProcess(user);
 								this.trade(user, false, resolve, reject);
 							} else {
-								await this.disableProcess('Неуспешная продажа монет. Ошибка при выставлении sell ордера.');
+								await this.disableProcess('Неуспешная продажа монет. Ошибка при выставлении sell ордера (невозможно продать купленное кол-во монет по профит цене).');
 								await this.updateProcess(user);
 								resolve('finish');
 							}
@@ -279,7 +287,7 @@ module.exports = class Process {
 							console.log('AUUUA')
 							await this.disableProcess('Неуспешная продажа монет. Ошибка при выставлении sell ордера (невозможно продать купленное кол-во монет по профит цене).');
 							await this.updateProcess(user);
-							resolve('finish');
+							('finish');
 						}
 					} else {
 						await this.disableProcess('Неуспешная покупка монет.');
@@ -534,7 +542,7 @@ module.exports = class Process {
 		}
 	}
 
-	async newBuyOrder(price = 0, type = CONSTANTS.ORDER_TYPE.LIMIT, quantity = this.getQuantity(price), prevError = {}, isSave = false, amount = 0) {
+	async newBuyOrder(price = 0, type = CONSTANTS.ORDER_TYPE.LIMIT, quantity = this.getQuantity(price), prevError = this.JSONclone({}), isSave = false, amount = 0) {
 		
 		let symbol = this.getSymbol(),
 			newOrderParams = {
@@ -578,7 +586,7 @@ module.exports = class Process {
 		}
 	}
 
-	async newSellOrder(price = 0, type = CONSTANTS.ORDER_TYPE.LIMIT, quantity = this.getQuantity(price), prevError = {}, amount = 0) {
+	async newSellOrder(price = 0, type = CONSTANTS.ORDER_TYPE.LIMIT, quantity = this.getQuantity(price), prevError = this.JSONclone({}), amount = 0) {
 		console.log(price)
 		let pair = this.getSymbol(),
 			newOrderParams = {
@@ -600,7 +608,8 @@ module.exports = class Process {
 			return new Order(newSellOrder);
 		}
 		catch(error) {
-			console.log(this.errorCode(error), this.errorCode(prevError), amount);
+			console.log(error);
+			console.log(this.errorCode(error), this.errorCode(prevError), price);
 			// await this._log(this.errorCode(error));
 			if(quantity > 0 && amount <= 10) {
 				console.log("i'm joke to you?", quantity > 0 && amount <= 10)
@@ -721,8 +730,13 @@ module.exports = class Process {
 		return newProfitPrice
 	}
 	
-	countDecimalNumber(x) {
-		return (x.toString().includes('.')) ? (x.toString().split('.').pop().length) : (0);
+	countDecimalNumber(x = 0) {
+		x = x.toString();
+		if(x.indexOf('e-') >= 0) {
+			return Number(x.split('e-')[1]);
+		} else {
+			return (x.toString().includes('.')) ? (x.toString().split('.').pop().length) : (0);
+		}
 	}
 
 	setRunnigProcess(nexStatus = false) {
@@ -1076,11 +1090,12 @@ module.exports = class Process {
 		return Number(this.botSettings.maxOpenSafetyOrders);
 	}
 
-	getProfitPrice(price = 0) {
+	getProfitPrice(price = 0, flag = true) {
 		// price = Number(price);
 		let takeProfit = this.getTakeProfit(),
-			decimal = this.getDecimal(price);
+			decimal = this.getDecimal(price, flag);
 		
+		console.log(decimal)
 		price = Number(price);
 
 		let	profitPrice = price + price * takeProfit;
@@ -1157,9 +1172,9 @@ module.exports = class Process {
 		price = flag ? Number(this.botSettings.tickSize) : this.botSettings.decimalQty;
 		// console.log(this.botSettings.tickSize)
 		// price = Number(this.botSettings.tickSize);
-		// console.log(price)
+		console.log(price)
 		let ret = this.countDecimalNumber(price);
-		// console.log(ret)
+		console.log(ret)
 		return ret;
 	}
 
