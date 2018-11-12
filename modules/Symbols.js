@@ -7,14 +7,15 @@ const _log = (data) => HistoryLog._log(data);
 var Symbols = {
 	Client: null,
 
-	initClient: function() {
+	initClient: async function() {
 		this.Client = binanceAPI({
 			apiKey: '',
 			apiSecret: ''
 		})
 	},
 
-  updateSymbolsList: function() {
+  updateSymbolsList: async function() {
+		await this.initClient();
 		return new Promise( (resolve, reject) => {
 			this.Client.prices()
 			.then(data => {
@@ -109,6 +110,5 @@ var Symbols = {
 		}
 	}
 }
-
 
 module.exports = Symbols

@@ -29,11 +29,11 @@ const Users = require('./modules/Users');
 let Symbols = require('./modules/Symbols')
 let Income = require('./modules/Income');
 Mongo.init()
-	.then(data => {
+	.then(async data => {
 		Users.Bots.setBotsArray().then(result => {
 			Income.startLiveUpdate();
 		})
-		Symbols.initClient();
+		await Symbols.initClient();
 		Symbols.updateSymbolsPriceFilter();
 		// Symbols.updateSymbolsPricesList();
 		Symbols.updateSymbolsList();

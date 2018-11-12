@@ -13,7 +13,7 @@ class LoggerViewer {
 	}
 
 	getLogData() {
-		lineReader.on('line', function (line) {
+		lineReader.on('line', (line) => {
 			this.lines.push(line);
 		});
 	}
