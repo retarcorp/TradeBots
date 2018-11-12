@@ -11,11 +11,11 @@ const Logger = require('./Logger');
 const winston = require('winston');
 const logger = winston.createLogger({
 	transports: [
-		new winston.transports.File({ filename: './//--??logger.txt' })
+		new winston.transports.File({ filename: './logger.txt' })
 	]
 });
 
-// //--??logger.info({ a: 12 });
+// logger.info({ a: 12 });
 // const winston = require('winston');
 // const files = new winston.transports.File({ filename: '/combined.txt' });
 // const console = new winston.transports.Console();
@@ -1234,8 +1234,8 @@ module.exports = class Process {
 		// 	console.log(err);
 		// }
 		nextMessage = '\r\n' + nextMessage;
-		let path = //--??logger.getPath(`/Users/${this.user.name}(${this.user.userId})/${this.botTitle}(${this.botID})/${this.processId}`);
-		await //--??logger.append(path, '/log.txt', nextMessage);
+		let path = Logger.getPath(`/Users/${this.user.name}(${this.user.userId})/${this.botTitle}(${this.botID})/${this.processId}`);
+		await Logger.append(path, '/log.txt', nextMessage);
 
 
 	}
