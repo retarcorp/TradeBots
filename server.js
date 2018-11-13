@@ -15,7 +15,6 @@ var SSL = {
   key: fs.readFileSync("./SSL/td-key.pem")
 };
 
-
 const Core = require('./monitor/modules/core');
 
 const bodyParser = require('body-parser');
@@ -26,8 +25,9 @@ const cors = require('cors');
 const Mongo = require('./modules/Mongo');
 const Users = require('./modules/Users');
 
-let Symbols = require('./modules/Symbols')
+let Symbols = require('./modules/Symbols');
 let Income = require('./modules/Income');
+const CoinMarketCap = require('./modules/CoinMarketCap');
 Mongo.init()
 	.then(async data => {
 		Users.Bots.setBotsArray().then(result => {
@@ -37,6 +37,7 @@ Mongo.init()
 		Symbols.updateSymbolsPriceFilter();
 		// Symbols.updateSymbolsPricesList();
 		Symbols.updateSymbolsList();
+		// CoinMarketCap.dailyUpdatePrices();
 		
 		Core.init();
 	});

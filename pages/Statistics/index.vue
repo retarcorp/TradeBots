@@ -11,6 +11,11 @@
                 class="tabs__item"
                 :style="currentTab === 'closed' ? 'backgroundColor: #eee' : ''"
             >Завершенные</li>
+            <label for="inpDate" class="button button--primary">(Сортировка по дате)</label>
+                    <input style="display: none" id="inpDate" type="checkbox" v-model="isDateSearch">
+                    <input v-show="isDateSearch" type="date" id="start" name="trip-start"
+                        v-model="searchDate"
+                        min="2017-01-01" max="2100-01-01">
             <!-- <li 
                 @click="currentTab = 'rejected'" 
                 class="tabs__item"
@@ -101,6 +106,9 @@
 export default {
     data() {
         return {
+            isDateSearch: false,
+            searchDate: this.getDateNow(),
+            searchDateTs: Date.now(),
             orders: [],
             currentTab: 'opened'
         }
@@ -112,7 +120,17 @@ export default {
       ((date.getDate() < 10) ? '0' : '') + date.getDate() + ' ' + ((date.getHours() <= 9) ? '0' : '') + date.getHours() + ':' + ((date.getMinutes() <= 9) ? '0' : '') + date.getMinutes() + ':' + ((date.getSeconds() <= 9) ? '0' : '') + date.getSeconds()
         }
     },
+    watch: {
+        searchDate() {
+            this.searchDateTs = new Date(this.searchDate).getTime();
+        }
+    },
     methods: {
+        getDateNow() {
+            let date = new Date();
+            let ret = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+            return ret;
+        },
         getDeals(dealFlag = '') {
             if(dealFlag) {
                 
@@ -122,10 +140,32 @@ export default {
                 this.statisticsList.forEach(bot => {
                     bot.processes.forEach(prc => {
                         if(prc.finallyStatus === flag && prc.orders.length) {
-                            arr.push(prc);
+                            if(this.isDateSearch && prc.orders.length) {
+                                let cdate = new Date(prc.orders[0].time),
+                                    cd = cdate.getDate(),
+                                    cm = cdate.getMonth(),
+                                    cy = cdate.getFullYear(),
+                                    sdate = new Date(this.searchDateTs),
+                                    sd = sdate.getDate(),
+                                    sm = sdate.getMonth(),
+                                    sy = sdate.getFullYear();
+
+                                if(cd === sd && cm === sm && cy === sy) {
+                                    arr.push(prc);
+                                }
+                            } else {
+                                arr.push(prc);
+                            }
                         }
                     });
                 });
+                arr.sort( (a, b) => {
+                    if(a.orders.length && b.orders.length) {
+                        return b.orders[0].time - a.orders[0].time;
+                    } else {
+                        return b.processId - a.processId;
+                    }
+                })
                 return arr;
             }
             return [];

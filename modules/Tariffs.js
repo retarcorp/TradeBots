@@ -81,6 +81,11 @@ class TariffList {
 					currentTariff.expirationDate = tariffExpirationDate;
 					currentTariff.expirationDatePattern = this.toPattern(tariffExpirationDate);
 					currentTariff.isCurent = isCurent;
+					currentTariff.paymentInfo = {
+						userWalletBalance,
+						btcTariffPrice,
+						newUserWalletBalance
+					}
 					userTariffs.push(currentTariff);
 
 					let change = {
@@ -173,8 +178,10 @@ class TariffList {
 			let curUser = await Mongo.syncSelect(user, CONSTANTS.USERS_COLLECTION);
 				curUser = curUser[0];
 
-			let userTariffs = curUser.tariffs || [];
-			callback(M.getSuccessfullyMessage({ data: userTariffs }));
+			let userTariffs = curUser.tariffs || [],
+				userTariffsHistory = curUser.tariffHistory || [];
+
+			callback(M.getSuccessfullyMessage({ data: { userTariffs, userTariffsHistory } }));
 
 		} else {
 			callback(M.getFailureMessage({ message: 'Пользователь не найден!' }));

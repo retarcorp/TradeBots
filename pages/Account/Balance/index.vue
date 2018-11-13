@@ -4,15 +4,31 @@
         <div class="binance__sub-title title--small">(коммисия 0.0002 BTC, минимальная сумма без учета коммисии - {{fee}} BTC)</div>
 
         <div>
+            <h3 style="margin-bottom: 1rem;">Пополнения баланса:</h3>
 
-            <div v-for="(payment, i) in payments" :key="i" class="tabs">
-
+            <div class="tabs tabs-heder d-flex d-flex-left">
+                <div class="tabs__item">Дата пополнения</div>
+                <div class="tabs__item">Сумма пополнения</div>
+            </div>
+            <div v-for="(payment, i) in payments" :key="i" class="tabs d-flex d-flex-left">
                 <div class="tabs__item">{{ getDate(payment.time) }}</div>
                 <div class="tabs__item">{{ getBTCAmountWithFee(payment.amount) }} BTC</div>
-
             </div>
 
-
+            
+            <h3 style="margin-bottom: 1rem; margin-top: 3rem;">Списания за оплату тарифов:</h3>
+            <div class="tabs-heder tabs d-flex">
+                <div class="tabs__item">Дата приобретения</div>
+                <div class="tabs__item">Баланс после приобретения</div>
+                <div class="tabs__item">Баланс на момент приобретения</div>
+                <div class="tabs__item">Цена тарифа в BTC</div>
+            </div>
+            <div v-for="(tariff, i) in [...tariffs, ...tariffsHistory]" :key="i" class="tabs d-flex">
+                <div class="tabs__item">{{ getDate(tariff.purchaseDate) }}</div>
+                <div class="tabs__item">{{ tariff.paymentInfo.newUserWalletBalance.toFixed(5) }}</div>
+                <div class="tabs__item">{{ tariff.paymentInfo.userWalletBalance.toFixed(5) }}</div>
+                <div class="tabs__item">{{ tariff.paymentInfo.btcTariffPrice.toFixed(5) }}</div>
+            </div>
         </div>
     
     </div>
@@ -20,6 +36,7 @@
 
 <script>
     export default {
+        props: ['tariffs', 'tariffsHistory'],
         data() {
             return {
                 satoshi: 0.00000001,
@@ -58,4 +75,14 @@
         }
     }
 </script>
+
+<style scoped>
+div {
+    cursor: auto;
+}
+.tabs-heder {
+    background-color: #efefef;
+}
+</style>
+
 

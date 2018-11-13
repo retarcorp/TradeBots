@@ -8,7 +8,7 @@
                         <nuxt-link to="/Account/Balans" class="account__menu-link">Пополнить</nuxt-link>
                     </div> -->
                     <div class="account__menu-item">
-                        Тариф: {{ selectedTariffs.length ? selectedTariffs[0].title : 'Не задано' }}
+                        Тариф: {{ userTariffs.length ? userTariffs[0].title : 'Не задано' }}
                         <nuxt-link 
                             to="/Account/Tariff" 
                             class="account__menu-link">Изменить</nuxt-link>
@@ -35,7 +35,7 @@
                     class="button button--primary account__button">Изменить пароль</nuxt-link>
             </div>
             <div class="col-12 col-md-6 col-lg-8">
-                <nuxt-child :tariffs="selectedTariffs" />
+                <nuxt-child :tariffs="userTariffs" :tariffsHistory="userTariffsHistory" />
             </div>
         </div>
     </div>
@@ -45,7 +45,8 @@
 export default {
     data() {
         return {
-            selectedTariffs: [],
+            userTariffs: [],
+            userTariffsHistory: [],
             walletBalance: ''
         }
     },
@@ -57,7 +58,14 @@ export default {
     methods: {
         getCurrentTariff () {
             this.$axios.$get('/api/user/getUsersTariffs')
-                .then(res => this.selectedTariffs = res.data)
+                .then(res => {
+                    if(res.status === 'ok') {
+                        this.userTariffs = res.data.userTariffs.length ? res.data.userTariffs : [];
+                        this.userTariffsHistory = res.data.userTariffsHistory.length ? res.data.userTariffsHistory : [];
+                    } else {
+                        console.log(res);
+                    }
+                })
         }
     },
     created() {

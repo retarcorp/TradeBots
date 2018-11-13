@@ -3,6 +3,8 @@ var router = express.Router();
 var Mongo = require('../modules/Mongo');
 var qrs = require("querystring");
 var url = require("url");
+const Mailer = require('../modules/Mailer');
+const Templates = require('../modules/Templates');
 
 router.get('/api/user/activate', (req, res, next) => {
     console.log('something');
@@ -28,6 +30,12 @@ router.get('/api/user/activate', (req, res, next) => {
         user.active = true;
         Mongo.update({ name: user.name }, user, "users", () => {
             // res.send(response);
+            Mailer.send({
+                from: 'trade.bots.info@gmail.com'
+                ,to: user.name
+                ,subject: 'Авторизация аккаунта'
+                ,html: Templates.getUserActivationHtmlConfirm(User.regKey)
+            });
             res.redirect('/SignIn?Auth=true');
         });
     });

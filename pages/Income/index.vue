@@ -29,25 +29,29 @@
                     <p>Прибыль: </p>
                 </div>
                 <div class="bot-income-block tabs__item">
-                    <p>Дата:</p>
+                    <label>Дата:</label>
+                    <label for="inpDate" class="button button--primary">(Сортировка по дате)</label>
+                    <input style="display: none" id="inpDate" type="checkbox" v-model="isDateSearch">
+                    <input v-show="isDateSearch" type="date" id="start" name="trip-start"
+                        v-model="searchDate"
+                        min="2017-01-01" max="2100-01-01">
                 </div>
             </div>
             <div v-for="prcIncome in processesIncome" :key="prcIncome.botID" class="bot-income bot-tabs jsc">
                 <div class="bot-income-block tabs__item">
                     <p>{{ prcIncome.botTitle }} / {{ prcIncome.symbol }}</p>
-                    <!-- <p>Бот - {{ prcIncome.botTitle }} ({{ prcIncome.botID }})</p> -->
-                    <!-- <p>Процесс - {{ prcIncome.processId }}</p>
-                    <p>Пара - {{ prcIncome.symbol }}</p> -->
                 </div> 
                 <div class="bot-income-block tabs__item">
                     <p v-for="(inc, _key) in prcIncome.volume" :key="_key">
-                        {{ _key }}: {{ Math.round(inc * 100000) / 100000 }}
+                        {{ _key }}: {{ noExponents(inc) }}
                     </p>
+                    <p>USD: {{getUSDPrice(prcIncome.sCurSymbol, prcIncome.volume[prcIncome.curSymbol])}}</p>
                 </div>
                 <div class="bot-income-block tabs__item">
                     <p v-for="(inc, _key) in prcIncome.income" :key="_key">
-                        {{ _key }}: {{ Math.round(inc * 100000) / 100000 }}
+                        {{ _key }}: {{ noExponents(inc) }}
                     </p>
+                    <p>USD: {{getUSDPrice(prcIncome.sCurSymbol, prcIncome.income[prcIncome.curSymbol])}}</p>
                 </div>
                 <div class="bot-income-block tabs__item">
                     <p>{{ getDate(prcIncome.endTime) }}</p>
@@ -86,11 +90,19 @@
 export default {
     data() {
         return {
+            isDateSearch: false,
             income: {
                 dayIncome: {},
                 allIncome: {}
             },
+            searchDate: this.getDateNow(),
+            searchDateTs: Date.now(),
             symbolsA: ['BTC', 'BNB', 'ETH', 'USDT']
+        }
+    },
+    watch: {
+        searchDate() {
+            this.searchDateTs = new Date(this.searchDate).getTime();
         }
     },
     computed: {
@@ -102,18 +114,18 @@ export default {
         // },
         processesIncome() {
             let arr = [];
-            const BUY = 'BUY', SELL = 'SELL', FILLED = 'FILLED';
+            const BUY = 'BUY', SELL = 'SELL', FILLED = 'FILLED', day = 86400000;
 
             this.statisticsList.forEach(bot => {
                 bot.processes.forEach(prc => {
                     if(!prc.finallyStatus && prc.orders.length) {
                         let curSymbol = '',
-                            sCurSymbol = 'USDT';
+                            sCurSymbol = '';
                         for(let i = 0; i < this.symbolsA.length; i++) {
                             let p = prc.symbol.indexOf(this.symbolsA[i]);
                             if(p > 1) {
                                 curSymbol = this.symbolsA[i];
-                                // sCurSymbol = prc.symbol.replace(curSymbol, '');
+                                sCurSymbol = prc.symbol.replace(curSymbol, '');
                             } 
                         }
 
@@ -170,7 +182,24 @@ export default {
 
                         // if(sCurSymbol === 'USDT') prcIncome.volume[sCurSymbol] = Number(prcIncome.volume[sCurSymbol].toFixed(4)); 
                         // else prcIncome.volume[sCurSymbol] = Number(prcIncome.volume[sCurSymbol].toFixed(5));
-                        arr.push(prcIncome);
+                        if(prcIncome.income[curSymbol] !== 0) {
+                            if(this.isDateSearch) {
+                                let cdate = new Date(prcIncome.endTime),
+                                    cd = cdate.getDate(),
+                                    cm = cdate.getMonth(),
+                                    cy = cdate.getFullYear(),
+                                    sdate = new Date(this.searchDateTs),
+                                    sd = sdate.getDate(),
+                                    sm = sdate.getMonth(),
+                                    sy = sdate.getFullYear();
+
+                                if(cd === sd && cm === sm && cy === sy) {
+                                    arr.push(prcIncome);
+                                }
+                            } else {
+                                arr.push(prcIncome);
+                            }
+                        }
                     }
                 });
             });
@@ -304,23 +333,55 @@ export default {
         }
     },
     methods: {
-        getDate(date = Date.now()) {
-                date = new Date(date);
-                let hh = String(date.getHours()),
-                    ss = String(date.getSeconds()),
-                    DD = String(date.getDate()),
-                    mm = String(date.getMinutes()),
-                    MM = String(date.getMonth() + 1),
-                    YYYY = date.getFullYear();
-
-                hh = hh.length < 2 ? '0' + hh : hh;
-                mm = mm.length < 2 ? '0' + mm : mm;
-                ss = ss.length < 2 ? '0' + ss : ss;
-                DD = DD.length < 2 ? '0' + DD : DD;
-                MM = MM.length < 2 ? '0' + MM : MM;
-
-                return `${hh}:${mm}:${ss} ${DD}.${MM}.${YYYY}`;
+        getUSDPrice(symbol = '', price = 0) {
+            if(symbol !== 'USD' && symbol) {
+                let USDPrice = this.$store.getters.getUSDPriceToSymbol(symbol);
+                if(USDPrice) {
+                    return this.noExponents(price * USDPrice) || '-';
+                } else return '-';
             }
+        },
+        getDateNow() {
+            let date = new Date();
+            let ret = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+            return ret;
+        },
+        getDate(date = Date.now()) {
+            date = new Date(date);
+            let hh = String(date.getHours()),
+                ss = String(date.getSeconds()),
+                DD = String(date.getDate()),
+                mm = String(date.getMinutes()),
+                MM = String(date.getMonth() + 1),
+                YYYY = date.getUTCFullYear();
+
+            hh = hh.length < 2 ? '0' + hh : hh;
+            mm = mm.length < 2 ? '0' + mm : mm;
+            ss = ss.length < 2 ? '0' + ss : ss;
+            DD = DD.length < 2 ? '0' + DD : DD;
+            MM = MM.length < 2 ? '0' + MM : MM;
+
+            return `${hh}:${mm}:${ss} ${DD}.${MM}.${YYYY}`;
+        },
+        noExponents(number = 0) {
+            var data = String(number).split(/[eE]/);
+            if (data.length == 1) return Number(data[0]).toFixed(8);
+            return number.toFixed(8);
+            // var z = '',
+            //     sign = number < 0 ? '-' : '',
+            //     str = data[0].replace('.', ''),
+            //     mag = Number(data[1]) + 1;
+
+            // if (mag < 0) {
+            //     z = sign + '0.';
+            //     while (mag++) z += '0';
+            //     return z + str.replace(/^\-/, '');
+            // }
+            // mag -= str.length;
+            // while (mag--) z += '0';
+            // return str + z;
+        }
+
     },
     created() {
     }
@@ -369,5 +430,8 @@ export default {
     margin-top: 0.5rem;
 }
 
+div {
+    cursor: auto;
+}
 </style>
 

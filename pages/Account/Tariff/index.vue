@@ -94,11 +94,11 @@ export default {
         },
         getDate(date = Date.now()) {
             date = new Date(date);
-            let hh = String(date.getHours()),
-                ss = String(date.getSeconds()),
-                DD = String(date.getDate()),
-                mm = String(date.getMinutes()),
-                MM = String(date.getMonth() + 1),
+            let hh = String(date.getUTCHours()),
+                ss = String(date.getUTCSeconds()),
+                DD = String(date.getUTCDate()),
+                mm = String(date.getUTCMinutes()),
+                MM = String(date.getUTCMonth() + 1),
                 YYYY = date.getFullYear();
 
             hh = hh.length < 2 ? '0' + hh : hh;

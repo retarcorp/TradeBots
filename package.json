@@ -30,6 +30,7 @@
     "binance-api-node": "^0.8.5",
     "body-parser": "^1.18.3",
     "ckeditor": "^4.10.1",
+    "coinmarketcap-api": "^3.0.0",
     "cookie-parser": "^1.4.3",
     "cors": "^2.8.4",
     "express": "^4.16.3",
