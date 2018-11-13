@@ -37,7 +37,7 @@ Mongo.init()
 		Symbols.updateSymbolsPriceFilter();
 		// Symbols.updateSymbolsPricesList();
 		Symbols.updateSymbolsList();
-		// CoinMarketCap.dailyUpdatePrices();
+		CoinMarketCap.dailyUpdatePrices();
 		
 		Core.init();
 	});
