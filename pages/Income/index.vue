@@ -45,13 +45,13 @@
                     <p v-for="(inc, _key) in prcIncome.volume" :key="_key">
                         {{ _key }}: {{ noExponents(inc) }}
                     </p>
-                    <p>USD: {{getUSDPrice(prcIncome.sCurSymbol, prcIncome.volume[prcIncome.curSymbol])}}</p>
+                    <p>USD: {{getUSDPrice(prcIncome.curSymbol, prcIncome.volume[prcIncome.curSymbol])}}</p>
                 </div>
                 <div class="bot-income-block tabs__item">
                     <p v-for="(inc, _key) in prcIncome.income" :key="_key">
                         {{ _key }}: {{ noExponents(inc) }}
                     </p>
-                    <p>USD: {{getUSDPrice(prcIncome.sCurSymbol, prcIncome.income[prcIncome.curSymbol])}}</p>
+                    <p>USD: {{getUSDPrice(prcIncome.curSymbol, prcIncome.income[prcIncome.curSymbol])}}</p>
                 </div>
                 <div class="bot-income-block tabs__item">
                     <p>{{ getDate(prcIncome.endTime) }}</p>
@@ -207,7 +207,6 @@ export default {
             arr.sort( (a, b) => {
                 return b.endTime - a.endTime;
             })
-
             return arr;
         },
         botsIncome() {
@@ -333,7 +332,7 @@ export default {
         }
     },
     methods: {
-        getUSDPrice(symbol = '', price = 0) {
+        getUSDPrice(symbol = '', price = 0, s) {
             if(symbol !== 'USD' && symbol) {
                 let USDPrice = this.$store.getters.getUSDPriceToSymbol(symbol);
                 if(USDPrice) {
