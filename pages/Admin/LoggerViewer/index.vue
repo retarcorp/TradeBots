@@ -1,10 +1,10 @@
 <template>
 	<div class="container">
 		<h1 style="text-align: center;">LOGGER VIEWER</h1>
-		<div class="lines-box" v-for="(value, key) in _logs" :key="key">
-			<h3>{{key}}</h3>
+		<div class="lines-box" v-for="(value, key) in _usersLogs" :key="key">
+			<h3 style="margin-bottom: 1rem;">{{key}} {{value[0].message.user.name}}</h3>
 			<div class="lines-conteiner">
-				<p class="lines" v-for((elem, i) in value) :key="i">{{elem}}</p>
+				<p class="lines" v-for="(elem, i) in value" :key="i">{{elem.message.fnc}} {{ elem.level === 'error' ? elem.message.error.code : ''}} {{`${elem.message.botTitle} ${elem.message.botID} ${elem.message.processId}`}} {{ elem.message.order ? elem.message.order : ''}}</p>
 			</div>
 		</div>
  	</div>
@@ -15,23 +15,18 @@ export default {
 	layout: 'admin',
 	data() {
 		return {
-			lastLineIndex: 0,
 			logs: []
 		}
 	},
-	computed() {
-		_logs: {
-			let botsLogs = {};
+	computed: {
+		_usersLogs() {
+			let _usersLogs = {};
 
 			this.logs.forEach(elem => {
-				elem = JSON.parse(elem);
-				let btId = elem.botID;
-				!botsLogs[btId] && (botsLogs[btId] = []);
-
-				botsLogs[btId].push(elem);
+				!_usersLogs[elem.message.user.userId] && (_usersLogs[elem.message.user.userId] = []);
+				_usersLogs[elem.message.user.userId].push(elem);
 			});
-
-			return botsLogs;
+			return _usersLogs;
 		}
 	},
 	mounted() {
@@ -40,20 +35,18 @@ export default {
 	methods: {
 		getLogData() {
 			this.$axios
-				.$post('/api/admin/loggerViewer', {})
+				.$get('/api/admin/loggerViewer', {})
 				.then(data => {
-					data = data.data;
 					if(data.status === 'ok') {
-						this.logs.push(data.data);
-						this.lastLineIndex++;
+						this.logs = data.data;
 						setTimeout(() => {
 							this.getLogData();	
-						}, 200)
+						}, 5000)
 					} else {
 						console.log(data);
 						setTimeout(() => {
 							this.getLogData()
-						}, 10000);
+						}, 100000);
 					}
 				})
 				.catch(error => {
@@ -72,7 +65,8 @@ export default {
 }
 
 .lines {
-	background-color: #eee;
+	background-color: #efefef;
+	padding: 5px;
 }
 
 .lines-conteiner {
