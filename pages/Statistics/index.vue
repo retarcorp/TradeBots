@@ -11,10 +11,13 @@
                 class="tabs__item"
                 :style="currentTab === 'closed' ? 'backgroundColor: #eee' : ''"
             >Завершенные</li>
-            <label for="inpDate" class="button button--primary">(Сортировка по дате)</label>
+            <label for="inpDate" class="dateSearch button button--primary">(Сортировка по дате)</label>
                     <input style="display: none" id="inpDate" type="checkbox" v-model="isDateSearch">
                     <input v-show="isDateSearch" type="date" id="start" name="trip-start"
-                        v-model="searchDate"
+                        v-model="searchDate1"
+                        min="2017-01-01" max="2100-01-01">
+                    <input v-show="isDateSearch" type="date" id="start" name="trip-start"
+                        v-model="searchDate2"
                         min="2017-01-01" max="2100-01-01">
             <!-- <li 
                 @click="currentTab = 'rejected'" 
@@ -107,8 +110,10 @@ export default {
     data() {
         return {
             isDateSearch: false,
-            searchDate: this.getDateNow(),
-            searchDateTs: Date.now(),
+            searchDate1: this.getDateNow(),
+            searchDate2: this.getDateNow(),
+            searchDateTs1: Date.now(),
+            searchDateTs2: Date.now(),
             orders: [],
             currentTab: 'opened'
         }
@@ -121,8 +126,11 @@ export default {
         }
     },
     watch: {
-        searchDate() {
-            this.searchDateTs = new Date(this.searchDate).getTime();
+        searchDate1() {
+            this.searchDateTs1 = new Date(this.searchDate1).getTime();
+        },
+        searchDate2() {
+            this.searchDateTs2 = new Date(this.searchDate2).getTime();
         }
     },
     methods: {
@@ -145,13 +153,25 @@ export default {
                                     cd = cdate.getDate(),
                                     cm = cdate.getMonth(),
                                     cy = cdate.getFullYear(),
-                                    sdate = new Date(this.searchDateTs),
-                                    sd = sdate.getDate(),
-                                    sm = sdate.getMonth(),
-                                    sy = sdate.getFullYear();
+                                    sdate1 = new Date(this.searchDateTs1),
+                                    sd1 = sdate1.getDate(),
+                                    sm1 = sdate1.getMonth(),
+                                    sy1 = sdate1.getFullYear(),
+                                    sdate2 = new Date(this.searchDateTs2),
+                                    sd2 = sdate2.getDate(),
+                                    sm2 = sdate2.getMonth(),
+                                    sy2 = sdate2.getFullYear();
 
-                                if(cd === sd && cm === sm && cy === sy) {
+                                if(sy1 !== sy2 && cy >= sy1 && cy <= sy2) {
                                     arr.push(prc);
+                                } else if(sy1 === sy2 && cy === sy1){
+                                    if(sm1 !== sm2 && cm >= sm1 && cm <= sm2) {
+                                        arr.push(prc);
+                                    } else if(sm1 === sm2 && cm === sm1) {
+                                        if(cd >= sd1 && cd <= sd2) {
+                                            arr.push(prc);
+                                        }
+                                    }
                                 }
                             } else {
                                 arr.push(prc);
@@ -188,6 +208,10 @@ export default {
 </script>
 
 <style scoped>
+
+.dateSearch {
+    margin: 0 10px 0 10px;
+}
 
 .overflow {
     /* display: block;

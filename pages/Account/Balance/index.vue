@@ -8,11 +8,15 @@
 
             <div class="tabs tabs-heder d-flex d-flex-left">
                 <div class="tabs__item">Дата пополнения</div>
+                <div class="tabs__item">Баланс на момент пополнения</div>
                 <div class="tabs__item">Сумма пополнения</div>
+                <div class="tabs__item">Баланс после пополнения</div>
             </div>
             <div v-for="(payment, i) in payments" :key="i" class="tabs d-flex d-flex-left">
                 <div class="tabs__item">{{ getDate(payment.time) }}</div>
+                <div class="tabs__item">{{ payment.initialBalance.toFixed(8) }}</div>
                 <div class="tabs__item">{{ getBTCAmountWithFee(payment.amount) }} BTC</div>
+                <div class="tabs__item">{{ payment.udpatedBalance.toFixed(8) }} BTC</div>
             </div>
 
             
@@ -53,7 +57,7 @@
         },
         methods: {
             getBTCAmountWithFee(amount = this.fee) {
-                return (amount * this.satoshi - this.fee).toFixed(6);
+                return (amount * this.satoshi - this.fee).toFixed(8);
             },
             getDate(date = Date.now()) {
                 date = new Date(date);

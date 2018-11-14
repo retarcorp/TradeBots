@@ -62,7 +62,7 @@ class Balance {
 				confirmValue = confirmAmount * bitaps.satoshi,
 				currentBalance = Number(userData.walletBalance),
 				udpatedBalance = currentBalance + confirmValue,
-				newPaymentData = Object.assign({}, confirmData, { time: Date.now() }),
+				newPaymentData = Object.assign({}, confirmData, { time: Date.now(), initialBalance: currentBalance, udpatedBalance }),
 				updatePayments = userData.payments ? userData.payments : [];
 
 			updatePayments.push(newPaymentData);

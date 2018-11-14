@@ -330,7 +330,7 @@ const store = () =>
 				})
 				.catch(err => console.log(err));
 		},
-		editUser({ dispath, commit, getters }, payload){
+		editUser({ dispatch, commit, getters }, payload){
 			let user =  getters.getUser(payload); 
 
 			this.$axios

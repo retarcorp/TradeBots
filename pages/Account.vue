@@ -15,14 +15,14 @@
                     </div>
                 
                     <div class="account__menu-item">
-                        Аккаунт Binance: {{ getBinance ? 'задано' : 'не задано' }} 
+                        Ключи Binance: {{ getBinance ? 'задано' : 'не задано' }} 
                         <nuxt-link 
                             to="/Account/Binans" 
                             class="account__menu-link">{{ getBinance ? 'Изменить' : 'Задать' }}</nuxt-link>
                     </div>
 
                     <div class="account__menu-item">
-                        Баланс: {{ walletBalance ? walletBalance : 0 }} 
+                        Баланс: {{ walletBalance ? fixed(walletBalance, 8) : 0 }} 
                         <nuxt-link 
                             to="/Account/Balance"
                             class="account__menu-link">Пополнить</nuxt-link>
@@ -56,6 +56,10 @@ export default {
         }
     },
     methods: {
+        fixed(num = 0, dim = 0) {
+            num = Number(num).toFixed(dim);
+            return Number(num);
+        },
         getCurrentTariff () {
             this.$axios.$get('/api/user/getUsersTariffs')
                 .then(res => {

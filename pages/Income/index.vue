@@ -15,6 +15,15 @@
             </div>
         </div>
 
+        <div v-show="isDateSearch" class="bots__order incomes__common">
+            <div class="incomes__title title--big">Доход за {{searchDate1}} - {{searchDate2}}</div>
+            <div class="income-list" v-for="(value, key) in dateSearchIncome" :key="key">
+                <p class="title--medium">{{ key }}: {{ noExponents(value) }}</p>
+            </div>
+        </div>
+
+
+
         <p class="bots-income-title">Доход по сделкам:</p>
 
         <div class="bot-income-box">
@@ -30,10 +39,13 @@
                 </div>
                 <div class="bot-income-block tabs__item">
                     <label>Дата:</label>
-                    <label for="inpDate" class="button button--primary">(Сортировка по дате)</label>
+                    <label for="inpDate" class="dateSearch button button--primary">(Сортировка по дате)</label>
                     <input style="display: none" id="inpDate" type="checkbox" v-model="isDateSearch">
                     <input v-show="isDateSearch" type="date" id="start" name="trip-start"
-                        v-model="searchDate"
+                        v-model="searchDate1"
+                        min="2017-01-01" max="2100-01-01">
+                    <input v-show="isDateSearch" type="date" id="start" name="trip-start"
+                        v-model="searchDate2"
                         min="2017-01-01" max="2100-01-01">
                 </div>
             </div>
@@ -95,14 +107,19 @@ export default {
                 dayIncome: {},
                 allIncome: {}
             },
-            searchDate: this.getDateNow(),
-            searchDateTs: Date.now(),
+            searchDate1: this.getDateNow(),
+            searchDate2: this.getDateNow(),
+            searchDateTs1: Date.now(),
+            searchDateTs2: Date.now(),
             symbolsA: ['BTC', 'BNB', 'ETH', 'USDT']
         }
     },
     watch: {
-        searchDate() {
-            this.searchDateTs = new Date(this.searchDate).getTime();
+        searchDate1() {
+            this.searchDateTs1 = new Date(this.searchDate1).getTime();
+        },
+        searchDate2() {
+            this.searchDateTs2 = new Date(this.searchDate2).getTime();
         }
     },
     computed: {
@@ -111,7 +128,6 @@ export default {
         },
         // usdExh() {
         //     return this.$store.getters.getUsdExh || 0;
-        // },
         processesIncome() {
             let arr = [];
             const BUY = 'BUY', SELL = 'SELL', FILLED = 'FILLED', day = 86400000;
@@ -184,17 +200,29 @@ export default {
                         // else prcIncome.volume[sCurSymbol] = Number(prcIncome.volume[sCurSymbol].toFixed(5));
                         if(prcIncome.income[curSymbol] !== 0) {
                             if(this.isDateSearch) {
-                                let cdate = new Date(prcIncome.endTime),
+                                let cdate = new Date(prc.orders[0].time),
                                     cd = cdate.getDate(),
                                     cm = cdate.getMonth(),
                                     cy = cdate.getFullYear(),
-                                    sdate = new Date(this.searchDateTs),
-                                    sd = sdate.getDate(),
-                                    sm = sdate.getMonth(),
-                                    sy = sdate.getFullYear();
+                                    sdate1 = new Date(this.searchDateTs1),
+                                    sd1 = sdate1.getDate(),
+                                    sm1 = sdate1.getMonth(),
+                                    sy1 = sdate1.getFullYear(),
+                                    sdate2 = new Date(this.searchDateTs2),
+                                    sd2 = sdate2.getDate(),
+                                    sm2 = sdate2.getMonth(),
+                                    sy2 = sdate2.getFullYear();
 
-                                if(cd === sd && cm === sm && cy === sy) {
+                                if(sy1 !== sy2 && cy >= sy1 && cy <= sy2) {
                                     arr.push(prcIncome);
+                                } else if(sy1 === sy2 && cy === sy1){
+                                    if(sm1 !== sm2 && cm >= sm1 && cm <= sm2) {
+                                        arr.push(prcIncome);
+                                    } else if(sm1 === sm2 && cm === sm1) {
+                                        if(cd >= sd1 && cd <= sd2) {
+                                            arr.push(prcIncome);
+                                        }
+                                    }
                                 }
                             } else {
                                 arr.push(prcIncome);
@@ -258,6 +286,19 @@ export default {
                 arr.push(botIncome);
             });
             return arr;
+        },
+        dateSearchIncome() {
+            let income = {};
+            if(this.isDateSearch) {
+                const BUY = 'BUY', SELL = 'SELL', FILLED = 'FILLED';
+                
+                let prc = this.processesIncome || [];
+                prc.forEach(inc => {
+                    !income[inc.curSymbol] && (income[inc.curSymbol] = 0);
+                    income[inc.curSymbol] += Number(inc.income[inc.curSymbol]);
+                });
+            } 
+            return income;
         },
         dayIncome() {
             let income = {};
@@ -388,6 +429,9 @@ export default {
 </script>
 
 <style scoped>
+.dateSearch {
+    margin: 0 10px 0 10px;
+}
 .income-list {
     width: 100%;
 }
