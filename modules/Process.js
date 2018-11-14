@@ -732,7 +732,7 @@ module.exports = class Process {
 	async disableProcess(message = '') {
 		
 		await this._log(`завершение процесса, причина -> (${message})`);
-		if(this.symbol) this.cancelOrders(this.safeOrders);
+		if(this.symbol) await this.cancelOrders(this.safeOrders);
 
 		this.safeOrders = [];
 		this.currentOrder = {};
@@ -836,11 +836,18 @@ module.exports = class Process {
 	}
 
 	async cancelOrders(orders) {
-		for(let i = 0; i < orders.length; i++) 
-			this.cancelOrder(orders[i].orderId);
+		return new Promise( (resolve, reject) => {
+			for(let i = 0; i < orders.length; i++) {
+				if(i >= orders.length) {
+					this.cancelOrder(orders[i].orderId, resolve, reject);
+				} else {
+					this.cancelOrder(orders[i].orderId);
+				}
+			}
+		});
 	}
 
-	async cancelOrder(orderId = 0) {
+	async cancelOrder(orderId = 0, resolve, reject) {
 		orderId = Number(orderId);
 		try {
 			let pair = this.getSymbol();
@@ -871,12 +878,14 @@ module.exports = class Process {
 				}
 				
 				await this._log('закрытие ордера - ' + message);
+				if(resolve) resolve(true);
 				return {
 					status: status,
 					message: message,
 					data: { order: cancelOrder }
 				};
 			} else {
+				if(reject) reject(true);
 				status = 'error';
 				message = `Проблема с закрытием ордера ${orderId}`;
 				data = order;
@@ -886,6 +895,7 @@ module.exports = class Process {
 			}
 
 		} catch(error) {
+			if(reject) reject(true);
 			MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, error: error, order: {orderId: orderId, symbol: this.getSymbol()}, botID: this.botID, botTitle: this.botTitle, processId: this.processId, fnc: 'cancelOrder'})
 			await this._log('закрытие ордера - ' + error);
 			return {
