@@ -836,18 +836,11 @@ module.exports = class Process {
 	}
 
 	async cancelOrders(orders) {
-		return new Promise( (resolve, reject) => {
-			for(let i = 0; i < orders.length; i++) {
-				if(i >= orders.length) {
-					this.cancelOrder(orders[i].orderId, resolve, reject);
-				} else {
-					this.cancelOrder(orders[i].orderId);
-				}
-			}
-		});
+		for(let i = 0; i < orders.length; i++) 
+			await this.cancelOrder(orders[i].orderId);
 	}
 
-	async cancelOrder(orderId = 0, resolve, reject) {
+	async cancelOrder(orderId = 0) {
 		orderId = Number(orderId);
 		try {
 			let pair = this.getSymbol();
@@ -878,14 +871,12 @@ module.exports = class Process {
 				}
 				
 				await this._log('закрытие ордера - ' + message);
-				if(resolve) resolve(true);
 				return {
 					status: status,
 					message: message,
 					data: { order: cancelOrder }
 				};
 			} else {
-				if(reject) reject(true);
 				status = 'error';
 				message = `Проблема с закрытием ордера ${orderId}`;
 				data = order;
@@ -895,7 +886,6 @@ module.exports = class Process {
 			}
 
 		} catch(error) {
-			if(reject) reject(true);
 			MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, error: error, order: {orderId: orderId, symbol: this.getSymbol()}, botID: this.botID, botTitle: this.botTitle, processId: this.processId, fnc: 'cancelOrder'})
 			await this._log('закрытие ордера - ' + error);
 			return {
