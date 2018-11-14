@@ -732,7 +732,7 @@ module.exports = class Process {
 	async disableProcess(message = '') {
 		
 		await this._log(`завершение процесса, причина -> (${message})`);
-		if(this.symbol) await this.cancelOrders(this.safeOrders);
+		if(this.symbol) this.cancelOrders(this.safeOrders);
 
 		this.safeOrders = [];
 		this.currentOrder = {};
@@ -837,7 +837,7 @@ module.exports = class Process {
 
 	async cancelOrders(orders) {
 		for(let i = 0; i < orders.length; i++) 
-			await this.cancelOrder(orders[i].orderId);
+			this.cancelOrder(orders[i].orderId);
 	}
 
 	async cancelOrder(orderId = 0) {
