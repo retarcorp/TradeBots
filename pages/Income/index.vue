@@ -4,14 +4,14 @@
         <div class="bots__order incomes__common">
             <div class="incomes__title title--big">Доход за сегодня</div>
             <div class="income-list" v-for="(value, key) in dayIncome" :key="key">
-                <p class="title--medium">{{ key }}: {{ value }}</p>
+                <p class="title--medium">{{ key }}: {{ noExponents(value) }}</p>
             </div>
         </div>
 
         <div class="bots__order incomes__common">
             <div class="incomes__title title--big">Доход за все время</div>
             <div class="income-list" v-for="(value, key) in allIncome" :key="key">
-                <p class="title--medium">{{ key }}: {{ value }}</p>
+                <p class="title--medium">{{ key }}: {{ noExponents(value) }}</p>
             </div>
         </div>
 
