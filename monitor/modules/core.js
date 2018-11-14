@@ -9,7 +9,12 @@ module.exports = Core = {
             ,uri: 'http://localhost:3003/api/tradeSignals/getData'
         }, (err, response, body) => {
             let data = [];
-            body = JSON.parse(body);
+            try {
+                body = JSON.parse(body);
+            } catch(error) {
+                err = error;
+            }
+            
             if (err) {
                 console.log(err);
                 return;

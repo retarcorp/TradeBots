@@ -56,7 +56,8 @@
                 email: '',
                 password: '',
                 confirmPassword: '',
-                captchaToken: ''
+                captchaToken: '',
+                grecaptchaId: 0,
             }
         },
         components: {
@@ -64,7 +65,7 @@
         },
         mounted: function() {
             if (window.grecaptcha && window.grecaptcha.render) {
-                window.grecaptcha.render('g-recaptcha-placeholder');
+                this.grecaptchaId = window.grecaptcha.render('g-recaptcha-placeholder');
             }
         },
         computed: {
@@ -89,7 +90,7 @@
             onSignUp() {
                 // this.$store.commit('setSpiner', true);
                 // console.log(this.$refs.recaptcha.value);
-                if (!((this.captchaToken = window.grecaptcha.getResponse(0)).length)) {
+                if (!((this.captchaToken = window.grecaptcha.getResponse(this.grecaptchaId)).length)) {
                     //@TODO Add handler
                     this.$store.commit('setStatus', 'info');
                     this.$store.commit('setMessage', "Для регистрации нужно подтвердить капчу");
