@@ -4,7 +4,9 @@
 		<div class="lines-box" v-for="(value, key) in _usersLogs" :key="key">
 			<h3 style="margin-bottom: 1rem;">{{key}} {{value[0].message.user.name}}</h3>
 			<div class="lines-conteiner">
-				<p class="lines" v-for="(elem, i) in value" :key="i">{{elem.message.fnc}} {{ elem.level === 'error' ? elem.message.error.code : ''}} {{`${elem.message.botTitle} ${elem.message.botID} ${elem.message.processId}`}} {{ elem.message.order ? elem.message.order : ''}}</p>
+				<p class="lines" v-for="(elem, i) in value" :key="i">{{elem.message.fnc}} {{`${elem.message.botTitle} ${elem.message.botID} ${elem.message.processId}`}} {{ elem.message.order ? elem.message.order : ''}}</p>
+				<p>{{ elem.level === 'error' ? elem.message.error.code : ''}}</p>
+				<p>{{ elem.level === 'error' ? elem.message.error : ''}}</p>
 			</div>
 		</div>
  	</div>
