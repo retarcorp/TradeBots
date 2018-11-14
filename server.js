@@ -28,6 +28,7 @@ const Users = require('./modules/Users');
 let Symbols = require('./modules/Symbols');
 let Income = require('./modules/Income');
 const CoinMarketCap = require('./modules/CoinMarketCap');
+const LoggerViewer = require('./modules/LoggerViewer');
 Mongo.init()
 	.then(async data => {
 		Users.Bots.setBotsArray().then(result => {
@@ -38,6 +39,7 @@ Mongo.init()
 		// Symbols.updateSymbolsPricesList();
 		Symbols.updateSymbolsList();
 		CoinMarketCap.dailyUpdatePrices();
+		LoggerViewer.syncLogData();
 		
 		Core.init();
 	});

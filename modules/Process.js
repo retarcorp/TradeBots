@@ -1125,15 +1125,14 @@ module.exports = class Process {
 			});
 		}
 		catch(error) {
-			
 			console.log(error)
 			MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, error, order: {symbol: pair, orderId: orderId}, botID: this.botID, botTitle: this.botTitle, processId: this.processId, fnc: 'getOrder'})
-			if(await this.isError1021(error)) {
-				console.log('ошибочка с меткой времени и окном', orderId);
-				return await this.getOrder(orderId);
-			} else {
-				await this._log( 'произошла ошибка при getOrder ' + this.errorCode(error) );
-			}
+			// if(await this.isError1021(error)) {
+			// 	console.log('ошибочка с меткой времени и окном', orderId);
+			await this._log( 'произошла ошибка при getOrder ' + this.errorCode(error) );
+			return await this.getOrder(orderId);
+			// } else {
+			// }
 		}
 		return new Order(order);
 	}

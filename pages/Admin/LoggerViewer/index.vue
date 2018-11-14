@@ -38,19 +38,21 @@ export default {
 	},
 	methods: {
 		getLogData() {
+			let start = this.logs.length,
+				end = start + 1000;
 			this.$axios
-				.$post('/api/admin/loggerViewer', {start: 1000, end: 10000})
+				.$post('/api/admin/loggerViewer', {start, end})
 				.then(data => {
 					if(data.status === 'ok') {
-						this.logs = data.data;
-						// setTimeout(() => {
-						// 	this.getLogData();	
-						// }, 5000)
+						this.logs.push(...data.data);
+						setTimeout(() => {
+							this.getLogData();	
+						}, 5000)
 					} else {
 						console.log(data);
-						// setTimeout(() => {
-						// 	this.getLogData()
-						// }, 100000);
+						setTimeout(() => {
+							this.getLogData()
+						}, 100000);
 					}
 				})
 				.catch(error => {
