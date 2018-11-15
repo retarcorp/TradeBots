@@ -5,7 +5,7 @@
 			<h3 style="margin-bottom: 1rem;">{{key}} {{value[0].message.user.name}}</h3>
 			<div class="lines-conteiner">
 				<div v-for="(elem, i) in value" :key="i">
-					<p class="lines" >{{elem.message.fnc}} {{`${elem.message.botTitle} ${elem.message.botID} ${elem.message.processId}`}} {{ elem.message.order ? elem.message.order : ''}}</p>
+					<p class="lines" >{{elem.time}} : {{elem.message.fnc}} {{`${elem.message.botTitle} ${elem.message.botID} ${elem.message.processId}`}} {{ elem.message.order ? elem.message.order : ''}}</p>
 					<p>{{ elem.level === 'error' ? elem.message.error.code : ''}}</p>
 					<p>{{ elem.level === 'error' ? elem.message.error : ''}}</p>
 				</div>

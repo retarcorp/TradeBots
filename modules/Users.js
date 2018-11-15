@@ -614,19 +614,35 @@ let Users = {
 			});
 		}
 
+		,activeProccesExist(bot = []) {
+			for (let prcId in bot.processes) {
+				if(bot.processes[prcId].status || bot.processes[prcId].finallyStatus) {
+					return true;
+				}
+			}
+			return false;
+		}
+
 		,setStatus(user, botData, callback) {
 			try {
 				Mongo.select(user, 'users', (data) => {
 					if(data.length && (data = data[0])) {
 
-						if(data.tariffs.length > 0) {
-							const index = this.Bots.findIndex(bot => bot.botID === botData.botID)
-	
-							this.Bots[index].changeStatus(botData.status, data)
+						if(data.tariffs.length > 0 || data.bots.length < data.maxBotAmount) {
+							const index = this.Bots.findIndex(bot => bot.botID === botData.botID);
+							const asset = this.Bots[index].pair.to;
+							let reservedBalance = 0;
+							data.bots.forEach(bot => {
+								if(!bot.isDeleted && bot.reservedBalance.asset === asset && bot.botID !== botData.botID && this.activeProccesExist(bot)) {
+									reservedBalance += Number(bot.reservedBalance.amount);
+								}
+							});
+
+
+							this.Bots[index].changeStatus(botData.status, data, reservedBalance)
 								.then( d => callback(d))
 								.catch( err => callback({status:'error', error: err}));
 						} else callback(M.getFailureMessage({message: 'Срок действия активных тарифов окончен.'}));
-
 					} else callback(M.getFailureMessage({message: 'Пользователь не найден!'}));
 				})
 			}
@@ -730,10 +746,15 @@ let Users = {
 					// data.bots[index] = bot
 					this.Bots[index].changeFreeze(reqData.freeze, data)
 					.then(d => callback(d) )
-					.catch(error => callback({
-						status: 'error',
-						message: error
-					}))
+					.catch(error => {
+						console.log('EEERORORR')
+						console.log(error)
+						callback({
+							status: 'error',
+							message: error
+						})
+
+					})
 				})
 			}
 			catch(error) {

@@ -31,6 +31,10 @@ module.exports = class Bot {
 		pair = {},
 		botSettings = {},
 		processes = {},
+		reservedBalance = {
+			asset: '',
+			amount: 0
+		},
 		weight = 0,
 		isDeleted = false
 	} = {}, user = {}) {
@@ -44,6 +48,7 @@ module.exports = class Bot {
 		this.botID = botID;
 		this.processes = processes;
 		this.user = user;
+		this.reservedBalance = reservedBalance;
 		if(weight) {
 			this.weight = weight;
 		} else if(this.isManual()) {
@@ -105,35 +110,42 @@ module.exports = class Bot {
 		}
 	}
 
-	async changeStatus(nextStatus, user = this.user) {
+	async changeStatus(nextStatus, user = this.user, reservedBalance = 0) {
 		user = { name: user.name, userId: user.userId, binanceAPI: user.binanceAPI, regDate: user.regDate };
 		this.user = user;
 
 		let message = '',
 			status = '';
-		
+
+
+			
 		if(this.checkForActivate(nextStatus)) {
 			this.status = nextStatus;
-			
-			if(this.isManual()) {
-				this.botSettings.decimalQty = await Symbols.getLotSize(this.getPair());
-				this.botSettings.tickSize = await Symbols.getTickSize(this.getPair());
-				status = 'ok';
-				message = 'Бот запущен (РУЧНОЙ)';
-				await this.updateBot(user);
-				this.startManual(user);
-			} else if(this.isAuto()) {
-				this.botSettings.decimalQty = await Symbols.getLotSize(this.getPair());
-				this.botSettings.tickSize = await Symbols.getTickSize(this.getPair());
-				status = 'ok';
-				message = 'Бот запущен (АВТО)';
-				await this.updateBot(user);
-				this.startAuto(user);
+			this.botSettings.decimalQty = await Symbols.getLotSize(this.getPair());
+			this.botSettings.tickSize = await Symbols.getTickSize(this.getPair());
+			if(await this.checkClientAssetBalance(user, reservedBalance)) {
+				delete this.Client;
+				if(this.isManual()) {
+					status = 'ok';
+					message = 'Бот запущен (РУЧНОЙ)';
+					await this.updateBot(user);
+					this.startManual(user);
+				} else if(this.isAuto()) {
+					status = 'ok';
+					message = 'Бот запущен (АВТО)';
+					await this.updateBot(user);
+					this.startAuto(user);
+				} else {
+					status = 'error';	
+					message = "Ошибка (НЕИЗВЕСТНЫЙ ТИП БОТА)";
+					this.status = CONSTANTS.BOT_STATUS.INACTIVE;
+				}
 			} else {
 				status = 'error';	
-				message = "Ошибка (НЕИЗВЕСТНЫЙ ТИП БОТА)";
+				message = `Нехватает баланса валюты ${this.reservedBalance.asset} для корректной работы бота, требуется минимум ${this.reservedBalance.amount} ${this.reservedBalance.asset}`;
 				this.status = CONSTANTS.BOT_STATUS.INACTIVE;
 			}
+
 		} else if(this.checkForDeactivate(nextStatus)) {
 			this.status = nextStatus;
 			for (let processId in this.processes) {
@@ -199,7 +211,9 @@ module.exports = class Bot {
 			}
 		}
 		for (let processId in this.processes) {
-			this.processes[processId].changeFreeze(this.freeze, this.preFreeze);
+			if(this.processes[processId].changeFreeze) {
+				this.processes[processId].changeFreeze(this.freeze, this.preFreeze);
+			}
 		}
 		await this.updateBot(user);
 		return res;
@@ -207,6 +221,7 @@ module.exports = class Bot {
 
 	//:: START FUNC
 	async startManual(user = this.user) {
+		console.log('SSSSSSSSSss')
 		log('startManual');
 		let resObj = {
 			symbol: this.getPair(),
@@ -231,9 +246,10 @@ module.exports = class Bot {
 
 		this.processes[newProcess.processId]
 			.startTrade(user)
-			.then( result => {
+			.then( async result => {
 				console.log(result)
 				if(this.status === CONSTANTS.BOT_STATUS.ACTIVE && result === 'finish') {
+					await this.awaitFreeze();
 					this.startManual(user);
 				}
 			})
@@ -280,7 +296,8 @@ module.exports = class Bot {
 						
 					this.processes[newProcess.processId]
 						.startTrade(user)
-						.then( result => {
+						.then( async result => {
+							await this.awaitFreeze();
 							this.processes[newProcess.processId].setRunnigProcess();
 							this.botSettings.amountPairsUsed--;
 						})
@@ -313,7 +330,7 @@ module.exports = class Bot {
 	//************************************************************************************************//
 	
 	//:: SET FUNC
-	setClient(user) {
+	setClient(user = this.user) {
 		let key = '',
 			secret = '',
 			ret = true;
@@ -367,6 +384,62 @@ module.exports = class Bot {
 	//************************************************************************************************//
 	
 	//:: CHECK FUNC
+	async checkClientAssetBalance(user = this.user, reservedBalance = 0) {
+		this.setClient(user);
+		let accountInfo = await this.Client.accountInfo(),
+			asset = this.pair.to,
+			canTrade = accountInfo.canTrade,
+			balances = accountInfo.balances;
+
+		balances = balances.find(elem => {
+			return elem.asset === asset;
+		})
+		console.log({reservedBalance, balances})
+		if(balances && canTrade) {
+
+			let free = Number(balances.free);
+			let curFree = free - reservedBalance,
+				bs = this.botSettings,
+				initialOrder = Number(bs.initialOrder),
+				safeOrderSize = Number(bs.safeOrder.size),
+				maxAmountPairsUsed = Number(bs.maxAmountPairsUsed);
+
+			this.reservedBalance.asset = asset;
+
+			if(this.isManual()) {
+				let plannedСosts = initialOrder + safeOrderSize;
+				this.reservedBalance.amount = plannedСosts;
+				return curFree > plannedСosts;
+			} else if(this.isAuto()) {
+				let plannedСosts = (initialOrder + safeOrderSize) * maxAmountPairsUsed;
+				this.reservedBalance.amount = plannedСosts;
+				return curFree > plannedСosts;
+			} 
+		}
+		return false;
+	}
+	
+	async awaitFreeze(flag = false, resolve = () => {}, reject = () => {}) {
+		console.log('1000')
+		if(flag) {
+			if(this.isFreeze()) {
+				setTimeout( () => {
+					this.awaitFreeze(flag, resolve, reject);
+				}, CONSTANTS.TIMEOUT);
+			} else {
+				resolve(true);
+			}
+		} else {
+			return new Promise( (resolve, reject ) => {
+				this.awaitFreeze(true, resolve, reject);
+			});
+		}
+	}
+
+	isFreeze() {
+		return this.freeze === CONSTANTS.BOT_FREEZE_STATUS.ACTIVE;
+	}
+
 	isManual() {
 		return this.state === CONSTANTS.BOT_STATE.MANUAL;
 	}

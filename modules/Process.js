@@ -302,7 +302,7 @@ module.exports = class Process {
 							reject('finish');
 						}
 				} else {
-					this.setErrors(newBuyOrder, `Проблемы с получением информации об ордере! ${this.currentOrder}`);
+					this.setErrors(this.currentOrder.orderId, `Проблемы с получением информации об ордере! ${JSON.stringify(this.currentOrder)}`);
 					await this.disableProcess('Неуспешная покупка монет.');
 					await this.updateProcess(user);
 					reject('finish');
@@ -319,7 +319,7 @@ module.exports = class Process {
 					tickTime += CONSTANTS.ORDER_TIMEOUT;
 					this.trade(user, false, resolve, reject, tickTime);
 				} else {
-					await this.cancelOrder(this.currentOrder.orderId);
+					await this.cancelOrder(this.currentOrder);
 					resolve('time_limit');
 				}
 			}
@@ -355,7 +355,7 @@ module.exports = class Process {
 					let order = await this.getOrder(orders[i].orderId);
 					if(order.orderId) {
 						if(this.checkFilling(order.status)) {
-							await this.cancelOrder(this.currentOrder.orderId);
+							await this.cancelOrder(this.currentOrder);
 							this.recountInitialOrder(order);
 							this.recountQuantity(order.origQty);
 	
@@ -401,7 +401,7 @@ module.exports = class Process {
 							nextSafeOrders.push(order);
 						}
 					} else {
-						this._log((i + 1) + 'й страховочной ордер - ' + order);
+						this._log((i + 1) + 'й страховочной ордер - ' + JSON.stringify(order));
 						
 					}
 				}
@@ -460,7 +460,7 @@ module.exports = class Process {
 			} else if(this.checkCanceling(order.status) || this.checkFailing(order.status)) { // если ордер отменили или произошла ошибка
 				resolve({});
 			} else if( (Date.now() - time) >= tenMin) { // если время ожидания прошло
-				await this.cancelOrder(order.orderId);
+				await this.cancelOrder(order);
 				reject('time_limit');
 			} else { 
 				setTimeout( () => {
@@ -488,7 +488,8 @@ module.exports = class Process {
 			} else {
 				let orderId = newBuyOrder.orderId,
 					order = await this.getOrder(orderId);
-					
+				
+				console.log('____________________-')
 				if(order.orderId) {
 					this.orders.push(order);
 					this.currentOrder = order;
@@ -650,7 +651,7 @@ module.exports = class Process {
 				if(newOrder.orderId) this.botSettings.lastSafeOrderPrice = newOrder.price;
 			}
 			catch(error) {
-				await this._log(error);
+				await this._log(JSON.stringify(error));
 			}
 		}	
 		return newOrder;
@@ -731,9 +732,13 @@ module.exports = class Process {
 
 	async disableProcess(message = '') {
 		
+		try {
+			if(this.symbol) await this.cancelOrders(this.safeOrders);
+		} catch(error) {					
+			MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, sOrders: this.safeOrders, error, botID: this.botID, botTitle: this.botTitle, processId: this.processId, fnc: 'disableProcess'});
+			await this._log(JSON.stringify(error));
+		}
 		await this._log(`завершение процесса, причина -> (${message})`);
-		if(this.symbol) await this.cancelOrders(this.safeOrders);
-
 		this.safeOrders = [];
 		this.currentOrder = {};
 		
@@ -762,8 +767,13 @@ module.exports = class Process {
 		await this._log('Завершение всех ордеров и продажа по рынку.');
 		try{
 			if(this.currentOrder.orderId) {
-				await this.cancelOrders(this.safeOrders);
-				await this.cancelOrder(this.currentOrder.orderId);
+				try {
+					if(this.symbol) await this.cancelOrders(this.safeOrders);
+				} catch(error) {					
+					MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, sOrders: this.safeOrders, error, botID: this.botID, botTitle: this.botTitle, processId: this.processId, fnc: 'cancelAllOrders'});
+					await this._log(JSON.stringify(error));
+				}
+				await this.cancelOrder(this.currentOrder);
 	
 				if(this.isOrderSell(this.currentOrder.side)) {
 					let lastPrice = await this.getLastPrice(),
@@ -773,7 +783,7 @@ module.exports = class Process {
 					if(newOrder.orderId) {
 						this.orders.push(newOrder);
 					} else {
-						await this._log(`Невозможно выставить sell ордер (${newOrder})`);
+						await this._log(`Невозможно выставить sell ордер (${JSON.stringify(newOrder)})`);
 					}
 				}
 				
@@ -798,7 +808,7 @@ module.exports = class Process {
 		}
 		catch(error) {
 			console.log(error);
-			await this._log(error);
+			await this._log(JSON.stringify(error));
 			return {
 				status: 'error',
 				message: `Ошибка процессе завершения всех ордеров и продажи по рынку (код ошибки ${this.errorCode(error)}) :: ${error}`
@@ -810,8 +820,13 @@ module.exports = class Process {
 		await this._log('Завершение всех ордеров.');
 		try{
 			if(this.currentOrder.orderId) {
-				await this.cancelOrders(this.safeOrders);
-				await this.cancelOrder(this.currentOrder.orderId);
+				try {
+					if(this.symbol) await this.cancelOrders(this.safeOrders);
+				} catch(error) {					
+					MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, sOrders: this.safeOrders, error, botID: this.botID, botTitle: this.botTitle, processId: this.processId, fnc: 'cancelAllOrdersWithoutSell'});
+					await this._log(JSON.stringify(error));
+				}
+				await this.cancelOrder(this.currentOrder);
 
 				this.orders = await this.updateOrders(this.orders);
 				await this.updateProcess(user);
@@ -827,7 +842,7 @@ module.exports = class Process {
 			}
 		}
 		catch(error) {
-			await this._log(error);
+			await this._log(JSON.stringify(error));
 			return {
 				status: 'error',
 				message: `Ошибка процессе завершения всех ордеров и продажи по рынку (код ошибки ${this.errorCode(error)}) :: ${error}`
@@ -835,22 +850,46 @@ module.exports = class Process {
 		}
 	}
 
-	async cancelOrders(orders) {
-		for(let i = 0; i < orders.length; i++) 
-			await this.cancelOrder(orders[i].orderId);
+	// async cancelOrders(orders) {
+	// 	for(let i = 0; i < orders.length; i++) 
+	// 		await this.cancelOrder(orders[i]);
+	// }
+
+	cancelOrders(orders = []) {
+		console.log('cancelOrders')
+		return new Promise( (resolve, reject) => {
+			let l = orders.length;
+			if(l) {
+				for(let i = 0; i < l; i++) {
+					console.log(i);
+					if(i === l - 1) {
+						console.log('!!!!')
+						this.cancelOrder(orders[i], resolve, reject);
+					} else {
+						this.cancelOrder(orders[i]);
+					}
+				}
+			} else {
+				resolve(true);
+			}
+		});
 	}
 
-	async cancelOrder(orderId = 0) {
-		orderId = Number(orderId);
+	async cancelOrder(order = {}, resolve, reject) {
+		if(typeof order === 'number') {
+			order = await this.getOrder(order);
+		}
+		// orderId = Number(orderId);
 		try {
-			let pair = this.getSymbol();
-			let order = await this.getOrder(orderId),
+			// let order = await this.getOrder(orderId),
+			let pair = this.getSymbol(),
 				side = order.side,
+				orderId = order.orderId,
 				qty = order.origQty,
 				status = '',
 				message = '';
 
-			if(order.orderId) {
+			if(orderId) {
 				try {
 					var cancelOrder = await this.Client.cancelOrder({
 						symbol: pair,
@@ -862,12 +901,12 @@ module.exports = class Process {
 					}
 					status = 'ok';
 					message = `ордер ${cancelOrder.orderId} завершен`;
-				}
-				catch(error) {
-					
+					if(resolve) resolve(message);
+				} catch(error) {
 					MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, order: {orderId: orderId, symbol: pair}, error, botID: this.botID, botTitle: this.botTitle, processId: this.processId, fnc: 'cancelOrder'});
 					status = 'error';
 					message = `ошибка при завершении ордера ${cancelOrder.orderId}`;
+					if(reject) reject(message);
 				}
 				
 				await this._log('закрытие ордера - ' + message);
@@ -880,18 +919,20 @@ module.exports = class Process {
 				status = 'error';
 				message = `Проблема с закрытием ордера ${orderId}`;
 				data = order;
+				if(reject) reject(message);
 
 				this.setErrors(order, message);
 				return { status, message, data };
 			}
 
 		} catch(error) {
-			MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, error: error, order: {orderId: orderId, symbol: this.getSymbol()}, botID: this.botID, botTitle: this.botTitle, processId: this.processId, fnc: 'cancelOrder'})
-			await this._log('закрытие ордера - ' + error);
+			MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, error: error, order: {orderId: order.orderId, symbol: this.getSymbol(), order}, botID: this.botID, botTitle: this.botTitle, processId: this.processId, fnc: 'cancelOrder'})
+			await this._log('закрытие ордера - ' + JSON.stringify(error));
+			if(reject) reject(error);
 			return {
 				status: 'error',
 				message: error,
-				data: { orderId: orderId }
+				data: { orderId: order.orderId }
 			};
 		}
 	}
@@ -912,7 +953,7 @@ module.exports = class Process {
 		this.freezeOrders.current = freezeCO;
 
 		await this.cancelOrders(this.safeOrders);
-		await this.cancelOrder(this.currentOrder.orderId);
+		await this.cancelOrder(this.currentOrder);
 		await this.updateProcess(user);
 		await this._log('Бот успешно заморожен.');
 	}
@@ -1115,32 +1156,66 @@ module.exports = class Process {
 		return new Order(order);
 	}
 
+
+	// вот в этой еб*чей функции по ночам в 00:40 по минскому времени появляется неизвестная ошибка с ответа сервера бинанса
+	// и этот момент нужно обработать что бы все работало шикарно, еб вашу мать!
+	// async getOrder(orderId = 0) {
+	// 	orderId = Number(orderId);
+	// 	let pair = this.getSymbol(),
+	// 		order = {};
+	// 	try{
+	// 		order = await this.Client.getOrder({
+	// 			symbol: pair,
+	// 			orderId: orderId
+	// 		});
+	// 	} catch(error) {
+	// 		console.log(error)
+	// 		MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, error, order: {symbol: pair, orderId: orderId, order: order}, botID: this.botID, botTitle: this.botTitle, processId: this.processId, fnc: 'getOrder'})
+	// 		// if(await this.isError1021(error)) {
+	// 		// 	console.log('ошибочка с меткой времени и окном', orderId);
+	// 		await this._log( 'произошла ошибка при getOrder (errCode: ' + this.errorCode(error) + ')' );
+	// 		if(this.isError2013(error)) {
+	// 			console.log(error);
+	// 			return this.errorCode(error);
+	// 		} else {
+	// 			return await this.getOrder(orderId);
+	// 		}
+	// 	}
+	// 	return new Order(order);
+	// }
+
 	async getOrder(orderId = 0) {
-		orderId = Number(orderId);
-		let pair = this.getSymbol(),
-			order = {};
-		try{
-			order = await this.Client.getOrder({
-				symbol: pair,
-				orderId: orderId,
-				recvWindow: CONSTANTS.RECV_WINDOW
-			});
-		} catch(error) {
-			console.log(error)
-			MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, error, order: {symbol: pair, orderId: orderId}, botID: this.botID, botTitle: this.botTitle, processId: this.processId, fnc: 'getOrder'})
-			// if(await this.isError1021(error)) {
-			// 	console.log('ошибочка с меткой времени и окном', orderId);
-			await this._log( 'произошла ошибка при getOrder (errCode: ' + this.errorCode(error) + ')' );
-			if(this.isError2013(error)) {
-				console.log(error);
-				return this.errorCode(error);
-			} else {
-				sleep(10000);
-				return await this.getOrder(orderId);
-			}
-		}
-		return new Order(order);
+		return new Promise( (resolve, reject) => {
+			this.getOrder_helper(orderId, resolve, reject);
+		});
 	}
+
+	async getOrder_helper(orderId = 0, resolve = () => {}, reject = () => {}) {
+		orderId = Number(orderId);
+		let order = {};
+		if(orderId) {
+			try {
+				let symbol = this.getSymbol();
+				order = await this.Client.getOrder({ symbol, orderId });
+				resolve(new Order(order));
+			} catch (error) {
+				await this._log( 'произошла ошибка при getOrder (errCode: ' + this.errorCode(error) + ')' );
+				MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, error, order: {symbol, orderId, order}, botID: this.botID, botTitle: this.botTitle, processId: this.processId, fnc: 'getOrder'})
+				if(this.isError2013(error)) {
+					reject(new Order(order));
+				} else {
+					setTimeout( () => {
+						this.getOrder_helper(orderId, resolve, reject);
+					}, 100);
+				}
+			}	
+		} else {
+			reject(new Order(order));
+		}
+	}
+
+
+
 
 	getDate(date = Date.now()) {
 		date = new Date(date);
