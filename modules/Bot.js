@@ -607,6 +607,7 @@ module.exports = class Bot {
 			this.botSettings.deviation = next.botSettings.deviation;
 			this.botSettings.martingale = next.botSettings.martingale;
 			this.botSettings.maxAmountPairsUsed = next.botSettings.maxAmountPairsUsed;
+			this.botSettings.minNotional = next.botSettings.minNotional;
 			this.botSettings.decimalQty = await Symbols.getLotSize(this.getPair());
 			this.botSettings.tickSize = await Symbols.getTickSize(this.getPair());
 	
@@ -747,9 +748,10 @@ module.exports = class Bot {
 					});
 				}
 			} catch (error) {
+				console.log(error);
 				reject({
 					status: 'error',
-					message: `eeeror ${err}`
+					message: `eeeror ${JSON.stringify(error)}`
 				});
 			}
 		});
@@ -773,6 +775,7 @@ module.exports = class Bot {
 					if(processId && this.processes[processId]) {
 						let res = await this.processes[processId].cancelAllOrders(user);
 						if(res.status !== 'error') {
+							// await this.processes[processId]._log('Нажали на "отменить и продать".');
 							await this.processes[processId].disableProcess('Нажали на "отменить и продать".', CONSTANTS.CONTINUE_FLAG);
 						}
 						resolve(res);
@@ -785,9 +788,10 @@ module.exports = class Bot {
 				}
 			}
 			catch(err) {
+				console.log(err);
 				reject({
 					status: 'error',
-					message: `eeeror ${err}`
+					message: `eeeror ${JSON.stringify(err)}`
 				});
 			}
 		});

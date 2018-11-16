@@ -14,8 +14,8 @@
             </div>
             <div v-for="(payment, i) in payments" :key="i" class="tabs d-flex d-flex-left">
                 <div class="tabs__item">{{ getDate(payment.time) }}</div>
-                <div class="tabs__item">{{ payment.initialBalance.toFixed(8) }}</div>
-                <div class="tabs__item">{{ getBTCAmountWithFee(payment.amount) }} BTC</div>
+                <div class="tabs__item">{{ payment.initialBalance.toFixed(8) }} BTC</div>
+                <div class="tabs__item">{{ getPaydedValue(payment.initialBalance, payment.udpatedBalance) }} BTC</div>
                 <div class="tabs__item">{{ payment.udpatedBalance.toFixed(8) }} BTC</div>
             </div>
 
@@ -56,6 +56,11 @@
             }
         },
         methods: {
+            getPaydedValue(balance = 0, nextBalance = 0) {
+                let paydedValue = Number(nextBalance) - Number(balance);
+                return paydedValue.toFixed(8);
+            },
+            
             getBTCAmountWithFee(amount = this.fee) {
                 return (amount * this.satoshi - this.fee).toFixed(8);
             },

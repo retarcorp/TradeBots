@@ -387,6 +387,8 @@ export default {
                 this.isAlreadyPushed = true;
                 let path = '';
                 let nextData = {};
+                
+                this.bot.botSettings.minNotional = this.minNotional;
                 let nextBotSettings = { 
                     botID: this.bot.botID,
                     title: this.bot.title,

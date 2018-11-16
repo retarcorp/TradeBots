@@ -373,6 +373,7 @@
                 if(!this.isAlreadyPushed) {
                     this.isAlreadyPushed = true;
                     this.$store.commit('setСonfigurationProcess', false);
+                    this.bot.botSettings.minNotional = this.minNotional;
                     if(this.bot.botID) {
                         let nextBotSettings = {
                             botID: this.bot.botID,

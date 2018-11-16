@@ -366,7 +366,7 @@ module.exports = class Process {
 								this.currentOrder = newSellOrder;
 								this.orders.push(this.currentOrder);
 							} else {
-								await this._log(`невозможно выставить sell ордер (${newSellOrder})`);
+								await this._log(`невозможно выставить sell ордер (${JSON.stringify(newSellOrder)})`);
 								await this.disableProcess("Ошибка при выставлении нового sell ордера после покупки страховочного!");
 								await this.updateProcess(user);
 								return 'finish';
@@ -412,18 +412,19 @@ module.exports = class Process {
 			this.safeOrders = nextSafeOrders;
 
 		} else if(this.isFreeze() && !this.isPreFreeze()) {
-			//тип вроде нихуя делать не надо
+			//тип вроде нихуя делать не надо ибо бот заморожен
 		} else if(!this.isFreeze() && this.isPreFreeze() && this.isNeedToOpenNewSafeOrders()) {
 			//тип надо выставить некст сейв ордер, если еще можно
 			let newSafeOrder = await this.createSafeOrder();
 			
 			if(newSafeOrder.orderId) {
 				this.orders.push(newSafeOrder);
-				nextSafeOrders.push(newSafeOrder);
+				this.safeOrders.push(newSafeOrder);
+				// nextSafeOrders.push(newSafeOrder);
 			} else {
 				await this._log("Невозможно выставить страховочный ордер (недостаточно баланса)");
 			}
-			this.safeOrders = nextSafeOrders;
+			// this.safeOrders = nextSafeOrders;
 
 		} else {
 			let price = await this.getLastPrice(),
@@ -571,10 +572,10 @@ module.exports = class Process {
 			let newSellOrder = await this.Client.order(newOrderParams);
 			this.recountQuantity(newSellOrder.origQty, 1);
 			await this._log('создан оредер - цена: ' + newSellOrder.price + ', кол-во: ' + newSellOrder.origQty);
-			MDBLogger.info({user: {userId: this.user.userId, name: this.user.name}, botID: this.botID, botTitle: this.botTitle, processId: this.processId, newSellOrder, fnc: 'newSellOrder'});
+			MDBLogger.info({user: {userId: this.user.userId, name: this.user.name}, price, type, pair, quantity, botID: this.botID, botTitle: this.botTitle, processId: this.processId, newSellOrder, fnc: 'newSellOrder'});
 			return new Order(newSellOrder);
 		} catch(error) {
-			MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, error, prevError, botID: this.botID, botTitle: this.botTitle, processId: this.processId, price, quantity, amount, fnc: 'newSellOrder'});
+			MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, price, type, pair, quantity, error, prevError, botID: this.botID, botTitle: this.botTitle, processId: this.processId, price, quantity, amount, fnc: 'newSellOrder'});
 			console.log(error);
 			console.log(this.errorCode(error), this.errorCode(prevError), price);
 			// await this._log(this.errorCode(error));
@@ -724,6 +725,7 @@ module.exports = class Process {
 		bs.deviation = next.deviation;
 		bs.martingale = next.martingale;
 		bs.maxAmountPairsUsed = next.maxAmountPairsUsed;
+		bs.minNotional = next.minNotional;
 		bs.decimalQty = await Symbols.getLotSize(this.getSymbol());
 		bs.tickSize = await Symbols.getTickSize(this.getSymbol());
 
@@ -805,8 +807,7 @@ module.exports = class Process {
 					message: 'Невозможно продать монеты, так как ордеров нет или первый закупочный ордер еще не завершился.'
 				};
 			}
-		}
-		catch(error) {
+		} catch(error) {
 			console.log(error);
 			await this._log(JSON.stringify(error));
 			return {
@@ -893,8 +894,9 @@ module.exports = class Process {
 				try {
 					var cancelOrder = await this.Client.cancelOrder({
 						symbol: pair,
-						orderId: orderId,
-						recvWindow: CONSTANTS.RECV_WINDOW
+						orderId: orderId
+						// ,
+						// recvWindow: CONSTANTS.RECV_WINDOW
 					});
 					if(this.isOrderSell(side)) {
 						this.recountQuantity(qty);
@@ -1058,7 +1060,18 @@ module.exports = class Process {
 		console.log(price, this.botSettings.currentOrder)
 		if(isFirst) {
 			let qty = this.toDecimal(Number(this.botSettings.currentOrder)/ price);
-			this.botSettings.quantity = qty + qty * CONSTANTS.BINANCE_FEE / 100;
+			let nextQty = 0, check = false, i = 0, marketPrice = 0;
+			do { 
+				console.log(i, nextQty, this.botSettings.minNotional,marketPrice, check)
+				// if purchased qty will be sell by market without activate sefe order
+				// we need add min deviation to first qty  
+				i++;
+				nextQty = qty + qty * i * CONSTANTS.BINANCE_FEE / 100;
+				marketPrice = price * nextQty * (1 - Number(this.botSettings.deviation) / 100); 
+				check = this.botSettings.minNotional > marketPrice;
+			} while(check);
+
+			this.botSettings.quantity = nextQty;
 		} else {
 			this.botSettings.quantity = price ? this.toDecimal(Number(this.botSettings.currentOrder)/ price) : Number(quantity);
 		}
@@ -1210,7 +1223,7 @@ module.exports = class Process {
 				}
 			}	
 		} else {
-			reject(new Order(order));
+			resolve(new Order(order));
 		}
 	}
 
@@ -1337,7 +1350,8 @@ module.exports = class Process {
 			maxOpenSafetyOrders: next.botSettings.maxOpenSafetyOrders,
 			deviation: next.botSettings.deviation,
 			martingale: next.botSettings.martingale,
-			maxAmountPairsUsed: next.botSettings.maxAmountPairsUsed
+			maxAmountPairsUsed: next.botSettings.maxAmountPairsUsed,
+			minNotional: next.botSettings.minNotional
 		}
 		this.nextProcessSettings = nextProcessSettings;
 	}
