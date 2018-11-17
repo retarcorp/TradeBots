@@ -556,12 +556,12 @@ module.exports = class Process {
 
 	async newSellOrder(price = 0, type = CONSTANTS.ORDER_TYPE.LIMIT, quantity = this.getQuantity(price), prevError = this.JSONclone({}), amount = 0) {
 		console.log(price)
-		quantity = this.toDecimal(quantity * (1 - CONSTANTS.BINANCE_FEE / 100)); 
+		let qtyWithoutFee = this.toDecimal(quantity * (1 - CONSTANTS.BINANCE_FEE / 100));
 		let pair = this.getSymbol(),
 			newOrderParams = {
 				symbol: pair,
 				side: CONSTANTS.ORDER_SIDE.SELL,
-				quantity: quantity,
+				quantity: qtyWithoutFee,
 				recvWindow: CONSTANTS.RECV_WINDOW
 			};
 		if(type === CONSTANTS.ORDER_TYPE.LIMIT)	
@@ -573,10 +573,10 @@ module.exports = class Process {
 			let newSellOrder = await this.Client.order(newOrderParams);
 			this.recountQuantity(newSellOrder.origQty, 1);
 			await this._log('создан оредер - цена: ' + newSellOrder.price + ', кол-во: ' + newSellOrder.origQty);
-			MDBLogger.info({user: {userId: this.user.userId, name: this.user.name}, price, type, pair, quantity, botID: this.botID, botTitle: this.botTitle, processId: this.processId, newSellOrder, fnc: 'newSellOrder'});
+			MDBLogger.info({user: {userId: this.user.userId, name: this.user.name}, price, type, pair, quantity, qtyWithoutFee, botID: this.botID, botTitle: this.botTitle, processId: this.processId, newSellOrder, fnc: 'newSellOrder'});
 			return new Order(newSellOrder);
 		} catch(error) {
-			MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, price, type, pair, quantity, error: JSON.stringify(error), prevError, botID: this.botID, botTitle: this.botTitle, processId: this.processId, price, quantity, amount, fnc: 'newSellOrder'});
+			MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, price, type, pair, quantity, qtyWithoutFee, error: JSON.stringify(error), prevError, botID: this.botID, botTitle: this.botTitle, processId: this.processId, price, quantity, amount, fnc: 'newSellOrder'});
 			console.log(error);
 			console.log(this.errorCode(error), this.errorCode(prevError), price);
 			// await this._log(this.errorCode(error));
