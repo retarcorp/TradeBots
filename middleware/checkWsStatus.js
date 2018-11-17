@@ -11,7 +11,8 @@ export default function ({ store, route, redirect }) {
 			route.path.toLowerCase() === '/admin/rates/' || route.path.toLowerCase() === '/admin/rates' || 
 			route.path.toLowerCase() === '/admin/wallet/' || route.path.toLowerCase() === '/admin/wallet' || 
 			route.path.toLowerCase() === '/admin/pages/' || route.path.toLowerCase() === '/admin/pages' ||
-			route.path.toLowerCase() === '/admin/loggerviewer/' || route.path.toLowerCase() === '/admin/loggerviewer'
+			route.path.toLowerCase() === '/admin/loggerviewer/' || route.path.toLowerCase() === '/admin/loggerviewer' ||
+			route.path.toLowerCase() === '/admin/paymentsinfo/' || route.path.toLowerCase() === '/admin/paymentsinfo' 
 		) {
 			if(!((document.cookie.indexOf('admin') >= 0) && document.cookie.indexOf('true') && (document.cookie.indexOf('admin') < document.cookie.indexOf('true')))) {
 				store.commit('setAuthorizedAdmin', false);

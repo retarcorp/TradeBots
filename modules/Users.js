@@ -140,6 +140,17 @@ let Users = {
 		});
 	}
 
+	,async getPaymentsData(admin = {}, callback = () => {}) {
+		Mongo.select(admin, CONSTANTS.USERS_COLLECTION, async data => {
+			if(data.length) {
+				let paymentsData = await Mongo.syncSelect({}, CONSTANTS.PAYMENTS_COLLECTION);
+				callback(M.getSuccessfullyMessage({ data: paymentsData }));
+			} else {
+				callback(M.getFailureMessage({ message: 'Недостаточно прав!' }));
+			}
+		})
+	}
+
 	,getUsersList(admin, callback) {
 		Mongo.select(admin, 'users', data => {
 			if(data.length) {

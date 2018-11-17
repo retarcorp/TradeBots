@@ -30,6 +30,11 @@ router.post('/api/admin/signin', (req, res, next) => {
 	});
 });
 
+router.get('/api/admin/getPaymentsData', (req, res, next) => {
+	let admin = req.cookies.admin;
+	Users.getPaymentsData(admin, data => res.json(data));
+});
+
 router.get('/api/admin/getUsersList', (req, res, next) => {
 	let admin = req.cookies.admin;
 	Users.getUsersList(admin, data => res.json(data));
