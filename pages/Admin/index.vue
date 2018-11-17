@@ -1,5 +1,11 @@
 <template>
     <div class="container">
+        <div class="bots__search-wrapper">
+            <input v-model="search" type="text" class="input bots__search">
+            <span class="bots__search-icon">
+                <img src="../../assets/svg/search.svg">
+            </span>
+        </div>
         <div v-if="getStatus === 'deleteUser'" class='confirm-block' @click="checkWindow">
             <div class='confirm-block__content'>
                 <p>{{ statusAlert[getStatus] }}</p>
@@ -29,7 +35,7 @@
                     </thead>
 
                     <userTableRow 
-                        v-for="(user, i) in users" 
+                        v-for="(user, i) in filteredUsers" 
                         :key="i" 
                         :user="user" 
                         :userIndex="i"
@@ -56,12 +62,21 @@ import UserTableRowVue from '../../components/UserTableRow.vue';
             clientAnswer() {
                 return this.$store.getters.getClientAnswer;
             },
+            filteredUsers() {
+                return this.users.filter(user => {
+                    let a = user.name ? user.name : '',
+                        b = user.userId ? user.userId : '';
+                    let string = `${a.toLowerCase()}${b.toLowerCase()}`;
+                    return string.indexOf(this.search.toLowerCase()) >= 0;
+                })
+            },
             users() {
                 return this.$store.getters.getUsers;
             }
         },
         data() {
             return {
+                search: '',
                 tmpUserIndex: null,
                 statusAlert: {
                     deleteUser: 'Вы уверены, что хотите удалить этого пользователя?'
