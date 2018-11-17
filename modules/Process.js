@@ -116,7 +116,7 @@ module.exports = class Process {
 				resolve(true);
 			}
 		} else {
-			return new Promise( (resolve, reject ) => {
+			return new Promise( async (resolve, reject ) => {
 				this.awaitFreeze(true, resolve, reject);
 			});
 		}
@@ -189,7 +189,7 @@ module.exports = class Process {
 
 	continueTrade(user = this.user) {
 		if(this.setClient(user)) {
-			return new Promise( (resolve, reject) => {
+			return new Promise( async (resolve, reject) => {
 				this.trade(user, false, resolve, reject);
 			});
 		}
@@ -556,6 +556,7 @@ module.exports = class Process {
 
 	async newSellOrder(price = 0, type = CONSTANTS.ORDER_TYPE.LIMIT, quantity = this.getQuantity(price), prevError = this.JSONclone({}), amount = 0) {
 		console.log(price)
+		quantity = this.toDecimal(quantity * (1 - CONSTANTS.BINANCE_FEE / 100)); 
 		let pair = this.getSymbol(),
 			newOrderParams = {
 				symbol: pair,
@@ -575,12 +576,11 @@ module.exports = class Process {
 			MDBLogger.info({user: {userId: this.user.userId, name: this.user.name}, price, type, pair, quantity, botID: this.botID, botTitle: this.botTitle, processId: this.processId, newSellOrder, fnc: 'newSellOrder'});
 			return new Order(newSellOrder);
 		} catch(error) {
-			MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, price, type, pair, quantity, error, prevError, botID: this.botID, botTitle: this.botTitle, processId: this.processId, price, quantity, amount, fnc: 'newSellOrder'});
+			MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, price, type, pair, quantity, error: JSON.stringify(error), prevError, botID: this.botID, botTitle: this.botTitle, processId: this.processId, price, quantity, amount, fnc: 'newSellOrder'});
 			console.log(error);
 			console.log(this.errorCode(error), this.errorCode(prevError), price);
 			// await this._log(this.errorCode(error));
-			if(quantity > 0 && amount <= 10) {
-				console.log("i'm joke to you?", quantity > 0 && amount <= 10)
+			if(quantity > 0 && amount <= 50) {
 				let step = this.botSettings.decimalQty;
 				if(
 					(await this.isError1013(error) && await this.isError2010(prevError)) ||
@@ -858,7 +858,7 @@ module.exports = class Process {
 
 	cancelOrders(orders = []) {
 		console.log('cancelOrders')
-		return new Promise( (resolve, reject) => {
+		return new Promise( async (resolve, reject) => {
 			let l = orders.length;
 			if(l) {
 				for(let i = 0; i < l; i++) {
@@ -1031,8 +1031,7 @@ module.exports = class Process {
 			try {
 				key = Crypto.decipher(user.binanceAPI.key,  Crypto.getKey(user.regDate, user.name))
 				secret = Crypto.decipher(user.binanceAPI.secret,  Crypto.getKey(user.regDate, user.name))
-			}
-			catch(err) {
+			} catch(err) {
 				if(flag) await this._log('ошибка с определением бинанс ключей!');
 				key = '';
 				secret = ''; 
@@ -1198,37 +1197,34 @@ module.exports = class Process {
 	// }
 
 	async getOrder(orderId = 0) {
-		return new Promise( (resolve, reject) => {
+		return new Promise( async (resolve, reject) => {
 			this.getOrder_helper(orderId, resolve, reject);
 		});
 	}
 
 	async getOrder_helper(orderId = 0, resolve = () => {}, reject = () => {}) {
+		MDBLogger.info({user: {userId: this.user.userId, name: this.user.name}, orderId, botID: this.botID, botTitle: this.botTitle, processId: this.processId, fnc: 'getOrder_helper'})
 		orderId = Number(orderId);
 		let order = {};
 		if(orderId) {
 			try {
 				let symbol = this.getSymbol();
-				order = await this.Client.getOrder({ symbol, orderId });
+				order = await this.Client.getOrder({ symbol, orderId, useServerTime: true });
 				resolve(new Order(order));
 			} catch (error) {
-				await this._log( 'произошла ошибка при getOrder (errCode: ' + this.errorCode(error) + ')' );
+				await this._log( 'произошла ошибка при getOrder (errCode: ' + this.errorCode(error) + ')' + JSON.stringify(error) );
 				MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, error, order: {symbol, orderId, order}, botID: this.botID, botTitle: this.botTitle, processId: this.processId, fnc: 'getOrder'})
 				if(this.isError2013(error)) {
 					reject(new Order(order));
 				} else {
-					setTimeout( () => {
-						this.getOrder_helper(orderId, resolve, reject);
-					}, 100);
+					sleep(10);
+					this.getOrder_helper(orderId, resolve, reject);
 				}
 			}	
 		} else {
 			resolve(new Order(order));
 		}
 	}
-
-
-
 
 	getDate(date = Date.now()) {
 		date = new Date(date);
@@ -1262,9 +1258,16 @@ module.exports = class Process {
 	}
 
 	async getLastPrice() {
-		let pair = this.getSymbol(),
-			price = await this.Client.prices()
-		return Number(price[pair]);
+		let pair = this.getSymbol();
+		try {
+			let price = await this.Client.prices();
+			return Number(price[pair]);
+		} catch(error) {
+			MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, orderId, botID: this.botID, botTitle: this.botTitle, processId: this.processId, fnc: 'getLastPrices'})
+			
+			let price = await this.Client.prices();
+			return Number(price[pair]);
+		}
 	}
 
 	getSymbol() {
@@ -1405,12 +1408,10 @@ module.exports = class Process {
 						if(this.checkFailing(order.status) || this.checkFilling(order.status)) order.isUpdate = true;
 						nextOrders.push(order);
 					}
-				}
-				else {
+				} else {
 					nextOrders.push(orders[i]);
 				}
-			}
-			catch(error) {
+			} catch(error) {
 				console.log(error);
 			}
 		}
