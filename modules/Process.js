@@ -1202,8 +1202,10 @@ module.exports = class Process {
 		});
 	}
 
-	async getOrder_helper(orderId = 0, resolve = () => {}, reject = () => {}) {
-		MDBLogger.info({user: {userId: this.user.userId, name: this.user.name}, orderId, botID: this.botID, botTitle: this.botTitle, processId: this.processId, fnc: 'getOrder_helper'})
+	async getOrder_helper(orderId = 0, resolve = () => {}, reject = () => {}, isError = false) {
+		if(isError) {
+			MDBLogger.info({user: {userId: this.user.userId, name: this.user.name}, orderId, botID: this.botID, botTitle: this.botTitle, processId: this.processId, fnc: 'getOrder_helper'})
+		}
 		orderId = Number(orderId);
 		let order = {};
 		if(orderId) {
@@ -1218,7 +1220,7 @@ module.exports = class Process {
 					reject(new Order(order));
 				} else {
 					sleep(10);
-					this.getOrder_helper(orderId, resolve, reject);
+					this.getOrder_helper(orderId, resolve, reject, true);
 				}
 			}	
 		} else {
