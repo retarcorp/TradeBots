@@ -773,12 +773,13 @@ module.exports = class Bot {
 					});
 				} else {
 					if(processId && this.processes[processId]) {
-						let res = await this.processes[processId].cancelAllOrders(user);
-						if(res.status !== 'error') {
-							// await this.processes[processId]._log('Нажали на "отменить и продать".');
-							await this.processes[processId].disableProcess('Нажали на "отменить и продать".', CONSTANTS.CONTINUE_FLAG);
-						}
-						resolve(res);
+						this.processes[processId].cancelAllOrders(user, async res => {
+							if(res.status !== 'error') {
+								// await this.processes[processId]._log('Нажали на "отменить и продать".');
+								await this.processes[processId].disableProcess('Нажали на "отменить и продать".');
+							}
+							resolve(res);
+						});
 					} else {
 						reject({
 							status: 'error',
@@ -798,19 +799,22 @@ module.exports = class Bot {
 	}
 
 	async cancelOrder(orderId = 0, processId = '') {
-		orderId = Number(orderId);
-		if(orderId && processId && this.processes[processId]) {
-			let res = await this.processes[processId].cancelOrder(orderId);
-			return res;
-		} else {
-			return {
-				status: 'error',
-				message: 'Неверно отправленны данные ордера и процесса.',
-				data: { orderId: orderId,
-						processId: processId
-					}
+		return new Promise( (resolve, reject) => {
+			orderId = Number(orderId);
+			if(orderId && processId && this.processes[processId]) {
+				this.processes[processId].cancelOrder(orderId, async res => {
+					resolve(res);
+				});
+			} else {
+				reject({
+					status: 'error',
+					message: 'Неверно отправленны данные ордера и процесса.',
+					data: { orderId: orderId,
+							processId: processId
+						}
+				})
 			}
-		}
+		});
 	}
 
 	async deleteBot(user = this.user) {

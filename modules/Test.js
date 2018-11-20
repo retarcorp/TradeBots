@@ -1,104 +1,84 @@
-// // const Binance = require('binance-api-node').default;
+class Test {
+	constructor() {
 
-// // let client = Binance({
-// // 	apiKey: 'pMK15sHEO3jS9RE9x4KA5zFfdxCKcxk9gDgyf4BhvGrhvEUn3wiZMTYcuqLEAkNh',
-// // 	apiSecret: 'A7pvWxoe0JzHfM1rvF7D2ymM3ZFUvdlOyLRmjeZ7m4gfCWaTOmLBwHcwMUSw3Znp'
-// // });
+	}
 
-// // client.getOrder({
-// // 	symbol: "TUSDBTC",
-// // 	orderId: 25709028
-// // }).then(console.log).catch(console.log);
+	async init() {
+		console.log('init');
 
-// // const sleep = require('system-sleep');
-// // let qq = 0;
-// // class Test {
-// // 	constructor () {
-// // 	}	
+		// let mas = [0, 10, 60, 9, 199];
+		// let mas1 = [70, 5, 0, 39, 19];
+		// let order = {};
+		// let f = (data, name, callback = () => {}) => {
+		// 	if(data.data === 'error') {
+		// 		this.getOrder(++data.el, f, name, callback);
+		// 	} else {
+		// 		order = data;
+		// 		console.log(order, name);
+		// 		callback();
+		// 	}
+		// }
+		// this.getOrder(9, f, 'a', () => {
+		// 	console.log(order)
+		// });
+		// this.masObh(mas, f).then(console.log);
+		// this.masObh(mas1, f).then(console.log);
+		console.log(this.testRet( () => {
+			return 'aaa';
+		} ))
+	}
 
-// // 	async init() {
-// // 		let arr = [...Array(10)].map(elem => { 
-// // 			return {a: null} 
-// // 		});
-// // 		console.log(arr);
-// // 		await this.updateInfo(arr)/*.then(data => {
-// // 			console.log(data);*/
-// // 			console.log(arr);
-// // 		// })
-// // 	}
+	testRet(clb) {
+		setTimeout( () => {
+			console.log(clb());
+		}, 2000)
+	}
 
-// // 	async updateInfo(arr = []) {
-// // 		return new Promise( (resolve, reject) => {
-// // 			for (let i = 0; i < arr.length; i++) {
-// // 				if(i === arr.length - 1) {
-// // 					console.log('asd')
-// // 					this.updateElem(i, arr[i], resolve, reject);
-// // 				} else {
-// // 					console.log('asd1')
-// // 					this.updateElem(i, arr[i]);
-// // 				}
-// // 			}
-// // 		})
-// // 	}
+	async getOrder_callback(result, orderId, handler_calback) {
+		if(result.status === 'error') {
+			this.getOrder(orderId, f, handler_calback);
+		} else if(result.status === 'ok') {
+			handler_calback(result.order);
+		}
+	}
 
-// // 	async updateElem(i = 'xh', elem = {}, resolve, reject) {
+	async masObh(mas = [], fnc = () => {}) {
+		return new Promise( async (resolve, reject) => {
+			let am = 0, cam = mas.length;
+			for(let i = 0; i < mas.length; i++) {
+				this.getOrder(mas[i], fnc, mas[i], () => {
+					am++;
+					if(am === cam) {
+						resolve('okkeee');
+					} else if(am > cam) {
+						reject('OYY');
+					}
+				});
+			}
+		});
+	}
 
-// // 		let a = await this.checkLol1(i)
-// // 		console.log(a);
-// // 		elem.a = a;
-// // 		if(resolve) resolve(true);
-// // 	}
+	async getOrder(n = 0, callback = () => {}, name, _calback = () => {}) {
+		this.getOrder_helper(n)
+			.then( result => {
+				callback(result, name, _calback);
+			})
+			.catch( error => {
+				callback(error, name, _calback)
+			});
+	}
 
+	async getOrder_helper(amount = 0) {
+		return new Promise( (resolve, reject) => {
+			if(amount === 200) {
+				resolve('ok ' + amount);
+			} else {
+				reject({data: 'error', el: amount});
+			}
+		});
+	}
+}
 
-// // 	async checkLol1(i = 'xm1') {
-// // 		return new Promise( (resolve, reject) => {
-// // 			this.subCheckLol1(i, undefined, undefined, resolve, reject);
-// // 		});
-// // 	}
+let t = new Test();
 
-// // 	subCheckLol1(i, time = Date.now(), nextTime = time, resolve, reject) {
-// // 		qq++;
-// // 		if(nextTime - time >= 1000) {
-// // 			resolve(time);
-// // 		} else {
-// // 			setTimeout(() => {
-// // 				this.subCheckLol1(i, time, Date.now(), resolve, reject);
-// // 			}, 200);
-// // 		}
-// // 	}
-
-
-
-// // 	async checkLol(i = 'xm1', time = Date.now(), nextTime = time) {
-// // 		qq++;
-// // 		console.log('tick', i, qq)
-// // 		if(nextTime - time >= 10000) {
-// // 			return time;
-// // 		} else {
-// // 			sleep(100);
-// // 			return this.checkLol(i, time, Date.now());
-// // 		}
-// // 	}
-// // }
-
-// // let t = new Test();
-
-// // t.init();
-
-// const binanceAPI = require('binance-api-node').default;
-
-// let client = binanceAPI({
-// 	apiKey: 'pMK15sHEO3jS9RE9x4KA5zFfdxCKcxk9gDgyf4BhvGrhvEUn3wiZMTYcuqLEAkNh',
-// 	apiSecret: 'A7pvWxoe0JzHfM1rvF7D2ymM3ZFUvdlOyLRmjeZ7m4gfCWaTOmLBwHcwMUSw3Znp'
-// });
-
-// client.accountInfo().then(data => {
-// 	console.log(data.canTrade)
-// 	console.log(data.balances)
-// })
-
-
-
-
-
-
+t.init();
