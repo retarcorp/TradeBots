@@ -355,7 +355,7 @@ module.exports = class Process {
 			length = orders.length;
 		
 		if(length) {
-			await this._log(`Проверка состояния страховочных ордеров (${orders[length - 1].price}).`);
+			await this._log(`Проверка состояния страховочных ордеров (${this.getLastSafeOrder().price}).`);
 
 			this.getOrder_forOrdersArray(orders).then(async updatedOrders => {
 				if(updatedOrders.status === 'ok') {
