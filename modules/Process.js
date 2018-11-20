@@ -536,7 +536,7 @@ module.exports = class Process {
 	}
 
 	async newBuyOrder(price = 0, type = CONSTANTS.ORDER_TYPE.LIMIT, quantity = this.getQuantity(price), prevError = this.JSONclone({}), isSave = false, amount = 0) {
-		
+		console.log('newBuyOrder', price, quantity, this.errorCode(prevError))
 		let symbol = this.getSymbol(),
 			newOrderParams = {
 				symbol: symbol,
@@ -550,12 +550,14 @@ module.exports = class Process {
 			newOrderParams.type = type;
 
 		try{
+			console.log(newOrderParams)
 			let newBuyOrder = await this.Client.order(newOrderParams);
 			await this._log('попытка создать ордер - ' + newBuyOrder.price + ', ' + newBuyOrder.origQty);
 			MDBLogger.info({user: {userId: this.user.userId, name: this.user.name}, botID: this.botID, botTitle: this.botTitle, processId: this.processId, newBuyOrder, fnc: 'newBuyOrder'});
 			return new Order(newBuyOrder);
 		}
 		catch(error) {
+			console.log(this.errorCode(error))
 			// await this._log(this.errorCode(error));
 			MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, error, prevError, botID: this.botID, botTitle: this.botTitle, processId: this.processId, price, quantity, amount, fnc: 'newBuyOrder'});
 			if(quantity > 0) {
@@ -668,7 +670,7 @@ module.exports = class Process {
 			this.botSettings.quantityOfUsedSafeOrders ++;
 			this.botSettings.quantityOfActiveSafeOrders ++;
 			let lastSafeOrderPrice = Number(lastSafeOrder.price) || price,
-				newPrice = this.toDecimal(lastSafeOrderPrice - lastSafeOrderPrice * deviation),
+				newPrice = this.toDecimal(lastSafeOrderPrice - lastSafeOrderPrice * deviation, decimal),
 				qty = 0;
 			if(quantity) qty = this.toDecimal(quantity * this.getMartingaleValue());
 			else if(this.getMartingaleActive()) qty = this.toDecimal(Number(lastSafeOrder.origQty) * this.getMartingaleValue());

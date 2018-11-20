@@ -306,13 +306,22 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
                 return this.$store.getters.getBot(this.$route.params.id)
             },
             openedOrders() {
-                if( this.currentId )
-                    return this.bot.processes[this.currentId].orders.filter(order => order !== null && order.status !== 'CANCELED' && (order.status === 'NEW' || order.status === 'PARTIALLY_FILLED'))
-                else return []; 
+                if( this.currentId ) {
+                    let orders = this.bot.processes[this.currentId].orders.filter(order => order !== null && order.status !== 'CANCELED' && (order.status === 'NEW' || order.status === 'PARTIALLY_FILLED'))
+                    orders.sort( (a, b) => {
+                        return Number(a.time) - Number(b.time);
+                    })
+                    return orders;
+                } else return []; 
             },
             closedOrders() {
-                if( this.currentId )
-                    return this.bot.processes[this.currentId].orders.filter(order => order !== null && order.status !== 'CANCELED' && (order.status !== 'NEW' && order.status !== 'PARTIALLY_FILLED'))
+                if( this.currentId ){
+                    let orders = this.bot.processes[this.currentId].orders.filter(order => order !== null && order.status !== 'CANCELED' && (order.status !== 'NEW' && order.status !== 'PARTIALLY_FILLED'));
+                    orders.sort( (a, b) => {
+                        return Number(a.time) - Number(b.time);
+                    });
+                    return orders;
+                }
                 else return []; 
             },
             clientAnswer() {
