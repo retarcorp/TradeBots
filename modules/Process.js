@@ -10,24 +10,6 @@ const DL = CONSTANTS.DL;
 const Logger = require('./Logger');
 const MDBLogger = require('./MDBLogger');
 const Symbols = require('./Symbols');
-
-
-// const winston = require('winston');
-// const logger = winston.createLogger({
-// 	transports: [
-// 		new winston.transports.File({ filename: './logger.txt' })
-// 	]
-// });
-
-// logger.info({ a: 12 });
-// const winston = require('winston');
-// const files = new winston.transports.File({ filename: '/combined.txt' });
-// const console = new winston.transports.Console();
- 
-// winston.add(console);
-// winston.add(files);
-// winston.level = 'debug';
-
  
 module.exports = class Process {
 	constructor({
@@ -85,15 +67,19 @@ module.exports = class Process {
 		this.botTitle = this.JSONclone(botTitle);
 		this.errors = this.JSONclone(errors);
 		this.locedToFinish = this.JSONclone(locedToFinish);
-		
-		// winston.log('debug', 'process contructor');
 	}
 
-	JSONclone(object) {
+	JSONclone(object = {}) {
 		try {
 			return JSON.parse(JSON.stringify(object));
 		} catch(error) {
-			MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, error: error, botID: this.botID, botTitle: this.botTitle, processId: this.processId, fnc: 'JSONclone'});
+			MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, object, error: error, botID: this.botID, botTitle: this.botTitle, processId: this.processId, fnc: 'JSONclone'});
+			try {
+				return Object.assign({}, object);
+			} catch(err) {
+				MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, object, err, botID: this.botID, botTitle: this.botTitle, processId: this.processId, fnc: 'JSONclone_1'});
+				return {};
+			}
 		}
 	}
 
@@ -141,27 +127,29 @@ module.exports = class Process {
 							await this.awaitFreeze();
 							this.botSettings.firstBuyPrice = price;
 							let profitPrice = this.getProfitPrice(price);
-							let newSellOrder = await this.newSellOrder(profitPrice, CONSTANTS.ORDER_TYPE.LIMIT, qty);
+
+							this.newSellOrder(profitPrice, CONSTANTS.ORDER_TYPE.LIMIT, qty, async newSellOrder => {
+								if(newSellOrder !== CONSTANTS.DISABLE_FLAG && newSellOrder.orderId) {
+									
+									console.log('newsellOrder is send', newSellOrder.orderId)
+									this.currentOrder = newSellOrder;
+									this.orders.push(newSellOrder);
+									
+									let safeOrders = await this.createSafeOrders(price, qty);
+									console.log('created ' + safeOrders.length + ' safe orders');
+									this.safeOrders.push(...safeOrders);
+									this.orders.push(...safeOrders);
+									
+									await this.updateProcess(user);
+									this.trade(user, false, resolve, reject);
+									console.log('never')
+								} else {
+									await this.disableProcess('Неуспешная продажа монет. Ошибка при выставлении sell ордера (невозможно продать купленное кол-во монет по профит цене).');
+									await this.updateProcess(user);
+									resolve('finish');
+								}
+							});
 							
-							if(newSellOrder !== CONSTANTS.DISABLE_FLAG && newSellOrder.orderId) {
-								
-								console.log('newsellOrder is send', newSellOrder.orderId)
-								this.currentOrder = newSellOrder;
-								this.orders.push(newSellOrder);
-								
-								let safeOrders = await this.createSafeOrders(price, qty);
-								console.log('created ' + safeOrders.length + ' safe orders');
-								this.safeOrders.push(...safeOrders);
-								this.orders.push(...safeOrders);
-								
-								await this.updateProcess(user);
-								this.trade(user, false, resolve, reject);
-								console.log('never')
-							} else {
-								await this.disableProcess('Неуспешная продажа монет. Ошибка при выставлении sell ордера (невозможно продать купленное кол-во монет по профит цене).');
-								await this.updateProcess(user);
-								resolve('finish');
-							}
 
 						} else {
 							await this.disableProcess('Неуспешная покупка начального ордера.');
@@ -210,7 +198,7 @@ module.exports = class Process {
 
 			if(this.isOrderSell(this.currentOrder.side)) {
 				console.log('ordersell')
-				this.getOrder(this.currentOrder.orderId, this.getOrder_callback, async tmpCurOrd => {
+				this.getOrder(this.currentOrder.orderId, async tmpCurOrd => {
 					console.log('after getting current order', tmpCurOrd.orderId)
 					
 					if(tmpCurOrd.orderId) {
@@ -260,23 +248,25 @@ module.exports = class Process {
 						}
 					} else {
 						this.setErrors(tmpCurOrd, `Проблемы с получением информации об ордере! ${this.currentOrder.orderId}`);
-						await this._log(`Проблемы с получением информации об ордере! ${this.currentOrder.orderId}`);
+						// await this._log(`Проблемы с получением информации об ордере! ${this.currentOrder.orderId}`);
 						sleep(CONSTANTS.TIMEOUT);
-						this.trade(user, false, resolve, reject);
+						await this.disableProcess(`Проблемы с получением информации об ордере! ${this.currentOrder.orderId}`);
+						reject('finish');
+						// this.trade(user, false, resolve, reject);
 					}
 				});
 				
 			} else {
 				const tenMin = 600000;
 
-				this.getOrder(this.currentOrder.orderId, this.getOrder_callback, async cOrd => {
+				this.getOrder(this.currentOrder.orderId, async cOrd => {
 					if(cOrd.orderId) {
 						this.currentOrder = cOrd;
 						let currentOrderStatus = this.currentOrder.status;
 		
 						if(this.checkFilling(currentOrderStatus) && !this.isFreeze()) {
 							//create new buy order
-							this.getOrder(this.currentOrder.orderId, this.getOrder_callback, async newBuyOrder => {
+							this.getOrder(this.currentOrder.orderId, async newBuyOrder => {
 								if(newBuyOrder.orderId) {
 									let qty = this.setQuantity(null, Number(newBuyOrder.origQty));
 									let price = Number(newBuyOrder.price);
@@ -287,28 +277,27 @@ module.exports = class Process {
 									
 									this.botSettings.firstBuyPrice = price;
 									let profitPrice = this.getProfitPrice(price);
-									let newSellOrder = await this.newSellOrder(profitPrice, CONSTANTS.ORDER_TYPE.LIMIT, qty);
-				
-				
-									if(newSellOrder !== CONSTANTS.DISABLE_FLAG) await this.updateProcess(user);
-				
-									if(newSellOrder !== CONSTANTS.DISABLE_FLAG && newSellOrder.orderId) {
-										await this.updateProcess(user);
-										this.currentOrder = newSellOrder;
-										this.orders.push(newSellOrder);
-										// this.dealOrders.push(newSellOrder);
+									this.newSellOrder(profitPrice, CONSTANTS.ORDER_TYPE.LIMIT, qty, async newSellOrder => {
+										if(newSellOrder !== CONSTANTS.DISABLE_FLAG) await this.updateProcess(user);
 					
-										let safeOrders = await this.createSafeOrders(price, qty);
-										this.safeOrders.push(...safeOrders);
-										this.orders.push(...safeOrders);
-										// this.dealOrders.push(...safeOrders);
-					
-										this.trade(user, false, resolve, reject);
-									} else {
-										await this.disableProcess('Неуспешная продажа монет. Ошибка при выставлении sell ордера (невозможно продать купленное кол-во монет по профит цене).');
-										await this.updateProcess(user);
-										('finish');
-									}
+										if(newSellOrder !== CONSTANTS.DISABLE_FLAG && newSellOrder.orderId) {
+											await this.updateProcess(user);
+											this.currentOrder = newSellOrder;
+											this.orders.push(newSellOrder);
+											// this.dealOrders.push(newSellOrder);
+						
+											let safeOrders = await this.createSafeOrders(price, qty);
+											this.safeOrders.push(...safeOrders);
+											this.orders.push(...safeOrders);
+											// this.dealOrders.push(...safeOrders);
+						
+											this.trade(user, false, resolve, reject);
+										} else {
+											await this.disableProcess('Неуспешная продажа монет. Ошибка при выставлении sell ордера (невозможно продать купленное кол-во монет по профит цене).');
+											await this.updateProcess(user);
+											('finish');
+										}
+									});
 								} else {
 									this.setErrors(cOrd, `Проблемы с получением информации об ордере! ${this.currentOrder}`);
 									await this.disableProcess('Неуспешная покупка монет.');
@@ -372,39 +361,41 @@ module.exports = class Process {
 					this.recountInitialOrder(order);
 					this.recountQuantity(order.origQty);
 
-					let newProfitPrice = this.recountProfitPrice(order),
-						newSellOrder = await this.newSellOrder(newProfitPrice, CONSTANTS.ORDER_TYPE.LIMIT, this.getQuantity());
+					let newProfitPrice = this.recountProfitPrice(order);
 
-					if(newSellOrder.orderId) {
-						console.log('create new sell order')
-						this.currentOrder = newSellOrder;
-						this.orders.push(this.currentOrder);
-						this.locedToFinish = false;
-						await this.updateProcess(user);
-					} else {
-						await this._log(`невозможно выставить sell ордер (${JSON.stringify(newSellOrder)})`);
-						await this.disableProcess("Ошибка при выставлении нового sell ордера после покупки страховочного!");
-						await this.updateProcess(user);
-						resolve('finish');
-					}
-
-					if(!this.isFreeze()) {
-						this.botSettings.quantityOfActiveSafeOrders--;
-						let newSafeOrder = await this.createSafeOrder();
-
-						if(newSafeOrder.orderId) {
-							console.log('create next safe orders')
-							this.orders.push(newSafeOrder);
+					this.newSellOrder(newProfitPrice, CONSTANTS.ORDER_TYPE.LIMIT, this.getQuantity(), async newSellOrder => {
+						if(newSellOrder.orderId) {
+							console.log('create new sell order')
+							this.currentOrder = newSellOrder;
+							this.orders.push(this.currentOrder);
+							this.locedToFinish = false;
 							await this.updateProcess(user);
-							nextSafeOrders.push(newSafeOrder);
-							resolve(nextSafeOrders);
-						} else if(newSafeOrder === 'ok') {
-							resolve([]);
 						} else {
-							await this._log("Невозможно выставить страховочный ордер (недостаточно баланса)");
-							resolve([]);
+							await this._log(`невозможно выставить sell ордер (${JSON.stringify(newSellOrder)})`);
+							await this.disableProcess("Ошибка при выставлении нового sell ордера после покупки страховочного!");
+							await this.updateProcess(user);
+							resolve('finish');
 						}
-					}
+	
+						if(!this.isFreeze()) {
+							this.botSettings.quantityOfActiveSafeOrders--;
+							let newSafeOrder = await this.createSafeOrder();
+	
+							if(newSafeOrder.orderId) {
+								console.log('create next safe orders')
+								this.orders.push(newSafeOrder);
+								await this.updateProcess(user);
+								nextSafeOrders.push(newSafeOrder);
+								resolve(nextSafeOrders);
+							} else if(newSafeOrder === 'ok') {
+								resolve([]);
+							} else {
+								await this._log("Невозможно выставить страховочный ордер (недостаточно баланса)");
+								resolve([]);
+							}
+						}
+					});
+
 				} else {
 					await this._log(JSON.stringify(result));
 					resolve('finish');
@@ -520,11 +511,12 @@ module.exports = class Process {
 		});
 	}
 
-	async checkOrder(user = this.user, orderId = 0, resolve = () => {}, reject = () => {}, time = Date.now()) {
+	async checkOrder(user = this.user, orderId = 0, callback = () => {}, time = Date.now(), errorFlag = false) {
+		console.log('checkOrder', Date.now() - time, errorFlag)
 		const tenMin = 600000,
 			timeout = CONSTANTS.ORDER_TIMEOUT;
 			
-		this.getOrder(orderId, this.getOrder_callback, async order => {
+		this.getOrder(orderId, async order => {
 			if(order.orderId) {
 				const ind = this.orders.findIndex(elem => elem.orderId === order.orderId);
 				if(ind === -1) this.orders.push(new Order(order));
@@ -533,142 +525,311 @@ module.exports = class Process {
 				await this.updateProcess(user);
 	
 				if(this.checkFilling(order.status)) { // если оредер заполнен
-					resolve(new Order(order));
+					callback({
+						status: 'ok',
+						res: new Order(order)
+					});
 				} else if(this.checkCanceling(order.status) || this.checkFailing(order.status)) { // если ордер отменили или произошла ошибка
-					resolve({});
+					callback({
+						status: 'ok',
+						res: {}
+					});
 				} else if( (Date.now() - time) >= tenMin) { // если время ожидания прошло
-					await this.cancelOrder(order, 0, 0, res => {
-						reject('time_limit');
+					this.cancelOrder(order, 0, 0, res => {
+						if(res.status === 'error') {
+							if(res.error && this.isError2011(res.error) && !errorFlag) {
+								setTimeout( () => {
+									this.checkOrder(user, orderId, callback, time, true);
+								}, timeout);
+							} else {
+								MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, res, botID: this.botID, botTitle: this.botTitle, processId: this.processId, price, quantity, amount, fnc: 'firstBuyOrder->checkOrder->cancelOrder'});
+								callback({
+									status: 'error',
+									res: 'time_limit'
+								})
+							}
+						} else {
+							callback({
+								status: 'error',
+								res: 'time_limit'
+							});
+						}
 					});
 				} else { 
 					setTimeout( () => {
-						this.checkOrder(user, orderId, resolve, reject, time);
+						this.checkOrder(user, orderId, callback, time);
 					}, timeout);
 				}
 	
 			} else {
-				this.setErrors(щквук, `Проблема с checkOrder ${orderId}`);
-				reject('error');
+				callback({
+					status: 'error',
+					res: 'error'
+				});
 			}
 		});
 			
 	}
 
-	async firstBuyOrder(user = this.user, orderId = 0) {
+	async firstBuyOrder(user = this.user) {
+		console.log('firstBuyOrder')
 		return new Promise( async (resolve, reject) => {
-
 			await this._log('первая закупка монет');
 			let price = await this.getLastPrice(),
-				quantity = this.setQuantity(price, 0, true), 
-				newBuyOrder = await this.newBuyOrder(price, CONSTANTS.ORDER_TYPE.LIMIT, quantity);
-			
-			if(newBuyOrder === '2010') {
-				reject(newBuyOrder);
-			} else {
-				let orderId = newBuyOrder.orderId;
-
-				this.getOrder(orderId, this.getOrder_callback, async order => {
-					if(order.orderId) {
-						this.orders.push(order);
-						this.currentOrder = order;
-		
-						await this.updateProcess(user);
-						await this._log('первый закупочный - ' + order.price + ', ' + order.origQty + ', (~total ' + (order.price * order.origQty) + ')...');
-						
-						this.checkOrder(user, orderId, resolve, reject);
-					} else {
-						this.setErrors(order, `Проблема с currentOrder ${this.currentOrder}`);
-						await this._log("проблема с getOrder в закупке первого ордера");
-						reject('error');
-					}
-				});
+				quantity = this.setQuantity(price, 0, true);
 				
-			}
-
+			this.newBuyOrder(price, CONSTANTS.ORDER_TYPE.LIMIT, quantity, false, async newBuyOrder => {
+				if(newBuyOrder === '2010') {
+					reject(newBuyOrder);
+				} else {
+					let orderId = newBuyOrder.orderId;
+	
+					this.getOrder(orderId, async order => {
+						if(order.orderId) {
+							this.orders.push(order);
+							this.currentOrder = order;
+			
+							await this.updateProcess(user);
+							await this._log('первый закупочный - ' + order.price + ', ' + order.origQty + ', (~total ' + (order.price * order.origQty) + ')...');
+							
+							this.checkOrder(user, orderId, res => {
+								if(res.status === 'ok') {
+									resolve(res.res);
+								} else if(res.status === 'error') {
+									reject(res.res);
+								} else {
+									reject('error');
+								}
+							});
+						} else {
+							this.setErrors(order, `Проблема с currentOrder ${this.currentOrder}`);
+							await this._log("проблема с getOrder в закупке первого ордера");
+							reject('error');
+						}
+					});
+					
+				}
+			});
 		});
 	}
 
-	async newBuyOrder(price = 0, type = CONSTANTS.ORDER_TYPE.LIMIT, quantity = this.getQuantity(price), prevError = this.JSONclone({}), isSave = false, amount = 0) {
-		let symbol = this.getSymbol(),
-			newOrderParams = {
-				symbol: symbol,
-				side: CONSTANTS.ORDER_SIDE.BUY,
-				quantity: quantity,
-				useServerTime: true
-			};
-		if(type === CONSTANTS.ORDER_TYPE.LIMIT)	
-			newOrderParams.price = price;
-		else 
-			newOrderParams.type = type;
+	newBuyOrder(price = 0, type = CONSTANTS.ORDER_TYPE.LIMIT, quantity = this.getQuantity(price), isSafe = false, callback = () => {}, prevError = {}, amount = 0) {
+		console.log('newBuyOrder')
+		this.newBuyOrder_helper(price, type, quantity, isSafe, prevError, amount)
+			.then( result => {
+				this.newBuyOrder_handlerCallback(result, callback);
+			})
+			.catch( error => {
+				this.newBuyOrder_handlerCallback(error, callback);
+			});
+	}
 
-		try{
-			let newBuyOrder = await this.Client.order(newOrderParams);
-			await this._log('попытка создать ордер - ' + newBuyOrder.price + ', ' + newBuyOrder.origQty);
-			MDBLogger.info({user: {userId: this.user.userId, name: this.user.name}, botID: this.botID, botTitle: this.botTitle, processId: this.processId, newBuyOrder, fnc: 'newBuyOrder'});
-			return new Order(newBuyOrder);
-		}
-		catch(error) {
-			// await this._log(this.errorCode(error));
-			MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, error, prevError, botID: this.botID, botTitle: this.botTitle, processId: this.processId, price, quantity, amount, fnc: 'newBuyOrder'});
-			if(quantity > 0) {
-				let step = this.botSettings.decimalQty;
-				if(
-					(await this.isError1013(error) && await this.isError2010(prevError)) ||
-					(await this.isError1013(prevError) && await this.isError2010(error))
-				) {
-					if(!isSave) {
-						return await this.disableProcess('Невозможно купить монеты (Недостаточно средств на балансе)');
-					} else if(await this.isError2010(error)) {
-						return '2010';
+	newBuyOrder_helper(price = 0, type = CONSTANTS.ORDER_TYPE.LIMIT, quantity = this.getQuantity(price), isSafe = false, prevError = {}, amount = 0) {
+		return new Promise( async (resolve, reject) => {
+			const useServerTime = true, side = CONSTANTS.ORDER_SIDE.BUY;
+			let symbol = this.getSymbol(),
+				newOrderParams = { symbol, side, quantity, useServerTime };
+			if(type === CONSTANTS.ORDER_TYPE.LIMIT) {
+				newOrderParams.price = price;
+			} else {
+				newOrderParams.type = type;
+			}
+			console.log(newOrderParams)
+
+			try{
+				let newBuyOrder = await this.Client.order(newOrderParams);
+				await this._log('создан BUY ордер: ' + newBuyOrder.price + ', ' + newBuyOrder.origQty);
+				MDBLogger.info({user: {userId: this.user.userId, name: this.user.name}, botID: this.botID, botTitle: this.botTitle, processId: this.processId, newBuyOrder, fnc: 'newBuyOrder'});
+				resolve({
+					status: 'ok',
+					order: new Order(newBuyOrder)
+				});
+			} catch(error) {
+				console.log(error);
+				MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, error, prevError, botID: this.botID, botTitle: this.botTitle, processId: this.processId, price, quantity, amount, fnc: 'newBuyOrder'});
+				if(quantity > 0 && amount < 50) {
+					let step = this.botSettings.decimalQty;
+					if(
+						(await this.isError1013(error) && await this.isError2010(prevError)) ||
+						(await this.isError1013(prevError) && await this.isError2010(error))
+					) {
+						if(!isSafe) {
+							reject({
+								status: 'error',
+								order: 'disable'
+							});
+						} else if(await this.isError2010(error)) {
+							reject({
+								status: 'error',
+								order: '2010'
+							});
+						}
 					}
-				}
-				else if(amount >= 3 && await this.isError2010(error)) return '2010'
-				else if(await this.isError1013(error)) quantity += step;
-				else if(await this.isError2010(error)) quantity -= step;
-				
-				let order = await this.newBuyOrder(price, type, this.toDecimal(quantity), error, isSave, ++amount);
-				return order;
-			} else return {};
+					else if(amount >= 3 && await this.isError2010(error)) return '2010'
+					else if(await this.isError1013(error)) quantity += step;
+					else if(await this.isError2010(error)) quantity -= step;
+					
+					quantity = this.toDecimal(quantity);
+					amount++;
+					reject({
+						status: 'error',
+						order: [{ price, type, quantity, isSafe, error, amount }]
+					});
+				} else {
+					reject({
+						status: 'error',
+						order: {}
+					});
+				} 
+					
+			}
+			
+		});
+	}
+
+	async newBuyOrder_handlerCallback(result = {}, callback = () => {}) {
+		if(result.status === 'error') {
+			if(result.order.length) {
+				//в ордере массив параметров для нового ордера
+				let { price, type, quantity, isSafe, error, amount } = result.order[0];
+				this.newBuyOrder(price, type, quantity, isSafe, callback, error, amount);
+			} else if(result.order === 'disable') {
+				await this.disableProcess('Невозможно купить монеты (Недостаточно средств на балансе)');
+				callback(result.order);
+			} else {
+				callback(result.order);
+			}
+		} else if(result.status === 'ok') {
+			callback(result.order);
+		} else {
+			MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, result, botID: this.botID, botTitle: this.botTitle, processId: this.processId, fnc: 'newBuyOrder_handlerCallback_else'})
+			callback(result);
 		}
 	}
 
-	async newSellOrder(price = 0, type = CONSTANTS.ORDER_TYPE.LIMIT, quantity = this.getQuantity(price), prevError = this.JSONclone({}), amount = 0) {
-		let qtyWithoutFee = this.toDecimal(quantity * (1 - CONSTANTS.BINANCE_FEE / 100));
-		let pair = this.getSymbol(),
-			newOrderParams = {
-				symbol: pair,
-				side: CONSTANTS.ORDER_SIDE.SELL,
-				quantity: qtyWithoutFee,
-				useServerTime: true
-			};
-		if(type === CONSTANTS.ORDER_TYPE.LIMIT)	
-			newOrderParams.price = price;
-		else 
-			newOrderParams.type = type;
+	newSellOrder(price = 0, type = CONSTANTS.ORDER_TYPE.LIMIT, quantity = this.getQuantity(price), callback = () => {}, prevError = {}, amount = 0) {
+		console.log('newSellOrder');
+		this.newSellOrder_helper(price, type, quantity, prevError, amount)
+			.then( result => {
+				this.newSellOrder_handlerCallback(result, callback);
+			})
+			.catch( error => {
+				this.newSellOrder_handlerCallback(error, callback);
+			});
+	}
 
-		try{
-			let newSellOrder = await this.Client.order(newOrderParams);
-			this.recountQuantity(newSellOrder.origQty, 1);
-			await this._log('создан оредер - цена: ' + newSellOrder.price + ', кол-во: ' + newSellOrder.origQty);
-			MDBLogger.info({user: {userId: this.user.userId, name: this.user.name}, price, type, pair, quantity, qtyWithoutFee, botID: this.botID, botTitle: this.botTitle, processId: this.processId, newSellOrder, fnc: 'newSellOrder'});
-			return new Order(newSellOrder);
-		} catch(error) {
-			MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, price, type, pair, quantity, qtyWithoutFee, error: JSON.stringify(error), prevError, botID: this.botID, botTitle: this.botTitle, processId: this.processId, price, quantity, amount, fnc: 'newSellOrder'});
-			// await this._log(this.errorCode(error));
-			if(quantity > 0 && amount <= 50) {
-				let step = this.botSettings.decimalQty;
-				if(
-					(await this.isError1013(error) && await this.isError2010(prevError)) ||
-					(await this.isError1013(prevError) && await this.isError2010(error))
-				) return await this.disableProcess('Невозможно продать монеты');
-				else if(await this.isError1013(error)) quantity += step;
-				else if(await this.isError2010(error)) quantity -= step;
-				
-				let order = await this.newSellOrder(price, type, this.toDecimal(quantity), error, ++amount);
-				return order;
-			} else return {};
+	newSellOrder_helper(price = 0, type = CONSTANTS.ORDER_TYPE.LIMIT, quantity = this.getQuantity(price), prevError = {}, amount = 0) {
+		return new Promise( async (resolve, reject) => {
+			const useServerTime = true, side = CONSTANTS.ORDER_SIDE.SELL;
+			let qtyWithoutFee = this.toDecimal(quantity * (1 - CONSTANTS.BINANCE_FEE / 100)),
+				symbol = this.getSymbol(),
+				newOrderParams = { symbol, side, quantity: qtyWithoutFee, useServerTime };
+
+			if(type === CONSTANTS.ORDER_TYPE.LIMIT)	{
+				newOrderParams.price = price;
+			} else {
+				newOrderParams.type = type;
+			}
+
+			try{
+				let newSellOrder = await this.Client.order(newOrderParams);
+				this.recountQuantity(newSellOrder.origQty, 1);
+				await this._log('создан SELL ордер: ' + newSellOrder.price + ', кол-во: ' + newSellOrder.origQty);
+				MDBLogger.info({user: {userId: this.user.userId, name: this.user.name}, price, type, symbol, quantity, qtyWithoutFee, botID: this.botID, botTitle: this.botTitle, processId: this.processId, newSellOrder, fnc: 'newSellOrder'});
+				resolve({
+					status: 'ok',
+					order: new Order(newSellOrder)
+				});
+			} catch(error) {
+				// console.log(error);
+				MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, price, type, symbol, quantity, qtyWithoutFee, error: JSON.stringify(error), prevError, botID: this.botID, botTitle: this.botTitle, processId: this.processId, price, quantity, amount, fnc: 'newSellOrder'});
+				if(quantity > 0 && amount <= 50) {
+					let step = this.botSettings.decimalQty;
+					if(
+						(await this.isError1013(error) && await this.isError2010(prevError)) ||
+						(await this.isError1013(prevError) && await this.isError2010(error))
+					) {
+						reject({
+							status: 'error',
+							order: 'disable'
+						});
+					}
+					else if(await this.isError1013(error)) quantity += step;
+					else if(await this.isError2010(error)) quantity -= step;
+					
+					quantity = this.toDecimal(quantity);
+					amount++;
+					reject({
+						status: 'error',
+						order: [{ price, type, quantity, error, amount }]
+					});
+				} else {
+					reject({
+						status: 'error',
+						order: {}
+					});
+				};
+			}
+		});
+	}
+
+	async newSellOrder_handlerCallback(result = {}, callback = () => {}) {
+		if(result.status === 'error') {
+			if(result.order.length) {
+				//в ордере массив параметров для нового ордера
+				let { price, type, quantity, error, amount } = result.order[0];
+				this.newSellOrder(price, type, quantity, callback, error, amount);
+			} else if(result.order === 'disable') {
+				await this.disableProcess('Невозможно продать монеты');
+				callback(result.order);
+			} else {
+				callback(result.order);
+			}
+		} else if(result.status === 'ok') {
+			callback(result.order);
+		} else {
+			MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, result, botID: this.botID, botTitle: this.botTitle, processId: this.processId, fnc: 'newSellOrder_handlerCallback_else'})
+			callback(result);
 		}
 	}
+
+	// async newSellOrder(price = 0, type = CONSTANTS.ORDER_TYPE.LIMIT, quantity = this.getQuantity(price), prevError = this.JSONclone({}), amount = 0) {
+	// 	let qtyWithoutFee = this.toDecimal(quantity * (1 - CONSTANTS.BINANCE_FEE / 100));
+	// 	let pair = this.getSymbol(),
+	// 		newOrderParams = {
+	// 			symbol: pair,
+	// 			side: CONSTANTS.ORDER_SIDE.SELL,
+	// 			quantity: qtyWithoutFee,
+	// 			useServerTime: true
+	// 		};
+	// 	if(type === CONSTANTS.ORDER_TYPE.LIMIT)	
+	// 		newOrderParams.price = price;
+	// 	else 
+	// 		newOrderParams.type = type;
+
+	// 	try{
+	// 		let newSellOrder = await this.Client.order(newOrderParams);
+	// 		this.recountQuantity(newSellOrder.origQty, 1);
+	// 		await this._log('создан оредер - цена: ' + newSellOrder.price + ', кол-во: ' + newSellOrder.origQty);
+	// 		MDBLogger.info({user: {userId: this.user.userId, name: this.user.name}, price, type, pair, quantity, qtyWithoutFee, botID: this.botID, botTitle: this.botTitle, processId: this.processId, newSellOrder, fnc: 'newSellOrder'});
+	// 		return new Order(newSellOrder);
+	// 	} catch(error) {
+	// 		MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, price, type, pair, quantity, qtyWithoutFee, error: JSON.stringify(error), prevError, botID: this.botID, botTitle: this.botTitle, processId: this.processId, price, quantity, amount, fnc: 'newSellOrder'});
+	// 		// await this._log(this.errorCode(error));
+	// 		if(quantity > 0 && amount <= 50) {
+	// 			let step = this.botSettings.decimalQty;
+	// 			if(
+	// 				(await this.isError1013(error) && await this.isError2010(prevError)) ||
+	// 				(await this.isError1013(prevError) && await this.isError2010(error))
+	// 			) return await this.disableProcess('Невозможно продать монеты');
+	// 			else if(await this.isError1013(error)) quantity += step;
+	// 			else if(await this.isError2010(error)) quantity -= step;
+				
+	// 			let order = await this.newSellOrder(price, type, this.toDecimal(quantity), error, ++amount);
+	// 			return order;
+	// 		} else return {};
+	// 	}
+	// }
 
 	async createSafeOrders(price = 0, quantity = 0) {
 		let amount = this.getMaxOpenedAmount(),
@@ -699,39 +860,42 @@ module.exports = class Process {
 	}
 
 	async createSafeOrder(price = this.botSettings.lastSafeOrderPrice, quantity = 0) {
-
-		let maxOpenSO = this.getMaxOpenedAmount(),
-			currentQtyUsedSO = this.getQtyOfUsedSafeOrders(),
-			currentQtyActiveSO = this.getQtyOfActiveSafeOrders(),
-			maxAmountSO = this.getAmount(),
-			deviation = this.getDeviation(),
-			lastSafeOrder = this.getLastSafeOrder() || {},
-			decimal = this.getDecimal(price || lastSafeOrder.price),
-			newOrder = {};
-		price = Number(price);
-
-		if(maxOpenSO > currentQtyActiveSO && maxAmountSO > currentQtyUsedSO) {
-			this.botSettings.quantityOfUsedSafeOrders ++;
-			this.botSettings.quantityOfActiveSafeOrders ++;
-			let lastSafeOrderPrice = Number(lastSafeOrder.price) || price,
-				newPrice = this.toDecimal(lastSafeOrderPrice - lastSafeOrderPrice * deviation, decimal),
-				qty = 0;
-			if(quantity) qty = this.toDecimal(quantity * this.getMartingaleValue());
-			else if(this.getMartingaleActive()) qty = this.toDecimal(Number(lastSafeOrder.origQty) * this.getMartingaleValue());
-			else qty = this.getQuantity(newPrice, 1);
-
-			
-			await this._log(`новый страховочный ордер (price - ${newPrice})`);
+		return new Promise(async (resolve, reject) => {
 			try {
-				newOrder = await this.newBuyOrder(newPrice, CONSTANTS.ORDER_TYPE.LIMIT, qty, {}, true);
-				if(newOrder.orderId) this.botSettings.lastSafeOrderPrice = newOrder.price;
-			} catch(error) {
-				await this._log(JSON.stringify(error));
+				let maxOpenSO = this.getMaxOpenedAmount(),
+					currentQtyUsedSO = this.getQtyOfUsedSafeOrders(),
+					currentQtyActiveSO = this.getQtyOfActiveSafeOrders(),
+					maxAmountSO = this.getAmount(),
+					deviation = this.getDeviation(),
+					lastSafeOrder = this.getLastSafeOrder() || {},
+					decimal = this.getDecimal(price || lastSafeOrder.price);
+
+				price = Number(price);
+		
+				if(maxOpenSO > currentQtyActiveSO && maxAmountSO > currentQtyUsedSO) {
+					this.botSettings.quantityOfUsedSafeOrders ++;
+					this.botSettings.quantityOfActiveSafeOrders ++;
+					let lastSafeOrderPrice = Number(lastSafeOrder.price) || price,
+						newPrice = this.toDecimal(lastSafeOrderPrice - lastSafeOrderPrice * deviation, decimal),
+						qty = 0;
+					if(quantity) qty = this.toDecimal(quantity * this.getMartingaleValue());
+					else if(this.getMartingaleActive()) qty = this.toDecimal(Number(lastSafeOrder.origQty) * this.getMartingaleValue());
+					else qty = this.getQuantity(newPrice, 1);
+		
+					
+					await this._log(`новый страховочный ордер (price - ${newPrice})`);
+					this.newBuyOrder(newPrice, CONSTANTS.ORDER_TYPE.LIMIT, qty, true, newOrder => {
+						if(newOrder.orderId) this.botSettings.lastSafeOrderPrice = newOrder.price;
+						resolve(newOrder);
+					});
+				} else {
+					resolve('ok');
+				}
+			} catch(err) {
+				reject(err);
 			}
-			return newOrder;
-		} else {
-			return 'ok';
-		}
+		});
+
 	}
 	
 	async _log(message = '') {
@@ -808,7 +972,8 @@ module.exports = class Process {
 	}
 
 	async disableProcess(message = '') {
-		
+		console.log('disableProcess', message)
+		console.log(this.currentOrder.orderId);
 		try {
 			if(this.symbol) await this.cancelOrders(this.safeOrders);
 		} catch(error) {					
@@ -837,6 +1002,7 @@ module.exports = class Process {
 
 		 
 		await this._log(`процесс завершен.`);
+		console.log(this.currentOrder.orderId)
 		return 'disable';
 	}
 
@@ -852,32 +1018,37 @@ module.exports = class Process {
 				}
 				this.cancelOrder(this.currentOrder, 0, 0, async result => {
 					if(result.status === 'ok') {
+						let nextAct = async () => {
+							this.orders = await this.updateOrders(this.orders);
+							this.getOrder(this.currentOrder.orderId, async cOrd => {
+								if(cOrd.orderId) {
+									this.currentOrder = cOrd;
+								} else {
+									this.setErrors(cOrd, `Проблема с currentOrder ${this.currentOrder}`);
+								}
+								await this.updateProcess(user);
+								callback({
+									status: 'info',
+									message: 'Все ордера отменены и монеты распроданы по рынку'
+								});
+							});
+						}
+						
 						if(this.isOrderSell(this.currentOrder.side)) {
 							let lastPrice = await this.getLastPrice(),
 								qty = this.getQuantity();
 		
-							let newOrder = await this.newSellOrder(lastPrice, CONSTANTS.ORDER_TYPE.MARKET, qty);
-							
-							if(newOrder.orderId) {
-								this.orders.push(newOrder);
-							} else {
-								await this._log(`Невозможно выставить sell ордер (${JSON.stringify(newOrder)})`);
-							}
-						}
-						
-						this.orders = await this.updateOrders(this.orders);
-						this.getOrder(this.currentOrder.orderId, this.getOrder_callback, async cOrd => {
-							if(cOrd.orderId) {
-								this.currentOrder = cOrd;
-							} else {
-								this.setErrors(cOrd, `Проблема с currentOrder ${this.currentOrder}`);
-							}
-							await this.updateProcess(user);
-							callback({
-								status: 'info',
-								message: 'Все ордера отменены и монеты распроданы по рынку'
+							this.newSellOrder(lastPrice, CONSTANTS.ORDER_TYPE.MARKET, qty, async newOrder => {
+								if(newOrder.orderId) {
+									this.orders.push(newOrder);
+								} else {
+									await this._log(`Невозможно выставить sell ордер (${JSON.stringify(newOrder)})`);
+								}
+								nextAct();
 							});
-						});
+						} else {
+							nextAct();
+						}
 					} else {
 						callback(result);
 					}
@@ -967,11 +1138,12 @@ module.exports = class Process {
 		}
 		
 		try {
-			this.getOrder(orderId, this.getOrder_callback, async order => {
+			this.getOrder(orderId, async order => {
 				let pair = this.getSymbol(),
 					side = order.side,
 					qty = order.origQty,
 					status = '',
+					_error = new Error('default error'),
 					message = '';
 	
 				if(order && order.orderId) {
@@ -992,13 +1164,12 @@ module.exports = class Process {
 						MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, order: {orderId: orderId, symbol: pair}, error, botID: this.botID, botTitle: this.botTitle, processId: this.processId, fnc: 'cancelOrder'});
 						status = 'error';
 						message = `ошибка при завершении ордера ${cancelOrder.orderId}`;
+						_error = error;
 						if(reject) reject(message);
 					}
 					
 					await this._log('закрытие ордера - ' + message);
-					callback({
-						status: status,
-						message: message,
+					callback({ status, message, error: _error,
 						data: { order: cancelOrder }
 					});
 				} else {
@@ -1018,74 +1189,11 @@ module.exports = class Process {
 			if(reject) reject(error);
 			callback({
 				status: 'error',
+				error,
 				message: error,
 				data: { orderId: order.orderId }
 			});
 		}
-	}
-
-	async freezeProcess(user) {
-		console.warn('------ freezeProcess');
-		await this._log('Заморозка текущего процесса.');
-		this.preFreeze = CONSTANTS.BOT_FREEZE_STATUS.ACTIVE;
-
-		let freezeSO = [],
-			freezeCO = this.cloneDeep(this.currentOrder);
-
-		this.safeOrders.forEach(order => {
-			freezeSO.push(new Order(order));
-		})
-		
-		this.freezeOrders.safe = freezeSO;
-		this.freezeOrders.current = freezeCO;
-
-		await this.cancelOrders(this.safeOrders);
-		await this.cancelOrder(this.currentOrder, 0, 0, async res => {
-			await this.updateProcess(user);
-			await this._log('Бот успешно заморожен.');
-		});
-	}
-
-	async unfreezeProcess(user) {
-		await this._log('Разморозка текущего процесса.');
-		console.warn('------ unfreezeing bot')
-		this.preFreeze = CONSTANTS.BOT_FREEZE_STATUS.INACTIVE;
-
-		let newSafeOrders = await this.createOrders(this.freezeOrders.safe),
-			newCurOrder = await this.createOrder(this.freezeOrders.current);
-
-		this.safeOrders = newSafeOrders;
-		this.currentOrder = newCurOrder;
-		this.orders.push(...this.safeOrders);
-		// this.dealOrders.push(...this.safeOrders);
-		this.orders.push(this.currentOrder);
-		// this.dealOrders.push(this.currentOrder);
-		await this.updateProcess(user);
-		await this._log('Разморозка бота успешно завершена.');
-	}
-
-	async createOrders(orders = []/*, type = 'safe'*/) {
-		const length = orders.length;
-		let newOrders = [];
-
-		for(let i = 0; i < length; i++) {
-			let order = await this.createOrder(orders[i]);
-			if(order.orderId) newOrders.push(order);
-		}
-
-		return newOrders
-	}
-
-	async createOrder(order = {}) {
-		let { side, price, type, origQty } = order,
-			newOrder = {};
-
-		if(side === CONSTANTS.ORDER_SIDE.BUY) 
-			newOrder = await this.newBuyOrder(price, type, origQty);
-		else if(side === CONSTANTS.ORDER_SIDE.SELL) 
-			newOrder = await this.newSellOrder(price, type, origQty);
-
-		return newOrder;
 	}
 
 	cloneDeep(obj) { // полное клонирование объекта
@@ -1127,9 +1235,14 @@ module.exports = class Process {
 				apiKey: key,
 				apiSecret: secret
 			});
-
-			let checkClient = await this.Client.accountInfo();
-			if(!checkClient.balances) {
+			
+			try {
+				let checkClient = await this.Client.accountInfo();
+				if(!checkClient.balances) {
+					if(flag) await this._log('ошибка с определением бинанс ключей!');
+					ret = false;
+				}
+			} catch(er) {
 				if(flag) await this._log('ошибка с определением бинанс ключей!');
 				ret = false;
 			}
@@ -1251,47 +1364,25 @@ module.exports = class Process {
 		return new Order(order);
 	}
 
-
-	// вот в этой еб*чей функции по ночам в 00:40 по минскому времени появляется неизвестная ошибка с ответа сервера бинанса
-	// и этот момент нужно обработать что бы все работало шикарно, еб вашу мать!
-	// async getOrder(orderId = 0) {
-	// 	orderId = Number(orderId);
-	// 	let pair = this.getSymbol(),
-	// 		order = {};
-	// 	try{
-	// 		order = await this.Client.getOrder({
-	// 			symbol: pair,
-	// 			orderId: orderId
-	// 		});
-	// 	} catch(error) {
-	// 		MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, error, order: {symbol: pair, orderId: orderId, order: order}, botID: this.botID, botTitle: this.botTitle, processId: this.processId, fnc: 'getOrder'})
-	// 		// if(await this.isError1021(error)) {
-	// 		await this._log( 'произошла ошибка при getOrder (errCode: ' + this.errorCode(error) + ')' );
-	// 		if(this.isError2013(error)) {
-	// 			return this.errorCode(error);
-	// 		} else {
-	// 			return await this.getOrder(orderId);
-	// 		}
-	// 	}
-	// 	return new Order(order);
-	// }
-
-	async getOrder(orderId = 0, calback = () => {}, handler_calback = () => {}) {
+	async getOrder(orderId = 0, callback = () => {}) {
 		this.getOrder_helper(orderId)
 			.then( result => {
-				calback(result, orderId, handler_calback);
+				this.getOrder_handlerCallback(result, orderId, callback);
 			})
 			.catch( error => {
 				MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, error, orderId, botID: this.botID, botTitle: this.botTitle, processId: this.processId, fnc: 'getOrder'})
-				calback(error, orderId, handler_calback);
+				this.getOrder_handlerCallback(error, orderId, callback);
 			});
 	}
 
-	async getOrder_callback(result = {}, orderId = Number(), handler_calback = () => {}) {
+	getOrder_handlerCallback(result = {}, orderId = Number(), callback = () => {}) {
 		if(result.status === 'error') {
-			this.getOrder(orderId, f, handler_calback);
+			this.getOrder(orderId, callback);
 		} else if(result.status === 'ok') {
-			handler_calback(result.order);
+			callback(result.order);
+		} else {
+			MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, result, orderId, botID: this.botID, botTitle: this.botTitle, processId: this.processId, fnc: 'getOrder_handlerCallback_else'})
+			callback(result);
 		}
 	}
 
@@ -1301,7 +1392,7 @@ module.exports = class Process {
 				sendOrdersArray = [];
 
 			orders.forEach(order => {
-				this.getOrder(order.orderId, this.getOrder_callback, async updatedOrder => {
+				this.getOrder(order.orderId, async updatedOrder => {
 					qtyPassedElements++;
 					if(handler) {
 						let orderAfterHandling = await handler(updatedOrder);
@@ -1331,20 +1422,17 @@ module.exports = class Process {
 
 			let order = {};
 			if(orderId) {
-				try {
-					let symbol = this.getSymbol();
-					this.Client.getOrder({
-						symbol,
-						orderId,
-						useServerTime: true
-					}).then( result => {
-						resolve({
-							order: new Order(result),
-							status: 'ok'
-						});
+				let symbol = this.getSymbol();
+				this.Client.getOrder({
+					symbol,
+					orderId,
+					useServerTime: true
+				}).then( result => {
+					resolve({
+						order: new Order(result),
+						status: 'ok'
 					});
-
-				} catch(error) {
+				}).catch( async error => {
 					await this._log( 'произошла ошибка при getOrder (errCode: ' + this.errorCode(error) + ')' + JSON.stringify(error) );
 					MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, error, order: {symbol, orderId, order}, botID: this.botID, botTitle: this.botTitle, processId: this.processId, fnc: 'getOrder'})
 					if(this.isError2013(error)) {
@@ -1358,7 +1446,7 @@ module.exports = class Process {
 							status: 'error'
 						});
 					}
-				}
+				});
 			} else {
 				resolve({
 					order: new Order(order),
@@ -1403,9 +1491,7 @@ module.exports = class Process {
 			return Number(price[pair]);
 		} catch(error) {
 			MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, orderId, botID: this.botID, botTitle: this.botTitle, processId: this.processId, fnc: 'getLastPrices'})
-			
-			let price = await this.Client.prices();
-			return Number(price[pair]);
+			return 0;
 		}
 	}
 
@@ -1583,6 +1669,12 @@ module.exports = class Process {
 		let code = this.errorCode(error);
 		// await this._log('ошибка code:' + code + ', Order does not exist');
 		return code === -2013;
+	}
+
+	//cancel rejected
+	async isError2011(error = new Error('default err')) {
+		let code = this.errorCode(error);
+		return code === -2011;
 	}
 
 	//insufficient balance

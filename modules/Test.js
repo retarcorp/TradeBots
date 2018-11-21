@@ -34,11 +34,11 @@ class Test {
 		}, 2000)
 	}
 
-	async getOrder_callback(result, orderId, handler_calback) {
+	async getOrder_callback(result, orderId, handler_callback) {
 		if(result.status === 'error') {
-			this.getOrder(orderId, f, handler_calback);
+			this.getOrder(orderId, f, handler_callback);
 		} else if(result.status === 'ok') {
-			handler_calback(result.order);
+			handler_callback(result.order);
 		}
 	}
 
@@ -58,13 +58,13 @@ class Test {
 		});
 	}
 
-	async getOrder(n = 0, callback = () => {}, name, _calback = () => {}) {
+	async getOrder(n = 0, callback = () => {}, name, _callback = () => {}) {
 		this.getOrder_helper(n)
 			.then( result => {
-				callback(result, name, _calback);
+				callback(result, name, _callback);
 			})
 			.catch( error => {
-				callback(error, name, _calback)
+				callback(error, name, _callback)
 			});
 	}
 

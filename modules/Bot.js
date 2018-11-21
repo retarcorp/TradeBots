@@ -254,7 +254,7 @@ module.exports = class Bot {
 				}
 			})
 			.catch( async err => {
-				console.log(err)
+				console.log(err);
 				this.disableBot(user);
 				await this.updateBot(user);
 			});
