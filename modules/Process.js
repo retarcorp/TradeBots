@@ -189,6 +189,7 @@ module.exports = class Process {
 	}
 
 	async trade(user = this.user, flag = false, resolve = () => {}, reject = () => {}, tickTime = 0) {
+		sleep(2500);
 		console.log()
 		console.log()
 		console.log()
@@ -1377,7 +1378,9 @@ module.exports = class Process {
 
 	getOrder_handlerCallback(result = {}, orderId = Number(), callback = () => {}) {
 		if(result.status === 'error') {
-			this.getOrder(orderId, callback);
+			setTimeout( () => {
+				this.getOrder(orderId, callback);
+			}, 5000);
 		} else if(result.status === 'ok') {
 			callback(result.order);
 		} else {
@@ -1651,45 +1654,44 @@ module.exports = class Process {
 	}
 
 	//Timestamp for this request is outside of the recvWindow
-	async isError1021(error = new Error('default err')) {  	
+	isError1021(error = new Error('default err')) {  	
 		let code = this.errorCode(error);
-		// await this._log('ошибка code:' + code + ', Временная метка для этого запроса находится вне recvWindow');
+		return code === -1021;
+	}
+
+	//TOO_MANY_REQUESTS
+	isError1021(error = new Error('default err')) {  	
+		let code = this.errorCode(error);
 		return code === -1021;
 	}
 
 	//MIN_NOTATIAN
-	async isError1013(error = new Error('default err')) { 
+	isError1013(error = new Error('default err')) { 
 		let code = this.errorCode(error);
-		// await this._log('ошибка code:' + code + ', Количество продоваемых монет ниже минимально-допустимого');
 		return code === -1013;
 	}
 
 	//Order does not exist
-	async isError2013(error = new Error('default err')) {
+	isError2013(error = new Error('default err')) {
 		let code = this.errorCode(error);
-		// await this._log('ошибка code:' + code + ', Order does not exist');
 		return code === -2013;
 	}
 
 	//cancel rejected
-	async isError2011(error = new Error('default err')) {
+	isError2011(error = new Error('default err')) {
 		let code = this.errorCode(error);
 		return code === -2011;
 	}
 
 	//insufficient balance
-	async isError2010(error = new Error('default err')) { 
-		
+	isError2010(error = new Error('default err')) { 
 		let code = this.errorCode(error);
-		// await this._log('ошибка code:' + code + ', Недостаточно средств на балансе валюты');
 		return code === -2010;
 	}
 
 	// Неверные бинанс ключи
-	async isError2014(error = new Error('default err')) {
-		
+	isError2014(error = new Error('default err')) {
 		let code = this.errorCode(error);
-		// await this._log('ошибка code:' + code + ', Неверные бинанс ключи');
 		return code === -2014
 	}
 	//:: ERRORS TYPES END
