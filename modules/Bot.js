@@ -82,7 +82,7 @@ module.exports = class Bot {
 						})
 						.catch( async err => {
 							console.log(err);
-							this.disableBot(user);
+							this.disableBot(user, true);
 							await this.updateBot(user);
 						});	
 				}
@@ -100,7 +100,7 @@ module.exports = class Bot {
 							})
 							.catch( async err => {
 								console.log(err);
-								this.disableBot(user);
+								this.disableBot(user, true);
 								await this.updateBot(user);
 							});
 					}
@@ -255,7 +255,7 @@ module.exports = class Bot {
 			})
 			.catch( async err => {
 				console.log(err);
-				this.disableBot(user);
+				this.disableBot(user, true);
 				await this.updateBot(user);
 			});
 	}
@@ -303,7 +303,7 @@ module.exports = class Bot {
 						})
 						.catch( async err => {
 							console.log(err);
-							this.disableBot(user);
+							this.disableBot(user, true);
 							await this.updateBot(user);
 						});
 	
@@ -721,13 +721,17 @@ module.exports = class Bot {
 		this.pair.from = '';
 	}
 
-	disableBot(user = this.user) {
+	disableBot(user = this.user, disableFlag = false) {
 		for (let processId in this.processes) {
-			if(this.processes[processId].deactivateProcess) {
-				this.processes[processId].deactivateProcess();
-			} else {
-				this.processes[processId] = new Process(this.processes[processId]);
-				this.processes[processId].deactivateProcess();
+			if(this.processes[processId].status === CONSTANTS.BOT_STATUS.ACTIVE) {
+				if(this.processes[processId].deactivateProcess) {
+					disableFlag && this.processes[processId].disableProcess();
+					this.processes[processId].deactivateProcess();
+				} else {
+					this.processes[processId] = new Process(this.processes[processId]);
+					disableFlag && this.processes[processId].disableProcess();
+					this.processes[processId].deactivateProcess();
+				}
 			}
 		}
 		this.status = CONSTANTS.BOT_STATUS.INACTIVE;

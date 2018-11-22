@@ -1,4 +1,3 @@
-
 class Test {
 	constructor() {
 
@@ -24,9 +23,9 @@ class Test {
 		// });
 		// this.masObh(mas, f).then(console.log);
 		// this.masObh(mas1, f).then(console.log);
-		console.log(this.testRet( () => {
-			return 'aaa';
-		} ))
+		// console.log(this.testRet( () => {
+		// 	return 'aaa';
+		// } ))
 	}
 
 	testRet(clb) {
@@ -78,8 +77,31 @@ class Test {
 			}
 		});
 	}
+
+	test() {
+		this.testPromise()
+			.then(d => {
+				console.log(d, 'then');
+			})
+			.catch(d => {
+				console.log(d, 'catch')
+			})
+	}
+
+	testPromise() { 
+		return new Promise( (resolve, reject) => {
+			setTimeout( () => {
+				let d = Date.now();
+				if(d%2) {
+					resolve(d);
+				} else {
+					reject(d);
+				}
+			}, 1000)
+		});
+	}
 }
 
 let t = new Test();
 
-t.init();
+t.test();
