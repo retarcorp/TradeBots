@@ -1260,12 +1260,12 @@ module.exports = class Process {
 				secret = ''; 
 				ret = false;
 			}
-			this.Client = binanceAPI({
-				apiKey: key,
-				apiSecret: secret
-			});
-			
 			try {
+				this.Client = binanceAPI({
+					apiKey: key,
+					apiSecret: secret
+				});
+				
 				let checkClient = await this.Client.accountInfo();
 				if(!checkClient.balances) {
 					if(flag) await this._log('ошибка с определением бинанс ключей!');
@@ -1409,6 +1409,7 @@ module.exports = class Process {
 			setTimeout( () => {
 				this.getOrder(orderId, callback);
 			}, 5000);
+			return;
 		} else if(result.status === 'ok') {
 			callback(result.order);
 		} else {

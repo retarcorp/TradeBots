@@ -61,6 +61,7 @@ module.exports = class Bot {
 	}
 
 	continueTrade(user = this.user) {
+		Mongo.insert({continueTrade: 'CONTINUE', Date: new Date()}, 'PingTest');
 		user = { name: user.name, userId: user.userId, binanceAPI: user.binanceAPI, regDate: user.regDate };
 		
 		this.user = user;

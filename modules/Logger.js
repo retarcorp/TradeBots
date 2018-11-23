@@ -46,7 +46,7 @@ class Logger {
 			}
 			
 			fs.writeFile(path, fileData, (err) => {
-				if(err) reject({status: "error", error: err});
+				// if(err) reject({status: "error", error: err});
 				resolve({status: 'ok'});
 			});
 		});
