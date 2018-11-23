@@ -482,8 +482,6 @@ module.exports = class Process {
 										} else if(newSafeOrder !== 'ok') {
 											await this._log("Невозможно выставить страховочный ордер (недостаточно баланса)");
 										}
-									} else {
-										nextSafeOrders.push(order);
 									}
 								} else {
 									console.log('nothin with safe order')
@@ -494,7 +492,7 @@ module.exports = class Process {
 								await this._log((i + 1) + 'й страховочной ордер - ' + JSON.stringify(order));
 							}
 						}
-						MDBLogger.info({user: {userId: this.user.userId, name: this.user.name}, stTime, edTime: Date.now(), workTime: (Date.now() - stTime), botID: this.botID, botTitle: this.botTitle, processId: this.processId, error: JSON.stringify(error), fnc: 'process___isOrderFilling_end'});
+						MDBLogger.info({user: {userId: this.user.userId, name: this.user.name}, stTime, edTime: Date.now(), workTime: (Date.now() - stTime), botID: this.botID, botTitle: this.botTitle, processId: this.processId, fnc: 'process___isOrderFilling_end'});
 										
 						this.safeOrders = nextSafeOrders;
 						resolve(resf);
@@ -503,6 +501,7 @@ module.exports = class Process {
 						resolve('');
 					}
 				}).catch(async error => {
+					console.log(error)
 					//что делать если обход с ошибкой
 					MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, botID: this.botID, botTitle: this.botTitle, processId: this.processId, stTime, edTime: Date.now(), workTime: (Date.now() - stTime), fnc: 'process_end'});
 					await this._log(JSON.stringify(error));
