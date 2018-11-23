@@ -40,8 +40,7 @@ module.exports = class Process {
 		errors = {
 			isExist: false,
 			description: null
-		},
-		locedToFinish
+		}
 	} = {}) {
 		this.processId = this.JSONclone(processId);
 		// this.dealId = this.JSONclone(dealId);
@@ -66,7 +65,6 @@ module.exports = class Process {
 		this.botID = this.JSONclone(botID);
 		this.botTitle = this.JSONclone(botTitle);
 		this.errors = this.JSONclone(errors);
-		this.locedToFinish = this.JSONclone(locedToFinish);
 	}
 
 	JSONclone(object = {}) {
@@ -93,6 +91,7 @@ module.exports = class Process {
 	}
 
 	async awaitFreeze(flag = false, resolve = () => {}, reject = () => {}) {
+		MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, botID: this.botID, botTitle: this.botTitle, processId: this.processId, fnc: 'awaitFreeze'});
 		if(flag) {
 			if(this.isFreeze()) {
 				setTimeout( () => {
@@ -435,7 +434,10 @@ module.exports = class Process {
 			if(length) {
 				console.log('we get safeOrders ' + length)
 				await this._log(`Проверка состояния страховочных ордеров (${this.getLastSafeOrder().price}).`);
-	
+
+				MDBLogger.info({user: {userId: this.user.userId, name: this.user.name}, orders, botID: this.botID, botTitle: this.botTitle, processId: this.processId, fnc: 'process'});
+				
+				let stTime = Date.now();
 				this.getOrder_forOrdersArray(orders).then(async updatedOrders => {
 					console.log('after update all safe orders')
 					
@@ -480,6 +482,8 @@ module.exports = class Process {
 										} else if(newSafeOrder !== 'ok') {
 											await this._log("Невозможно выставить страховочный ордер (недостаточно баланса)");
 										}
+									} else {
+										nextSafeOrders.push(order);
 									}
 								} else {
 									console.log('nothin with safe order')
@@ -490,6 +494,8 @@ module.exports = class Process {
 								await this._log((i + 1) + 'й страховочной ордер - ' + JSON.stringify(order));
 							}
 						}
+						MDBLogger.info({user: {userId: this.user.userId, name: this.user.name}, stTime, edTime: Date.now(), workTime: (Date.now() - stTime), botID: this.botID, botTitle: this.botTitle, processId: this.processId, error: JSON.stringify(error), fnc: 'process___isOrderFilling_end'});
+										
 						this.safeOrders = nextSafeOrders;
 						resolve(resf);
 					} else {
@@ -498,7 +504,7 @@ module.exports = class Process {
 					}
 				}).catch(async error => {
 					//что делать если обход с ошибкой
-					MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, botID: this.botID, botTitle: this.botTitle, processId: this.processId, error: JSON.stringify(error), fnc: 'process__'});
+					MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, botID: this.botID, botTitle: this.botTitle, processId: this.processId, stTime, edTime: Date.now(), workTime: (Date.now() - stTime), fnc: 'process_end'});
 					await this._log(JSON.stringify(error));
 					reject('');
 				});
@@ -535,7 +541,7 @@ module.exports = class Process {
 						console.log('stoploss are reached')
 						await this._log(`Stoploss пройден.`);
 						await this.cancelAllOrders(user, async result => {
-							await this.disableProcess('Все распродано по рынку, бот выключен');
+							await this.disableProcess(result.message);
 							resolve('');
 						});
 					} else {
@@ -809,7 +815,7 @@ module.exports = class Process {
 					} else {
 						reject({
 							status: 'error',
-							order: {}
+							order: 'disable'
 						});
 					};
 				});
@@ -1023,20 +1029,28 @@ module.exports = class Process {
 				}
 				this.cancelOrder(this.currentOrder, 0, 0, async result => {
 					if(result.status === 'ok') {
-						let nextAct = async () => {
+						let nextAct = async (isError = false) => {
 							this.orders = await this.updateOrders(this.orders);
-							this.getOrder(this.currentOrder.orderId, async cOrd => {
-								if(cOrd.orderId) {
-									this.currentOrder = cOrd;
-								} else {
-									this.setErrors(cOrd, `Проблема с currentOrder ${this.currentOrder}`);
-								}
+							if(isError) {
 								await this.updateProcess(user);
 								callback({
 									status: 'info',
-									message: 'Все ордера отменены и монеты распроданы по рынку'
+									message: 'Все ордера отменены, невозможно продать по рынку все купленные монеты'
 								});
-							});
+							} else {
+								this.getOrder(this.currentOrder.orderId, async cOrd => {
+									if(cOrd.orderId) {
+										this.currentOrder = cOrd;
+									} else {
+										this.setErrors(cOrd, `Проблема с currentOrder ${this.currentOrder}`);
+									}
+									await this.updateProcess(user);
+									callback({
+										status: 'info',
+										message: 'Все ордера отменены и монеты распроданы по рынку'
+									});
+								});
+							}
 						}
 						
 						if(this.isOrderSell(this.currentOrder.side)) {
@@ -1046,13 +1060,14 @@ module.exports = class Process {
 							this.newSellOrder(lastPrice, CONSTANTS.ORDER_TYPE.MARKET, qty, async newOrder => {
 								if(newOrder.orderId) {
 									this.orders.push(newOrder);
+									nextAct(false);
 								} else {
 									await this._log(`Невозможно выставить sell ордер (${JSON.stringify(newOrder)})`);
+									nextAct(true);
 								}
-								nextAct();
 							});
 						} else {
-							nextAct();
+							nextAct(false);
 						}
 					} else {
 						callback(result);
@@ -1436,6 +1451,7 @@ module.exports = class Process {
 						});
 					}
 				} catch(error) {
+					MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, botID: this.botID, botTitle: this.botTitle, processId: this.processId, error: error, fnc: 'getOrder_forOrdersArray'});
 					reject({
 						status: 'error',
 						error,
@@ -1469,7 +1485,7 @@ module.exports = class Process {
 					});
 				}).catch( async error => {
 					await this._log( 'произошла ошибка при getOrder (errCode: ' + this.errorCode(error) + ')' + JSON.stringify(error) );
-					MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, error, order: {symbol, orderId, order}, botID: this.botID, botTitle: this.botTitle, processId: this.processId, fnc: 'getOrder'})
+					MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, error, order: {symbol, orderId}, botID: this.botID, botTitle: this.botTitle, processId: this.processId, fnc: 'getOrder'})
 					if(this.isError2013(error)) {
 						resolve({
 							status: 'ok',

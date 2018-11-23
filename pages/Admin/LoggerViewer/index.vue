@@ -4,10 +4,25 @@
 		<div class="lines-box" v-for="(value, key) in _usersLogs" :key="key">
 			<h3 style="margin-bottom: 1rem;">{{key}} {{value[0].message.user.name}}</h3>
 			<div class="lines-conteiner">
-				<div v-for="(elem, i) in value" :key="i">
-					<p class="lines" >{{elem.time}} : {{elem.message.fnc}} {{`${elem.message.botTitle} ${elem.message.botID} ${elem.message.processId}`}} {{ elem.message.order ? elem.message.order : ''}}</p>
+				<div style="border-bottom: 1px solid black;" v-for="(elem, i) in value" :key="i">
+					<p class="lines" :class="elem.level === 'error' ? 'lines-error' : ''">{{elem.time}}, {{elem.level}}</p>
+
+					<div v-for="(el, key) in elem.message" :key="key">
+						<div v-if="typeof el === 'object' && Object.keys(el).length > 1 ">
+							{{key}} : 
+							<br>
+							<p class="line_tabs" v-for="(el_, key_) in el" :key="key_">
+								{{key_}} : {{el_}}
+							</p>
+						</div>
+						<div v-else>
+							{{key}} : {{el}}
+						</div>
+					</div>
+
+					<!-- <p class="lines" >{{elem.time}} : {{elem.message.fnc}} {{`${elem.message.botTitle} ${elem.message.botID} ${elem.message.processId}`}} {{ elem.message.order ? elem.message.order : ''}}</p>
 					<p>{{ elem.level === 'error' ? elem.message.error.code : ''}}</p>
-					<p>{{ elem.level === 'error' ? elem.message.error : ''}}</p>
+					<p>{{ elem.level === 'error' ? elem.message.error : ''}}</p> -->
 				</div>
 			</div>
 		</div>
@@ -73,6 +88,14 @@ export default {
 .lines {
 	background-color: #efefef;
 	padding: 5px;
+}
+
+.lines-error {
+	background-color: #fec1c1;
+}
+
+.line_tabs {
+	margin-left: 2rem; 
 }
 
 .lines-conteiner {
