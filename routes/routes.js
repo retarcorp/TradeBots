@@ -15,7 +15,7 @@ const userActivation = require('./userActivation');
 const bitaps = require('./bitaps');
 const pages = require('./pages');
 const rp = require('request-promise');
-
+const ping = require('./ping');
 
 const Mongo = require('../modules/Mongo');
 const url = require('url');
@@ -26,6 +26,7 @@ const Logger = require('../modules/Logger');
 const Statistics = require('../modules/Statistics');
 // const uniqid = require('uniqid');
 
+router.use(ping);
 router.use(account);
 router.use(admin);
 router.use(bitaps);
