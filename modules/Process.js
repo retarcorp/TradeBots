@@ -141,8 +141,11 @@ module.exports = class Process {
 									this.orders.push(...safeOrders);
 									
 									await this.updateProcess(user);
-									this.trade(user, false, resolve, reject);
-									console.log('never')
+									
+									this.sleep(CONSTANTS.TIMEOUT, () => {
+										this.trade(user, false, resolve, reject);
+										console.log('never')
+									});
 								} else {
 									await this.disableProcess('Неуспешная продажа монет. Ошибка при выставлении sell ордера (невозможно продать купленное кол-во монет по профит цене).');
 									await this.updateProcess(user);
@@ -514,9 +517,11 @@ module.exports = class Process {
 							}
 						}
 						this.safeOrders = nextSafeOrders;
+						await this.updateProcess(user);
 						resolve(resf);
 					} else {
 						await this._log(JSON.stringify(updatedOrders));
+						await this.updateProcess(user);
 						resolve('');
 					}
 				}).catch(async error => {
@@ -524,11 +529,13 @@ module.exports = class Process {
 					//что делать если обход с ошибкой
 					MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, botID: this.botID, botTitle: this.botTitle, processId: this.processId, stTime, edTime: Date.now(), workTime: (Date.now() - stTime), fnc: 'process_end'});
 					await this._log(JSON.stringify(error));
+					await this.updateProcess(user);
 					reject('');
 				});
 				
 			} else if(this.isFreeze() && !this.isPreFreeze()) {
 				//тип вроде нихуя делать не надо ибо бот заморожен
+			await this.updateProcess(user);
 				resolve('');
 			} else if(!this.isFreeze() && this.isPreFreeze() && this.isNeedToOpenNewSafeOrders()) {
 				//тип надо выставить некст сейв ордер, если еще можно
@@ -541,10 +548,12 @@ module.exports = class Process {
 					} else {
 						await this._log("Невозможно выставить страховочный ордер (недостаточно баланса)");
 					}
+					await this.updateProcess(user);
 					resolve('');
 				} catch(error) {
 					MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, botID: this.botID, botTitle: this.botTitle, processId: this.processId, error: JSON.stringify(error), fnc: 'process__createsafeordererror'});
 					await this._log(JSON.stringify(error));
+					await this.updateProcess(user);
 					reject('');
 				}
 			} else {
@@ -560,18 +569,20 @@ module.exports = class Process {
 						await this._log(`Stoploss пройден.`);
 						await this.cancelAllOrders(user, async result => {
 							await this.disableProcess(result.message);
+							await this.updateProcess(user);
 							resolve('');
 						});
 					} else {
+						await this.updateProcess(user);
 						resolve('');
 					}
 				} catch(error) {
-					MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, botID: this.botID, botTitle: this.botTitle, processId: this.processId, error: JSON.stringify(error), fnc: 'process__else_'});
+					MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, botID: this.botID, botTitle: this.botTitle, processId: this.processId, error, fnc: 'process__else_'});
 					await this._log(JSON.stringify(error));
-					reject('');
+					await this.updateProcess(user);
+					resolve('');
 				}
 			}
-			await this.updateProcess(user);
 			// sleep(CONSTANTS.TIMEOUT);
 			// resolve('');
 		});
