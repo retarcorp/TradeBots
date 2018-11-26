@@ -8,7 +8,7 @@ function ping() {
         url: 'https://35.242.244.82/api/ping',
         withCredentials: true,
         cert: false
-    }, (error, body, response) => {
+    }, (error, request, body) => {
         if (error) {
             console.error(error);
         }
