@@ -5,7 +5,7 @@ const request = require('request');
 function ping() {
     request({
         method: 'GET',
-        url: 'https://35.242.244.82/api/ping',
+        url: 'https://35.246.137.70/api/ping',
         withCredentials: true,
         cert: false
     }, (error, request, body) => {
