@@ -181,7 +181,7 @@ export default {
                                 // prcIncome.volume[sCurSymbol] += Number(order.executedQty);
 
                             } else if(order.side === SELL && order.status === FILLED) {
-                                prcIncome.income[curSymbol] += Number(order.cummulativeQuoteQty);
+                                prcIncome.income[curSymbol] += Number(order.cummulativeQuoteQty) * (1 - 0.001);
                                 // prcIncome.income[sCurSymbol] += Number(order.executedQty);
                             }
                                 
@@ -272,7 +272,7 @@ export default {
                                 botIncome.income[curSymbol] -= Number(order.cummulativeQuoteQty);
                                 botIncome.income[sCurSymbol] -= Number(order.executedQty);
                             } else if(order.side === SELL && order.status === FILLED) {
-                                botIncome.income[curSymbol] += Number(order.cummulativeQuoteQty);
+                                botIncome.income[curSymbol] += Number(order.cummulativeQuoteQty) * (1 - 0.001);
                                 botIncome.income[sCurSymbol] += Number(order.executedQty);
                             }
                         });
@@ -323,11 +323,11 @@ export default {
                         }
 
                         prc.orders.forEach(order => {
-                            if(order.time - prevDay <= oneDay) {
+                            if(Number(order.time) - prevDay <= oneDay) {
                                 if(order.side === BUY && order.status === FILLED) {
                                     income[curSymbol] -= Number(order.cummulativeQuoteQty);
                                 } else if(order.side === SELL && order.status === FILLED) {
-                                    income[curSymbol] += Number(order.cummulativeQuoteQty);
+                                    income[curSymbol] += Number(order.cummulativeQuoteQty) * (1 - 0.001);
                                 }
                             }
                         });
@@ -361,7 +361,7 @@ export default {
                             if(order.side === BUY && order.status === FILLED) {
                                 income[curSymbol] -= Number(order.cummulativeQuoteQty);
                             } else if(order.side === SELL && order.status === FILLED) {
-                                income[curSymbol] += Number(order.cummulativeQuoteQty);
+                                income[curSymbol] += Number(order.cummulativeQuoteQty) * (1 - 0.001);
                             }
                         });
                         if(curSymbol === 'USDT') income[curSymbol] = Number(income[curSymbol].toFixed(4));

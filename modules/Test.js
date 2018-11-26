@@ -1,3 +1,5 @@
+
+const binanceAPI = require('binance-api-node').default;
 class Test {
 	constructor() {
 
@@ -100,8 +102,27 @@ class Test {
 			}, 1000)
 		});
 	}
+
+	testBuy() {
+		let c = binanceAPI({
+			apiKey: 'pMK15sHEO3jS9RE9x4KA5zFfdxCKcxk9gDgyf4BhvGrhvEUn3wiZMTYcuqLEAkNh',
+			apiSecret: 'A7pvWxoe0JzHfM1rvF7D2ymM3ZFUvdlOyLRmjeZ7m4gfCWaTOmLBwHcwMUSw3Znp'
+		});
+
+		// c.order({
+		// 	symbol: 'TRXUSDT',
+		// 	side: 'BUY',
+		// 	type: 'LIMIT',
+		// 	price: 0.01194,
+		// 	quantity: 921.2
+		// }).then(console.log);
+		c.getOrder({
+			symbol: 'TRXUSDT',
+			orderId: 21467783
+		}).then(console.log)
+	}
 }
 
 let t = new Test();
 
-t.test();
+t.testBuy();

@@ -91,7 +91,6 @@ module.exports = class Process {
 	}
 
 	async awaitFreeze(flag = false, resolve = () => {}, reject = () => {}) {
-		MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, botID: this.botID, botTitle: this.botTitle, processId: this.processId, fnc: 'awaitFreeze'});
 		if(flag) {
 			if(this.isFreeze()) {
 				setTimeout( () => {
@@ -119,11 +118,13 @@ module.exports = class Process {
 						console.log('firstOrder bouth')
 						
 						if(newBuyOrder.orderId) {
-							let qty = this.setQuantity(null, Number(newBuyOrder.origQty));
+							let orderQtyWithoutFee = Number(newBuyOrder.origQty) * (1 - CONSTANTS.BINANCE_FEE / 100); 
+							let qty = this.setQuantity(null, orderQtyWithoutFee);
 							// let price = Number(newBuyOrder.price);
 							let price = newBuyOrder.price;
 							
 							await this.awaitFreeze();
+
 							this.botSettings.firstBuyPrice = price;
 							let profitPrice = this.getProfitPrice(price);
 
@@ -260,9 +261,9 @@ module.exports = class Process {
 						}
 					} else {
 						this.setErrors(tmpCurOrd, `Проблемы с получением информации об ордере! ${this.currentOrder.orderId}`);
+						await this.disableProcess(`Проблемы с получением информации об ордере! ${this.currentOrder.orderId}`);
+						await this.updateProcess(user);
 						this.sleep(CONSTANTS.TIMEOUT, () => {
-							await this.disableProcess(`Проблемы с получением информации об ордере! ${this.currentOrder.orderId}`);
-							await this.updateProcess(user);
 							reject('finish');
 						});
 					}
@@ -280,7 +281,8 @@ module.exports = class Process {
 							//create new buy order
 							this.getOrder(this.currentOrder.orderId, async newBuyOrder => {
 								if(newBuyOrder.orderId) {
-									let qty = this.setQuantity(null, Number(newBuyOrder.origQty));
+									let orderQtyWithoutFee = Number(newBuyOrder.origQty) * (1 - CONSTANTS.BINANCE_FEE / 100); 
+									let qty = this.setQuantity(null, orderQtyWithoutFee);
 									let price = Number(newBuyOrder.price);
 						
 									while(this.isFreeze()) {
@@ -385,7 +387,8 @@ module.exports = class Process {
 				
 				if(result.status === 'ok') {
 					this.recountInitialOrder(order);
-					this.recountQuantity(order.origQty);
+					let orderQtyWithoutFee = Number(order.origQty) * (1 - CONSTANTS.BINANCE_FEE / 100);
+					this.recountQuantity(orderQtyWithoutFee);
 
 					let newProfitPrice = this.recountProfitPrice(order);
 
@@ -712,8 +715,9 @@ module.exports = class Process {
 					console.log(error);
 					MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, error: JSON.stringify(error), prevError, botID: this.botID, botTitle: this.botTitle, processId: this.processId, price, quantity, amount, fnc: 'newBuyOrder'});
 					
-					if( (quantity > 0 && amount < 50) && (this.isError1013(error) || this.isError2010(error)) ) {
-						let step = this.botSettings.decimalQty;
+					if( (quantity > 0 && amount < 20) && (this.isError1013(error) || this.isError2010(error)) ) {
+						let step = this.botSettings.decimalQty,
+							priceStep = Number(this.botSettings.tickSize);
 						if(
 							(this.isError1013(error) && this.isError2010(prevError)) ||
 							(this.isError1013(prevError) && this.isError2010(error))
@@ -730,11 +734,12 @@ module.exports = class Process {
 								});
 							}
 						}
-						else if(amount >= 3 && this.isError2010(error)) return '2010'
-						else if(this.isError1013(error)) quantity += step;
+						else if(amount >= 10 && this.isError2010(error) && this.isError2010(prevError)) return '2010';
+						else if(this.isError1013(error)) price += priceStep;
 						else if(this.isError2010(error)) quantity -= step;
 						
 						quantity = this.toDecimal(quantity);
+						price = this.toDecimal(price, this.getDecimal(true));
 						amount++;
 						reject({
 							status: 'error',
@@ -785,9 +790,9 @@ module.exports = class Process {
 	newSellOrder_helper(price = 0, type = CONSTANTS.ORDER_TYPE.LIMIT, quantity = this.getQuantity(price), prevError = {}, amount = 0) {
 		return new Promise( async (resolve, reject) => {
 			const useServerTime = true, side = CONSTANTS.ORDER_SIDE.SELL;
-			let qtyWithoutFee = this.toDecimal(quantity * (1 - CONSTANTS.BINANCE_FEE / 100)),
-				symbol = this.getSymbol(),
-				newOrderParams = { symbol, side, quantity: qtyWithoutFee, useServerTime };
+			// let qtyWithoutFee = this.toDecimal(quantity * (1 - CONSTANTS.BINANCE_FEE / 100)),
+			let	symbol = this.getSymbol(),
+				newOrderParams = { symbol, side, quantity, useServerTime };
 
 			if(type === CONSTANTS.ORDER_TYPE.LIMIT)	{
 				newOrderParams.price = price;
@@ -795,20 +800,23 @@ module.exports = class Process {
 				newOrderParams.type = type;
 			}
 
+			console.log(newOrderParams);
 			this.Client.order(newOrderParams)
 				.then( async newSellOrder => {
 					this.recountQuantity(newSellOrder.origQty, 1);
 					await this._log('создан SELL ордер: ' + newSellOrder.price + ', кол-во: ' + newSellOrder.origQty);
-					MDBLogger.info({user: {userId: this.user.userId, name: this.user.name}, price, type, symbol, quantity, qtyWithoutFee, botID: this.botID, botTitle: this.botTitle, processId: this.processId, newSellOrder, fnc: 'newSellOrder'});
+					MDBLogger.info({user: {userId: this.user.userId, name: this.user.name}, price, type, symbol, quantity, botID: this.botID, botTitle: this.botTitle, processId: this.processId, newSellOrder, fnc: 'newSellOrder'});
 					resolve({
 						status: 'ok',
 						order: new Order(newSellOrder)
 					});
 				})
 				.catch( async error => {
-					MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, price, type, symbol, quantity, qtyWithoutFee, error: JSON.stringify(error), prevError, botID: this.botID, botTitle: this.botTitle, processId: this.processId, price, quantity, amount, fnc: 'newSellOrder'});
-					if( (quantity > 0 && amount < 50) && (this.isError1013(error) || this.isError2010(error)) ) {
-						let step = this.botSettings.decimalQty;
+					console.log(error)
+					MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, price, type, symbol, quantity, error: JSON.stringify(error), prevError, botID: this.botID, botTitle: this.botTitle, processId: this.processId, price, quantity, amount, fnc: 'newSellOrder'});
+					if( (quantity > 0 && amount < 20) && (this.isError1013(error) || this.isError2010(error)) ) {
+						let step = Number(this.botSettings.decimalQty),
+							priceStep = Number(this.botSettings.tickSize);
 						if(
 							(this.isError1013(error) && this.isError2010(prevError)) ||
 							(this.isError1013(prevError) && this.isError2010(error))
@@ -818,10 +826,11 @@ module.exports = class Process {
 								order: 'disable'
 							});
 						}
-						else if(this.isError1013(error)) quantity += step;
+						else if(this.isError1013(error)) price += priceStep;
 						else if(this.isError2010(error)) quantity -= step;
 						
 						quantity = this.toDecimal(quantity);
+						price = this.toDecimal(price, this.getDecimal(true));
 						amount++;
 						reject({
 							status: 'error',
@@ -894,7 +903,7 @@ module.exports = class Process {
 					maxAmountSO = this.getAmount(),
 					deviation = this.getDeviation(),
 					lastSafeOrder = this.getLastSafeOrder() || {},
-					decimal = this.getDecimal(price || lastSafeOrder.price);
+					decimal = this.getDecimal();
 
 				price = Number(price);
 		
@@ -934,7 +943,7 @@ module.exports = class Process {
 		await this.updateLog(nextMessage);
 	}
 
-	toDecimal(value = 0, decimal = this.getDecimal(0, false)) {
+	toDecimal(value = 0, decimal = this.getDecimal(false)) {
 		return Number(Number(value).toFixed(decimal));
 	}
 
@@ -955,7 +964,7 @@ module.exports = class Process {
 	recountProfitPrice(nextOrder) {
 		let prevProfitPrice = Number(this.currentOrder.price),
 			nextProfitPrice = Number(this.getProfitPrice(nextOrder.price)),
-			decimal = this.getDecimal(prevProfitPrice),
+			decimal = this.getDecimal(),
 			averagePrice = (prevProfitPrice + nextProfitPrice) / 2,
 			newProfitPrice = this.toDecimal(averagePrice, decimal);
 
@@ -1314,7 +1323,7 @@ module.exports = class Process {
 
 			this.botSettings.quantity = nextQty;
 		} else {
-			this.botSettings.quantity = price ? this.toDecimal(Number(this.botSettings.currentOrder)/ price) : Number(quantity);
+			this.botSettings.quantity = price ? this.toDecimal(Number(this.botSettings.currentOrder)/ price) : this.toDecimal(Number(quantity));
 		}
 		return Number(this.botSettings.quantity);
 	}
@@ -1335,7 +1344,7 @@ module.exports = class Process {
 	getStopPrice() {
 		let stopLoss = this.getStopLoss(),
 			price = this.botSettings.firstBuyPrice,
-			decimal = this.getDecimal(price),
+			decimal = this.getDecimal(),
 			stopPrice = stopLoss ? price - price * stopLoss : 0;
 		return this.toDecimal(stopPrice, decimal);
 	}
@@ -1380,18 +1389,30 @@ module.exports = class Process {
 	}
 
 	getProfitPrice(price = 0, flag = true) {
+		// купил за 0.0190 901 штуку
+		// после коммисии у меня 900 штук
+		// нужно продать 900 штук так, чтобы выйти в плюс на 1% (0.01)
+		// было 0.0190 * 901 = 17.119
+		// нужно  х   * 900 = 17.290
+		// то есть 17.290 / 900 = 0.0192
+		// то есть мне нужно умножить цену покупки на тейк профит
+		// и я получу цену на продажу, чтобы я ушел в плюс
+		// так же нужно учесть коммисию 0.1% (0.001)
+
+
+
 		// price = Number(price);
 		let takeProfit = this.getTakeProfit(),
-			decimal = this.getDecimal(price, flag);
+			decimal = this.getDecimal(flag);
 		
 		price = Number(price);
 
-		let	profitPrice = price + price * takeProfit;
+		let	profitPrice = price * (1 + takeProfit);
 		return this.toDecimal(profitPrice, decimal);
 	}
 
 	getTakeProfit() {
-		return (Number(this.botSettings.takeProfit) + 2 * CONSTANTS.BINANCE_FEE) / 100;
+		return (Number(this.botSettings.takeProfit) +  2 * CONSTANTS.BINANCE_FEE) / 100;
 	}
 
 	getSellOrder() {
@@ -1544,10 +1565,9 @@ module.exports = class Process {
 			return this.toDecimal(Number(this.botSettings.safeOrder.size) / price);
 	}
 
-	getDecimal(price = 0, flag = true) {
-		price = flag ? Number(this.botSettings.tickSize) : this.botSettings.decimalQty;
-		// price = Number(this.botSettings.tickSize);
-		let ret = this.countDecimalNumber(price);
+	getDecimal(flag = true) {
+		let value = flag ? Number(this.botSettings.tickSize) : this.botSettings.decimalQty;
+		let ret = this.countDecimalNumber(value);
 		return ret;
 	}
 
