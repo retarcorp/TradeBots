@@ -726,7 +726,7 @@ module.exports = class Process {
 					console.log(error);
 					MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, error: JSON.stringify(error), prevError, botID: this.botID, botTitle: this.botTitle, processId: this.processId, price, quantity, amount, fnc: 'newBuyOrder'});
 					
-					if( (quantity > 0 && amount < 20) && (this.isError1013(error) || this.isError2010(error)) ) {
+					if( (quantity > 0 && amount < 50) && (this.isError1013(error) || this.isError2010(error)) ) {
 						let step = this.botSettings.decimalQty,
 							priceStep = Number(this.botSettings.tickSize);
 						if(
@@ -746,7 +746,10 @@ module.exports = class Process {
 							}
 						}
 						else if(amount >= 10 && this.isError2010(error) && this.isError2010(prevError)) return '2010';
-						else if(this.isError1013(error)) price += priceStep;
+						else if(this.isError1013(error)) {
+							price += priceStep;
+							quantity += step;
+						}
 						else if(this.isError2010(error)) quantity -= step;
 						
 						quantity = this.toDecimal(quantity);
@@ -759,7 +762,7 @@ module.exports = class Process {
 					} else {
 						reject({
 							status: 'error',
-							order: {}
+							order: '2010'
 						});
 					} 
 				});
@@ -825,7 +828,7 @@ module.exports = class Process {
 				.catch( async error => {
 					console.log(error)
 					MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, price, type, symbol, quantity, error: JSON.stringify(error), prevError, botID: this.botID, botTitle: this.botTitle, processId: this.processId, price, quantity, amount, fnc: 'newSellOrder'});
-					if( (quantity > 0 && amount < 20) && (this.isError1013(error) || this.isError2010(error)) ) {
+					if( (quantity > 0 && amount < 50) && (this.isError1013(error) || this.isError2010(error)) ) {
 						let step = Number(this.botSettings.decimalQty),
 							priceStep = Number(this.botSettings.tickSize);
 						if(
@@ -837,7 +840,10 @@ module.exports = class Process {
 								order: 'disable'
 							});
 						}
-						else if(this.isError1013(error)) price += priceStep;
+						else if(this.isError1013(error)) {
+							price += priceStep;
+							quantity += step;
+						}
 						else if(this.isError2010(error)) quantity -= step;
 						
 						quantity = this.toDecimal(quantity);

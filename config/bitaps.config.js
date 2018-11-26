@@ -3,7 +3,7 @@ module.exports = {
 
 	payment_url: 'https://bitaps.com/api/create/payment/',
 
-	callback_url: 'https://35.242.244.82/api/bitaps/addBalance?userId=',
+	callback_url: 'https://35.246.137.70/api/bitaps/addBalance?userId=',
 
 	satoshi: 0.00000001,
 
