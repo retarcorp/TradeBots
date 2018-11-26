@@ -58,6 +58,11 @@ options.dev = false; // Force production mode (no webpack middleware called)
 
 var nuxt = new Nuxt(options);
 
+app.use((req, res, next) => {
+	res.setHeader('Access-Control-Allow-Origin', 'http://localhost:8172');
+	next();
+})
+
 app.use(cookieParser());
 app.use(expressSession({secret: 'kitty secret'}));
 app.use(bodyParser.json());
