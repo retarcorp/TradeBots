@@ -119,7 +119,7 @@ module.exports = class Process {
 						
 						if(newBuyOrder.orderId) {
 							let orderQtyWithoutFee = Number(newBuyOrder.origQty) * (1 - CONSTANTS.BINANCE_FEE / 100); 
-							let qty = this.setQuantity(null, orderQtyWithoutFee);
+							let qty = this.setQuantity(undefined, orderQtyWithoutFee);
 							// let price = Number(newBuyOrder.price);
 							let price = newBuyOrder.price;
 							
@@ -285,7 +285,7 @@ module.exports = class Process {
 							this.getOrder(this.currentOrder.orderId, async newBuyOrder => {
 								if(newBuyOrder.orderId) {
 									let orderQtyWithoutFee = Number(newBuyOrder.origQty) * (1 - CONSTANTS.BINANCE_FEE / 100); 
-									let qty = this.setQuantity(null, orderQtyWithoutFee);
+									let qty = this.setQuantity(undefined, orderQtyWithoutFee);
 									let price = Number(newBuyOrder.price);
 						
 									while(this.isFreeze()) {
