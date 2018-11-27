@@ -145,11 +145,23 @@ export default {
                             } 
                         }
 
+
+                        let endTime = 0;
+                        for (let i = 0; i < prc.orders.length; i++) {
+                            if(prc.orders[i].side === 'SELL' && prc.orders[i].status === 'FILLED') {
+                                endTime = prc.orders[i].time;
+                                break;
+                            }
+                        }
+                        if(!endTime && prc.orders.length) {
+                            endTime = prc.orders[prc.orders.length - 1].time;
+                        }
+
                         let prcIncome = {
                             botTitle: prc.botTitle,
                             botID: bot.botID,
                             processId: prc.processId,
-                            endTime: prc.orders.length && prc.orders[prc.orders.length - 1].time,
+                            endTime,
                             volume: {},
                             curSymbol: curSymbol,
                             sCurSymbol: sCurSymbol,
@@ -173,7 +185,7 @@ export default {
 
                         prc.orders.forEach(order => {
                             if(order.side === BUY && order.status === FILLED) {
-                                prcIncome.income[curSymbol] -= Number(order.cummulativeQuoteQty);
+                                prcIncome.income[curSymbol] -= Number(order.cummulativeQuoteQty) * (1 - 0.001);
                                 prcIncome.volume[curSymbol] += Number(order.cummulativeQuoteQty);
 
 
@@ -269,11 +281,11 @@ export default {
 
                         prc.orders.forEach(order => {
                             if(order.side === BUY && order.status === FILLED) {
-                                botIncome.income[curSymbol] -= Number(order.cummulativeQuoteQty);
-                                botIncome.income[sCurSymbol] -= Number(order.executedQty);
+                                botIncome.income[curSymbol] -= Number(order.cummulativeQuoteQty) * (1 - 0.001);
+                                botIncome.income[sCurSymbol] -= Number(order.executedQty) * (1 - 0.001);
                             } else if(order.side === SELL && order.status === FILLED) {
                                 botIncome.income[curSymbol] += Number(order.cummulativeQuoteQty) * (1 - 0.001);
-                                botIncome.income[sCurSymbol] += Number(order.executedQty);
+                                botIncome.income[sCurSymbol] += Number(order.executedQty) * (1 - 0.001);
                             }
                         });
                         if(curSymbol === 'USDT') botIncome.income[curSymbol] = Number(botIncome.income[curSymbol].toFixed(fixedUSD)); 
