@@ -996,7 +996,7 @@ module.exports = class Process {
 
 	recountProfitPrice(nextOrder) {
 		let prevProfitPrice = Number(this.currentOrder.price),
-			nextProfitPrice = Number(this.getProfitPrice(nextOrder.price)),
+			nextProfitPrice = Number(nextOrder.price),
 			decimal = this.getDecimal(),
 			averagePrice = (prevProfitPrice + nextProfitPrice) / 2,
 			newProfitPrice = Number(this.getProfitPrice(averagePrice));
