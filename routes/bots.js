@@ -22,7 +22,7 @@ router.get('/api/bots/getBotsStatusList', (req, res, next) => {
 	});
 })
 
-router.get('/api/bots/get', (req, res, next) => {
+router.post('/api/bots/get', (req, res, next) => {
 	let user = {name: req.cookies.user.name}
 	Users.Bots.get(user, req.body.botID, data => {
 		// log(data);

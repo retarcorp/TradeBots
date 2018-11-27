@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div v-if="isDownloaded">
         <div v-if="getStatus === 'confirm' || getStatus === 'confirmOrders' || getStatus === 'confirmCurrent' || getStatus === 'deleteBot'" class='confirm-block' @click="checkWindow">
             <div class='confirm-block__content'>
                 <p>{{ statusAlert[getStatus] }}</p>
@@ -261,6 +261,7 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
         },
         data() {
             return {
+                isDownloaded: false,
                 isActive: true,
                 currentComponent: null,
                 isChanging: false,
@@ -303,6 +304,9 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
                 else return [];        
             },
             bot() {
+                if(!this.isDownloaded) {
+
+                }
                 return this.$store.getters.getBot(this.$route.params.id)
             },
             openedOrders() {
@@ -336,9 +340,13 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
 
         },
         watch: {
-            // '$route'(to, from) {
-            //     console.log(`currentLogId - ${this.currentId}`)
-            // }
+            '$route.params': {
+                handler(value) {
+                    this.isDownloaded = false;
+                    this.getBotData(value.id)
+                },
+                immediate: true
+            } 
         },
         methods: {
             fillingInfo(id, event) {
@@ -519,17 +527,28 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
                                 this.prcs[elem.processeId].log = log.reverse();
                             });
                             if(this.$route.params.id) {
-                                setTimeout(() => {
-                                    this.getLog();
-                                }, 5000);   
+                                // setTimeout(() => {
+                                //     this.getLog();
+                                // }, 5000);   
                             }
                         }
                     })
                     .catch(err => console.log(err));
+            },
+            getBotData(id) {
+                this.$axios
+                    .$post('/api/bots/get', { botID: id })
+                    .then(res => {
+                        if(res.status === 'ok') {
+                            this.$store.commit('setBot', res.data);
+                            this.isDownloaded = true;
+                            // this.getLog();
+                        }
+                    })
+                    .catch(err => {
+                        console.log(err);
+                    });
             }
-        },
-        created() {
-            this.getLog();
         }
     }
 </script>

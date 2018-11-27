@@ -467,10 +467,14 @@ let Users = {
 				data = data[0];
 				if(callback) {
 					const i = data.bots.findIndex(bot => bot.botID === botID)
-					callback({
-						status: 'ok',
-						data: data.bots[i] || {}
-					})
+					if(i >= 0) {
+						callback({
+							status: 'ok',
+							data: data.bots[i] || {}
+						});
+					} else {
+						callback(M.getFailureMessage({ message: 'Бот не найден.' }));
+					}
 				}
 			})
 		}
@@ -509,24 +513,23 @@ let Users = {
 
 					let botsStatusList = [];
 					userData.bots.forEach(bot => {
-						let l = bot.processes.length;
-						for (let i = 0; i < l; i++) {
-							let prc = bot.processes[i];
-							
+						
+						if(!bot.isDeleted) {
+							let l = bot.processes.length,
+								activeDeal = false;
 
-							
+							for (let i = 0; i < l; i++) {
+								let prc = bot.processes[i];
+								if(prc.orderd.find(order => order.status === 'NEW'|| order.status === 'PARTIALLY_FILLED')) {
+									activeDeal = true;
+									break;
+								}
+							}
+							let { botID, status, freeze, weight, isDeleted, title, state, pair } = bot;
+							botsStatusList.push({ botID, status, freeze, weight, isDeleted, title, state, pair, activeDeal });
 						}
-
-
-						botsStatusList.push({
-							botID: bot.botID,
-							status: bot.status,
-							freeze: bot.freeze,
-							activeDeal: false
-						});
-					})
-
-
+					});
+					callback(M.getSuccessfullyMessage({data: botsStatusList}));
 				} else {
 					callback(M.getFailureMessage({ message: `Пользователь не найден(${user})`}));
 				}
