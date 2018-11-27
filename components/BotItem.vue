@@ -24,7 +24,27 @@
                 return this.bot.state === '1'
             },
             isBotHasOrders() {
-                return this.bot.activeDeal;
+                // return false;
+                let a = Object.keys(this.bot.processes).length;
+                if(a) {
+                    let b = 0;
+                    for (let proc in this.bot.processes) {
+                        let b1 = this.bot.processes[proc].orders.length;
+                        if(b1) {
+                            let b = this.bot.processes[proc].orders.filter(order => order && (order.status === 'NEW' || order.status === 'PARTIALLY_FILLED')).length;
+                            if(b) {
+                                return true;
+                            } 
+                        }
+                    }
+                    return b ? true : false;
+                }
+                else {
+                    return false;
+                }
+
+                return this.bot.orders.length &&
+                        this.bot.orders.filter(order => order && (order.status === 'NEW' || order.status === 'PARTIALLY_FILLED')).length
             },
             isBotActive() {
                 if(this.id) {

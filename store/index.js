@@ -151,8 +151,8 @@ const store = () =>
 			state.isСonfigurationProcess = payload;
 		},
 		setBot(state, payload) {
-			const index = state.botsList.findIndex(bot => bot.botID === payload.botID);
-			if(index >= 0) state.botsList[index] = Object.assign({}, state.botsList[index], payload);
+			const index = state.botsList.findIndex(bot => bot.botID === payload.botID)
+			state.botsList[index] = payload;
 		},
 		setSpiner(state, payload) {
 			state.isActive = payload
@@ -168,22 +168,6 @@ const store = () =>
 		},
 		addNewBot(state, payload) {
 			state.botsList.push(payload);
-		},
-		setBotsStatusList(state, payload) {
-			if(!state.isСonfigurationProcess) {
-				let amount = 0;
-				for (let i = 0; i < payload.length; i++) {
-					const pos = state.botsList.findIndex(_bot => _bot.botID === payload[i].botID);
-					if(pos >= 0) {
-						state.botsList[pos] = Object.assign({}, state.botsList[pos], payload[i]);
-					} else {
-						state.botsList.push(payload[i]);
-					}
-
-					if(!payload[i].isDeleted) amount += Number(payload[i].weight);
-				}
-				state.currentBotsAmount = amount;
-			}
 		},
 		setBotsList(state, payload) {
 			if(!state.isСonfigurationProcess) {
@@ -282,11 +266,8 @@ const store = () =>
 		getUserData({ dispatch }) {
 			dispatch('getPagesList');
             dispatch('getUserPayments');
-			dispatch('setEmail');
-			
-			// dispatch('setBotsList');
-			dispatch('setBotsStatusList');
-			
+            dispatch('setEmail');
+            dispatch('setBotsList');
             dispatch('getSymbolsList');
             dispatch('getUserStatistics');
             dispatch('getUserMaxBotAmount');
@@ -355,6 +336,7 @@ const store = () =>
 			this.$axios
 				.$post('/api/admin/changeUserData', user)
 				.then( res => {
+					console.log(res);
 					// if(res.status === 'ok') 
 					// commit('editUser', res.data);
 					dispatch('setUsers')
@@ -549,25 +531,6 @@ const store = () =>
 		addNewBot({ commit }, payload) {
 			commit("addNewBot", payload);
 		},
-		setBotsStatusList({ commit, dispatch, getters }, payload) {
-			this.$axios
-				.$get('/api/bots/getBotsStatusList')
-				.then(res => {
-					if(res.status === 'ok') {
-						commit("setBotsStatusList", res.data);
-						if(!payload) {
-							setTimeout(() => {
-								dispatch('setBotsStatusList');
-							}, 2000);
-						}
-					} else {
-						console.error(res);
-					}
-				})
-				.catch(err => {
-					console.log(err);
-				});
-		},
 		setBotsList({ commit, dispatch, getters }, payload) {
 			// commit('setSpiner', true);
 			this.$axios
@@ -575,11 +538,11 @@ const store = () =>
 				.then(res => {
 					if (res.status === "ok") {
 						commit("setBotsList", res.data);
-						// if(!payload) {
-						// 	setTimeout(() => {
-						// 		dispatch('setBotsList')
-						// 	}, 1500);
-						// }
+						if(!payload) {
+							setTimeout(() => {
+								dispatch('setBotsList')
+							}, 1500);
+						}
 					} else if(res.status === 'info') {
 						commit('setMessage', res.message);
 						commit('setStatus', 'info');
