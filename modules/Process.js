@@ -726,7 +726,7 @@ module.exports = class Process {
 					console.log(error);
 					MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, error: JSON.stringify(error), prevError, botID: this.botID, botTitle: this.botTitle, processId: this.processId, price, quantity, amount, fnc: 'newBuyOrder'});
 					
-					if( (quantity > 0 && amount < 50) && (this.isError1013(error) || this.isError2010(error)) ) {
+					if( (quantity >= 0 && amount <= 50) && ( (this.isError1013(error) || this.isError2010(error)) ) ) {
 						let step = this.botSettings.decimalQty,
 							priceStep = Number(this.botSettings.tickSize);
 						if(
@@ -759,6 +759,11 @@ module.exports = class Process {
 							status: 'error',
 							order: [{ price, type, quantity, isSafe, error, amount }]
 						});
+					} else if(quantity > 0 && amount < 50) {
+						reject({
+							status: 'error',
+							order: [{ price, type, quantity, isSafe, error, amount }]
+						});
 					} else {
 						reject({
 							status: 'error',
@@ -775,7 +780,9 @@ module.exports = class Process {
 				//в ордере массив параметров для нового ордера
 				console.log(result);
 				let { price, type, quantity, isSafe, error, amount } = result.order[0];
-				this.newBuyOrder(price, type, quantity, isSafe, callback, error, amount);
+				this.sleep(CONSTANTS.TIMEOUT, () => {
+					this.newBuyOrder(price, type, quantity, isSafe, callback, error, amount);
+				});
 			} else if(result.order === 'disable') {
 				await this.disableProcess('Невозможно купить монеты (Недостаточно средств на балансе)');
 				callback(result.order);
@@ -828,7 +835,7 @@ module.exports = class Process {
 				.catch( async error => {
 					console.log(error)
 					MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, price, type, symbol, quantity, error: JSON.stringify(error), prevError, botID: this.botID, botTitle: this.botTitle, processId: this.processId, price, quantity, amount, fnc: 'newSellOrder'});
-					if( (quantity > 0 && amount < 50) && (this.isError1013(error) || this.isError2010(error)) ) {
+					if( (quantity >= 0 && amount <= 50) && ((this.isError1013(error) || this.isError2010(error))) ) {
 						let step = Number(this.botSettings.decimalQty),
 							priceStep = Number(this.botSettings.tickSize);
 						if(
@@ -853,6 +860,11 @@ module.exports = class Process {
 							status: 'error',
 							order: [{ price, type, quantity, error, amount }]
 						});
+					} else if(quantity > 0 && amount < 50){
+						reject({
+							status: 'error',
+							order: [{ price, type, quantity, error, amount }]
+						});
 					} else {
 						reject({
 							status: 'error',
@@ -868,7 +880,9 @@ module.exports = class Process {
 			if(typeof result.order !== 'string') {
 				//в ордере массив параметров для нового ордера
 				let { price, type, quantity, error, amount } = result.order[0];
-				this.newSellOrder(price, type, quantity, callback, error, amount);
+				this.sleep(CONSTANTS.TIMEOUT, () => {
+					this.newSellOrder(price, type, quantity, callback, error, amount);
+				});
 			} else if(result.order === 'disable') {
 				await this.disableProcess('Невозможно продать монеты');
 				callback(result.order);
@@ -1538,7 +1552,7 @@ module.exports = class Process {
 						status: 'ok'
 					});
 				}).catch( async error => {
-					await this._log( 'произошла ошибка при getOrder (errCode: ' + this.errorCode(error) + ')' + JSON.stringify(error) );
+					// await this._log( 'произошла ошибка при getOrder (errCode: ' + this.errorCode(error) + ')' + JSON.stringify(error) );
 					MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, error, order: {symbol, orderId}, botID: this.botID, botTitle: this.botTitle, processId: this.processId, fnc: 'getOrder'})
 					if(this.isError2013(error)) {
 						resolve({
