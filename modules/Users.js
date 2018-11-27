@@ -503,6 +503,36 @@ let Users = {
 			}
 		}
 
+		,getBotsStatusList(user = {}, callback = () => {}) {
+			Mongo.select(user, CONSTANTS.USERS_COLLECTION, userData => {
+				if(userData.length && (userData = userData[0])) {
+
+					let botsStatusList = [];
+					userData.bots.forEach(bot => {
+						let l = bot.processes.length;
+						for (let i = 0; i < l; i++) {
+							let prc = bot.processes[i];
+							
+
+							
+						}
+
+
+						botsStatusList.push({
+							botID: bot.botID,
+							status: bot.status,
+							freeze: bot.freeze,
+							activeDeal: false
+						});
+					})
+
+
+				} else {
+					callback(M.getFailureMessage({ message: `Пользователь не найден(${user})`}));
+				}
+			});
+		}
+
 		,getBotList(user, callback = (data = {}) => {}) {
 			Mongo.select(user, 'users', (data) => {
 				if(data.length) {
