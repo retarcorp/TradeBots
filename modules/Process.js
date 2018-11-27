@@ -999,7 +999,9 @@ module.exports = class Process {
 			nextProfitPrice = Number(this.getProfitPrice(nextOrder.price)),
 			decimal = this.getDecimal(),
 			averagePrice = (prevProfitPrice + nextProfitPrice) / 2,
-			newProfitPrice = this.toDecimal(averagePrice, decimal);
+			newProfitPrice = Number(this.getProfitPrice(averagePrice));
+
+		newProfitPrice = this.toDecimal(newProfitPrice, decimal);
 
 		return newProfitPrice;
 	}
