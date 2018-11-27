@@ -467,10 +467,14 @@ let Users = {
 				data = data[0];
 				if(callback) {
 					const i = data.bots.findIndex(bot => bot.botID === botID)
-					callback({
-						status: 'ok',
-						data: data.bots[i] || {}
-					})
+					if(i >= 0) {
+						callback({
+							status: 'ok',
+							data: data.bots[i] || {}
+						});
+					} else {
+						callback(M.getFailureMessage({ message: 'Бот не найден.' }));
+					}
 				}
 			})
 		}
@@ -501,6 +505,34 @@ let Users = {
 			} else {
 				callback({status: 'error', message: 'Пользователь не найден или неккоректный botID', botID: botData.botID});
 			}
+		}
+
+		,getBotsStatusList(user = {}, callback = () => {}) {
+			Mongo.select(user, CONSTANTS.USERS_COLLECTION, userData => {
+				if(userData.length && (userData = userData[0])) {
+
+					let botsStatusList = [];
+					userData.bots.forEach(bot => {
+						
+						if(!bot.isDeleted) {
+							let activeDeal = false;
+
+							for (let prcId in bot.processes) {
+								let prc = bot.processes[prcId];
+								if(prc.orders.find(order => order.status === 'NEW'|| order.status === 'PARTIALLY_FILLED')) {
+									activeDeal = true;
+									break;
+								}
+							}
+							let { botID, status, freeze, weight, isDeleted, title, state, pair } = bot;
+							botsStatusList.push({ botID, status, freeze, weight, isDeleted, title, state, pair, activeDeal });
+						}
+					});
+					callback(M.getSuccessfullyMessage({data: botsStatusList}));
+				} else {
+					callback(M.getFailureMessage({ message: `Пользователь не найден(${user})`}));
+				}
+			});
 		}
 
 		,getBotList(user, callback = (data = {}) => {}) {
