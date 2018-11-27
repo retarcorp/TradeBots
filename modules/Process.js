@@ -440,7 +440,9 @@ module.exports = class Process {
 
 				} else {
 					MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, botID: this.botID, botTitle: this.botTitle, processId: this.processId, result, fnc: 'isOrderFilling_'});
-					await this._log(JSON.stringify(result));
+					if(this.isError2011(result)) {
+						await this._log(`Ордер ${order.orderId}(${order.price}, ${order.side}) невозможно отменить (статус - ${order.status})`);
+					}
 					reject({
 						status: 'error',
 						result
@@ -459,7 +461,7 @@ module.exports = class Process {
 			
 			if(length) {
 				console.log('we get safeOrders ' + length)
-				await this._log(`Проверка состояния страховочных ордеров (${this.getLastSafeOrder().price}).`);
+				await this._log(`Проверка состояния страховочных ордеров (${this.getFirstSafeOrder().price}).`);
 
 				let stTime = Date.now();
 				this.getOrder_forOrdersArray(orders).then(async updatedOrders => {
@@ -1389,6 +1391,17 @@ module.exports = class Process {
 			if (orders[i].price < lastOrder.price) lastOrder = orders[i];
 
 		return lastOrder;
+	}
+
+	getFirstSafeOrder() {
+		let orders = this.safeOrders,
+			firstOrder = orders[0],
+			length = orders.length;
+
+		for (let i = 1; i < length; ++i) 
+			if (orders[i].price > firstOrder.price) firstOrder = orders[i];
+
+		return firstOrder;
 	}
 
 	getDeviation() {
