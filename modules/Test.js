@@ -3,6 +3,7 @@ const binanceAPI = require('binance-api-node').default;
 const ws = require('ws');
 const rp = require('request-promise');
 const request = require('request');
+const Mongo = require('./Mongo');
 class Test {
 	constructor() {
 
@@ -106,15 +107,24 @@ class Test {
 		});
 	}
 
-	async testBuy() {
-		console.log('TEst');
-		// let client = binanceAPI({
-		// 	apiKey: 'pMK15sHEO3jS9RE9x4KA5zFfdxCKcxk9gDgyf4BhvGrhvEUn3wiZMTYcuqLEAkNh',
-		// 	apiSecret: 'A7pvWxoe0JzHfM1rvF7D2ymM3ZFUvdlOyLRmjeZ7m4gfCWaTOmLBwHcwMUSw3Znp'
-		// });	
+	deleteAllProcAndDisableBots() {
+		Mongo.init().then(d => {
+			Mongo.select({}, 'users', users => {
+			for( let jj = 0; jj < users.length; jj++) {
+				let user = users[jj];
+				console.log(user.name, user.bots.length);
+				for (let i = 0; i < user.bots.length; i++) {
+					user.bots[i].processes = {};
+					user.bots[i].status = false;
+				}
+				console.log(user.name, user.bots.length);
+				Mongo.update({name: user.name}, {bots: user.bots}, 'users', (res) => {console.log('ok')});
+			}
+			});
+		})
 	}
 }
 
 let t = new Test();
 
-t.testBuy();
+t.deleteAllProcAndDisableBots();
