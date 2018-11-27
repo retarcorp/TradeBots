@@ -123,7 +123,7 @@
                 </div>
                 <div v-show="!isChanging" class="bots__button">
                     <!-- :disabled="!isBotHasOrders" -->
-                    <button  :class="{'button--disabled': (isBotHasOrders.length > 0)}" @click="onChangeSettings" class="button button--success button__change-settings">Изменить настройки</button>
+                    <button  :class="{'button--disabled': (isBotHasOrders)}" @click="onChangeSettings" class="button button--success button__change-settings">Изменить настройки</button>
                     <button @click="onDeleteBot" class="button button--danger button__remove-bot">Удалить бота</button>
                 </div>
             </div>
@@ -277,7 +277,9 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
                     confirmCurrent: 'Вы точно хотите отменить ордер?',
                     deleteBot: 'Вы точно хотите отменить все ордера, продать все монеты по рыночной цене и удалить бота?'
                 },
-                prcs: {}
+                prcs: {},
+                lines: {},
+                bot: {}
             }
         },
         filters: {
@@ -298,16 +300,7 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
                 }
             },
             isBotHasOrders() {
-                if( this.currentId )
-                    return this.bot.processes[this.currentId].orders.length &&
-                        this.bot.processes[this.currentId].orders.filter(order => order && order.status !== 'CANCELED' &&  (order.status === 'NEW' || order.status === 'PARTIALLY_FILLED')).length
-                else return [];        
-            },
-            bot() {
-                if(!this.isDownloaded) {
-
-                }
-                return this.$store.getters.getBot(this.$route.params.id)
+                return this.bot.activeDeal;
             },
             openedOrders() {
                 if( this.currentId ) {
@@ -333,22 +326,28 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
             },
             getStatus() {
                 return this.$store.getters.getStatus;
-            },
-            lines() {
-                return this.currentId && this.prcs[this.currentId] && this.prcs[this.currentId].log;
             }
-
         },
         watch: {
             '$route.params': {
                 handler(value) {
                     this.isDownloaded = false;
+                    clearTimeout(this.timeout);
+                    this.timeout = 0;
                     this.getBotData(value.id)
                 },
                 immediate: true
-            } 
+            }
         },
         methods: {
+            redefineBot() {
+                this.bot = this.$store.getters.getBot(this.$route.params.id);
+            },
+            recountLines() {
+                if(this.currentId && this.prcs[this.currentId] && this.prcs[this.currentId].log) {
+                    this.lines = this.prcs[this.currentId].log;
+                }
+            },
             fillingInfo(id, event) {
                 this.currentLogId = id;
                 this.currentSpecId = event.target.getAttribute('id');
@@ -516,7 +515,6 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
                     botTitle: this.bot.title,
                     processes: Object.keys(this.bot.processes)
                 }
-
                 this.$axios.post(`/api/bots/getBotLog`, data)
                     .then(data => {
                         data = data.data;
@@ -526,6 +524,7 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
                                 this.prcs[elem.processeId] || (this.prcs[elem.processeId] = { log: []});
                                 this.prcs[elem.processeId].log = log.reverse();
                             });
+                            this.recountLines();
                             if(this.$route.params.id) {
                                 // setTimeout(() => {
                                 //     this.getLog();
@@ -536,13 +535,17 @@ import SettingsAutomatic from '~/components/NewBot/Automatic';
                     .catch(err => console.log(err));
             },
             getBotData(id) {
-                this.$axios
+                return this.$axios
                     .$post('/api/bots/get', { botID: id })
                     .then(res => {
                         if(res.status === 'ok') {
                             this.$store.commit('setBot', res.data);
                             this.isDownloaded = true;
-                            // this.getLog();
+                            this.redefineBot();
+                            this.getLog();  
+                            this.timeout = setTimeout( () => {
+                                this.getBotData(id);
+                            }, 3000);
                         }
                     })
                     .catch(err => {

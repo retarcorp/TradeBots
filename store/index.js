@@ -151,10 +151,8 @@ const store = () =>
 			state.isСonfigurationProcess = payload;
 		},
 		setBot(state, payload) {
-			console.log(payload)
 			const index = state.botsList.findIndex(bot => bot.botID === payload.botID);
-			console.log(index)
-			if(index >= 0) state.botsList[index] = payload;
+			if(index >= 0) state.botsList[index] = Object.assign({}, state.botsList[index], payload);
 		},
 		setSpiner(state, payload) {
 			state.isActive = payload
@@ -357,7 +355,6 @@ const store = () =>
 			this.$axios
 				.$post('/api/admin/changeUserData', user)
 				.then( res => {
-					console.log(res);
 					// if(res.status === 'ok') 
 					// commit('editUser', res.data);
 					dispatch('setUsers')
@@ -561,7 +558,7 @@ const store = () =>
 						if(!payload) {
 							setTimeout(() => {
 								dispatch('setBotsStatusList');
-							}, 2500);
+							}, 2000);
 						}
 					} else {
 						console.error(res);

@@ -390,7 +390,8 @@
                         };
                         this.$store.dispatch('updateBot', nextBotSettings)
                             .then(() => {
-                                this.$store.dispatch('setBotsList', true);
+                                // this.$store.dispatch('setBotsList', true);
+                                this.$store.dispatch('setBotsStatusList', true);
                                 this.$emit('changed');
                                 setTimeout(()=> {
                                     this.isAlreadyPushed = false;
@@ -399,7 +400,8 @@
                     } else {
                         this.$store.dispatch('addBot', this.bot)
                             .then( () => {
-                                this.$store.dispatch('setBotsList', true);
+                                // this.$store.dispatch('setBotsList', true);
+                                this.$store.dispatch('setBotsStatusList', true);
                                 this.$emit('changed');
                                 setTimeout(()=> {
                                     this.isAlreadyPushed = false;

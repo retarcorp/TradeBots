@@ -515,12 +515,11 @@ let Users = {
 					userData.bots.forEach(bot => {
 						
 						if(!bot.isDeleted) {
-							let l = bot.processes.length,
-								activeDeal = false;
+							let activeDeal = false;
 
-							for (let i = 0; i < l; i++) {
-								let prc = bot.processes[i];
-								if(prc.orderd.find(order => order.status === 'NEW'|| order.status === 'PARTIALLY_FILLED')) {
+							for (let prcId in bot.processes) {
+								let prc = bot.processes[prcId];
+								if(prc.orders.find(order => order.status === 'NEW'|| order.status === 'PARTIALLY_FILLED')) {
 									activeDeal = true;
 									break;
 								}

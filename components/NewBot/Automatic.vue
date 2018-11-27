@@ -410,7 +410,8 @@ export default {
                 this.$store.dispatch(path, nextData)
                     .then(() => {
                         this.$emit('changed');
-                        this.$store.dispatch('setBotsList', true);
+                        // this.$store.dispatch('setBotsList', true);
+                        this.$store.dispatch('setBotsStatusList', true);
                         setTimeout(()=> {
                             this.isAlreadyPushed = false;
                         }, 1000)
