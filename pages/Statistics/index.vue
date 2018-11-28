@@ -42,7 +42,7 @@
                 >
                     <td class="table__td title">{{ deal.botTitle }}</td>
                     <td class="table__td pair">{{ deal.symbol }}</td>
-                    <td class="table__td income">{{ deal.stats && noExponents(deal.stats.income) }}</td>
+                    <td class="table__td income">{{ deal.stats && ( deal.finalProcessStatus ? noExponents(deal.stats.income) : noExponents(deal.stats.value) )}}</td>
                     <td class="table__td volume">{{ deal.stats && noExponents(deal.stats.volume) }}</td>
                     <td class="table__td status">{{ deal.stats && getDealStatus(deal.finalProcessStatus) }}</td>
                     <td class="table__td status">{{ deal.stats && getDate(deal.stats.endTime) }}</td>
