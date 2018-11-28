@@ -224,7 +224,6 @@ let Users = {
 				,password: password
 				,salt: salt
 				,admin: admin
-				,ordersList: {}
 				,tariffs: []
 				,bots: []
 				,maxBotAmount: 0

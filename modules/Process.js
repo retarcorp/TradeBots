@@ -999,7 +999,7 @@ module.exports = class Process {
 			nextProfitPrice = Number(nextOrder.price),
 			decimal = this.getDecimal(),
 			averagePrice = (prevProfitPrice + nextProfitPrice) / 2,
-			newProfitPrice = Number(this.getProfitPrice(averagePrice));
+			newProfitPrice = Number(this.getProfitPrice_forRecountSafeOrders(averagePrice));
 
 		newProfitPrice = this.toDecimal(newProfitPrice, decimal);
 
@@ -1380,7 +1380,7 @@ module.exports = class Process {
 		let stopLoss = this.getStopLoss(),
 			price = this.botSettings.firstBuyPrice,
 			decimal = this.getDecimal(),
-			stopPrice = stopLoss ? price - price * stopLoss : 0;
+			stopPrice = stopLoss ? price * ( 1 - stopLoss) : 0;
 		return this.toDecimal(stopPrice, decimal);
 	}
 
@@ -1434,6 +1434,16 @@ module.exports = class Process {
 		return Number(this.botSettings.maxOpenSafetyOrders);
 	}
 
+	getProfitPrice_forRecountSafeOrders(price = 0) {
+		let takeProfit = this.getTakeProfit_forRecountSafeOrders(),
+			decimal = this.getDecimal();
+		
+		price = Number(price);
+
+		let	profitPrice = price * (1 + takeProfit);
+		return this.toDecimal(profitPrice, decimal);
+	}
+
 	getProfitPrice(price = 0, flag = true) {
 		// купил за 0.0190 901 штуку
 		// после коммисии у меня 900 штук
@@ -1459,6 +1469,10 @@ module.exports = class Process {
 
 	getTakeProfit() {
 		return (Number(this.botSettings.takeProfit) +  2 * CONSTANTS.BINANCE_FEE) / 100;
+	}
+
+	getTakeProfit_forRecountSafeOrders() {
+		return (Number(this.botSettings.takeProfit) +  CONSTANTS.BINANCE_FEE) / 100;
 	}
 
 	getSellOrder() {

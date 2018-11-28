@@ -79,7 +79,7 @@ class Income {
 			}
 		});
 
-		setTimeout(() => this.liveCheckUsersTariffs(), CONSTANTS.UPDATE_8H);		
+		setTimeout(() => this.liveCheckUsersTariffs(), CONSTANTS.UPDATE_1H);		
 		console.timeEnd('liveCheckUsersTariffs');
 	}
 
