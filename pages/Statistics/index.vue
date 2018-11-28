@@ -7,7 +7,7 @@
                 type="text" 
                 class="input settings__input"
                 >
-                <option value="undefined">Все</option>
+                <option value="-2">Все</option>
                 <option value="0">В процессе</option>
                 <option value="1">Выполненые</option>
                 <option value="2">Отменены</option>
@@ -84,12 +84,13 @@ export default {
         }
     },
     methods: {
-        getDealStatus(finalProcessStatus) {
+        getDealStatus(finalProcessStatus = -2) {
             if(finalProcessStatus === 0) return 'В процессе';
             if(finalProcessStatus === 1) return 'Выполнен';
             if(finalProcessStatus === 2) return 'Отменен';
             if(finalProcessStatus === -1) return 'Ошибка';
-            return 'Нейтрально';
+            if(finalProcessStatus === -2) return 'Нейтрально';
+            return '';
         },
         getDate(date = Date.now()) {
             date = new Date(date);
@@ -160,13 +161,13 @@ export default {
             // while (mag--) z += '0';
             // return str + z;
         },
-        getDeals(dealFlag) {
+        getDeals(dealFlag = -2) {
             let arr = [];
             let flag = (dealFlag === 'opened') ? true : false;
 
             this.statisticsList.forEach(bot => {
                 bot.processes.forEach(prc => {
-                    if(prc.orders.length && ((!dealFlag) || prc.finalProcessStatus === dealFlag) ) {
+                    if(prc.orders.length && ((!dealFlag) || (prc.finalProcessStatus == dealFlag) || (!prc.finalProcessStatus && dealFlag == -2)) ) {
                         if(this.isDateSearch && prc.orders.length) {
                             let cdate = new Date(prc.orders[0].time),
                                 cd = cdate.getDate(),
