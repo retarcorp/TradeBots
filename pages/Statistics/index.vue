@@ -167,7 +167,7 @@ export default {
 
             this.statisticsList.forEach(bot => {
                 bot.processes.forEach(prc => {
-                    if(prc.orders.length && ((!dealFlag) || (prc.finalProcessStatus == dealFlag) || (!prc.finalProcessStatus && dealFlag == -2)) ) {
+                    if(prc.orders.length && ((!dealFlag) || ( (dealFlag == -2) || prc.finalProcessStatus == dealFlag)) ) {
                         if(this.isDateSearch && prc.orders.length) {
                             let cdate = new Date(prc.orders[0].time),
                                 cd = cdate.getDate(),
