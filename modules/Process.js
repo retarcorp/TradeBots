@@ -147,9 +147,45 @@ module.exports = class Process {
 										console.log('never')
 									});
 								} else {
-									await this.disableProcess('Неуспешная продажа монет. Ошибка при выставлении sell ордера (невозможно продать купленное кол-во монет по профит цене).');
-									await this.updateProcess(user);
-									resolve('finish');
+
+									if(newSellOrder === CONSTANTS.DISABLE_FLAG && newSellOrder.quantity) {
+										
+										nextQty = Number(newSellOrder.quantity);
+										let totalBuy = Number(newBuyOrder.cummulativeQuoteQty),
+											totalProfit = totalBuy * ( 1 + this.getTakeProfit()),
+											nextPrice = totalProfit / nextQty;
+
+										this.newSellOrder(nextPrice, CONSTANTS.ORDER_TYPE.LIMIT, nextQty, async _newSellOrder => {
+											if(_newSellOrder !== CONSTANTS.DISABLE_FLAG && _newSellOrder.orderId) {
+									
+												console.log('_newSellOrder is send', _newSellOrder.orderId)
+												this.currentOrder = _newSellOrder;
+												this.orders.push(_newSellOrder);
+												
+												let safeOrders = await this.createSafeOrders(price, qty);
+												console.log('created ' + safeOrders.length + ' safe orders');
+												this.safeOrders.push(...safeOrders);
+												this.orders.push(...safeOrders);
+												
+												await this.updateProcess(user);
+												
+												this.sleep(CONSTANTS.TIMEOUT, () => {
+													this.trade(user, false, resolve, reject);
+													console.log('never')
+												});
+											} else {
+												await this.disableProcess('Неуспешная продажа монет. Ошибка при выставлении sell ордера (невозможно продать купленное кол-во монет по профит цене).');
+												await this.updateProcess(user);
+												resolve('finish');
+											}
+										});
+
+
+									} else {
+										await this.disableProcess('Неуспешная продажа монет. Ошибка при выставлении sell ордера (невозможно продать купленное кол-во монет по профит цене).');
+										await this.updateProcess(user);
+										resolve('finish');
+									}
 								}
 							});
 							
@@ -836,7 +872,7 @@ module.exports = class Process {
 				})
 				.catch( async error => {
 					console.log(error)
-					MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, price, type, symbol, quantity, error: JSON.stringify(error), prevError, botID: this.botID, botTitle: this.botTitle, processId: this.processId, price, quantity, amount, fnc: 'newSellOrder'});
+					MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, price, type, symbol, quantity, error, prevError, botID: this.botID, botTitle: this.botTitle, processId: this.processId, price, quantity, amount, fnc: 'newSellOrder'});
 					if( (quantity >= 0 && amount <= 50) && ((this.isError1013(error) || this.isError2010(error))) ) {
 						let step = Number(this.botSettings.decimalQty),
 							priceStep = Number(this.botSettings.tickSize);
@@ -846,7 +882,8 @@ module.exports = class Process {
 						) {
 							reject({
 								status: 'error',
-								order: 'disable'
+								order: 'disable',
+								quantity
 							});
 						}
 						else if(this.isError1013(error)) {
