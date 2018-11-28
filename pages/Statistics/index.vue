@@ -163,11 +163,11 @@ export default {
         },
         getDeals(dealFlag = -2) {
             let arr = [];
-            let flag = (dealFlag === 'opened') ? true : false;
+            // let flag = (dealFlag === 'opened') ? true : false;
 
             this.statisticsList.forEach(bot => {
                 bot.processes.forEach(prc => {
-                    if(prc.orders.length && ((!dealFlag) || ( (dealFlag == -2) || prc.finalProcessStatus == dealFlag)) ) {
+                    if(prc.orders.length && (( (dealFlag == -2) || prc.finalProcessStatus == dealFlag)) ) {
                         if(this.isDateSearch && prc.orders.length) {
                             let cdate = new Date(prc.orders[0].time),
                                 cd = cdate.getDate(),
@@ -217,7 +217,7 @@ export default {
             return this.deals.filter(deal => {
                 let a = deal.botTitle ? deal.botTitle : '',
                     b = deal.symbol ? deal.symbol : '',
-                    c = deal.botID ? deal.botID : '';
+                    c = '';//deal.botID ? deal.botID : '';
                 let string = `${a.toLowerCase()}${b.toLowerCase()}${c.toLowerCase()}`;
                 return string.indexOf(this.search.toLowerCase()) >= 0;
             })
