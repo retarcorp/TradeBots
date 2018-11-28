@@ -201,7 +201,7 @@ export default {
                 });
             });
             arr.sort( (a, b) => {
-                return b.endTime - a.endTime;
+                return b.stats.endTime - a.stats.endTime;
             })
             return arr;
         }
