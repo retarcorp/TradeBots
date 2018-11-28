@@ -1476,12 +1476,6 @@ module.exports = class Process {
 		return this.toDecimal(profitPrice, decimal);
 	}
 
-	getProfitPrice_fromOrder(price = '', quantity = 0, total = 0) {
-
-
-
-	}
-
 	getProfitPrice(price = 0, flag = true) {
 		// купил за 0.0190 901 штуку
 		// после коммисии у меня 900 штук
@@ -1510,7 +1504,7 @@ module.exports = class Process {
 	}
 
 	getTakeProfit_forRecountSafeOrders() {
-		return (Number(this.botSettings.takeProfit) +  CONSTANTS.BINANCE_FEE) / 100;
+		return (Number(this.botSettings.takeProfit) +  2 * CONSTANTS.BINANCE_FEE) / 100;
 	}
 
 	getSellOrder() {
