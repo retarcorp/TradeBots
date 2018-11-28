@@ -7,7 +7,8 @@
                 type="text" 
                 class="input settings__input"
                 >
-                <option value="0">Все</option>
+                <option value="undefined">Все</option>
+                <option value="0">В процессе</option>
                 <option value="1">Выполненые</option>
                 <option value="2">Отменены</option>
                 <option value="-1">Ошибки</option>
@@ -83,11 +84,12 @@ export default {
         }
     },
     methods: {
-        getDealStatus(finalProcessStatus = 0) {
-            if(finalProcessStatus === 0) return 'Нейтральный';
+        getDealStatus(finalProcessStatus) {
+            if(finalProcessStatus === 0) return 'В процессе';
             if(finalProcessStatus === 1) return 'Выполнен';
             if(finalProcessStatus === 2) return 'Отменен';
             if(finalProcessStatus === -1) return 'Ошибка';
+            return 'Нейтрально';
         },
         getDate(date = Date.now()) {
             date = new Date(date);
@@ -158,7 +160,7 @@ export default {
             // while (mag--) z += '0';
             // return str + z;
         },
-        getDeals(dealFlag = 0) {
+        getDeals(dealFlag) {
             let arr = [];
             let flag = (dealFlag === 'opened') ? true : false;
 
