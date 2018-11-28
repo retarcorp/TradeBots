@@ -201,11 +201,7 @@ export default {
                 });
             });
             arr.sort( (a, b) => {
-                if(a.orders.length && b.orders.length) {
-                    return b.orders[0].time - a.orders[0].time;
-                } else {
-                    return b.processId - a.processId;
-                }
+                return b.endTime - a.endTime;
             })
             return arr;
         }
