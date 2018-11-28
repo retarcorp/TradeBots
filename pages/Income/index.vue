@@ -337,7 +337,7 @@ export default {
                         prc.orders.forEach(order => {
                             if(Number(order.time) - prevDay <= oneDay) {
                                 if(order.side === BUY && order.status === FILLED) {
-                                    income[curSymbol] -= Number(order.cummulativeQuoteQty);
+                                    income[curSymbol] -= Number(order.cummulativeQuoteQty) * (1 - 0.001);
                                 } else if(order.side === SELL && order.status === FILLED) {
                                     income[curSymbol] += Number(order.cummulativeQuoteQty) * (1 - 0.001);
                                 }
@@ -371,7 +371,7 @@ export default {
 
                         prc.orders.forEach(order => {
                             if(order.side === BUY && order.status === FILLED) {
-                                income[curSymbol] -= Number(order.cummulativeQuoteQty);
+                                income[curSymbol] -= Number(order.cummulativeQuoteQty) * (1 - 0.001);
                             } else if(order.side === SELL && order.status === FILLED) {
                                 income[curSymbol] += Number(order.cummulativeQuoteQty) * (1 - 0.001);
                             }

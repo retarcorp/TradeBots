@@ -38,7 +38,8 @@ class Statistics {
 							status: prc.status,
 							finallyStatus: prc.finallyStatus,
 							freeze: prc.freeze,
-							orders: prc.orders
+							orders: prc.orders,
+							finalProcessStatus: prc.finalProcessStatus || 0
 						};
 					
 					botData.processes.push(prcData);

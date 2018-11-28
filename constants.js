@@ -99,6 +99,16 @@ const CONSTANTS = {
 		MAX_NUM_ALGO_ORDERS: 'MAX_NUM_ALGO_ORDERS'
 	},
 
+	PROCESS_STATUS: {
+		CANCEL: 2,
+	
+		OK: 1,
+	
+		ERROR: -1,
+	
+		NEUTRAL: 0
+	},
+
 	PRC: 'PRC', //Process
 
 	BT: 'BOT', //Bot

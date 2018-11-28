@@ -407,15 +407,15 @@ module.exports = class Bot {
 
 			this.reservedBalance.asset = asset;
 
-			if(this.isManual()) {
+			// if(this.isManual()) {
 				let plannedСosts = initialOrder + safeOrderSize;
 				this.reservedBalance.amount = plannedСosts;
 				return curFree > plannedСosts;
-			} else if(this.isAuto()) {
-				let plannedСosts = (initialOrder + safeOrderSize) * maxAmountPairsUsed;
-				this.reservedBalance.amount = plannedСosts;
-				return curFree > plannedСosts;
-			} 
+			// } else if(this.isAuto()) {
+			// 	let plannedСosts = (initialOrder + safeOrderSize) * maxAmountPairsUsed;
+			// 	this.reservedBalance.amount = plannedСosts;
+			// 	return curFree > plannedСosts;
+			// } 
 		}
 		return false;
 	}
@@ -769,7 +769,7 @@ module.exports = class Bot {
 					for (let processId in this.processes) {
 						if(this.processes[processId].runningProcess) {
 							await this.processes[processId].cancelAllOrders(user);
-							await this.processes[processId].disableProcess('Удаление бота.');
+							await this.processes[processId].disableProcess(CONSTANTS.PROCESS_STATUS.CANCEL, 'Удаление бота.');
 						}
 					}
 					resolve({
@@ -781,7 +781,7 @@ module.exports = class Bot {
 						this.processes[processId].cancelAllOrders(user, async res => {
 							if(res.status !== 'error') {
 								// await this.processes[processId]._log('Нажали на "отменить и продать".');
-								await this.processes[processId].disableProcess('Нажали на "отменить и продать".');
+								await this.processes[processId].disableProcess(CONSTANTS.PROCESS_STATUS.CANCEL, 'Нажали на "отменить и продать".');
 							}
 							resolve(res);
 						});

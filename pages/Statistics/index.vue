@@ -1,107 +1,53 @@
 <template>
     <section class="container">
-        <ul class="tabs">
-            <li 
-                @click="currentTab = 'opened'" 
-                class="tabs__item"
-                :style="currentTab === 'opened' ? 'backgroundColor: #eee' : ''"
-            >Открытые сделки</li>
-            <li 
-                @click="currentTab = 'closed'" 
-                class="tabs__item"
-                :style="currentTab === 'closed' ? 'backgroundColor: #eee' : ''"
-            >Завершенные</li>
-            <label for="inpDate" class="dateSearch button button--primary">(Сортировка по дате)</label>
-                    <input style="display: none" id="inpDate" type="checkbox" v-model="isDateSearch">
-                    <input v-show="isDateSearch" type="date" id="start" name="trip-start"
-                        v-model="searchDate1"
-                        min="2017-01-01" max="2100-01-01">
-                    <input v-show="isDateSearch" type="date" id="start" name="trip-start"
-                        v-model="searchDate2"
-                        min="2017-01-01" max="2100-01-01">
-            <!-- <li 
-                @click="currentTab = 'rejected'" 
-                class="tabs__item"
-                :style="currentTab === 'rejected' ? 'backgroundColor: #eee' : ''"
-            >Ошибки</li> -->
-        </ul>
-        <div class="tabs__content">
-
-            <div v-show="currentTab === 'opened'">
-                <div v-for="deal in openedDeals" :key="deal.processId" class="deal-box">
-                    <nuxt-link :to="'/Bots/' + deal.botID" class="nav__link">Бот - {{ deal.botTitle }} | {{ deal.symbol }} {{ deal.processId }} {{ deal.freeze === '1' ? "заморожен" : "" }}</nuxt-link>
-                    <!-- <p>Бот - {{ deal.botTitle }} | {{ deal.symbol }} {{ deal.processId }} {{ deal.freeze === '1' ? "заморожен" : "" }}</p> -->
-                    <table class="table">
-                        <tr class="table__tr">
-                            <th class="table__th date">Дата</th>
-                            <th class="table__th pair-head">Пара</th>
-                            <th class="table__th side">Тип</th>
-                            <th class="table__th price-head">Цена</th>
-                            <th class="table__th quantity-head">Количество</th>
-                            <th class="table__th total-head">Всего</th>
-                            <th class="table__th status-head">Статус</th>
-                        </tr>
-                        <tbody class='overflow'>
-                            <tr 
-                                v-for="order in deal.orders" 
-                                :key="order.id" 
-                                class="table__tr"
-                            >
-                                <td class="table__td date">{{ order.time | date }}</td>
-                                <td class="table__td pair">{{ order.symbol }}</td>
-                                <td 
-                                    class="table__td side" 
-                                    :class="order.side === 'BUY' ? 'text--success' : 'text--danger'"
-                                    >{{ order.side }}({{ order.type }})</td>
-                                <td class="table__td price">{{ order.type !== 'MARKET' ? order.price : (Number(order.cummulativeQuoteQty) / Number(order.origQty)).toFixed(order.price.length - 2) }}</td>
-                                <td class="table__td quantity">{{ order.origQty }}</td>
-                                <td class="table__td total">{{ order.cummulativeQuoteQty }}</td>
-                                <td class="table__td status">{{ order.status }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-
-
-            <div v-show="currentTab === 'closed'">
-                <div v-for="deal in closedDeals" :key="deal.processId" class="deal-box">
-                    <nuxt-link :to="'/Bots/' + deal.botID" class="nav__link">Бот - {{ deal.botTitle }} | {{ deal.symbol }} {{ deal.processId }} {{ deal.freeze === '1' ? "заморожен" : "" }}</nuxt-link>
-
-                    <!-- <p>Бот - {{ deal.botTitle }} | {{ deal.symbol }} {{ deal.processId }} {{ deal.freeze === '1' ? "заморожен" : "" }}</p> -->
-                    <table class="table">
-                        <tr class="table__tr">
-                            <th class="table__th date">Дата</th>
-                            <th class="table__th pair-head">Пара</th>
-                            <th class="table__th side">Тип</th>
-                            <th class="table__th price-head">Цена</th>
-                            <th class="table__th quantity-head">Количество</th>
-                            <th class="table__th total-head">Всего</th>
-                            <th class="table__th status-head">Статус</th>
-                        </tr>
-                        <tbody class='overflow'>
-                            <tr 
-                                v-for="order in deal.orders" 
-                                :key="order.id" 
-                                class="table__tr"
-                            >
-                                <td class="table__td date">{{ order.time | date }}</td>
-                                <td class="table__td pair">{{ order.symbol }}</td>
-                                <td 
-                                    class="table__td side" 
-                                    :class="order.side === 'BUY' ? 'text--success' : 'text--danger'"
-                                    >{{ order.side }}({{ order.type }})</td>
-                                <td class="table__td price">{{ order.type !== 'MARKET' ? order.price : (Number(order.cummulativeQuoteQty) / Number(order.origQty)).toFixed(order.price.length - 2) }}</td>
-                                <td class="table__td quantity">{{ order.origQty }}</td>
-                                <td class="table__td total">{{ order.cummulativeQuoteQty }}</td>
-                                <td class="table__td status">{{ order.status }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+        <div class="form-control newBot__settings-control">
+            <label class="label" for="main__pair">Статус:</label>
+            <select 
+                v-model="statusFilter" 
+                type="text" 
+                class="input settings__input"
+                >
+                <option value="0">Все</option>
+                <option value="1">Выполненые</option>
+                <option value="2">Отменены</option>
+                <option value="-1">Ошибки</option>
+            </select>
+            <label class="label" for="main__pair">Поиск</label>
+            <div class="bots__search-wrapper">
+                <input v-model="search" type="text" class="input bots__search">
             </div>
         </div>
+        <label for="inpDate" class="dateSearch button button--primary">(Сортировка по дате)</label>
+            <input style="display: none" id="inpDate" type="checkbox" v-model="isDateSearch">
+            <input v-show="isDateSearch" type="date" id="start" name="trip-start"
+                v-model="searchDate1"
+                min="2017-01-01" max="2100-01-01">
+            <input v-show="isDateSearch" type="date" id="start" name="trip-start"
+                v-model="searchDate2"
+                min="2017-01-01" max="2100-01-01">
+        <table class="table">
+            <tr class="table__tr">
+                <th class="table__th date">Название</th>
+                <th class="table__th pair-head">Пара</th>
+                <th class="table__th side">Тейкпрофит</th>
+                <th class="table__th price-head">Объемы</th>
+                <th class="table__th quantity-head">Статус</th>
+                <th class="table__th total-head">Время</th>
+            </tr>
+            <tbody>
+                <tr v-for="(deal, i) in filteredDealList"
+                    :key="i"
+                    class="table__tr"
+                >
+                    <td class="table__td title">{{ deal.botTitle }}</td>
+                    <td class="table__td pair">{{ deal.symbol }}</td>
+                    <td class="table__td income">{{ deal.stats && noExponents(deal.stats.income) }}</td>
+                    <td class="table__td volume">{{ deal.stats && noExponents(deal.stats.volume) }}</td>
+                    <td class="table__td status">{{ deal.stats && getDealStatus(deal.finalProcessStatus) }}</td>
+                    <td class="table__td status">{{ deal.stats && getDate(deal.stats.endTime) }}</td>
+                </tr>
+            </tbody>
+        </table>
     </section>
 </template>
 
@@ -115,7 +61,10 @@ export default {
             searchDateTs1: Date.now(),
             searchDateTs2: Date.now(),
             orders: [],
-            currentTab: 'opened'
+            statusFilter: 0,
+            currentTab: 'opened',
+            search: '',
+            symbolsA: ['BTC', 'BNB', 'ETH', 'USDT']
         }
     },
     filters: {
@@ -134,69 +83,157 @@ export default {
         }
     },
     methods: {
+        getDealStatus(finalProcessStatus = 0) {
+            if(finalProcessStatus === 0) return 'Нейтральный';
+            if(finalProcessStatus === 1) return 'Выполнен';
+            if(finalProcessStatus === 2) return 'Отменен';
+            if(finalProcessStatus === -1) return 'Ошибка';
+        },
+        getDate(date = Date.now()) {
+            date = new Date(date);
+            let hh = String(date.getHours()),
+                ss = String(date.getSeconds()),
+                DD = String(date.getDate()),
+                mm = String(date.getMinutes()),
+                MM = String(date.getMonth() + 1),
+                YYYY = date.getUTCFullYear();
+
+            hh = hh.length < 2 ? '0' + hh : hh;
+            mm = mm.length < 2 ? '0' + mm : mm;
+            ss = ss.length < 2 ? '0' + ss : ss;
+            DD = DD.length < 2 ? '0' + DD : DD;
+            MM = MM.length < 2 ? '0' + MM : MM;
+
+            return `${hh}:${mm}:${ss} ${DD}.${MM}.${YYYY}`;
+        },
         getDateNow() {
             let date = new Date();
             let ret = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
             return ret;
         },
-        getDeals(dealFlag = '') {
-            if(dealFlag) {
-                
-                let arr = [];
-                let flag = (dealFlag === 'opened') ? true : false;
+        getStatistics(prc = {}) {
+            let sellOrder, income = 0, volume = 0, findFlag = false, endTime = 0;
+            let ret = {};
+            for (let i = 0; i < prc.orders.length; i++) {
+                let order = prc.orders[i];
+                if(order.side === 'SELL' && order.status !== 'CANCELED' && !findFlag) {
+                    sellOrder = order;
+                    findFlag = true;
+                    endTime = order.time;
+                }
+                if(order.side === "BUY" && order.status === "FILLED") {
+                    income -= Number(order.cummulativeQuoteQty) * (1 - 0.001);
+                    volume += Number(order.cummulativeQuoteQty);
+                }
+                if(order.side === "SELL" && order.status === "FILLED") {
+                    income += Number(order.cummulativeQuoteQty) * (1 - 0.001);
+                }
+            }
+            if(!endTime && prc.orders && prc.orders.length) {
+                endTime = prc.orders[prc.orders.length - 1].time;
+            }
+            if(sellOrder) {
+                ret = {
+                    value: sellOrder.cummulativeQuoteQty,
+                    income, volume, endTime
+                };
+            }
+            return ret;
+        },
+        noExponents(number = 0) {
+            var data = String(number).split(/[eE]/);
+            if (data.length == 1) return Number(data[0]).toFixed(8);
+            return number.toFixed(8);
+            // var z = '',
+            //     sign = number < 0 ? '-' : '',
+            //     str = data[0].replace('.', ''),
+            //     mag = Number(data[1]) + 1;
 
-                this.statisticsList.forEach(bot => {
-                    bot.processes.forEach(prc => {
-                        if(prc.finallyStatus === flag && prc.orders.length) {
-                            if(this.isDateSearch && prc.orders.length) {
-                                let cdate = new Date(prc.orders[0].time),
-                                    cd = cdate.getDate(),
-                                    cm = cdate.getMonth(),
-                                    cy = cdate.getFullYear(),
-                                    sdate1 = new Date(this.searchDateTs1),
-                                    sd1 = sdate1.getDate(),
-                                    sm1 = sdate1.getMonth(),
-                                    sy1 = sdate1.getFullYear(),
-                                    sdate2 = new Date(this.searchDateTs2),
-                                    sd2 = sdate2.getDate(),
-                                    sm2 = sdate2.getMonth(),
-                                    sy2 = sdate2.getFullYear();
+            // if (mag < 0) {
+            //     z = sign + '0.';
+            //     while (mag++) z += '0';
+            //     return z + str.replace(/^\-/, '');
+            // }
+            // mag -= str.length;
+            // while (mag--) z += '0';
+            // return str + z;
+        },
+        getDeals(dealFlag = 0) {
+            let arr = [];
+            let flag = (dealFlag === 'opened') ? true : false;
 
-                                if(sy1 !== sy2 && cy >= sy1 && cy <= sy2) {
+            this.statisticsList.forEach(bot => {
+                bot.processes.forEach(prc => {
+                    if(prc.orders.length && ((!dealFlag) || prc.finalProcessStatus === dealFlag) ) {
+                        if(this.isDateSearch && prc.orders.length) {
+                            let cdate = new Date(prc.orders[0].time),
+                                cd = cdate.getDate(),
+                                cm = cdate.getMonth(),
+                                cy = cdate.getFullYear(),
+                                sdate1 = new Date(this.searchDateTs1),
+                                sd1 = sdate1.getDate(),
+                                sm1 = sdate1.getMonth(),
+                                sy1 = sdate1.getFullYear(),
+                                sdate2 = new Date(this.searchDateTs2),
+                                sd2 = sdate2.getDate(),
+                                sm2 = sdate2.getMonth(),
+                                sy2 = sdate2.getFullYear();
+
+                            if(sy1 !== sy2 && cy >= sy1 && cy <= sy2) {
+                                prc.stats = this.getStatistics(prc);
+                                arr.push(prc);
+                            } else if(sy1 === sy2 && cy === sy1){
+                                if(sm1 !== sm2 && cm >= sm1 && cm <= sm2) {
+                                    prc.stats = this.getStatistics(prc);
                                     arr.push(prc);
-                                } else if(sy1 === sy2 && cy === sy1){
-                                    if(sm1 !== sm2 && cm >= sm1 && cm <= sm2) {
+                                } else if(sm1 === sm2 && cm === sm1) {
+                                    if(cd >= sd1 && cd <= sd2) {
+                                        prc.stats = this.getStatistics(prc);
                                         arr.push(prc);
-                                    } else if(sm1 === sm2 && cm === sm1) {
-                                        if(cd >= sd1 && cd <= sd2) {
-                                            arr.push(prc);
-                                        }
                                     }
                                 }
-                            } else {
-                                arr.push(prc);
                             }
+                        } else {
+                            prc.stats = this.getStatistics(prc);
+                            arr.push(prc);
                         }
-                    });
-                });
-                arr.sort( (a, b) => {
-                    if(a.orders.length && b.orders.length) {
-                        return b.orders[0].time - a.orders[0].time;
-                    } else {
-                        return b.processId - a.processId;
                     }
-                })
-                return arr;
-            }
-            return [];
+                });
+            });
+            arr.sort( (a, b) => {
+                if(a.orders.length && b.orders.length) {
+                    return b.orders[0].time - a.orders[0].time;
+                } else {
+                    return b.processId - a.processId;
+                }
+            })
+            return arr;
         }
     },
     computed: {
+        deals() {
+            return this.getDeals(Number(this.statusFilter));
+        },
+        filteredDealList() {
+            return this.deals.filter(deal => {
+                let a = deal.botTitle ? deal.botTitle : '',
+                    b = deal.symbol ? deal.symbol : '',
+                    c = deal.botID ? deal.botID : '';
+                let string = `${a.toLowerCase()}${b.toLowerCase()}${c.toLowerCase()}`;
+                return string.indexOf(this.search.toLowerCase()) >= 0;
+            })
+        },
         closedDeals() {
-            return this.getDeals('closed');
+            return this.getDeals(2);
+        },
+        endedDeals() {
+            return this.getDeals(1);
         },
         openedDeals() {
-            return this.getDeals('opened');
+            return this.getDeals(0);
+        },
+        errorDeals() {
+            return this.getDeals(-1);
         },
         statisticsList() {
             return this.$store.getters.getStatisticsList || [];
