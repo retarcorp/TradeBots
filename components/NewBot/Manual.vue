@@ -28,6 +28,7 @@
                     <option value="BNB">BNB</option>
                     <option value="BTC">BTC</option>
                     <option value="USDT">USDT</option>
+                    <option value="PAX">PAX</option>
                 </select>
             </div>
             <div class="form-control newBot__settings-control">

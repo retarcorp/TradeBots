@@ -5,7 +5,7 @@ const Users = require('./Users');
 
 const usersDataCollection = CONSTANTS.USERS_DATA_COLLECTION;
 const usersCollection = CONSTANTS.USERS_COLLECTION;
-const btc = 'BTC', eth = 'ETH', bnb = 'BNB', usdt = 'USDT';
+const btc = 'BTC', eth = 'ETH', bnb = 'BNB', usdt = 'USDT', pax = 'PAX';
 
 class Income {
 	constructor() {
@@ -191,6 +191,7 @@ class Income {
 		if(symbol.indexOf(eth) > 0) return eth;
 		if(symbol.indexOf(bnb) > 0) return bnb;
 		if(symbol.indexOf(usdt) > 0) return usdt;
+		if(symbol.indexOf(pax) > 0) return pax;
 	}
 	
 	getChangeKeyToProcess(botID = '', prcId = '', field = '') {

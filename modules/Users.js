@@ -825,6 +825,10 @@ let Users = {
 					ETH: {
 						value: 0,
 						name: 'ETH'
+					},
+					PAX: {
+						value: 0,
+						name: 'PAX'
 					}
 				};
 			for (bot in ordersList) {
@@ -845,6 +849,10 @@ let Users = {
 						ETH: {
 							value: 0,
 							name: 'ETH'
+						},
+						PAX: {
+							value: 0,
+							name: 'PAX'
 						}
 					};
 
@@ -880,6 +888,10 @@ let Users = {
 						ETH: {
 							value: 0,
 							name: 'ETH'
+						},
+						PAX: {
+							value: 0,
+							name: 'PAX'
 						}
 					},
 					curDay = Date.now(),
@@ -903,6 +915,10 @@ let Users = {
 							ETH: {
 								value: 0,
 								name: 'ETH'
+							},
+							PAX: {
+								value: 0,
+								name: 'PAX'
 							}
 						};
 					orders.forEach(order => {
@@ -925,7 +941,7 @@ let Users = {
 
 		setSymbolIncome(income = {}, order = {}) {
 			try {
-				const symbols = ['BTC', 'BNB', 'ETH', 'USDT'],
+				const symbols = ['BTC', 'BNB', 'ETH', 'USDT', 'PAX'],
 				l = symbols.length;
 
 				let curSymbol = '';

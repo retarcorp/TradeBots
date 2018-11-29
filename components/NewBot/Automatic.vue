@@ -27,6 +27,7 @@
                     <option value="BNB">BNB</option>
                     <option value="BTC">BTC</option>
                     <option value="USDT">USDT</option>
+                    <option value="PAX">PAX</option>
                 </select>
             </div>
             <div class="form-control newBot__settings-control">
@@ -255,12 +256,7 @@ export default {
             checkRating: [
                 { id: 'Buy', name: 'Buy'},
                 { id: 'Strong Buy', name: 'Strong Buy'}
-            ],
-            pairs: {
-                ETH: ['BTC', 'USDT'],
-                BNB: ['BTC', 'ETH', 'USDT'],
-                BTC: ['USDT']
-            }
+            ]
         }
     },
     computed: {

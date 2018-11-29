@@ -20,6 +20,7 @@ const CONSTANTS = {
 
 	VOLUME_LIMIT: {
 		BTC: { NAME: 'BTC', VALUE: 0.001 },
+		PAX: { NAME: 'PAX', VALUE: 10 },
 		ETH: { NAME: 'ETH', VALUE: 0.01 },
 		BNB: { NAME: 'BNB', VALUE: 1 },
 		USDT: { NAME: 'USDT', VALUE: 10 }

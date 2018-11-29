@@ -23,13 +23,15 @@ var Symbols = {
 					BNB:[],
 					BTC:[],
 					ETH:[],
-					USDT:[]
+					USDT:[],
+					PAX:[]
 				}
 				for(let key in data) {
 					key.match(/ETH$/) ? obj.ETH.push(key.slice(0,-3)) : null;
 					key.match(/BTC$/) ? obj.BTC.push(key.slice(0,-3)) : null;
 					key.match(/BNB$/) ? obj.BNB.push(key.slice(0,-3)) : null;
-					key.match(/USDT$/) ? obj.USDT.push(key.slice(0,-4)) : null
+					key.match(/USDT$/) ? obj.USDT.push(key.slice(0,-4)) : null;
+					key.match(/PAX$/) ? obj.PAX.push(key.slice(0,-3)) : null;
 				}
 				Mongo.update({}, obj, CONSTANTS.SYMBOLS_LIST_COLLECTION, (data, err) => {
 					if(err) reject(err)

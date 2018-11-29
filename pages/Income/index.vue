@@ -111,7 +111,7 @@ export default {
             searchDate2: this.getDateNow(),
             searchDateTs1: Date.now(),
             searchDateTs2: Date.now(),
-            symbolsA: ['BTC', 'BNB', 'ETH', 'USDT']
+            symbolsA: ['BTC', 'BNB', 'ETH', 'USDT', 'PAX']
         }
     },
     watch: {

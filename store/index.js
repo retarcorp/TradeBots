@@ -25,7 +25,8 @@ const store = () =>
 			USDT: 10,
 			BTC: 0.001,
 			ETH: 0.01,
-			BNB: 1
+			BNB: 1,
+			PAX: 10
 		},
 		lotSize: {},
 		binanceAPIStatus: false,

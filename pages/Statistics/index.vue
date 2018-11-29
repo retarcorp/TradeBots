@@ -65,7 +65,7 @@ export default {
             statusFilter: 0,
             currentTab: 'opened',
             search: '',
-            symbolsA: ['BTC', 'BNB', 'ETH', 'USDT']
+            symbolsA: ['BTC', 'BNB', 'ETH', 'USDT', 'PAX']
         }
     },
     filters: {
@@ -115,8 +115,7 @@ export default {
             return ret;
         },
         getStatistics(prc = {}) {
-            let sellOrder, income = 0, volume = 0, findFlag = false, endTime = 0;
-            let ret = {};
+            let sellOrder = {}, income = 0, volume = 0, findFlag = false, endTime = 0;
             for (let i = 0; i < prc.orders.length; i++) {
                 let order = prc.orders[i];
                 if(order.side === 'SELL' && order.status !== 'CANCELED' && !findFlag) {
@@ -135,13 +134,10 @@ export default {
             if(!endTime && prc.orders && prc.orders.length) {
                 endTime = prc.orders[0].time;
             }
-            if(sellOrder) {
-                ret = {
+            return {
                     value: sellOrder.cummulativeQuoteQty,
                     income, volume, endTime
                 };
-            }
-            return ret;
         },
         noExponents(number = 0) {
             var data = String(number).split(/[eE]/);
@@ -220,7 +216,7 @@ export default {
                     c = '';//deal.botID ? deal.botID : '';
                 let string = `${a.toLowerCase()}${b.toLowerCase()}${c.toLowerCase()}`;
                 return string.indexOf(this.search.toLowerCase()) >= 0;
-            })
+            });
         },
         closedDeals() {
             return this.getDeals(2);
