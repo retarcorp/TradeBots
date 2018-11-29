@@ -10,7 +10,10 @@ const DL = CONSTANTS.DL;
 const Logger = require('./Logger');
 const MDBLogger = require('./MDBLogger');
 const Symbols = require('./Symbols');
- 
+
+//decimalQty - qty step size
+//tickSize - price step size
+
 module.exports = class Process {
 	constructor({
 		processId = uniqid(PRC),
@@ -109,6 +112,11 @@ module.exports = class Process {
 		}
 	}
 
+	countFirstBuyPrice({ origQty = '', cummulativeQuoteQty = '' }) {
+		console.log(origQty, cummulativeQuoteQty);
+		return this.toDecimal(Number(cummulativeQuoteQty) / Number(origQty), this.getDecimal());
+	}
+
 	async startTrade(user) {
 		return new Promise( async (resolve, reject) => {
 			console.log('startTrade')
@@ -119,21 +127,22 @@ module.exports = class Process {
 					.then( async newBuyOrder => {
 						
 						console.log('firstOrder bouth')
-						
+						console.log(newBuyOrder.orderId)
 						if(newBuyOrder.orderId) {
+							console.log('oke')
 							let orderQtyWithoutFee = Number(newBuyOrder.origQty) * (1 - CONSTANTS.BINANCE_FEE / 100); 
 							let qty = this.setQuantity(undefined, orderQtyWithoutFee);
-
-							let price = newBuyOrder.price,
+							console.log(orderQtyWithoutFee, qty)
+							let price = this.countFirstBuyPrice(newBuyOrder),
 								cummulativeQuoteQty = Number(newBuyOrder.cummulativeQuoteQty),
-								proffitCummulativeQuoteQty = cummulativeQuoteQty * ( 1 + this.getTakeProfit()),
-								profitPrice = this.toDecimal(proffitCummulativeQuoteQty / qty, this.getDecimal());
-							
+								cummulativeQuoteQtyWithoutFee = Number(cummulativeQuoteQty) * (1 - CONSTANTS.BINANCE_FEE / 100),
+								proffitCummulativeQuoteQty = cummulativeQuoteQtyWithoutFee * ( 1 + this.getTakeProfit()),
+								profitPrice = this.toDecimal(proffitCummulativeQuoteQty / qty, this.getDecimal(), true, true);
+							console.log(qty, profitPrice)
+							console.log('???')
 							await this.awaitFreeze();
 
 							this.botSettings.firstBuyPrice = price;
-							// let profitPrice = this.getProfitPrice(price);
-							// let profitPrice = this.getProfitPrice_fromOrder(price, qty, totalBuy);
 							console.log(profitPrice, qty);
 							this.newSellOrder(profitPrice, CONSTANTS.ORDER_TYPE.LIMIT, qty, async newSellOrder => {
 								if(newSellOrder !== CONSTANTS.DISABLE_FLAG && newSellOrder.orderId) {
@@ -142,7 +151,7 @@ module.exports = class Process {
 									this.currentOrder = newSellOrder;
 									this.orders.push(newSellOrder);
 									
-									let safeOrders = await this.createSafeOrders(price, qty);
+									let safeOrders = await this.createSafeOrders(Number(price), Number(qty));
 									console.log('created ' + safeOrders.length + ' safe orders');
 									this.safeOrders.push(...safeOrders);
 									this.orders.push(...safeOrders);
@@ -294,19 +303,18 @@ module.exports = class Process {
 									let orderQtyWithoutFee = Number(newBuyOrder.origQty) * (1 - CONSTANTS.BINANCE_FEE / 100); 
 									let qty = this.setQuantity(undefined, orderQtyWithoutFee);
 
-									let price = newBuyOrder.price,
+									let price = this.countFirstBuyPrice(newBuyOrder),
 										cummulativeQuoteQty = Number(newBuyOrder.cummulativeQuoteQty),
-										proffitCummulativeQuoteQty = cummulativeQuoteQty * ( 1 + this.getTakeProfit()),
-										profitPrice = this.toDecimal(proffitCummulativeQuoteQty / qty, this.getDecimal());
+										cummulativeQuoteQtyWithoutFee = Number(cummulativeQuoteQty) * (1 - CONSTANTS.BINANCE_FEE / 100),
+										proffitCummulativeQuoteQty = cummulativeQuoteQtyWithoutFee * ( 1 + this.getTakeProfit()),
+										profitPrice = this.toDecimal(proffitCummulativeQuoteQty / qty, this.getDecimal(), true, true);
 							
 						
-									while(this.isFreeze()) {
-										sleep(CONSTANTS.TIMEOUT);
-									};
+									await this.awaitFreeze();
 									
 									this.botSettings.firstBuyPrice = price;
 
-									// let profitPrice = this.getProfitPrice(price);
+									console.log(profitPrice, qty, 1);
 									this.newSellOrder(profitPrice, CONSTANTS.ORDER_TYPE.LIMIT, qty, async newSellOrder => {
 										if(newSellOrder !== CONSTANTS.DISABLE_FLAG) await this.updateProcess(user);
 					
@@ -467,8 +475,8 @@ module.exports = class Process {
 	}
 
 	process(user = this.user) {
-		console.log('process')
 		return new Promise( async (resolve, reject) => {
+			console.log('process')
 			let orders = this.safeOrders || [],
 				length = orders.length;
 			
@@ -944,6 +952,7 @@ module.exports = class Process {
 	async createSafeOrder(price = this.botSettings.lastSafeOrderPrice, quantity = 0) {
 		return new Promise(async (resolve, reject) => {
 			try {
+				console.log('createSafeOrder', price, quantity)
 				let maxOpenSO = this.getMaxOpenedAmount(),
 					currentQtyUsedSO = this.getQtyOfUsedSafeOrders(),
 					currentQtyActiveSO = this.getQtyOfActiveSafeOrders(),
@@ -953,17 +962,19 @@ module.exports = class Process {
 					decimal = this.getDecimal();
 
 				price = Number(price);
-		
+				console.log(maxOpenSO, currentQtyUsedSO, currentQtyActiveSO, maxAmountSO, deviation, lastSafeOrder, decimal);
 				if(maxOpenSO > currentQtyActiveSO && maxAmountSO > currentQtyUsedSO) {
 					this.botSettings.quantityOfUsedSafeOrders ++;
 					this.botSettings.quantityOfActiveSafeOrders ++;
 					let lastSafeOrderPrice = Number(lastSafeOrder.price) || price,
-						newPrice = this.toDecimal(lastSafeOrderPrice - lastSafeOrderPrice * deviation, decimal),
+						newPrice = this.toDecimal(lastSafeOrderPrice - lastSafeOrderPrice * deviation, decimal, true),
 						qty = 0;
+					
+					console.log(lastSafeOrderPrice, newPrice, qty)
 					if(quantity) qty = this.toDecimal(quantity * this.getMartingaleValue());
 					else if(this.getMartingaleActive()) qty = this.toDecimal(Number(lastSafeOrder.origQty) * this.getMartingaleValue());
 					else qty = this.getQuantity(newPrice, 1);
-		
+					console.log(qty)
 					
 					await this._log(`новый страховочный ордер (price - ${newPrice})`);
 					this.newBuyOrder(newPrice, CONSTANTS.ORDER_TYPE.LIMIT, qty, true, newOrder => {
@@ -990,15 +1001,31 @@ module.exports = class Process {
 		await this.updateLog(nextMessage);
 	}
 
-	toDecimal(value = 0, decimal = this.getDecimal(false), flag = false) {
-		if(flag) {
+	toDecimal(value = 0, decimal = this.getDecimal(false), isMath = false, isCeil = false) {
+		if(isMath) {
 			const d = Math.pow(10, decimal);
-			return Math.floor(Number(value) * d) / d;
+			if(!isCeil) {
+				return Math.floor(Number(value) * d) / d;
+			}
+			return Math.ceil(Number(value) * d) / d;
 		} 
 		return Number(Number(value).toFixed(decimal));
 	}
 
 	recountQuantity(quantity = 0, side = 0) {
+
+		// let curQty = Number(this.currentOrder.origQty);
+		// let	additionalQty = Number(quantity * (1 - CONSTANTS.BINANCE_FEE/100));
+		// // let	newQty = this.toDecimal((curQty + additionalQty), this.getDecimal(false), true);
+
+		// let newQty = curQty;
+		// newQty += Math.pow(-1, side) * additionalQty;
+		// newQty = this.toDecimal(newQty, this.getDecimal(false), true);
+
+		// this.botSettings.quantity = newQty;
+		// return newQty;
+
+
 		quantity = Number(quantity);
 		let current = Number(this.botSettings.quantity);
 		current += Math.pow(-1, side) * quantity;
@@ -1013,13 +1040,27 @@ module.exports = class Process {
 	}
 
 	recountProfitPrice(nextOrder) {
-		let prevProfitPrice = Number(this.currentOrder.price),
-			nextProfitPrice = Number(this.getProfitPrice(nextOrder.price)),
-			decimal = this.getDecimal(),
-			averagePrice = (prevProfitPrice + nextProfitPrice) / 2,
-			newProfitPrice = Number(this.getProfitPrice(averagePrice));
+		// console.log(this.currentOrder)
+		// let curTotal = Number(this.currentOrder.origQty) * Number(this.currentOrder.price) * (1 - CONSTANTS.BINANCE_FEE/100);
+		// let additionalTotal = Number(nextOrder.origQty) * Number(nextOrder.price) * (1 - CONSTANTS.BINANCE_FEE/100);
+		// let averageTotal = (curTotal + additionalTotal) / 2;
+		// let proffitTotal = this.toDecimal(averageTotal * (1 + this.getTakeProfit()), this.getDecimal());
+		// console.log(curTotal, additionalTotal, averageTotal, proffitTotal)
 
-		newProfitPrice = this.toDecimal(newProfitPrice, decimal);
+		// let curQty = Number(this.currentOrder.origQty);
+		// let	additionalQty = Number(nextOrder.origQty * (1 - CONSTANTS.BINANCE_FEE/100));
+		// let	newQty = this.toDecimal((curQty + additionalQty), this.getDecimal(false), true);
+		// console.log(curQty, additionalQty, newQty)
+		// return this.toDecimal(proffitTotal / newQty, this.getDecimal(), true, true);
+
+
+
+		let prevProfitPrice = Number(this.currentOrder.price),
+			nextProfitPrice = Number(this.getProfitPrice_forRecountSafeOrders(nextOrder.price)),
+			averagePrice = (prevProfitPrice + (nextProfitPrice)) / 2,
+			newProfitPrice = Number(averagePrice);
+
+		newProfitPrice = this.toDecimal(newProfitPrice, this.getDecimal());
 
 		return newProfitPrice;
 	}
@@ -1605,11 +1646,11 @@ module.exports = class Process {
 	}
 
 	getTakeProfit() {
-		return (Number(this.botSettings.takeProfit) +  2 * CONSTANTS.BINANCE_FEE) / 100;
+		return (Number(this.botSettings.takeProfit) +  3 * CONSTANTS.BINANCE_FEE) / 100;
 	}
 
 	getTakeProfit_forRecountSafeOrders() {
-		return (Number(this.botSettings.takeProfit) +  2 * CONSTANTS.BINANCE_FEE) / 100;
+		return (Number(this.botSettings.takeProfit) +  3 * CONSTANTS.BINANCE_FEE) / 100;
 	}
 
 	getSellOrder() {
@@ -1762,10 +1803,9 @@ module.exports = class Process {
 			return this.toDecimal(Number(this.botSettings.safeOrder.size) / price);
 	}
 
-	getDecimal(flag = true) {
-		let value = flag ? Number(this.botSettings.tickSize) : this.botSettings.decimalQty;
-		let ret = this.countDecimalNumber(value);
-		return ret;
+	getDecimal(isTickSize = true) {
+		let value = isTickSize ? Number(this.botSettings.tickSize) : this.botSettings.decimalQty;
+		return this.countDecimalNumber(value);
 	}
 
 	async getLastPrice() {
