@@ -358,7 +358,7 @@ module.exports = class Process {
 							this.trade(user, false, resolve, reject, tickTime);
 						});
 					} else {
-						this.cancelOrder(this.currentOrder, 0, 0, async result => {
+						this.cancelOrder(this.currentOrder, undefined, undefined, async result => {
 							await this.updateProcess(user);
 							resolve('time_limit');
 						});
@@ -398,7 +398,7 @@ module.exports = class Process {
 
 	async isOrderFilling(order = {}, user = this.user) {
 		return new Promise( async (resolve, reject) => {
-			this.cancelOrder(this.currentOrder, 0, 0, async result => {
+			this.cancelOrder(this.currentOrder, undefined, undefined, async result => {
 				console.log('after cancel current order')
 				
 				if(result.status === 'ok') {
@@ -627,7 +627,7 @@ module.exports = class Process {
 						res: {}
 					});
 				} else if( (Date.now() - time) >= tenMin) { // если время ожидания прошло
-					this.cancelOrder(order, 0, 0, res => {
+					this.cancelOrder(order, undefined, undefined, res => {
 						if(res.status === 'error') {
 							if(res.error && this.isError2011(res.error) && !errorFlag) {
 								setTimeout( () => {
@@ -669,7 +669,7 @@ module.exports = class Process {
 			await this._log('первая закупка монет');
 			let price = await this.getLastPrice(),
 				quantity = this.setQuantity(price, 0, true);
-				
+
 			this.newBuyOrder(price, CONSTANTS.ORDER_TYPE.LIMIT, quantity, false, async newBuyOrder => {
 				if(newBuyOrder === '2010') {
 					reject(newBuyOrder);
@@ -1014,10 +1014,10 @@ module.exports = class Process {
 
 	recountProfitPrice(nextOrder) {
 		let prevProfitPrice = Number(this.currentOrder.price),
-			nextProfitPrice = Number(nextOrder.price),
+			nextProfitPrice = Number(this.getProfitPrice(nextOrder.price)),
 			decimal = this.getDecimal(),
 			averagePrice = (prevProfitPrice + nextProfitPrice) / 2,
-			newProfitPrice = Number(this.getProfitPrice_forRecountSafeOrders(averagePrice));
+			newProfitPrice = Number(this.getProfitPrice(averagePrice));
 
 		newProfitPrice = this.toDecimal(newProfitPrice, decimal);
 
@@ -1107,7 +1107,7 @@ module.exports = class Process {
 					MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, sOrders: this.safeOrders, error, botID: this.botID, botTitle: this.botTitle, processId: this.processId, fnc: 'cancelAllOrders'});
 					await this._log(JSON.stringify(error));
 				}
-				this.cancelOrder(this.currentOrder, 0, 0, async result => {
+				this.cancelOrder(this.currentOrder, undefined, undefined, async result => {
 					if(result.status === 'ok') {
 						let nextAct = async (isError = false) => {
 							this.orders = await this.updateOrders(this.orders);
@@ -1182,7 +1182,7 @@ module.exports = class Process {
 					MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, sOrders: this.safeOrders, error, botID: this.botID, botTitle: this.botTitle, processId: this.processId, fnc: 'cancelAllOrdersWithoutSell'});
 					await this._log(JSON.stringify(error));
 				}
-				this.cancelOrder(this.currentOrder, 0, 0, async result => {
+				this.cancelOrder(this.currentOrder, undefined, undefined, async result => {
 					if(result.status === 'ok') {
 						this.orders = await this.updateOrders(this.orders);
 						await this.updateProcess(user);
@@ -1233,89 +1233,194 @@ module.exports = class Process {
 		});
 	}
 
-	async cancelOrder(order_data = {}, resolve, reject, callback = () => {}) {
-		let orderId = 0;
-		if(typeof order_data === 'object') {
-			orderId = order_data.orderId;
+	async cancelOrder(order_data = {}, resolve = () => {}, reject = () => {}, callback = () => {}) {
+		this.cancelOrder_helper(order_data)
+			.then( result => {
+				this.cancelOrder_handlerCallback(result, order_data, resolve, reject, callback);
+			})
+			.catch( error => {
+				MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, error, order_data, botID: this.botID, botTitle: this.botTitle, processId: this.processId, fnc: 'cancelOrder'});
+				this.cancelOrder_handlerCallback(result, order_data, resolve, reject, callback);
+			});
+	}
+
+	cancelOrder_handlerCallback(result = {}, order_data = {}, resolve = () => {}, reject = () => {}, callback = () => {}) {
+		if(result.status === 'error') {
+			if(this.isError2011(result.error)) {
+				reject(result.message);
+				callback(result);
+			} else {
+				setTimeout( () => {
+					this.cancelOrder(order_data, resolve, reject, callback);
+				}, 5000);
+			}
+
+		} else if(result.status === 'ok') {
+			resolve(result.message);
+			callback(result);
 		} else {
-			orderId = Number(order_data);
+			MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, result, order_data, botID: this.botID, botTitle: this.botTitle, processId: this.processId, fnc: 'cancelOrder_handlerCallback_else'})
+			reject(result.message);
+			callback(result);
 		}
-		
-		try {
+	}
+
+	cancelOrder_helper(order_data = {}) {
+		return new Promise( async (resolve, reject) => {
+			console.log('cancelOrder_helper');
+			let orderId = 0;
+
+			if(typeof order_data === 'object') {
+				orderId = order_data.orderId;
+			} else {
+				orderId = Number(order_data);
+			}
+
 			this.getOrder(orderId, async order => {
-				let pair = this.getSymbol(),
+				let symbol = this.getSymbol(),
 					side = order.side,
 					qty = order.origQty,
 					status = '',
-					_error = new Error('default error'),
 					message = '',
+					data = {},
 					res_status = CONSTANTS.PROCESS_STATUS.NEUTRAL;
-	
+
 				if(order && order.orderId) {
+
 					if(order.status === CONSTANTS.ORDER_STATUS.FILLED || order.status === CONSTANTS.ORDER_STATUS.CANCELED) {
+						status = 'ok';
 						message = `ордер ${order.orderId} уже завершен`;
 						res_status = CONSTANTS.PROCESS_STATUS.OK; 
-						if(resolve) resolve(message);
-						callback({
-							status: 'ok',
-							message,
-							res_status,
-							data: { order }
-						});
+						data = order;
+						resolve({ status, message, res_status, data });
 					} else {
-						let cancelOrder = {}
 						try {
-							cancelOrder = await this.Client.cancelOrder({
-								symbol: pair,
-								orderId: orderId,
-								useServerTime: true
-							});
+							const useServerTime = true;
+							let cancelOrder = await this.Client.cancelOrder({ symbol, orderId, useServerTime });
 							if(this.isOrderSell(side)) {
 								this.recountQuantity(qty);
 							}
 							status = 'ok';
 							message = `ордер ${cancelOrder.orderId} завершен`;
 							res_status = CONSTANTS.PROCESS_STATUS.OK;
-							if(resolve) resolve(message);
+							data = cancelOrder;
+
+							await this._log('закрытие ордера - ' + message);
+
+							resolve({ status, message, res_status, data });
+
 						} catch(error) {
-							MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, order: {orderId: orderId, symbol: pair}, error, botID: this.botID, botTitle: this.botTitle, processId: this.processId, fnc: 'cancelOrder'});
+							MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, order: {orderId, symbol}, error, botID: this.botID, botTitle: this.botTitle, processId: this.processId, fnc: 'cancelOrder'});
 							status = 'error';
 							message = `ошибка при завершении ордера ${cancelOrder.orderId}`;
 							res_status = CONSTANTS.PROCESS_STATUS.ERROR;
-							_error = error;
-							if(reject) reject(message);
+							reject({ status, message, res_status, error });
 						}
 						
-						await this._log('закрытие ордера - ' + message);
-						callback({ status, message, error: _error, res_status,
-							data: { order: cancelOrder }
-						});
+						// await this._log('закрытие ордера - ' + message);
+						// callback({ status, message, error: _error, res_status,
+						// 	data: { order: cancelOrder }
+						// });
 					}
+
 				} else {
 					status = 'error';
 					message = `Проблема с закрытием ордера ${orderId}`;
 					res_status = CONSTANTS.PROCESS_STATUS.ERROR;
 					data = order;
-					if(reject) reject(message);
-	
-					this.setErrors(order, message);
-					callback({ status, res_status, message, data });
+					// if(reject) reject(message);
+					// this.setErrors(order, message);
+					// callback({ status, res_status, message, data });
+					reject({ status, res_status, message, data });
 				}
-			});
 
-		} catch(error) {
-			MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, error: error, order: {orderId: order.orderId, symbol: this.getSymbol(), order}, botID: this.botID, botTitle: this.botTitle, processId: this.processId, fnc: 'cancelOrder'})
-			await this._log('закрытие ордера - ' + JSON.stringify(error));
-			if(reject) reject(error);
-			callback({
-				status: 'error',
-				error,
-				message: error,
-				res_status: CONSTANTS.PROCESS_STATUS.ERROR,
-				data: { orderId: order.orderId }
 			});
-		}
+		});
 	}
+
+	// async cancelOrder(order_data = {}, resolve, reject, callback = () => {}) {
+	// 	let orderId = 0;
+	// 	if(typeof order_data === 'object') {
+	// 		orderId = order_data.orderId;
+	// 	} else {
+	// 		orderId = Number(order_data);
+	// 	}
+		
+	// 	try {
+	// 		this.getOrder(orderId, async order => {
+	// 			let pair = this.getSymbol(),
+	// 				side = order.side,
+	// 				qty = order.origQty,
+	// 				status = '',
+	// 				_error = new Error('default error'),
+	// 				message = '',
+	// 				res_status = CONSTANTS.PROCESS_STATUS.NEUTRAL;
+	
+	// 			if(order && order.orderId) {
+	// 				if(order.status === CONSTANTS.ORDER_STATUS.FILLED || order.status === CONSTANTS.ORDER_STATUS.CANCELED) {
+	// 					message = `ордер ${order.orderId} уже завершен`;
+	// 					res_status = CONSTANTS.PROCESS_STATUS.OK; 
+	// 					if(resolve) resolve(message);
+	// 					callback({
+	// 						status: 'ok',
+	// 						message,
+	// 						res_status,
+	// 						data: { order }
+	// 					});
+	// 				} else {
+	// 					let cancelOrder = {}
+	// 					try {
+	// 						cancelOrder = await this.Client.cancelOrder({
+	// 							symbol: pair,
+	// 							orderId: orderId,
+	// 							useServerTime: true
+	// 						});
+	// 						if(this.isOrderSell(side)) {
+	// 							this.recountQuantity(qty);
+	// 						}
+	// 						status = 'ok';
+	// 						message = `ордер ${cancelOrder.orderId} завершен`;
+	// 						res_status = CONSTANTS.PROCESS_STATUS.OK;
+	// 						if(resolve) resolve(message);
+	// 					} catch(error) {
+	// 						MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, order: {orderId: orderId, symbol: pair}, error, botID: this.botID, botTitle: this.botTitle, processId: this.processId, fnc: 'cancelOrder'});
+	// 						status = 'error';
+	// 						message = `ошибка при завершении ордера ${cancelOrder.orderId}`;
+	// 						res_status = CONSTANTS.PROCESS_STATUS.ERROR;
+	// 						_error = error;
+	// 						if(reject) reject(message);
+	// 					}
+						
+	// 					await this._log('закрытие ордера - ' + message);
+	// 					callback({ status, message, error: _error, res_status,
+	// 						data: { order: cancelOrder }
+	// 					});
+	// 				}
+	// 			} else {
+	// 				status = 'error';
+	// 				message = `Проблема с закрытием ордера ${orderId}`;
+	// 				res_status = CONSTANTS.PROCESS_STATUS.ERROR;
+	// 				data = order;
+	// 				if(reject) reject(message);
+	
+	// 				this.setErrors(order, message);
+	// 				callback({ status, res_status, message, data });
+	// 			}
+	// 		});
+
+	// 	} catch(error) {
+	// 		MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, error: error, order: {orderId: order.orderId, symbol: this.getSymbol(), order}, botID: this.botID, botTitle: this.botTitle, processId: this.processId, fnc: 'cancelOrder'})
+	// 		await this._log('закрытие ордера - ' + JSON.stringify(error));
+	// 		if(reject) reject(error);
+	// 		callback({
+	// 			status: 'error',
+	// 			error,
+	// 			message: error,
+	// 			res_status: CONSTANTS.PROCESS_STATUS.ERROR,
+	// 			data: { orderId: order.orderId }
+	// 		});
+	// 	}
+	// }
 
 	cloneDeep(obj) { // полное клонирование объекта
 		return Object.assign({}, obj);

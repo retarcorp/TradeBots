@@ -807,7 +807,7 @@ module.exports = class Bot {
 		return new Promise( (resolve, reject) => {
 			orderId = Number(orderId);
 			if(orderId && processId && this.processes[processId]) {
-				this.processes[processId].cancelOrder(orderId, async res => {
+				this.processes[processId].cancelOrder(orderId, undefined, undefined, async res => {
 					resolve(res);
 				});
 			} else {

@@ -133,7 +133,7 @@ export default {
                 }
             }
             if(!endTime && prc.orders && prc.orders.length) {
-                endTime = prc.orders[prc.orders.length - 1].time;
+                endTime = prc.orders[0].time;
             }
             if(sellOrder) {
                 ret = {
