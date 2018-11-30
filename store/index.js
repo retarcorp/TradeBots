@@ -37,7 +37,8 @@ const store = () =>
 		walletAddress: '',
 		userPayments: [],
 		usdExh: 0,
-		USDPrices: []
+		USDPrices: [],
+		symbolsInfo: []
 	},
 	getters: {
 		getUSDPrices(state) {
@@ -133,9 +134,20 @@ const store = () =>
 		},
 		getTariffList(state) {
 			return state.tariffList;
+		},
+		getSymbolsInfo(state) {
+			return state.symbolsInfo;
+		},
+		getSymbolInfo(state) {
+			return symbol => {
+				return state.symbolsInfo.find(elem => elem.symbol === symbol) || {};
+			} 
 		}
 	},
 	mutations: {
+		setSymbolsInfo(state, payload) {
+			state.symbolsInfo = payload;
+		},
 		setUserPayments(state, payload) {
 			state.userPayments = payload;
 		},
@@ -273,7 +285,23 @@ const store = () =>
             dispatch('getUserStatistics');
             dispatch('getUserMaxBotAmount');
             dispatch('firstGetBinanceAPI');
-            dispatch('getUSDPrices');
+			dispatch('getUSDPrices');
+			dispatch('getSymbolsInfo');
+		},
+		getSymbolsInfo({ commit, dispatch }) {
+			this.$axios
+				.$get('/api/data/getSymbolsInfo')
+				.then(res => {
+					if(res.status === 'ok') {
+						commit('setSymbolsInfo', res.data);
+						setTimeout(() => {
+							dispatch('getSymbolsInfo');
+						}, 60*60*1000);
+					} else {
+						console.log(res);
+					}
+				})
+				.catch(err => console.log(err));
 		},
 		getUSDPrices({ commit }) {
 			this.$axios

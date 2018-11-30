@@ -56,7 +56,7 @@ var Symbols = {
 
 			this.Client.prices()
 				.then(prices => {
-					Mongo.update({}, { prices , id: 123 }, CONSTANTS.SYMBOLS_PRICES_COLLECTION);
+					Mongo.update({}, { prices , id: 123 }, CONSTANTS.SYMBOLS_PRICES_COLLECTION, () => {console.log('updateSymbolsPricesList')});
 				})
 				.catch(error => {
 					_log({ name: 'updateSymbolsPricesList', error: error});

@@ -40,6 +40,7 @@
                     class="input settings__input"
                     :class="{ warn: !(bot.pair.from !== '' && bot.pair.from !== undefined) }"
                     @blur='checkContent'
+                    @change="checkValue('initialOrder')"
                 >
                     <option 
                         v-for="pair in filteredPairs" 
@@ -112,7 +113,8 @@
                     id="deviation" 
                     type="number" 
                     step='0.1'
-                    max='10' 
+                    :min="getMinDeviation()"
+                     
                     class="input settings__input"
                     :class="{ warn: !(bot.botSettings.deviation > 0) }"
                     @blur='checkContent'
@@ -125,8 +127,8 @@
                     @change="checkValue('stopLoss'); checkStopLoss()"
                     id="stop__loss" 
                     type="number" 
-                    min="0"
-                    max='10'
+                    :min="getMinDeviation()"
+                    
                     step='0.1'
                     class="input settings__input"
                     :class="{ warn: !(bot.botSettings.stopLoss >= 0) }"
@@ -139,8 +141,8 @@
                     @change="checkValue('takeProfit')" 
                     id="take__profit" 
                     type="number" 
-                    min="0"
-                    max='10' 
+                    :min="getMinDeviation()"
+                    
                     step='0.1' 
                     class="input settings__input"
                     :class="{ warn: !(bot.botSettings.takeProfit > 0) }"
@@ -267,31 +269,19 @@
         created() {
         },
         methods: {
+            getMinDeviation() {
+                if(this.bot.pair.to && this.bot.pair.from) {
+                    let symbol = this.bot.pair.from + this.bot.pair.to;
+                    let info = this.$store.getters.getSymbolInfo(symbol);
+                    return Number(info.limit) || 0;
+                } 
+                return 0;
+            },
             templateMessage(number) {
                 this.$store.commit('setStatus', 'info');
                 this.$store.commit('setMessage', `Максимальное значение данного поля - ${number}`);
             },
             checkValue(state) {
-                if( this.bot.botSettings.safeOrder.amount > 99 ) {
-                    this.bot.botSettings.safeOrder.amount = 99;
-                    this.templateMessage(99);
-                }
-                if( this.bot.botSettings.maxOpenSafetyOrders > 99 ) {
-                    this.bot.botSettings.maxOpenSafetyOrders = 99;
-                    this.templateMessage(99);
-                }
-                if( this.bot.botSettings.deviation > 10 ) {
-                    this.bot.botSettings.deviation = 10;
-                    this.templateMessage(10);
-                }
-                if( this.bot.botSettings.stopLoss > 99 ) {
-                    this.bot.botSettings.stopLoss = 99;
-                    this.templateMessage(10);
-                }
-                if( this.bot.botSettings.takeProfit > 10 ) {
-                    this.bot.botSettings.takeProfit = 10;
-                    this.templateMessage(10);
-                }
                 let bs = this.bot.botSettings;
                 const takeProfit = 'takeProfit',
                     initialOrder = 'initialOrder',
@@ -300,15 +290,38 @@
                     safeOrderAmount = 'safeOrderAmount',
                     deviation = 'deviation',
                     maxOrders = 'maxOrders';
-                switch(state) {
-                    case takeProfit: bs.takeProfit = bs.takeProfit < 0 ? 0 : bs.takeProfit; break;
-                    case initialOrder: bs.initialOrder = bs.initialOrder < 0 ? 0 : bs.initialOrder; break;
-                    case stopLoss: bs.stopLoss = bs.stopLoss < 0 ? 0 : bs.stopLoss; break;
-                    case safeOrderSize: bs.safeOrder.size = bs.safeOrder.size < 0 ? 0 : bs.safeOrder.size; break;
-                    case safeOrderAmount: bs.safeOrder.amount = bs.safeOrder.amount < 0 ? 0 : bs.safeOrder.amount; break;
-                    case deviation: bs.deviation = bs.deviation < 0 ? 0 : bs.deviation; break;
-                    case maxOrders: bs.maxOpenSafetyOrders = bs.maxOpenSafetyOrders < 0 ? 0 : bs.maxOpenSafetyOrders; break;
+                // switch(state) {
+                    /*case takeProfit: */bs.takeProfit = bs.takeProfit < this.getMinDeviation() ? this.getMinDeviation() : bs.takeProfit;// break;
+                    /*case initialOrder:*/ bs.initialOrder = bs.initialOrder < 0 ? 0 : bs.initialOrder;// break;
+                    /*case stopLoss: */bs.stopLoss = bs.stopLoss < this.getMinDeviation() ? this.getMinDeviation() : bs.stopLoss; //break;
+                    /*case safeOrderSize: */bs.safeOrder.size = bs.safeOrder.size < 0 ? 0 : bs.safeOrder.size; //break;
+                    /*case safeOrderAmount:*/ bs.safeOrder.amount = bs.safeOrder.amount < 0 ? 0 : bs.safeOrder.amount; //break;
+                    /*case deviation: */bs.deviation = bs.deviation < this.getMinDeviation() ? this.getMinDeviation() : bs.deviation; //break;
+                    /*case maxOrders:*/ bs.maxOpenSafetyOrders = bs.maxOpenSafetyOrders < 0 ? 0 : bs.maxOpenSafetyOrders; //break;
+                // }
+
+
+                if( bs.safeOrder.amount > 99 ) {
+                    bs.safeOrder.amount = 99;
+                    this.templateMessage(99);
                 }
+                if( bs.maxOpenSafetyOrders > 99 ) {
+                    bs.maxOpenSafetyOrders = 99;
+                    this.templateMessage(99);
+                }
+                // if( bs.deviation > 10 ) {
+                //     bs.deviation = 10;
+                //     this.templateMessage(10);
+                // }
+                if( bs.stopLoss > 99 ) {
+                    bs.stopLoss = 99;
+                    this.templateMessage(99);
+                }
+                // if( bs.takeProfit > 10 ) {
+                //     bs.takeProfit = 10;
+                //     this.templateMessage(10);
+                // }
+                
             },
             checkSafeOrderSize() {
                 this.bot.botSettings.safeOrder.size = this.bot.botSettings.safeOrder.size <= this.minNotional 

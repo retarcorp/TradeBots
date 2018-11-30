@@ -37,7 +37,9 @@
                     id="main__pair" 
                     type="text" 
                     class="input settings__input"
-                    @blur='checkContent'>
+                    @blur='checkContent'
+                    @change='checkValue()'
+                    >
                     <option 
                         v-for="pair in filteredPairs" 
                         :key="pair.id" 
@@ -109,7 +111,7 @@
                     id="stop__loss"
                     type="number"
                     step='0.1'
-                    min="0"
+                    :min="getMinDeviation()"
                     max='10'
                     class="input settings__input"
                     :class="{ warn: !(bot.botSettings.stopLoss >= 0) }"
@@ -120,7 +122,7 @@
                 <input 
                     v-model="bot.botSettings.takeProfit" 
                     @change="checkValue('takeProfit')" 
-                    min="0"
+                    :min="getMinDeviation()"
                     max='10' 
                     id="take__profit" 
                     type="number" 
@@ -279,8 +281,13 @@ export default {
         },
         filteredPairs() {
             if(this.bot.pair.to && this.$store.getters.getPairs) {
+                try {
                     return this.$store.getters.getPairs[this.bot.pair.to].sort();
-                } else return [];
+                } catch(err) {
+                    console.log(err, 1);
+                    return [];
+                }
+            } else return [];
         },
         currentBotsWeight() {
             return this.$store.getters.getCurrentBotsWeight;
@@ -296,32 +303,49 @@ export default {
         }
     },
     methods: {
+        getMinDeviation() {
+            if(this.bot.pair.to && this.bot.pair.requested.length) {
+                let limits = [];
+                for (let i = 0; i < this.bot.pair.requested.length; i++) {
+                    let symbol = this.bot.pair.requested[i] + this.bot.pair.to;
+                    let info = this.$store.getters.getSymbolInfo(symbol);
+                    limits.push(Number(info.limit));
+                }
+                try {
+                    limits.sort( (a, b) => b-a);
+                } catch(err) {
+                    console.log(err, 2);
+                }
+                return limits[0] || 0;
+            } 
+            return 0;
+        },
         templateMessage(number) {
             this.$store.commit('setStatus', 'info');
             this.$store.commit('setMessage', `Максимальное значение данного поля - ${number}`);
         },
         checkValue(state) {
-            if( this.bot.botSettings.stopLoss > 99 ) {
-                this.bot.botSettings.stopLoss = 99;
-                this.templateMessage(10);
-            }
-            if( this.bot.botSettings.takeProfit > 10 ) {
-                this.bot.botSettings.takeProfit = 10;
-                this.templateMessage(10);
-            }
             let bs = this.bot.botSettings;
             const takeProfit = 'takeProfit',
                 initialOrder = 'initialOrder',
                 stopLoss = 'stopLoss',
                 maxAmountPairsUsed = 'maxAmountPairsUsed';
                 // dailyVolumeBTC = 'dailyVolumeBTC';
-            switch(state) {
-                case takeProfit: bs.takeProfit = bs.takeProfit < 0 ? 0 : bs.takeProfit; break;
-                case initialOrder: bs.initialOrder = bs.initialOrder < 0 ? 0 : bs.initialOrder; break;
-                case stopLoss: bs.stopLoss = bs.stopLoss < 0 ? 0 : bs.stopLoss; break;
-                case maxAmountPairsUsed: bs.maxAmountPairsUsed = bs.maxAmountPairsUsed < 0 ? this.bot.pair.requested.length : bs.maxAmountPairsUsed; break;
+            // switch(state) {
+                /*case takeProfit: */bs.takeProfit = bs.takeProfit < this.getMinDeviation() ? this.getMinDeviation() : bs.takeProfit; //break;
+                /*case initialOrder:*/ bs.initialOrder = bs.initialOrder < 0 ? 0 : bs.initialOrder;// break;
+                /*case stopLoss: */bs.stopLoss = bs.stopLoss < this.getMinDeviation() ? this.getMinDeviation() : bs.stopLoss; //break;
+                /*case maxAmountPairsUsed:*/ bs.maxAmountPairsUsed = bs.maxAmountPairsUsed < 0 ? this.bot.pair.requested.length : bs.maxAmountPairsUsed; //break;
                 // case dailyVolumeBTC: bs.dailyVolumeBTC = bs.dailyVolumeBTC < 0 ? 0 : bs.dailyVolumeBTC; break;
+            // }
+            if( bs.stopLoss > 99 ) {
+                bs.stopLoss = 99;
+                this.templateMessage(10);
             }
+            // if( bs.takeProfit > 10 ) {
+            //     bs.takeProfit = 10;
+            //     this.templateMessage(10);
+            // }
         },
         checkMaxAmountPairsUsed() {
             this.bot.botSettings.maxAmountPairsUsed = this.bot.botSettings.maxAmountPairsUsed >= this.bot.pair.requested.length 

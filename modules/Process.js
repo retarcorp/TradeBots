@@ -1661,7 +1661,7 @@ module.exports = class Process {
 	}
 
 	getTakeProfit_forRecountSafeOrders() {
-		return (Number(this.botSettings.takeProfit) + CONSTANTS.BINANCE_FEE) / 100;
+		return (Number(this.botSettings.takeProfit) + 2 * CONSTANTS.BINANCE_FEE) / 100;
 	}
 
 	getSellOrder() {

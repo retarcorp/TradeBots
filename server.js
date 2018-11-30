@@ -36,7 +36,7 @@ Mongo.init()
 		})
 		await Symbols.initClient();
 		Symbols.updateSymbolsPriceFilter();
-		// Symbols.updateSymbolsPricesList();
+		Symbols.updateSymbolsPricesList();
 		Symbols.updateSymbolsList();
 		CoinMarketCap.dailyUpdatePrices();
 		LoggerViewer.syncLogData();
