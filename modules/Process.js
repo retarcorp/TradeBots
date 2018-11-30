@@ -1068,9 +1068,9 @@ module.exports = class Process {
 			amount++;
 			console.log(allPrices, amount)
 			let averagePrice = allPrices / amount;
-			averagePrice *= (1 + CONSTANTS.BINANCE_FEE / 100);
+			// averagePrice *= (1 + CONSTANTS.BINANCE_FEE / 100);
 			console.log('averagePrice', averagePrice);
-			return this.toDecimal(averagePrice, this.getDecimal());
+			return this.toDecimal(this.getProfitPrice(averagePrice), this.getDecimal());
 
 		} catch(error) {
 
