@@ -41,6 +41,7 @@ module.exports = class Process {
 		user = {},
 		botID = String(Date.now()),
 		botTitle = String(),
+		purchasedOrders = [],
 		errors = {
 			isExist: false,
 			description: null
@@ -70,6 +71,7 @@ module.exports = class Process {
 		this.botID = this.JSONclone(botID);
 		this.botTitle = this.JSONclone(botTitle);
 		this.errors = this.JSONclone(errors);
+		this.purchasedOrders = purchasedOrders;
 	}
 
 	JSONclone(object = {}) {
@@ -144,6 +146,7 @@ module.exports = class Process {
 
 							this.botSettings.firstBuyPrice = price;
 							this.botSettings.firstBuyTotal = cummulativeQuoteQtyWithoutFee;
+							this.purchasedOrders.push(newBuyOrder);
 							console.log(profitPrice, qty);
 							this.newSellOrder(profitPrice, CONSTANTS.ORDER_TYPE.LIMIT, qty, async newSellOrder => {
 								if(newSellOrder !== CONSTANTS.DISABLE_FLAG && newSellOrder.orderId) {
@@ -316,6 +319,7 @@ module.exports = class Process {
 									this.botSettings.firstBuyPrice = price;
 									this.botSettings.firstBuyTotal = cummulativeQuoteQtyWithoutFee;
 
+									this.purchasedOrders.push(newBuyOrder);
 									console.log(profitPrice, qty, 1);
 									this.newSellOrder(profitPrice, CONSTANTS.ORDER_TYPE.LIMIT, qty, async newSellOrder => {
 										if(newSellOrder !== CONSTANTS.DISABLE_FLAG) await this.updateProcess(user);
@@ -408,6 +412,7 @@ module.exports = class Process {
 
 	async isOrderFilling(order = {}, user = this.user) {
 		return new Promise( async (resolve, reject) => {
+			this.purchasedOrders.push(order);
 			this.cancelOrder(this.currentOrder, undefined, undefined, async result => {
 				console.log('after cancel current order')
 				
@@ -416,7 +421,7 @@ module.exports = class Process {
 					let orderQtyWithoutFee = Number(order.origQty) * (1 - CONSTANTS.BINANCE_FEE / 100);
 					this.recountQuantity(orderQtyWithoutFee);
 
-					let newProfitPrice = this.recountProfitPrice(order);
+					let newProfitPrice = this.recountProfitPrice();
 
 					this.newSellOrder(newProfitPrice, CONSTANTS.ORDER_TYPE.LIMIT, this.getQuantity(), async newSellOrder => {
 						if(newSellOrder.orderId) {
@@ -1041,35 +1046,20 @@ module.exports = class Process {
 		this.botSettings.currentOrder = String(Number(this.botSettings.currentOrder) + size);
 	}
 
-	recountProfitPrice(nextOrder = {}) {
+	recountProfitPrice() {
 		try {
-			let sefeOrders = this.safeOrders || [];
-			let allPrices = 0, amount = 0, allTotal = 0;
+			let purchasedOrders = this.purchasedOrders || [];
+			let allTotal = 0;
 			
-			sefeOrders.forEach(order => {
+			purchasedOrders.forEach(order => {
 				if(order.side === CONSTANTS.ORDER_SIDE.BUY && order.status === CONSTANTS.ORDER_STATUS.FILLED) {
-					allPrices += Number(order.price);
 					allTotal += Number(order.cummulativeQuoteQty);
-					amount++;
 				}
 			});
-			// allPrices += Number(nextOrder.price);
-			// allTotal += Number(nextOrder.cummulativeQuoteQty);
-			// amount++;
-			// allPrices += Number(this.botSettings.firstBuyPrice);
-			allTotal += Number(this.botSettings.firstBuyTotal);
-			// amount++;
-			console.log(allPrices, amount, allTotal)
-			// let averagePrice = allPrices / amount;
-			// averagePrice *= (1 + CONSTANTS.BINANCE_FEE / 100);
 
 			let price_total = allTotal / this.botSettings.quantity;
 			let price_profit = this.toDecimal(this.getProfitPrice(price_total), this.getDecimal(), true, true);
 			return price_profit;
-
-			// console.log('averagePrice', averagePrice);
-			// return this.toDecimal(this.getProfitPrice(averagePrice), this.getDecimal(), true, true);
-
 		} catch(error) {
 
 			MDBLogger.error(error, 'RECOUNTPROFITPRICE');
@@ -1657,7 +1647,7 @@ module.exports = class Process {
 
 
 		// price = Number(price);
-		let takeProfit = this.getTakeProfit(),
+		let takeProfit = this.getTakeProfit_forRecountSafeOrders(),
 			decimal = this.getDecimal(flag);
 		
 		price = Number(price);
@@ -1671,7 +1661,7 @@ module.exports = class Process {
 	}
 
 	getTakeProfit_forRecountSafeOrders() {
-		return (Number(this.botSettings.takeProfit) +  2 * CONSTANTS.BINANCE_FEE) / 100;
+		return (Number(this.botSettings.takeProfit) + CONSTANTS.BINANCE_FEE) / 100;
 	}
 
 	getSellOrder() {
