@@ -1679,7 +1679,7 @@ module.exports = class Process {
 	}
 
 	getTakeProfit() {
-		return (Number(this.botSettings.takeProfit) +  4 * CONSTANTS.BINANCE_FEE) / 100;
+		return (Number(this.botSettings.takeProfit) +  3 * CONSTANTS.BINANCE_FEE) / 100;
 	}
 
 	getTakeProfit_forRecountSafeOrders() {
