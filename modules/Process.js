@@ -143,6 +143,8 @@ module.exports = class Process {
 							await this.awaitFreeze();
 
 							this.botSettings.firstBuyPrice = price;
+							this.botSettings.firstBuyPrice_ = Number(newBuyOrder.price);
+
 							console.log(profitPrice, qty);
 							this.newSellOrder(profitPrice, CONSTANTS.ORDER_TYPE.LIMIT, qty, async newSellOrder => {
 								if(newSellOrder !== CONSTANTS.DISABLE_FLAG && newSellOrder.orderId) {
@@ -313,6 +315,7 @@ module.exports = class Process {
 									await this.awaitFreeze();
 									
 									this.botSettings.firstBuyPrice = price;
+									this.botSettings.firstBuyPrice_ = Number(newBuyOrder.price);
 
 									console.log(profitPrice, qty, 1);
 									this.newSellOrder(profitPrice, CONSTANTS.ORDER_TYPE.LIMIT, qty, async newSellOrder => {
@@ -1064,7 +1067,7 @@ module.exports = class Process {
 			});
 			allPrices += Number(nextOrder.price);
 			amount++;
-			allPrices += Number(this.botSettings.firstBuyPrice);
+			allPrices += Number(this.botSettings.firstBuyPrice_);
 			amount++;
 			console.log(allPrices, amount)
 			let averagePrice = allPrices / amount;
@@ -1145,6 +1148,7 @@ module.exports = class Process {
 
 		this.botSettings.currentOrder = this.botSettings.initialOrder;
 		this.botSettings.firstBuyPrice = 0;
+		// this.botSettings.firstBuyPrice_ = 0;
 		// this.runningProcess = false;
 		// if(this.symbol) 
 		this.orders = await this.updateOrders(this.orders);
@@ -1579,7 +1583,7 @@ module.exports = class Process {
 
 	getStopPrice() {
 		let stopLoss = this.getStopLoss(),
-			price = this.botSettings.firstBuyPrice,
+			price = this.botSettings.firstBuyPrice_,
 			decimal = this.getDecimal(),
 			stopPrice = stopLoss ? price * ( 1 - stopLoss) : 0;
 		return this.toDecimal(stopPrice, decimal);
