@@ -143,6 +143,7 @@ module.exports = class Process {
 							await this.awaitFreeze();
 
 							this.botSettings.firstBuyPrice = price;
+							this.botSettings.firstBuyTotal = cummulativeQuoteQtyWithoutFee;
 							console.log(profitPrice, qty);
 							this.newSellOrder(profitPrice, CONSTANTS.ORDER_TYPE.LIMIT, qty, async newSellOrder => {
 								if(newSellOrder !== CONSTANTS.DISABLE_FLAG && newSellOrder.orderId) {
@@ -313,6 +314,7 @@ module.exports = class Process {
 									await this.awaitFreeze();
 									
 									this.botSettings.firstBuyPrice = price;
+									this.botSettings.firstBuyTotal = cummulativeQuoteQtyWithoutFee;
 
 									console.log(profitPrice, qty, 1);
 									this.newSellOrder(profitPrice, CONSTANTS.ORDER_TYPE.LIMIT, qty, async newSellOrder => {
@@ -1054,23 +1056,31 @@ module.exports = class Process {
 		// return this.toDecimal(proffitTotal / newQty, this.getDecimal(), true, true);
 		try {
 			let sefeOrders = this.safeOrders || [];
-			let allPrices = 0, amount = 0;
+			let allPrices = 0, amount = 0, allTotal = 0;
 			
 			sefeOrders.forEach(order => {
 				if(order.side === CONSTANTS.ORDER_SIDE.BUY && order.status === CONSTANTS.ORDER_STATUS.FILLED) {
 					allPrices += Number(order.price);
+					allTotal += Number(order.cummulativeQuoteQty);
 					amount++;
 				}
 			});
 			allPrices += Number(nextOrder.price);
+			allTotal += Number(nextOrder.cummulativeQuoteQty);
 			amount++;
 			allPrices += Number(this.botSettings.firstBuyPrice);
+			allTotal += Number(this.botSettings.firstBuyTotal);
 			amount++;
-			console.log(allPrices, amount)
+			console.log(allPrices, amount, allTotal)
 			let averagePrice = allPrices / amount;
 			// averagePrice *= (1 + CONSTANTS.BINANCE_FEE / 100);
-			console.log('averagePrice', averagePrice);
-			return this.toDecimal(this.getProfitPrice(averagePrice), this.getDecimal(), true, true);
+
+			let price_total = allTotal / this.botSettings.quantity;
+			let price_profit = this.toDecimal(this.getProfitPrice(price_total), this.getDecimal(), true, true);
+			return price_profit;
+
+			// console.log('averagePrice', averagePrice);
+			// return this.toDecimal(this.getProfitPrice(averagePrice), this.getDecimal(), true, true);
 
 		} catch(error) {
 
