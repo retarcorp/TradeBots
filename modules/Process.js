@@ -1042,18 +1042,6 @@ module.exports = class Process {
 	}
 
 	recountProfitPrice(nextOrder = {}) {
-		// console.log(this.currentOrder)
-		// let curTotal = Number(this.currentOrder.origQty) * Number(this.currentOrder.price) * (1 - CONSTANTS.BINANCE_FEE/100);
-		// let additionalTotal = Number(nextOrder.origQty) * Number(nextOrder.price) * (1 - CONSTANTS.BINANCE_FEE/100);
-		// let averageTotal = (curTotal + additionalTotal) / 2;
-		// let proffitTotal = this.toDecimal(averageTotal * (1 + this.getTakeProfit()), this.getDecimal());
-		// console.log(curTotal, additionalTotal, averageTotal, proffitTotal)
-
-		// let curQty = Number(this.currentOrder.origQty);
-		// let	additionalQty = Number(nextOrder.origQty * (1 - CONSTANTS.BINANCE_FEE/100));
-		// let	newQty = this.toDecimal((curQty + additionalQty), this.getDecimal(false), true);
-		// console.log(curQty, additionalQty, newQty)
-		// return this.toDecimal(proffitTotal / newQty, this.getDecimal(), true, true);
 		try {
 			let sefeOrders = this.safeOrders || [];
 			let allPrices = 0, amount = 0, allTotal = 0;
@@ -1065,14 +1053,14 @@ module.exports = class Process {
 					amount++;
 				}
 			});
-			allPrices += Number(nextOrder.price);
-			allTotal += Number(nextOrder.cummulativeQuoteQty);
-			amount++;
-			allPrices += Number(this.botSettings.firstBuyPrice);
+			// allPrices += Number(nextOrder.price);
+			// allTotal += Number(nextOrder.cummulativeQuoteQty);
+			// amount++;
+			// allPrices += Number(this.botSettings.firstBuyPrice);
 			allTotal += Number(this.botSettings.firstBuyTotal);
-			amount++;
+			// amount++;
 			console.log(allPrices, amount, allTotal)
-			let averagePrice = allPrices / amount;
+			// let averagePrice = allPrices / amount;
 			// averagePrice *= (1 + CONSTANTS.BINANCE_FEE / 100);
 
 			let price_total = allTotal / this.botSettings.quantity;
@@ -1679,7 +1667,7 @@ module.exports = class Process {
 	}
 
 	getTakeProfit() {
-		return (Number(this.botSettings.takeProfit) +  3 * CONSTANTS.BINANCE_FEE) / 100;
+		return (Number(this.botSettings.takeProfit) +  2 * CONSTANTS.BINANCE_FEE) / 100;
 	}
 
 	getTakeProfit_forRecountSafeOrders() {
