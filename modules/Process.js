@@ -1064,21 +1064,25 @@ module.exports = class Process {
 			});
 			allPrices += Number(nextOrder.price);
 			amount++;
+			allPrices += Number(this.botSettings.firstBuyPrice);
+			amount++;
 			console.log(allPrices, amount)
 			let averagePrice = allPrices / amount;
 			averagePrice *= (1 + CONSTANTS.BINANCE_FEE / 100);
 			console.log('averagePrice', averagePrice);
 			return this.toDecimal(averagePrice, this.getDecimal());
+
 		} catch(error) {
+
 			MDBLogger.error(error, 'RECOUNTPROFITPRICE');
-			let prevProfitPrice = Number(this.currentOrder.price),
-				nextProfitPrice = Number(this.getProfitPrice_forRecountSafeOrders(nextOrder.price)),
-				averagePrice = (prevProfitPrice + (nextProfitPrice)) / 2,
-				newProfitPrice = Number(averagePrice);
+			let _prevProfitPrice = Number(this.currentOrder.price),
+				_nextProfitPrice = Number(this.getProfitPrice_forRecountSafeOrders(nextOrder.price)),
+				_averagePrice = (_prevProfitPrice + (_nextProfitPrice)) / 2,
+				_newProfitPrice = Number(_averagePrice);
 	
-			newProfitPrice = this.toDecimal(newProfitPrice, this.getDecimal());
+			_newProfitPrice = this.toDecimal(_newProfitPrice, this.getDecimal());
 	
-			return newProfitPrice;
+			return _newProfitPrice;
 		} 
 
 
@@ -1665,11 +1669,11 @@ module.exports = class Process {
 	}
 
 	getTakeProfit() {
-		return (Number(this.botSettings.takeProfit) +  3 * CONSTANTS.BINANCE_FEE) / 100;
+		return (Number(this.botSettings.takeProfit) +  2 * CONSTANTS.BINANCE_FEE) / 100;
 	}
 
 	getTakeProfit_forRecountSafeOrders() {
-		return (Number(this.botSettings.takeProfit) +  3 * CONSTANTS.BINANCE_FEE) / 100;
+		return (Number(this.botSettings.takeProfit) +  2 * CONSTANTS.BINANCE_FEE) / 100;
 	}
 
 	getSellOrder() {
