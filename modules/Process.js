@@ -1039,7 +1039,7 @@ module.exports = class Process {
 		this.botSettings.currentOrder = String(Number(this.botSettings.currentOrder) + size);
 	}
 
-	recountProfitPrice(nextOrder) {
+	recountProfitPrice(nextOrder = {}) {
 		// console.log(this.currentOrder)
 		// let curTotal = Number(this.currentOrder.origQty) * Number(this.currentOrder.price) * (1 - CONSTANTS.BINANCE_FEE/100);
 		// let additionalTotal = Number(nextOrder.origQty) * Number(nextOrder.price) * (1 - CONSTANTS.BINANCE_FEE/100);
@@ -1052,17 +1052,36 @@ module.exports = class Process {
 		// let	newQty = this.toDecimal((curQty + additionalQty), this.getDecimal(false), true);
 		// console.log(curQty, additionalQty, newQty)
 		// return this.toDecimal(proffitTotal / newQty, this.getDecimal(), true, true);
+		try {
+			let sefeOrders = this.safeOrders || [];
+			let allPrices = 0, amount = 0;
+			
+			sefeOrders.forEach(order => {
+				if(order.side === CONSTANTS.ORDER_SIDE.BUY && order.status === CONSTANTS.ORDER_STATUS.FILLED) {
+					allPrices += Number(order.price);
+					amount++;
+				}
+			});
+			allPrices += Number(nextOrder.price);
+			amount++;
+			console.log(allPrices, amount)
+			let averagePrice = allPrices / amount;
+			averagePrice *= (1 + CONSTANTS.BINANCE_FEE / 100);
+			console.log('averagePrice', averagePrice);
+			return this.toDecimal(averagePrice, this.getDecimal());
+		} catch(error) {
+			MDBLogger.error(error, 'RECOUNTPROFITPRICE');
+			let prevProfitPrice = Number(this.currentOrder.price),
+				nextProfitPrice = Number(this.getProfitPrice_forRecountSafeOrders(nextOrder.price)),
+				averagePrice = (prevProfitPrice + (nextProfitPrice)) / 2,
+				newProfitPrice = Number(averagePrice);
+	
+			newProfitPrice = this.toDecimal(newProfitPrice, this.getDecimal());
+	
+			return newProfitPrice;
+		} 
 
 
-
-		let prevProfitPrice = Number(this.currentOrder.price),
-			nextProfitPrice = Number(this.getProfitPrice_forRecountSafeOrders(nextOrder.price)),
-			averagePrice = (prevProfitPrice + (nextProfitPrice)) / 2,
-			newProfitPrice = Number(averagePrice);
-
-		newProfitPrice = this.toDecimal(newProfitPrice, this.getDecimal());
-
-		return newProfitPrice;
 	}
 	
 	countDecimalNumber(x = 0) {
