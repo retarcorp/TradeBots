@@ -282,7 +282,7 @@ module.exports = class Process {
 						let currentOrderStatus = this.currentOrder.status;
 						if(this.checkFilling(currentOrderStatus) && !this.isFreeze()) {
 							console.log('curOrder is filling');
-							uncolsedOrders = [];
+							let uncolsedOrders = [];
 							await this.cancelOrders(this.safeOrders, result => {
 								if(this.isError2011(result.error)) {
 									uncolsedOrders.push(order);
