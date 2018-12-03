@@ -655,9 +655,14 @@ let Users = {
 							});
 
 							try {
-								let res = await this.Bots[index].changeStatus(botData.status, data, reservedBalance);
-								callback(res);
+								if(index >= 0) {
+									let res = await this.Bots[index].changeStatus(botData.status, data, reservedBalance);
+									callback(res);
+								} else {
+									callback({status:'error', error: 'невозможно найти бота'});
+								}
 							} catch(err) {
+								console.log(err)
 								callback({status:'error', error: err, message: 'Чтото не так'});
 							}
 						} else callback(M.getFailureMessage({message: 'Срок действия активных тарифов окончен.'}));
