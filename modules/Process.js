@@ -268,7 +268,7 @@ module.exports = class Process {
 		console.log()
 		console.log()
 		console.log()
-		console.log('       trade')
+		console.log('       trade, ', this.botTitle)
 		if(this.currentOrder.orderId) {	
 			console.log('__')
 
@@ -366,6 +366,7 @@ module.exports = class Process {
 				const tenMin = 600000;
 
 				this.getOrder(this.currentOrder.orderId, async cOrd => {
+					console.log(this.botTitle, cOrd)
 					if(cOrd.orderId) {
 						this.currentOrder = cOrd;
 						let currentOrderStatus = this.currentOrder.status;
