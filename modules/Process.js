@@ -42,6 +42,7 @@ module.exports = class Process {
 		botID = String(Date.now()),
 		botTitle = String(),
 		purchasedOrders = [],
+		requiredProffit = 0,
 		errors = {
 			isExist: false,
 			description: null
@@ -67,11 +68,12 @@ module.exports = class Process {
 		this.nextProcessSettings = this.JSONclone(nextProcessSettings);
 		this.log = this.JSONclone(log);
 		if(user.name) this.setClient(user, true);
-		this.user = user;
+		this.user = this.JSONclone(user);
 		this.botID = this.JSONclone(botID);
 		this.botTitle = this.JSONclone(botTitle);
 		this.errors = this.JSONclone(errors);
-		this.purchasedOrders = purchasedOrders;
+		this.requiredProffit = this.JSONclone(requiredProffit);
+		this.purchasedOrders = this.JSONclone(purchasedOrders);
 	}
 
 	JSONclone(object = {}) {
@@ -135,7 +137,7 @@ module.exports = class Process {
 							let orderQtyWithoutFee = Number(newBuyOrder.origQty) * (1 - CONSTANTS.BINANCE_FEE / 100); 
 							let qty = this.setQuantity(undefined, orderQtyWithoutFee);
 							console.log(orderQtyWithoutFee, qty)
-							let price = Number(newBuyOrder.price),//this.countFirstBuyPrice(newBuyOrder),
+							let price = this.countFirstBuyPrice(newBuyOrder),
 								cummulativeQuoteQty = Number(newBuyOrder.cummulativeQuoteQty),
 								cummulativeQuoteQtyWithoutFee = Number(cummulativeQuoteQty) * (1 - CONSTANTS.BINANCE_FEE / 100),
 								proffitCummulativeQuoteQty = cummulativeQuoteQtyWithoutFee * ( 1 + this.getTakeProfit()),
@@ -143,7 +145,7 @@ module.exports = class Process {
 							console.log(qty, profitPrice)
 							console.log('???')
 							await this.awaitFreeze();
-
+							this.requiredProffit = cummulativeQuoteQtyWithoutFee * this.getTakeProfit();
 							this.botSettings.firstBuyPrice = price;
 							this.botSettings.firstBuyTotal = cummulativeQuoteQtyWithoutFee;
 							this.purchasedOrders.push(newBuyOrder);
@@ -307,7 +309,7 @@ module.exports = class Process {
 									let orderQtyWithoutFee = Number(newBuyOrder.origQty) * (1 - CONSTANTS.BINANCE_FEE / 100); 
 									let qty = this.setQuantity(undefined, orderQtyWithoutFee);
 
-									let price = Number(newBuyOrder.price),//this.countFirstBuyPrice(newBuyOrder),
+									let price = this.countFirstBuyPrice(newBuyOrder),
 										cummulativeQuoteQty = Number(newBuyOrder.cummulativeQuoteQty),
 										cummulativeQuoteQtyWithoutFee = Number(cummulativeQuoteQty) * (1 - CONSTANTS.BINANCE_FEE / 100),
 										proffitCummulativeQuoteQty = cummulativeQuoteQtyWithoutFee * ( 1 + this.getTakeProfit()),
@@ -316,6 +318,7 @@ module.exports = class Process {
 						
 									await this.awaitFreeze();
 									
+									this.requiredProffit = cummulativeQuoteQtyWithoutFee * this.getTakeProfit();
 									this.botSettings.firstBuyPrice = price;
 									this.botSettings.firstBuyTotal = cummulativeQuoteQtyWithoutFee;
 
@@ -410,7 +413,7 @@ module.exports = class Process {
 		});
 	}
 
-	async isOrderFilling(order = {}, user = this.user) {
+	async isOrderFilled(order = {}, user = this.user) {
 		return new Promise( async (resolve, reject) => {
 			this.purchasedOrders.push(order);
 			this.cancelOrder(this.currentOrder, undefined, undefined, async result => {
@@ -449,12 +452,12 @@ module.exports = class Process {
 									}
 								} catch(error) {
 									await this._log("Невозможно выставить страховочный ордер " + JSON.stringify(error));
-									MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, error, botID: this.botID, botTitle: this.botTitle, processId: this.processId, fnc: 'isOrderFilling__'});
+									MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, error, botID: this.botID, botTitle: this.botTitle, processId: this.processId, fnc: 'isOrderFilled__'});
 									resolve([]);
 								}
 							}
 						} else {
-							MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, newSellOrder, botID: this.botID, botTitle: this.botTitle, processId: this.processId, fnc: 'isOrderFilling__'});
+							MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, newSellOrder, botID: this.botID, botTitle: this.botTitle, processId: this.processId, fnc: 'isOrderFilled__'});
 							await this._log(`невозможно выставить sell ордер (${JSON.stringify(newSellOrder)})`);
 							await this.disableProcess(CONSTANTS.PROCESS_STATUS.ERROR, "Ошибка при выставлении нового sell ордера после покупки страховочного!");
 							await this.updateProcess(user);
@@ -467,7 +470,7 @@ module.exports = class Process {
 					});
 
 				} else {
-					MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, botID: this.botID, botTitle: this.botTitle, processId: this.processId, result, fnc: 'isOrderFilling_'});
+					MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, botID: this.botID, botTitle: this.botTitle, processId: this.processId, result, fnc: 'isOrderFilled_'});
 					if(this.isError2011(result)) {
 						await this._log(`Ордер ${order.orderId}(${order.price}, ${order.side}) невозможно отменить (статус - ${order.status})`);
 					}
@@ -511,13 +514,13 @@ module.exports = class Process {
 								if(this.checkFilling(order.status)) {
 									console.log('safe order is filling')
 									try {
-										resf = await this.isOrderFilling(order, user);
+										resf = await this.isOrderFilled(order, user);
 										if(resf.length >= 0) {
 											nextSafeOrders.push(...resf);
 											resf = '';
 										}
 									} catch(error) {
-										MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, botID: this.botID, botTitle: this.botTitle, processId: this.processId, error: JSON.stringify(error), fnc: 'process___isOrderFilling'});
+										MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, botID: this.botID, botTitle: this.botTitle, processId: this.processId, error: JSON.stringify(error), fnc: 'process___isOrderFilled'});
 										resf = '';
 										if(error.status === 'finish') {
 											break;
@@ -1046,6 +1049,11 @@ module.exports = class Process {
 		this.botSettings.currentOrder = String(Number(this.botSettings.currentOrder) + size);
 	}
 
+	getTP(total = Number()) {
+		total = Number(total);
+		return Number(this.requiredProffit) / total;
+	}
+
 	recountProfitPrice() {
 		try {
 			let purchasedOrders = this.purchasedOrders || [];
@@ -1057,20 +1065,23 @@ module.exports = class Process {
 				}
 			});
 
-			let price_total = allTotal / this.botSettings.quantity;
-			let price_profit = this.toDecimal(this.getProfitPrice(price_total), this.getDecimal(), true, true);
-			return price_profit;
+			let take_proffit = this.getTP(allTotal);
+			let total_proffit = allTotal * (1 + take_proffit +  2 *this.BINANCE_FEE / 100);
+			let price_proffit = this.toDecimal(total_proffit / this.botSettings.quantity, this.getDecimal(), true, true);
+
+			return price_proffit;
+
 		} catch(error) {
 
-			MDBLogger.error(error, 'RECOUNTPROFITPRICE');
-			let _prevProfitPrice = Number(this.currentOrder.price),
-				_nextProfitPrice = Number(this.getProfitPrice(nextOrder.price)),
-				_averagePrice = (_prevProfitPrice + (_nextProfitPrice)) / 2,
-				_newProfitPrice = Number(_averagePrice);
+			MDBLogger.error(error, 'RECOUNTPROFFITPRICE');
+			let _prevProffitPrice = Number(this.currentOrder.price),
+				_nextProffitPrice = Number(this.getProffitPrice(nextOrder.price)),
+				_averagePrice = (_prevProffitPrice + (_nextProffitPrice)) / 2,
+				_newProffitPrice = Number(_averagePrice);
 	
-			_newProfitPrice = this.toDecimal(_newProfitPrice, this.getDecimal());
+			_newProffitPrice = this.toDecimal(_newProffitPrice, this.getDecimal());
 	
-			return _newProfitPrice;
+			return _newProffitPrice;
 		} 
 
 
@@ -1623,7 +1634,7 @@ module.exports = class Process {
 		return Number(this.botSettings.maxOpenSafetyOrders);
 	}
 
-	getProfitPrice_forRecountSafeOrders(price = 0) {
+	getProffitPrice_forRecountSafeOrders(price = 0) {
 		let takeProfit = this.getTakeProfit_forRecountSafeOrders(),
 			decimal = this.getDecimal();
 		
@@ -1633,7 +1644,7 @@ module.exports = class Process {
 		return this.toDecimal(profitPrice, decimal);
 	}
 
-	getProfitPrice(price = 0, flag = true) {
+	getProffitPrice(price = 0, flag = true) {
 		// купил за 0.0190 901 штуку
 		// после коммисии у меня 900 штук
 		// нужно продать 900 штук так, чтобы выйти в плюс на 1% (0.01)
