@@ -71,7 +71,7 @@ module.exports = class Bot {
 			log('continueTrade in manual')
 
 			for (let processId in this.processes) {
-				console.log(this.processes[processId] && this.processes[processId].runningProcess, this.title)
+				console.log(processId, this.processes[processId] && this.processes[processId].runningProcess, this.processes[processId].runningProcess, this.title)
 				if(this.processes[processId] && this.processes[processId].runningProcess) {
 					this.processes[processId] = new Process(this.processes[processId]);
 					this.processes[processId].continueTrade(user)
