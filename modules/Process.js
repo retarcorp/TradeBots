@@ -26,6 +26,7 @@ module.exports = class Process {
 		freeze = CONSTANTS.BOT_FREEZE_STATUS.INACTIVE,
 		finalProcessStatus = CONSTANTS.PROCESS_STATUS.NEUTRAL,
 		preFreeze = freeze,
+		unsoldOrdersFlag = false,
 		currentOrder = {},
 		orders = [],
 		// dealOrders = [],
@@ -74,6 +75,7 @@ module.exports = class Process {
 		this.errors = this.JSONclone(errors);
 		this.requiredProffit = this.JSONclone(requiredProffit);
 		this.purchasedOrders = this.JSONclone(purchasedOrders);
+		this.unsoldOrdersFlag = this.JSONclone(unsoldOrdersFlag);
 	}
 
 	JSONclone(object = {}) {
@@ -213,8 +215,52 @@ module.exports = class Process {
 		}
 	}
 
-	async checkUnsoldOrders() {
-		
+	async checkUnsoldOrders(uncolsedOrders = []) {
+		return new Promise( (resolve, reject) => {
+			if(uncolsedOrders.length) {
+				let allTotal = 0, allQty = 0;
+				uncolsedOrders.forEach(order => {
+					if(this.isOrderBuy(order.side) && this.checkFilling(order.status)) {
+						allTotal += Number(order.cummulativeQuoteQty);
+						allQty += Number(order.origQty) * (1 - CONSTANTS.BINANCE_FEE / 100);
+					}
+				});
+
+				let take_proffit = this.getTP(allTotal);
+				let total_proffit = allTotal * (1 + take_proffit +  2 *this.BINANCE_FEE / 100);
+				let price_proffit = this.toDecimal(total_proffit / allQty, this.getDecimal(), true, true);
+
+				this.newSellOrder(price_proffit, CONSTANTS.ORDER_TYPE.LIMIT, allQty, async newSellOrder => {
+					if(newSellOrder !== CONSTANTS.DISABLE_FLAG && newSellOrder.orderId) {
+						this.currentOrder = newSellOrder;
+						this.orders.push(newSellOrder);
+
+						this.safeOrders = [];
+						this.setQuantity(undefined, allQty);
+						this.unsoldOrdersFlag = true;
+	
+						await this.updateProcess(user);
+						resolve({
+							status: 'ok'
+						});
+					} else {
+						await this.updateProcess(user);
+						reject({
+							status: 'error',
+							message: 'Невозможно продать монеты.',
+							processStatus: CONSTANTS.PROCESS_STATUS.ERROR
+						});
+					}
+				});
+
+			} else {
+				reject({
+					status: 'ok',
+					message: 'Процесс удачно завершён.',
+					processStatus: CONSTANTS.PROCESS_STATUS.OK
+				});
+			}
+		});
 	}
 
 	async trade(user = this.user, flag = false, resolve = () => {}, reject = () => {}, tickTime = 0) {
@@ -235,11 +281,31 @@ module.exports = class Process {
 						this.currentOrder = tmpCurOrd;
 						let currentOrderStatus = this.currentOrder.status;
 						if(this.checkFilling(currentOrderStatus) && !this.isFreeze()) {
-							console.log('curOrder is filling')
-							await this.disableProcess(CONSTANTS.PROCESS_STATUS.OK, 'Процесс удачно завершён.');
-							await this.updateProcess(user);
-							resolve('finish');
-	
+							console.log('curOrder is filling');
+							uncolsedOrders = [];
+							await this.cancelOrders(this.safeOrders, result => {
+								if(this.isError2011(result.error)) {
+									uncolsedOrders.push(order);
+								}
+							});
+							this.checkUnsoldOrders(uncolsedOrders)
+								.then(async result => {
+									if(result.status === 'ok') {
+										this.sleep(CONSTANTS.TIMEOUT, () => {
+											this.trade(user, false, resolve, reject);
+										});
+									} else {
+										await this.disableProcess(result.processStatus, result.message, false);
+										await this.updateProcess(user);
+										resolve('finish');
+									}
+								})
+								.catch(async error => {
+									await this.disableProcess(error.processStatus, error.message, false);
+									await this.updateProcess(user);
+									resolve('finish');
+								});
+
 						} else if(this.checkFailing(currentOrderStatus) && !this.isFreeze()) {
 							console.log('curOrder is failing')
 							await this.disableProcess(CONSTANTS.PROCESS_STATUS.CANCEL, 'Процесс завершен (ордер отменен).');
@@ -292,9 +358,7 @@ module.exports = class Process {
 						this.setErrors(tmpCurOrd, `Проблемы с получением информации об ордере! ${this.currentOrder.orderId}`);
 						await this.disableProcess(CONSTANTS.PROCESS_STATUS.ERROR, `Проблемы с получением информации об ордере! ${this.currentOrder.orderId}`);
 						await this.updateProcess(user);
-						this.sleep(CONSTANTS.TIMEOUT, () => {
-							reject('finish');
-						});
+						reject('finish');
 					}
 				});
 				
@@ -572,7 +636,7 @@ module.exports = class Process {
 				
 			} else if(this.isFreeze() && !this.isPreFreeze()) {
 				//тип вроде нихуя делать не надо ибо бот заморожен
-			await this.updateProcess(user);
+				await this.updateProcess(user);
 				resolve('');
 			} else if(!this.isFreeze() && this.isPreFreeze() && this.isNeedToOpenNewSafeOrders()) {
 				//тип надо выставить некст сейв ордер, если еще можно
@@ -595,24 +659,30 @@ module.exports = class Process {
 				}
 			} else {
 				try {
-					let price = await this.getLastPrice(),
-						stopPrice = this.getStopPrice();
-					
-					console.log('check stoploss', stopPrice, price)
-					await this._log(`Проверка stoploss. (${stopPrice})`);
-		
-					if(stopPrice > price) {
-						console.log('stoploss are reached')
-						await this._log(`Stoploss пройден.`);
-						await this.cancelAllOrders(user, async result => {
-							await this.disableProcess(result.res_status, result.message);
+					const stopPrice = this.getStopPrice();
+					if(stopPrice) {
+						let price = await this.getLastPrice();
+						
+						console.log('check stoploss', stopPrice, price)
+						await this._log(`Проверка stoploss. (${stopPrice})`);
+			
+						if(price && stopPrice > price) {
+							console.log('stoploss are reached')
+							await this._log(`Stoploss пройден.`);
+							await this.cancelAllOrders(user, async result => {
+								await this.disableProcess(result.res_status, result.message);
+								await this.updateProcess(user);
+								resolve('');
+							});
+						} else {
 							await this.updateProcess(user);
 							resolve('');
-						});
-					} else {
-						await this.updateProcess(user);
-						resolve('');
+						}
+						return null;
 					}
+					await this.updateProcess(user);
+					resolve('');
+
 				} catch(error) {
 					MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, botID: this.botID, botTitle: this.botTitle, processId: this.processId, error, fnc: 'process__else_'});
 					await this._log(JSON.stringify(error));
@@ -620,8 +690,6 @@ module.exports = class Process {
 					resolve('');
 				}
 			}
-			// sleep(CONSTANTS.TIMEOUT);
-			// resolve('');
 		});
 	}
 
@@ -821,7 +889,7 @@ module.exports = class Process {
 					this.newBuyOrder(price, type, quantity, isSafe, callback, error, amount);
 				});
 			} else if(result.order === 'disable') {
-				await this.disableProcess(CONSTANTS.PROCESS_STATUS.ERROR, 'Невозможно купить монеты (Недостаточно средств на балансе)');
+				// await this.disableProcess(CONSTANTS.PROCESS_STATUS.ERROR, 'Невозможно купить монеты (Недостаточно средств на балансе)');
 				callback(result.order);
 			} else {
 				callback(result.order);
@@ -922,7 +990,7 @@ module.exports = class Process {
 					this.newSellOrder(price, type, quantity, callback, error, amount);
 				});
 			} else if(result.order === 'disable') {
-				await this.disableProcess(CONSTANTS.PROCESS_STATUS.ERROR, 'Невозможно продать монеты');
+				// await this.disableProcess(CONSTANTS.PROCESS_STATUS.ERROR, 'Невозможно продать монеты');
 				callback(result.order);
 			} else {
 				callback(result.order);
@@ -1126,41 +1194,42 @@ module.exports = class Process {
 		this.updateStatus = false;
 	}
 
-	async disableProcess(_status = CONSTANTS.PROCESS_STATUS.NEUTRAL, message = '', finalCancelFlag = true) {
+	async disableProcess(_status = CONSTANTS.PROCESS_STATUS.NEUTRAL, message = '', cancelOrdersFlag = true) {
 		console.log('disableProcess', message)
 		console.log(this.currentOrder.orderId);
-		try {
-			if(this.symbol) await this.cancelOrders(this.safeOrders);
-		} catch(error) {					
-			MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, sOrders: this.safeOrders, error, botID: this.botID, botTitle: this.botTitle, processId: this.processId, fnc: 'disableProcess'});
-			await this._log(JSON.stringify(error));
+
+		if(cancelOrdersFlag) {
+			try {
+				if(this.symbol) await this.cancelOrders(this.safeOrders);
+			} catch(error) {					
+				MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, sOrders: this.safeOrders, error, botID: this.botID, botTitle: this.botTitle, processId: this.processId, fnc: 'disableProcess'});
+				await this._log(JSON.stringify(error));
+			}
 		}
 
-		if(finalCancelFlag) {
-			await this._log(`завершение процесса, причина -> (${message})`);
-			this.safeOrders = [];
-			this.currentOrder = {};
-			
-			this.botSettings.quantityOfUsedSafeOrders = 0;
-			this.botSettings.quantityOfActiveSafeOrders = 0;
-	
-			if(this.updateStatus) {
-				this.setNextBotSettings();
-			}
-	
-			this.botSettings.currentOrder = this.botSettings.initialOrder;
-			this.botSettings.firstBuyPrice = 0;
-			this.orders = await this.updateOrders(this.orders);
-	
-			this.status = CONSTANTS.BOT_STATUS.INACTIVE;
-	
-			_status && (this.finalProcessStatus = _status);
-	
-			this.finallyStatus = CONSTANTS.BOT_STATUS.INACTIVE;
-	
-			 
-			await this._log(`процесс завершен.`);
+		await this._log(`завершение процесса, причина -> (${message})`);
+		this.safeOrders = [];
+		this.currentOrder = {};
+		
+		this.botSettings.quantityOfUsedSafeOrders = 0;
+		this.botSettings.quantityOfActiveSafeOrders = 0;
+
+		if(this.updateStatus) {
+			this.setNextBotSettings();
 		}
+
+		this.botSettings.currentOrder = this.botSettings.initialOrder;
+		this.botSettings.firstBuyPrice = 0;
+		this.orders = await this.updateOrders(this.orders);
+
+		this.status = CONSTANTS.BOT_STATUS.INACTIVE;
+
+		_status && (this.finalProcessStatus = _status);
+
+		this.finallyStatus = CONSTANTS.BOT_STATUS.INACTIVE;
+
+			
+		await this._log(`процесс завершен.`);
 		console.log(this.currentOrder.orderId)
 		return 'disable';
 	}
@@ -1284,15 +1353,15 @@ module.exports = class Process {
 	// 		await this.cancelOrder(orders[i]);
 	// }
 
-	cancelOrders(orders = []) {
+	cancelOrders(orders = [], callback = () => {}) {
 		return new Promise( async (resolve, reject) => {
 			let l = orders.length;
 			if(l) {
 				for(let i = 0; i < l; i++) {
 					if(i === l - 1) {
-						this.cancelOrder(orders[i], resolve, reject);
+						this.cancelOrder(orders[i], resolve, reject, callback);
 					} else {
-						this.cancelOrder(orders[i]);
+						this.cancelOrder(orders[i], undefined, undefined, callback);
 					}
 				}
 			} else {
@@ -1355,7 +1424,7 @@ module.exports = class Process {
 
 				if(order && order.orderId) {
 
-					if(order.status === CONSTANTS.ORDER_STATUS.FILLED || order.status === CONSTANTS.ORDER_STATUS.CANCELED) {
+					if(/*order.status === CONSTANTS.ORDER_STATUS.FILLED || */order.status === CONSTANTS.ORDER_STATUS.CANCELED) {
 						status = 'ok';
 						message = `ордер ${order.orderId} уже завершен`;
 						res_status = CONSTANTS.PROCESS_STATUS.OK; 
@@ -1380,9 +1449,9 @@ module.exports = class Process {
 						} catch(error) {
 							MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, order: {orderId, symbol}, error, botID: this.botID, botTitle: this.botTitle, processId: this.processId, fnc: 'cancelOrder'});
 							status = 'error';
-							message = `ошибка при завершении ордера ${cancelOrder.orderId}`;
+							message = `ошибка при завершении ордера ${orderId}`;
 							res_status = CONSTANTS.PROCESS_STATUS.ERROR;
-							reject({ status, message, res_status, error });
+							reject({ status, message, res_status, error, order });
 						}
 						
 						// await this._log('закрытие ордера - ' + message);
@@ -1399,7 +1468,7 @@ module.exports = class Process {
 					// if(reject) reject(message);
 					// this.setErrors(order, message);
 					// callback({ status, res_status, message, data });
-					reject({ status, res_status, message, data });
+					reject({ status, res_status, message, data, order });
 				}
 
 			});
@@ -2055,7 +2124,7 @@ module.exports = class Process {
 			currentQtyActiveSO = this.getQtyOfActiveSafeOrders(),
 			maxAmountSO = this.getAmount();
 
-		return (maxOpenSO > currentQtyActiveSO && maxAmountSO > currentQtyUsedSO);
+		return (maxOpenSO > currentQtyActiveSO && maxAmountSO > currentQtyUsedSO && !this.unsoldOrdersFlag);
 	}
 
 	isAuto() {
