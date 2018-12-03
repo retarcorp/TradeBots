@@ -164,7 +164,9 @@ module.exports = class Bot {
 		} else if(nextStatus === CONSTANTS.BOT_STATUS.ACTIVE || nextStatus === CONSTANTS.BOT_STATUS.INACTIVE){
 			this.status = nextStatus;
 			for (let processId in this.processes) {
-				this.processes[processId].setStatus(nextStatus);
+				if(this.processes[processId].setStatus) {
+					this.processes[processId].setStatus(nextStatus);
+				}
 			}
 			status = 'ok';
 			if(this.isAuto()) {
