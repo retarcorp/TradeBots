@@ -637,8 +637,14 @@ let Users = {
 			try {
 				Mongo.select(user, 'users', (data) => {
 					if(data.length && (data = data[0])) {
+						let activeWeigth = 0;
+						data.bots.forEach(bot => {
+							if(bot.status && !bot.isDeleted) {
+								activeWeigth += bot.weight;
+							}
+						});
 
-						if(data.tariffs.length > 0 || data.bots.length < data.maxBotAmount) {
+						if(data.tariffs.length > 0 || activeWeigth < data.maxBotAmount) {
 							const index = this.Bots.findIndex(bot => bot.botID === botData.botID);
 							const asset = this.Bots[index].pair.to;
 							let reservedBalance = 0;
