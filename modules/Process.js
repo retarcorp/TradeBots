@@ -213,6 +213,10 @@ module.exports = class Process {
 		}
 	}
 
+	async checkUnsoldOrders() {
+		
+	}
+
 	async trade(user = this.user, flag = false, resolve = () => {}, reject = () => {}, tickTime = 0) {
 		console.log()
 		console.log()
@@ -1122,7 +1126,7 @@ module.exports = class Process {
 		this.updateStatus = false;
 	}
 
-	async disableProcess(_status = CONSTANTS.PROCESS_STATUS.NEUTRAL, message = '') {
+	async disableProcess(_status = CONSTANTS.PROCESS_STATUS.NEUTRAL, message = '', finalCancelFlag = true) {
 		console.log('disableProcess', message)
 		console.log(this.currentOrder.orderId);
 		try {
@@ -1131,31 +1135,32 @@ module.exports = class Process {
 			MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, sOrders: this.safeOrders, error, botID: this.botID, botTitle: this.botTitle, processId: this.processId, fnc: 'disableProcess'});
 			await this._log(JSON.stringify(error));
 		}
-		await this._log(`завершение процесса, причина -> (${message})`);
-		this.safeOrders = [];
-		this.currentOrder = {};
-		
-		this.botSettings.quantityOfUsedSafeOrders = 0;
-		this.botSettings.quantityOfActiveSafeOrders = 0;
 
-		if(this.updateStatus) {
-			this.setNextBotSettings();
+		if(finalCancelFlag) {
+			await this._log(`завершение процесса, причина -> (${message})`);
+			this.safeOrders = [];
+			this.currentOrder = {};
+			
+			this.botSettings.quantityOfUsedSafeOrders = 0;
+			this.botSettings.quantityOfActiveSafeOrders = 0;
+	
+			if(this.updateStatus) {
+				this.setNextBotSettings();
+			}
+	
+			this.botSettings.currentOrder = this.botSettings.initialOrder;
+			this.botSettings.firstBuyPrice = 0;
+			this.orders = await this.updateOrders(this.orders);
+	
+			this.status = CONSTANTS.BOT_STATUS.INACTIVE;
+	
+			_status && (this.finalProcessStatus = _status);
+	
+			this.finallyStatus = CONSTANTS.BOT_STATUS.INACTIVE;
+	
+			 
+			await this._log(`процесс завершен.`);
 		}
-
-		this.botSettings.currentOrder = this.botSettings.initialOrder;
-		this.botSettings.firstBuyPrice = 0;
-		// this.runningProcess = false;
-		// if(this.symbol) 
-		this.orders = await this.updateOrders(this.orders);
-
-		this.status = CONSTANTS.BOT_STATUS.INACTIVE;
-
-		_status && (this.finalProcessStatus = _status);
-
-		this.finallyStatus = CONSTANTS.BOT_STATUS.INACTIVE;
-
-		 
-		await this._log(`процесс завершен.`);
 		console.log(this.currentOrder.orderId)
 		return 'disable';
 	}
@@ -1558,7 +1563,7 @@ module.exports = class Process {
 
 			this.botSettings.quantity = nextQty;
 		} else {
-			this.botSettings.quantity = price ? this.toDecimal(Number(this.botSettings.currentOrder)/ price) : this.toDecimal(Number(quantity), this.getDecimal(false), true);
+			this.botSettings.quantity = price ? this.toDecimal(Number(this.botSettings.currentOrder)/ price) : this.toDecimal(Number(quantity), this.getDecimal(false), true, true);
 		}
 		return Number(this.botSettings.quantity);
 	}
