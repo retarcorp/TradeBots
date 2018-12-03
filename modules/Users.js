@@ -654,10 +654,12 @@ let Users = {
 								}
 							});
 
-
-							this.Bots[index].changeStatus(botData.status, data, reservedBalance)
-								.then( d => callback(d))
-								.catch( err => callback({status:'error', error: err}));
+							try {
+								let res = await this.Bots[index].changeStatus(botData.status, data, reservedBalance);
+								callback(res);
+							} catch(err) {
+								callback({status:'error', error: err, message: 'Чтото не так'});
+							}
 						} else callback(M.getFailureMessage({message: 'Срок действия активных тарифов окончен.'}));
 					} else callback(M.getFailureMessage({message: 'Пользователь не найден!'}));
 				})
