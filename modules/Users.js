@@ -635,7 +635,7 @@ let Users = {
 
 		,setStatus(user, botData, callback) {
 			try {
-				Mongo.select(user, 'users', (data) => {
+				Mongo.select(user, 'users', async (data) => {
 					if(data.length && (data = data[0])) {
 						let activeWeigth = 0;
 						data.bots.forEach(bot => {
