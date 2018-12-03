@@ -208,7 +208,9 @@ module.exports = class Process {
 	}
 
 	continueTrade(user = this.user) {
+		console.log('continueTrade', this.botTitle)
 		if(this.setClient(user)) {
+			console.log('continueTrade', this.botTitle, 1)
 			return new Promise( async (resolve, reject) => {
 				this.trade(user, false, resolve, reject);
 			});
