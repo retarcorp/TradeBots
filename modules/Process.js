@@ -1377,7 +1377,7 @@ module.exports = class Process {
 			})
 			.catch( error => {
 				MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, error, order_data, botID: this.botID, botTitle: this.botTitle, processId: this.processId, fnc: 'cancelOrder'});
-				this.cancelOrder_handlerCallback(result, order_data, resolve, reject, callback);
+				this.cancelOrder_handlerCallback(error, order_data, resolve, reject, callback);
 			});
 	}
 
