@@ -1138,7 +1138,7 @@ module.exports = class Process {
 			});
 
 			let take_proffit = this.getTP(allTotal);
-			let total_proffit = allTotal * (1 + take_proffit +  2 *this.BINANCE_FEE / 100);
+			let total_proffit = allTotal * (1 + take_proffit +  2 * CONSTANTS.BINANCE_FEE / 100);
 			let price_proffit = this.toDecimal(total_proffit / this.botSettings.quantity, this.getDecimal(), true, true);
 
 			return price_proffit;
