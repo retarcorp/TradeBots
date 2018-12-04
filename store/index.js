@@ -498,30 +498,6 @@ const store = () =>
 					// commit('setSpiner', false)
 				})
 		},
-		getMinNotionals({ commit }) {
-			this.$axios
-			.$get(`/api/symbol/getMinNotionals`)
-			.then(res => {
-				if(res.status === 'ok') {
-					commit('setMinNotionals', res.minNotionals)
-				}
-			})
-			.catch(err => {
-				console.log(err)
-			})
-		},
-		getLotSizes({ commit }) {
-			this.$axios
-				.$get(`/api/symbol/getLotSizes`)
-				.then(res => {
-					if(res.status === 'ok') {
-						commit('setLotSizes', res.lotSizes)
-					}
-				})
-				.catch(err => {
-					console.log(err)
-				})
-		},
 		getSymbolsList({ commit }) {
 			// commit('setSpiner', true)
 			this.$axios

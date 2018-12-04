@@ -20,26 +20,6 @@ router.get('/api/symbol/list', (req, res, next) => {
 		res.send({status: 'ok', data: data})
 	})
 	}
-})
-
-router.get('/api/symbol/getLotSizes', (req, res, next) => {
-	// let symbol = req.params.symbol.slice(1, req.params.symbol.length)
-	Symbols.getLotSizes().then(data => {
-		res.send({
-			status: 'ok',
-			lotSizes: data
-		})
-	})
-})
-
-router.get('/api/symbol/getMinNotionals', (req, res, next) => {
-	// let symbol = req.params.symbol.slice(1, req.params.symbol.length)
-	Symbols.getMinNotionals().then(data => {
-		res.send({
-			status: 'ok',
-			minNotionals: data
-		})
-	})
-})
+});
 
 module.exports = router;

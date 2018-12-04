@@ -125,16 +125,6 @@ class Test {
 	}
 
 	sell() {
-		// let c = binanceAPI({
-		// 	apiKey: 'pMK15sHEO3jS9RE9x4KA5zFfdxCKcxk9gDgyf4BhvGrhvEUn3wiZMTYcuqLEAkNh',
-		// 	apiSecret: 'A7pvWxoe0JzHfM1rvF7D2ymM3ZFUvdlOyLRmjeZ7m4gfCWaTOmLBwHcwMUSw3Znp'
-		// });
-		// c.order({
-		// 	side: 'BUY',
-		// 	symbol: 'PAXUSDT',
-		// 	quantity: 19.73,
-		// 	type: 'MARKET'
-		// }).then(console.log).catch(console.log)
 	}
 
 }

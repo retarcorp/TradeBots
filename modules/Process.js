@@ -217,11 +217,11 @@ module.exports = class Process {
 		}
 	}
 
-	async checkUnsoldOrders(uncolsedOrders = []) {
+	async checkUnsoldOrders(unclosedOrders = []) {
 		return new Promise( (resolve, reject) => {
-			if(uncolsedOrders.length) {
+			if(unclosedOrders.length) {
 				let allTotal = 0, allQty = 0;
-				uncolsedOrders.forEach(order => {
+				unclosedOrders.forEach(order => {
 					if(this.isOrderBuy(order.side) && this.checkFilling(order.status)) {
 						allTotal += Number(order.cummulativeQuoteQty);
 						allQty += Number(order.origQty) * (1 - CONSTANTS.BINANCE_FEE / 100);
@@ -1478,90 +1478,6 @@ module.exports = class Process {
 		});
 	}
 
-	// async cancelOrder(order_data = {}, resolve, reject, callback = () => {}) {
-	// 	let orderId = 0;
-	// 	if(typeof order_data === 'object') {
-	// 		orderId = order_data.orderId;
-	// 	} else {
-	// 		orderId = Number(order_data);
-	// 	}
-		
-	// 	try {
-	// 		this.getOrder(orderId, async order => {
-	// 			let pair = this.getSymbol(),
-	// 				side = order.side,
-	// 				qty = order.origQty,
-	// 				status = '',
-	// 				_error = new Error('default error'),
-	// 				message = '',
-	// 				res_status = CONSTANTS.PROCESS_STATUS.NEUTRAL;
-	
-	// 			if(order && order.orderId) {
-	// 				if(order.status === CONSTANTS.ORDER_STATUS.FILLED || order.status === CONSTANTS.ORDER_STATUS.CANCELED) {
-	// 					message = `ордер ${order.orderId} уже завершен`;
-	// 					res_status = CONSTANTS.PROCESS_STATUS.OK; 
-	// 					if(resolve) resolve(message);
-	// 					callback({
-	// 						status: 'ok',
-	// 						message,
-	// 						res_status,
-	// 						data: { order }
-	// 					});
-	// 				} else {
-	// 					let cancelOrder = {}
-	// 					try {
-	// 						cancelOrder = await this.Client.cancelOrder({
-	// 							symbol: pair,
-	// 							orderId: orderId,
-	// 							useServerTime: true
-	// 						});
-	// 						if(this.isOrderSell(side)) {
-	// 							this.recountQuantity(qty);
-	// 						}
-	// 						status = 'ok';
-	// 						message = `ордер ${cancelOrder.orderId} завершен`;
-	// 						res_status = CONSTANTS.PROCESS_STATUS.OK;
-	// 						if(resolve) resolve(message);
-	// 					} catch(error) {
-	// 						MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, order: {orderId: orderId, symbol: pair}, error, botID: this.botID, botTitle: this.botTitle, processId: this.processId, fnc: 'cancelOrder'});
-	// 						status = 'error';
-	// 						message = `ошибка при завершении ордера ${cancelOrder.orderId}`;
-	// 						res_status = CONSTANTS.PROCESS_STATUS.ERROR;
-	// 						_error = error;
-	// 						if(reject) reject(message);
-	// 					}
-						
-	// 					await this._log('закрытие ордера - ' + message);
-	// 					callback({ status, message, error: _error, res_status,
-	// 						data: { order: cancelOrder }
-	// 					});
-	// 				}
-	// 			} else {
-	// 				status = 'error';
-	// 				message = `Проблема с закрытием ордера ${orderId}`;
-	// 				res_status = CONSTANTS.PROCESS_STATUS.ERROR;
-	// 				data = order;
-	// 				if(reject) reject(message);
-	
-	// 				this.setErrors(order, message);
-	// 				callback({ status, res_status, message, data });
-	// 			}
-	// 		});
-
-	// 	} catch(error) {
-	// 		MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, error: error, order: {orderId: order.orderId, symbol: this.getSymbol(), order}, botID: this.botID, botTitle: this.botTitle, processId: this.processId, fnc: 'cancelOrder'})
-	// 		await this._log('закрытие ордера - ' + JSON.stringify(error));
-	// 		if(reject) reject(error);
-	// 		callback({
-	// 			status: 'error',
-	// 			error,
-	// 			message: error,
-	// 			res_status: CONSTANTS.PROCESS_STATUS.ERROR,
-	// 			data: { orderId: order.orderId }
-	// 		});
-	// 	}
-	// }
-
 	cloneDeep(obj) { // полное клонирование объекта
 		return Object.assign({}, obj);
 		return JSON.parse(JSON.stringify(obj));
@@ -2081,9 +1997,9 @@ module.exports = class Process {
 	}
 
 	//TOO_MANY_REQUESTS
-	isError1021(error = new Error('default err')) {  	
+	isError1003(error = new Error('default err')) {  	
 		let code = this.errorCode(error);
-		return code === -1021;
+		return code === -1003;
 	}
 
 	//MIN_NOTATIAN
