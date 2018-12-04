@@ -1708,7 +1708,7 @@ module.exports = class Process {
 		}
 	}
 
-	async getOrder_forOrdersArray(orders = [], handler) {
+	async getOrder_forOrdersArray(orders = [], handler, isUpdateCheckFlag = false) {
 		console.log('getOrder_forOrdersArray')
 		return new Promise((resolve, reject) => {
 			let qtyPassedElements = 0, elementsQty = orders.length,
@@ -1717,28 +1717,70 @@ module.exports = class Process {
 			
 			if(l) {
 				try {
-					for (let i = 0; i < l; i++) {
-						let order = orders[i];
-						this.getOrder(order.orderId, async updatedOrder => {
-							qtyPassedElements++;
-							if(handler) {
-								let orderAfterHandling = await handler(updatedOrder);
-								sendOrdersArray.push(...orderAfterHandling);
-							} else {	
-								sendOrdersArray.push(updatedOrder);
-							}
-							if(qtyPassedElements === elementsQty) {
-								resolve({
-									status: 'ok',
-									orders: sendOrdersArray
+					if(isUpdateCheckFlag) {
+						for (let i = 0; i < l; i++) {
+							let order = orders[i];
+							if(!order.isUpdate) {
+								this.getOrder(order.orderId, async updatedOrder => {
+									qtyPassedElements++;
+									if(handler) {
+										let orderAfterHandling = await handler(updatedOrder);
+										sendOrdersArray.push(...orderAfterHandling);
+									} else {	
+										sendOrdersArray.push(updatedOrder);
+									}
+									if(qtyPassedElements === elementsQty) {
+										resolve({
+											status: 'ok',
+											orders: sendOrdersArray
+										});
+									} else if(qtyPassedElements > elementsQty) {
+										reject({
+											status: 'error',
+											message: 'trabls with "getOrder_forOrdersArray"'
+										});
+									}
 								});
-							} else if(qtyPassedElements > elementsQty) {
-								reject({
-									status: 'error',
-									message: 'trabls with "getOrder_forOrdersArray"'
-								});
+							} else {
+								qtyPassedElements++;
+								sendOrdersArray.push(order);
+								if(qtyPassedElements === elementsQty) {
+									resolve({
+										status: 'ok',
+										orders: sendOrdersArray
+									});
+								} else if(qtyPassedElements > elementsQty) {
+									reject({
+										status: 'error',
+										message: 'trabls with "getOrder_forOrdersArray"'
+									});
+								}
 							}
-						});
+						}
+					} else {
+						for (let i = 0; i < l; i++) {
+							let order = orders[i];
+							this.getOrder(order.orderId, async updatedOrder => {
+								qtyPassedElements++;
+								if(handler) {
+									let orderAfterHandling = await handler(updatedOrder);
+									sendOrdersArray.push(...orderAfterHandling);
+								} else {	
+									sendOrdersArray.push(updatedOrder);
+								}
+								if(qtyPassedElements === elementsQty) {
+									resolve({
+										status: 'ok',
+										orders: sendOrdersArray
+									});
+								} else if(qtyPassedElements > elementsQty) {
+									reject({
+										status: 'error',
+										message: 'trabls with "getOrder_forOrdersArray"'
+									});
+								}
+							});
+						}
 					}
 				} catch(error) {
 					MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, botID: this.botID, botTitle: this.botTitle, processId: this.processId, error: error, fnc: 'getOrder_forOrdersArray'});
@@ -1970,7 +2012,7 @@ module.exports = class Process {
 					resArr.push(order);
 				}
 				return resArr;
-			}).then(updatedOrders => {
+			}, true).then(updatedOrders => {
 				if(updatedOrders.status === 'ok') {
 					resolve(updatedOrders.orders);
 				} else {
