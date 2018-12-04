@@ -286,8 +286,8 @@ module.exports = class Process {
 							console.log('curOrder is filling');
 							let uncolsedOrders = [];
 							await this.cancelOrders(this.safeOrders, result => {
-								if(this.isError2011(result.error)) {
-									uncolsedOrders.push(order);
+								if(result.error && result.order && this.isError2011(result.error)) {
+									uncolsedOrders.push(result.order);
 								}
 							});
 							this.checkUnsoldOrders(uncolsedOrders)
@@ -663,11 +663,11 @@ module.exports = class Process {
 			} else {
 				try {
 					const stopPrice = this.getStopPrice();
+					await this._log(`Проверка stoploss. (${stopPrice})`);
 					if(stopPrice) {
 						let price = await this.getLastPrice();
 						
 						console.log('check stoploss', stopPrice, price)
-						await this._log(`Проверка stoploss. (${stopPrice})`);
 			
 						if(price && stopPrice > price) {
 							console.log('stoploss are reached')
@@ -681,10 +681,10 @@ module.exports = class Process {
 							await this.updateProcess(user);
 							resolve('');
 						}
-						return null;
+					} else {
+						await this.updateProcess(user);
+						resolve('');
 					}
-					await this.updateProcess(user);
-					resolve('');
 
 				} catch(error) {
 					MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, botID: this.botID, botTitle: this.botTitle, processId: this.processId, error, fnc: 'process__else_'});
