@@ -2,21 +2,22 @@ const Mongo = require('../modules/Mongo');
 const CONSTANTS = require('../constants');
 const User = require('../modules/Users');
 const readline = require('readline');
+const { mailer } = require('../config/config');
 const rl = readline.createInterface({
 	input: process.stdin,
 	output: process.stdout
 });
 
 Mongo.init().then( () => {
-	let name = 'trade.bots.info@gmail.com';
-	let password = '?bXRk#TqZN7#k%1';
+	let name = mailer.user;
+	let password = mailer.pass;
 
 	rl.question('Введите логин админа: ', (answer = '') => {
 
 		if(answer) {
 			name = answer;
 		} else {
-			console.log('логин админа по умолчанию - trade.bots.info@gmail.com');
+			console.log('логин админа по умолчанию - ' + name);
 		}
 
 		rl.question('Введите пароль админа: ', (answer = '') => {
@@ -24,7 +25,7 @@ Mongo.init().then( () => {
 			if(answer) {
 				password = answer;
 			} else {
-				console.log('пароль админа по умолчанию - ?bXRk#TqZN7#k%1');
+				console.log('пароль админа по умолчанию - ' + password);
 			}
 
 			User.create({ name, password, admin: true}, CONSTANTS.USERS_COLLECTION, data => {

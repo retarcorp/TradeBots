@@ -13,6 +13,7 @@ const config = require('../config/config');
 const Logger = require('./Logger');
 const US = CONSTANTS.US;
 const M = require('./Message');
+const { mailer } = require('../config/config');
 
 let Users = {
 
@@ -253,7 +254,7 @@ let Users = {
 				// });
 
 				Mailer.send({
-					from: 'trade.bots.info@gmail.com'
+					from: mailer.user
 					,to: user.name
 					,subject: 'Авторизация аккаунта'
 					,html: Templates.getUserActivationHtml(User.regKey)

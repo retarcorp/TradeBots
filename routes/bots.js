@@ -15,13 +15,13 @@ router.get('/api/bots/getBotsList', (req, res, next) => {
 	});
 });
 
-router.get('/api/bots/get', (req, res, next) => {
-	let user = {name: req.cookies.user.name}
-	Users.Bots.get(user, req.body.botID, data => {
-		// log(data);
-		res.json(data);
-	});
-});
+// router.get('/api/bots/get', (req, res, next) => {
+// 	let user = {name: req.cookies.user.name}
+// 	Users.Bots.get(user, req.body.botID, data => {
+// 		// log(data);
+// 		res.json(data);
+// 	});
+// });
 
 router.post('/api/bots/add', (req, res, next) => {
 	let user = {name: req.cookies.user.name}

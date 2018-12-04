@@ -5,6 +5,8 @@ var qrs = require("querystring");
 var url = require("url");
 const Mailer = require('../modules/Mailer');
 const Templates = require('../modules/Templates');
+const { mailer } = require('../config/config');
+console.log(mailer)
 
 router.get('/api/user/activate', (req, res, next) => {
     console.log('something');
@@ -31,7 +33,7 @@ router.get('/api/user/activate', (req, res, next) => {
         Mongo.update({ name: user.name }, user, "users", () => {
             // res.send(response);
             Mailer.send({
-                from: 'trade.bots.info@gmail.com'
+                from: mailer.user
                 ,to: user.name
                 ,subject: 'Авторизация аккаунта'
                 ,html: Templates.getUserActivationHtmlConfirm(User.regKey)

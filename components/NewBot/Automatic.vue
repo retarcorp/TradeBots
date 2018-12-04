@@ -331,13 +331,13 @@ export default {
                 stopLoss = 'stopLoss',
                 maxAmountPairsUsed = 'maxAmountPairsUsed';
                 // dailyVolumeBTC = 'dailyVolumeBTC';
-            // switch(state) {
-                /*case takeProfit: */bs.takeProfit = bs.takeProfit < this.getMinDeviation() ? this.getMinDeviation() : bs.takeProfit; //break;
-                /*case initialOrder:*/ bs.initialOrder = bs.initialOrder < 0 ? 0 : bs.initialOrder;// break;
-                /*case stopLoss: */bs.stopLoss = bs.stopLoss < this.getMinDeviation() && bs.stopLoss !== 0 ? this.getMinDeviation() : bs.stopLoss; //break;
-                /*case maxAmountPairsUsed:*/ bs.maxAmountPairsUsed = bs.maxAmountPairsUsed < 0 ? this.bot.pair.requested.length : bs.maxAmountPairsUsed; //break;
-                // case dailyVolumeBTC: bs.dailyVolumeBTC = bs.dailyVolumeBTC < 0 ? 0 : bs.dailyVolumeBTC; break;
-            // }
+            bs.takeProfit = bs.takeProfit < this.getMinDeviation() ? this.getMinDeviation() : bs.takeProfit; //break;
+            bs.initialOrder = bs.initialOrder < 0 ? 0 : bs.initialOrder;// break;
+            if(Number(bs.stopLoss) !== 0) {
+                bs.stopLoss = bs.stopLoss < this.getMinDeviation() && bs.stopLoss !== 0 ? this.getMinDeviation() : bs.stopLoss; //break;
+            }
+            bs.maxAmountPairsUsed = bs.maxAmountPairsUsed < 0 ? this.bot.pair.requested.length : bs.maxAmountPairsUsed; //break;
+            bs.dailyVolumeBTC = bs.dailyVolumeBTC < 0 ? 0 : bs.dailyVolumeBTC;
             if( bs.stopLoss > 99 ) {
                 bs.stopLoss = 99;
                 this.templateMessage(10);
