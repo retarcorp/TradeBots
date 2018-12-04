@@ -334,7 +334,7 @@ export default {
             // switch(state) {
                 /*case takeProfit: */bs.takeProfit = bs.takeProfit < this.getMinDeviation() ? this.getMinDeviation() : bs.takeProfit; //break;
                 /*case initialOrder:*/ bs.initialOrder = bs.initialOrder < 0 ? 0 : bs.initialOrder;// break;
-                /*case stopLoss: */bs.stopLoss = bs.stopLoss < this.getMinDeviation() ? this.getMinDeviation() : bs.stopLoss; //break;
+                /*case stopLoss: */bs.stopLoss = bs.stopLoss < this.getMinDeviation() && bs.stopLoss !== 0 ? this.getMinDeviation() : bs.stopLoss; //break;
                 /*case maxAmountPairsUsed:*/ bs.maxAmountPairsUsed = bs.maxAmountPairsUsed < 0 ? this.bot.pair.requested.length : bs.maxAmountPairsUsed; //break;
                 // case dailyVolumeBTC: bs.dailyVolumeBTC = bs.dailyVolumeBTC < 0 ? 0 : bs.dailyVolumeBTC; break;
             // }

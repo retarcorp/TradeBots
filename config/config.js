@@ -3,5 +3,6 @@ module.exports = {
 	logger: require('./logger.config'),
 	pages: require('./pages.config'),
 	coinmarketcap: require('./coinmarketcap.config'),
-	server_url: require('./url.config')
+	server_url: require('./url.config'),
+	mailer: require('./mailer.config')
 };

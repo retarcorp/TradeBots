@@ -293,7 +293,7 @@
                 // switch(state) {
                     /*case takeProfit: */bs.takeProfit = bs.takeProfit < this.getMinDeviation() ? this.getMinDeviation() : bs.takeProfit;// break;
                     /*case initialOrder:*/ bs.initialOrder = bs.initialOrder < 0 ? 0 : bs.initialOrder;// break;
-                    /*case stopLoss: */bs.stopLoss = bs.stopLoss < this.getMinDeviation() ? this.getMinDeviation() : bs.stopLoss; //break;
+                    /*case stopLoss: */bs.stopLoss = bs.stopLoss < this.getMinDeviation() && bs.stopLoss !== 0 ? this.getMinDeviation() : bs.stopLoss; //break;
                     /*case safeOrderSize: */bs.safeOrder.size = bs.safeOrder.size < 0 ? 0 : bs.safeOrder.size; //break;
                     /*case safeOrderAmount:*/ bs.safeOrder.amount = bs.safeOrder.amount < 0 ? 0 : bs.safeOrder.amount; //break;
                     /*case deviation: */bs.deviation = bs.deviation < this.getMinDeviation() ? this.getMinDeviation() : bs.deviation; //break;

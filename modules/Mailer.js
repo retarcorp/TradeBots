@@ -1,13 +1,14 @@
 const nodemailer = require('nodemailer');
+const { mailer } = require('../config/config');
 
 const Mailer = {
     init() {
         this.smtp = nodemailer.createTransport({
-            service: 'gmail.com'
+            service: mailer.service
             ,secure: true
             ,auth: {
-                user: 'trade.bots.info@gmail.com',
-                pass: '?bXRk#TqZN7#k%1'
+                user: mailer.user,
+                pass: mailer.pass
             }
         });
 
