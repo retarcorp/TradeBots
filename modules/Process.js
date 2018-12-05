@@ -227,9 +227,10 @@ module.exports = class Process {
 						allQty += Number(order.origQty) * (1 - CONSTANTS.BINANCE_FEE / 100);
 					}
 				});
-
+				
+				allTotal = allTotal * (1 - CONSTANTS.BINANCE_FEE / 100);
 				let take_proffit = this.getTP(allTotal);
-				let total_proffit = allTotal * (1 + take_proffit +  2 *this.BINANCE_FEE / 100);
+				let total_proffit = allTotal * (1 + take_proffit + CONSTANTS.BINANCE_FEE / 100);
 				let price_proffit = this.toDecimal(total_proffit / allQty, this.getDecimal(), true, true);
 
 				this.newSellOrder(price_proffit, CONSTANTS.ORDER_TYPE.LIMIT, allQty, async newSellOrder => {
@@ -241,12 +242,12 @@ module.exports = class Process {
 						this.setQuantity(undefined, allQty);
 						this.unsoldOrdersFlag = true;
 	
-						await this.updateProcess(user);
+						await this.updateProcess(this.user);
 						resolve({
 							status: 'ok'
 						});
 					} else {
-						await this.updateProcess(user);
+						await this.updateProcess(this.user);
 						reject({
 							status: 'error',
 							message: 'Невозможно продать монеты.',
@@ -285,11 +286,19 @@ module.exports = class Process {
 						if(this.checkFilling(currentOrderStatus) && !this.isFreeze()) {
 							console.log('curOrder is filling');
 							let uncolsedOrders = [];
-							await this.cancelOrders(this.safeOrders, result => {
-								if(result.error && result.order && this.isError2011(result.error)) {
-									uncolsedOrders.push(result.order);
-								}
-							});
+							try {
+								await this.cancelOrders(this.safeOrders, result => {
+									console.log('addORDERRRS', result)
+									if(result.error && result.order && this.isError2011(result.error)) {
+										console.log('??')
+										uncolsedOrders.push(result.order);
+									}
+								});
+							} catch(error) {
+								console.log(uncolsedOrders)
+								console.log(error)
+								MDBLogger.error({user: {userId: this.user.userId, name: this.user.name}, error, botID: this.botID, botTitle: this.botTitle, processId: this.processId, fnc: 'trade'});
+							}
 							this.checkUnsoldOrders(uncolsedOrders)
 								.then(async result => {
 									if(result.status === 'ok') {
@@ -812,10 +821,11 @@ module.exports = class Process {
 	newBuyOrder_helper(price = 0, type = CONSTANTS.ORDER_TYPE.LIMIT, quantity = this.getQuantity(price), isSafe = false, prevError = {}, amount = 0) {
 		return new Promise( async (resolve, reject) => {
 			const useServerTime = true, side = CONSTANTS.ORDER_SIDE.BUY;
+			quantity = this.toDecimal(quantity);
 			let symbol = this.getSymbol(),
 				newOrderParams = { symbol, side, quantity, useServerTime };
 			if(type === CONSTANTS.ORDER_TYPE.LIMIT) {
-				newOrderParams.price = price;
+				newOrderParams.price = this.toDecimal(price, this.getDecimal(true));
 			} else {
 				newOrderParams.type = type;
 			}
@@ -888,7 +898,7 @@ module.exports = class Process {
 				//в ордере массив параметров для нового ордера
 				console.log(result);
 				let { price, type, quantity, isSafe, error, amount } = result.order[0];
-				this.sleep(CONSTANTS.TIMEOUT, () => {
+				this.sleep(CONSTANTS.TIMEOUT / 8, () => {
 					this.newBuyOrder(price, type, quantity, isSafe, callback, error, amount);
 				});
 			} else if(result.order === 'disable') {
@@ -989,7 +999,7 @@ module.exports = class Process {
 			if(typeof result.order !== 'string') {
 				//в ордере массив параметров для нового ордера
 				let { price, type, quantity, error, amount } = result.order[0];
-				this.sleep(CONSTANTS.TIMEOUT, () => {
+				this.sleep(CONSTANTS.TIMEOUT/8, () => {
 					this.newSellOrder(price, type, quantity, callback, error, amount);
 				});
 			} else if(result.order === 'disable') {
@@ -1140,10 +1150,11 @@ module.exports = class Process {
 				}
 			});
 
+			allTotal = allTotal * (1 - CONSTANTS.BINANCE_FEE / 100);
 			let take_proffit = this.getTP(allTotal);
-			let total_proffit = allTotal * (1 + take_proffit +  2 * CONSTANTS.BINANCE_FEE / 100);
+			let total_proffit = allTotal * (1 + take_proffit + 2 * CONSTANTS.BINANCE_FEE / 100);
 			let price_proffit = this.toDecimal(total_proffit / this.botSettings.quantity, this.getDecimal(), true, true);
-
+			
 			return price_proffit;
 
 		} catch(error) {
@@ -1651,7 +1662,7 @@ module.exports = class Process {
 
 
 		// price = Number(price);
-		let takeProfit = this.getTakeProfit_forRecountSafeOrders(),
+		let takeProfit = this.getTakeProfit(),
 			decimal = this.getDecimal(flag);
 		
 		price = Number(price);
@@ -1665,7 +1676,7 @@ module.exports = class Process {
 	}
 
 	getTakeProfit_forRecountSafeOrders() {
-		return (Number(this.botSettings.takeProfit) + 2 * CONSTANTS.BINANCE_FEE) / 100;
+		return (Number(this.botSettings.takeProfit) + 3 * CONSTANTS.BINANCE_FEE) / 100;
 	}
 
 	getSellOrder() {
